@@ -1,13 +1,13 @@
 # Jutarnja automatska sesija
 
-Scheduled task "Ritam jutarnji rad" svako jutro u 06:43 (Europe/Zagreb) pokreće novu sesiju s ovim promptom. `OWNER/REPO` se zamijeni stvarnim repoom kad se postavi.
+Scheduled task "Ritam jutarnji rad" svako jutro u 06:43 (Europe/Zagreb) pokreće novu sesiju s ovim promptom. Repo: `milja007/ritam`. Postavljeno 2026-11-05, automatsko odobravanje akcija.
 
 ## Prompt
 
 ```
 Ovo je automatska jutarnja sesija za Bornov projekt Ritam (osobni productivity app, React Native / Expo, HR + EN). Nitko ne gleda dok radiš — ne čekaj potvrde, nego postupi razumno i zapiši odluke.
 
-1. Spoji GitHub repo OWNER/REPO s push pristupom i kloniraj ga. Ako to ne uspije, pošalji Borni jednu kratku poruku zašto i stani.
+1. Spoji GitHub repo milja007/ritam s push pristupom i kloniraj ga. Ako to ne uspije, pošalji Borni jednu kratku poruku zašto i stani.
 2. Pročitaj CLAUDE.md, docs/PROGRESS.md i docs/BUILD_PLAN.md i strogo prati pravila iz CLAUDE.md.
 3. Ako postoji grana wip/korak-N, nastavi taj korak na njoj. Inače uzmi prvi korak u BUILD_PLAN.md koji nije [x].
 4. Prije koda napiši plan koraka (3–8 točaka) na vrh docs/PROGRESS.md pod današnjim datumom. Ponovo ga pročitaj kao strogi recenzent: odgovara li konceptu i kriterijima gotovosti? Ispravi ga, pa tek onda kreni.
