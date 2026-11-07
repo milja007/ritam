@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-07 20:43 · Korak 5 — Domenski tipovi
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-5`; `npm ci`; `zod` (4.x, čisti JS) preko `expo install` (offline način — Expo API je iza proxyja blokiran).
+2. `src/core/domain/common.ts`: zajednički primitivi — `id` (neprazan string), `userId`, `createdAt`/`updatedAt` (ISO datetime), `localDate` (`YYYY-MM-DD`, stvarni datum), `clockTime` (`HH:MM` preko postojećeg `parseClock`), `rating1to5`, `baseEntity` (id, userId, createdAt, updatedAt — "svaka tablica" iz koncepta).
+3. Sheme + `z.infer` tipovi, po jedna datoteka, polja točno iz modela podataka u konceptu: `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`. Enumi kao `as const` nizovi (kind, source, status, weight…).
+4. Pravila validacije samo tamo gdje ih koncept implicira: ocjene 1–5, težina zabrane 1/2/3, XP `amount` > 0 (bez kazni), blok `end` nakon `start` (osim `sleep` koji smije prijeći ponoć), `activeDays` jedinstveni dani 0–6.
+5. `rule_logs` nema u tablici koncepta (spominje se kao izvor streakova) — minimalno: `ruleId`, `date`, `kept`, `trigger?`, `checkinId?` (iz večernjeg upita "Držao sam se / Prekršio sam (+ okidač)"). Zapisati kao pitanje.
+6. Testovi validacije: ispravni primjeri prolaze, svaki ključni rub pada (datum 2026-02-30, 24:00, ocjena 0/6, amount 0, end ≤ start, duplikat dana…), `safeParse` bez iznimki.
+7. Provjere: `tsc --noEmit`, `expo lint`, `npm test`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = tipovi + Zod sheme za 7 navedenih tablica + testovi validacije — točke 2–6. Polja iz koncepta, bez novih značajki; `tasks`, `disruptions`, `reports`, `quests`, `llm_calls` nisu u ovom koraku (kasnije faze). Jedini dodatak izvan popisa polja: `title` na bloku (fixed/sleep blok bez `taskId` mora imati naziv za timeline) — zapisano. Bez baze (korak 6), bez Reacta, bez UI-ja.
+
 ## 2026-11-07 13:43 · Korak 4 — Dizajn tokeni
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-4`; `npm ci`.
