@@ -10,7 +10,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 
 - [x] **0. Skeleton** — Expo projekt (default template), docs/CONCEPT.md, BUILD_PLAN.md, PROGRESS.md, CLAUDE.md, git.
 - [x] **1. Čišćenje templatea + tabovi** — ukloniti primjer ekrane/komponente iz templatea; Expo Router tab layout s 5 tabova (Danas, Tjedan, Questovi, Navike, Profil), placeholder ekrani; `src/features/`, `src/core/`, `src/ui/` mape. *Gotovo kad:* app se bundla (`npx expo export --platform android` ili barem typecheck+lint), tabovi postoje.
-- [ ] **2. Testovi** — postaviti test runner za čisti TS kod (`src/core/**`): jest-expo ili vitest (provjeriti što radi sa SDK verzijom). Jedan sample test. Skripta `npm test`.
+- [x] **2. Testovi** — postaviti test runner za čisti TS kod (`src/core/**`): jest-expo ili vitest (provjeriti što radi sa SDK verzijom). Jedan sample test. Skripta `npm test`.
 - [ ] **3. i18n** — i18next + react-i18next + expo-localization; `src/i18n/hr.json`, `en.json`; automatski jezik uređaja; prekidač u Profilu; svi stringovi tabova prevedeni.
 - [ ] **4. Dizajn tokeni** — dark-first paleta, gradijent po dobu dana (zora/dan/večer kao tokeni), tipografija, razmaci, radius; tema provider. Provjeriti kompatibilnost NativeWinda s trenutnim SDK-om (docs); ako nije stabilno, StyleSheet + tokeni.
 - [ ] **5. Domenski tipovi** — `src/core/domain/`: TypeScript tipovi + Zod sheme za settings, schedule_blocks, checkins, checkin_items, rules, rule_logs, xp_events (vidi CONCEPT.md / koncept doc model podataka). Testovi validacije.

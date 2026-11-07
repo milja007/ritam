@@ -14,6 +14,18 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij je "runner + jedan sample test + `npm test`" — točke 2–5 to pokrivaju. `clock.ts` je mala pomoćna funkcija, ne nova značajka ni odluka iz koncepta (format vremena "HH:MM" je neutralan; tipovi/Zod su korak 5 i ovdje se ne uvode). Ne dira UI, i18n ni `ios/`/`android/`.
 
+**Napravljeno:**
+- Runner: **Jest 30 + `jest-expo` 58** (dev ovisnosti, `expo install` verzije). Konfiguracija u `package.json`: preset `jest-expo`, `testMatch` = `src/**/*.test.ts(x)`. Skripte `npm test` i `npm run test:watch`.
+- Umjesto `@types/jest` koristi se `@jest/globals` s eksplicitnim importima u testovima: TS 6 više ne učitava globalne `@types` automatski, a ovako jest globali ne ulaze u tipove app koda.
+- `src/core/time/clock.ts`: `parseClock("HH:MM")` → minute od ponoći / `formatClock(min)` → "HH:MM"; neispravno → `null`. 24 testa (rubni slučajevi + inverz za svaku minutu dana).
+- Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (24/24), `expo export --platform android` ✅.
+
+**Problemi/napomene:**
+- docs.expo.dev ni ovaj put nije bio dostupan (fetch odbijen) — postavljeno prema README-u iz `node_modules/jest-expo` (SDK 58).
+- Preset `jest-expo` vrti testove u RN (iOS) okruženju; za čiste `src/core` testove to je dovoljno, a omogućuje i testove komponenti kasnije.
+
+**Sljedeće:** korak 3 — i18n (i18next + react-i18next + expo-localization, `hr.json`/`en.json`, jezik uređaja, prekidač u Profilu, labeli tabova).
+
 ## 2026-11-06 · Korak 1 — Čišćenje templatea + tabovi
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-1`; `npm ci`.
