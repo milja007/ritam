@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-07 06:44 · Korak 2 — Testovi
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-2`; `npm ci`.
+2. Odabir runnera: provjeriti Expo SDK 58 docs (unit testing). Zadano `jest-expo` (službeni Expo preset, kasnije omogućuje i testove komponenti) preko `npx expo install jest-expo jest @types/jest`; ako ne radi s RN 0.88 / TS 6 → vitest samo za `src/core/**` i zapisati zašto.
+3. Konfiguracija: `jest` u `package.json` (preset `jest-expo`, `testMatch` za `src/**/*.test.ts(x)`, ignorirati `node_modules`); skripte `test` i `test:watch`.
+4. Sample test nad pravom čistom funkcijom bez React importa: `src/core/time/clock.ts` — `parseClock("HH:MM")` → minute od ponoći i `formatClock(min)` → "HH:MM" (trebat će onboardingu, blokovima i notifikacijama). Neispravan unos → `null`, bez iznimki. Testovi rubnih slučajeva.
+5. TS/ESLint: `@types/jest` vidljiv u testovima, lint prolazi za `*.test.ts` (jest globali).
+6. Provjere: `npx tsc --noEmit`, `npx expo lint`, `npm test`, `npx expo export --platform android` (testovi ne ulaze u bundle).
+7. BUILD_PLAN `[x]`, PROGRESS ažuriran, merge na `main`, push.
+
+*Recenzija plana:* kriterij je "runner + jedan sample test + `npm test`" — točke 2–5 to pokrivaju. `clock.ts` je mala pomoćna funkcija, ne nova značajka ni odluka iz koncepta (format vremena "HH:MM" je neutralan; tipovi/Zod su korak 5 i ovdje se ne uvode). Ne dira UI, i18n ni `ios/`/`android/`.
+
 ## 2026-11-06 · Korak 1 — Čišćenje templatea + tabovi
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-1`; `npm ci`.
