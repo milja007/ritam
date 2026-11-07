@@ -2,6 +2,36 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-07 20:43 · Korak 5 — Domenski tipovi
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-5`; `npm ci`; `zod` (4.x, čisti JS) preko `expo install` (offline način — Expo API je iza proxyja blokiran).
+2. `src/core/domain/common.ts`: zajednički primitivi — `id` (neprazan string), `userId`, `createdAt`/`updatedAt` (ISO datetime), `localDate` (`YYYY-MM-DD`, stvarni datum), `clockTime` (`HH:MM` preko postojećeg `parseClock`), `rating1to5`, `baseEntity` (id, userId, createdAt, updatedAt — "svaka tablica" iz koncepta).
+3. Sheme + `z.infer` tipovi, po jedna datoteka, polja točno iz modela podataka u konceptu: `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`. Enumi kao `as const` nizovi (kind, source, status, weight…).
+4. Pravila validacije samo tamo gdje ih koncept implicira: ocjene 1–5, težina zabrane 1/2/3, XP `amount` > 0 (bez kazni), blok `end` nakon `start` (osim `sleep` koji smije prijeći ponoć), `activeDays` jedinstveni dani 0–6.
+5. `rule_logs` nema u tablici koncepta (spominje se kao izvor streakova) — minimalno: `ruleId`, `date`, `kept`, `trigger?`, `checkinId?` (iz večernjeg upita "Držao sam se / Prekršio sam (+ okidač)"). Zapisati kao pitanje.
+6. Testovi validacije: ispravni primjeri prolaze, svaki ključni rub pada (datum 2026-02-30, 24:00, ocjena 0/6, amount 0, end ≤ start, duplikat dana…), `safeParse` bez iznimki.
+7. Provjere: `tsc --noEmit`, `expo lint`, `npm test`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = tipovi + Zod sheme za 7 navedenih tablica + testovi validacije — točke 2–6. Polja iz koncepta, bez novih značajki; `tasks`, `disruptions`, `reports`, `quests`, `llm_calls` nisu u ovom koraku (kasnije faze). Jedini dodatak izvan popisa polja: `title` na bloku (fixed/sleep blok bez `taskId` mora imati naziv za timeline) — zapisano. Bez baze (korak 6), bez Reacta, bez UI-ja.
+
+**Napravljeno:**
+- `zod` 4.6 (jedina nova ovisnost; čisti JS).
+- `src/core/domain/` (čisto, bez Reacta): `common.ts` (id, ISO timestamp s vremenskom zonom, `YYYY-MM-DD` sa stvarnom provjerom datuma, `HH:MM`, ocjena 1–5, dan u tjednu 0–6, `baseEntityShape`), `settings.ts`, `schedule-block.ts`, `checkin.ts` (checkins + checkin_items), `rule.ts` (rules + rule_logs), `xp-event.ts`; tipovi preko `z.infer`, enumi kao `as const` nizovi.
+- Validacija: blok mora završiti nakon početka (san smije prijeći ponoć), zabrana: težina 1/2/3, barem jedan dan bez duplikata, `activeHours` `null` = cijeli dan i smije prijeći ponoć; rule_log okidač samo kad je zabrana prekršena; XP iznos cijeli i > 0 (bez kazni); `sleepHours` 4–12 u koracima od 15 min; `windDownMinutes` 0–180; nepoznati ključevi se odbacuju.
+- 49 novih testova (`domain.test.ts`). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (121/121), `expo export --platform android` ✅.
+
+**Problemi/napomene:**
+- `npx expo install` ne može doći do Expo API-ja (proxy 403) — korišten `EXPO_OFFLINE=1 npx expo install zod`.
+- Dodano polje `title` na `schedule_blocks` (nije u popisu polja koncepta, ali timeline treba naziv za blok bez zadatka).
+- `settings.language` je `hr | en` kao u konceptu; odabir "Jezik uređaja" iz koraka 3 se zasad ne može spremiti u settings (vidi pitanje 5).
+- Granice (sleepHours 4–12, wind-down do 180 min, komentar do 2000 znakova) su tehnički zadane, lako promjenjive.
+
+**Pitanja za Bornu:**
+5. Treba li `settings.language` moći biti i "Jezik uređaja" (`system`), ili se jezik uvijek fiksira u onboardingu (koncept kaže `hr/en`)?
+6. `rule_logs` nije u tablici koncepta pa sam ga definirao minimalno: zabrana, datum, držao/prekršio, okidač (samo kod prekršaja), veza na večernji checkin. Odgovara li?
+
+**Sljedeće:** korak 6 — lokalna baza (expo-sqlite + Drizzle ORM, sheme i migracije za tablice iz koraka 5, CRUD za settings i schedule_blocks).
+
 ## 2026-11-07 13:43 · Korak 4 — Dizajn tokeni
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-4`; `npm ci`.

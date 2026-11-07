@@ -13,7 +13,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **2. Testovi** — postaviti test runner za čisti TS kod (`src/core/**`): jest-expo ili vitest (provjeriti što radi sa SDK verzijom). Jedan sample test. Skripta `npm test`.
 - [x] **3. i18n** — i18next + react-i18next + expo-localization; `src/i18n/hr.json`, `en.json`; automatski jezik uređaja; prekidač u Profilu; svi stringovi tabova prevedeni.
 - [x] **4. Dizajn tokeni** — dark-first paleta, gradijent po dobu dana (zora/dan/večer kao tokeni), tipografija, razmaci, radius; tema provider. Provjeriti kompatibilnost NativeWinda s trenutnim SDK-om (docs); ako nije stabilno, StyleSheet + tokeni.
-- [ ] **5. Domenski tipovi** — `src/core/domain/`: TypeScript tipovi + Zod sheme za settings, schedule_blocks, checkins, checkin_items, rules, rule_logs, xp_events (vidi CONCEPT.md / koncept doc model podataka). Testovi validacije.
+- [x] **5. Domenski tipovi** — `src/core/domain/`: TypeScript tipovi + Zod sheme za settings, schedule_blocks, checkins, checkin_items, rules, rule_logs, xp_events (vidi CONCEPT.md / koncept doc model podataka). Testovi validacije.
 - [ ] **6. Lokalna baza** — expo-sqlite + Drizzle ORM, sheme i migracije za tablice iz koraka 5, repo funkcije (CRUD) za settings i schedule_blocks.
 - [ ] **7. Logika XP-a i streaka** — čiste funkcije u `src/core/gamification/` (XP iz eventova, glavni streak iz checkina, freeze kasnije). Testovi.
 - [ ] **8. Onboarding** — jezik → vrijeme buđenja i sati sna → vrijeme jutarnje/večernje obavijesti → 1–3 zabrane. Sprema u settings/rules.
