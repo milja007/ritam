@@ -15,6 +15,27 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriteriji (dark-first paleta, gradijent zora/dan/večer kao tokeni, tipografija, razmaci, radius, tema provider, provjera NativeWinda) pokriveni točkama 2–6. Koncept ne propisuje konkretne boje — paleta je početni prijedlog (topli akcent zbog orb-plamena), lako promjenjiv na jednom mjestu; granice faza dana su tehnički zadane i zapisuju se kao pitanje. Ne uvodi Zustand/bazu/animacije (Skia/Reanimated su faza 3), ne dira `ios/`/`android/`, `app.json` (splash/ikona) ostaje netaknut.
 
+**Napravljeno:**
+- Odluka: **StyleSheet + tokeni**, NativeWind nije uveden (stabilni 4.x vezan uz Tailwind 3 + css-interop, 5.x je RC; docs nedostupni za provjeru sa SDK 58). Nema novih ovisnosti.
+- `src/core/theme/` (čisto, bez Reacta): `tokens.ts` — paleta, semantičke boje za dark (primarna/zadana) i light, gradijenti `dawn`/`day`/`evening` po shemi, `spacing` (4-pt), `radius`, `typography` (sistemski font); `phase.ts` — `dayPhaseAt`/`dayPhaseOf` (zora 05–09, dan 09–18, večer ostalo) i `linearGradientCss`; `contrast.ts` — WCAG kontrast. 28 testova, uključujući čitljivost teksta na svim pozadinama i gradijentima (≥ 4.5) za obje sheme.
+- `src/ui/theme/`: `AppThemeProvider` + `useAppTheme()` (shema iz sustava, tamna kad je nepoznata; faza dana se osvježava svake minute), `navigationThemeFor()` za expo-router. Ime `useAppTheme` da se ne miješa s expo-routerovim `useTheme`.
+- `src/ui/text.tsx` (`variant` + `tone`) i `src/ui/gradient-background.tsx` (ugrađeni RN `backgroundImage: linear-gradient`).
+- Primijenjeno: tabovi (akcent, boje ikona, pozadina trake), navigacijska tema, placeholder ekrani (gradijent doba dana), Profil — nema više hardkodiranih boja u `src/`.
+- Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (72/72), `expo export --platform android` ✅ (3.1 MB).
+
+**Problemi/napomene:**
+- Nije viđeno na uređaju — gradijent preko `backgroundImage` zahtijeva New Architecture (zadana u SDK 58); ako se ne prikaže, `backgroundColor` je rezerva. Vrijedi pogledati u `npx expo start`.
+- Na iOS 26+ sustav sam crta pozadinu tab trake (`backgroundColor` nema efekta) — očekivano.
+- Splash i ikona (`app.json`, plavi #208AEF iz templatea) nisu dirani — to je odluka o brendu.
+
+**Pitanja za Bornu:**
+1. Paleta je početni prijedlog: tamna pozadina + topli narančasti akcent (orb-plamen), zora breskva/ruža, dan plavo-tirkizni, večer ljubičasto-indigo. Odgovara li, ili imaš druge boje na umu?
+2. Granice doba dana su fiksne (05/09/18 h). Želiš li da kasnije prate tvoje vrijeme buđenja iz onboardinga (npr. zora = buđenje do +3 h)?
+3. Treba li svijetla tema uopće, ili app uvijek tamna? (Sad prati sustav, tamna je zadana.)
+4. Splash/ikona još su iz templatea — imaš li logo/boju za splash?
+
+**Sljedeće:** korak 5 — domenski tipovi + Zod sheme u `src/core/domain/` (settings, schedule_blocks, checkins, checkin_items, rules, rule_logs, xp_events) s testovima validacije.
+
 ## 2026-11-07 10:43 · Korak 3 — i18n
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-3`; `npm ci`.

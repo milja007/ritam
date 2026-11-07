@@ -1,14 +1,22 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { ThemeProvider } from 'expo-router';
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useColorScheme } from 'react-native';
 import { useLocales } from 'expo-localization';
 
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
+import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  return (
+    <AppThemeProvider>
+      <AppTabs />
+    </AppThemeProvider>
+  );
+}
+
+function AppTabs() {
+  const theme = useAppTheme();
   const { t } = useTranslation();
   const locales = useLocales();
 
@@ -18,8 +26,11 @@ export default function RootLayout() {
   }, [locales]);
 
   return (
-    <ThemeProvider value={colorScheme === 'light' ? DefaultTheme : DarkTheme}>
-      <NativeTabs>
+    <ThemeProvider value={navigationThemeFor(theme)}>
+      <NativeTabs
+        tintColor={theme.colors.accent}
+        iconColor={{ default: theme.colors.textMuted, selected: theme.colors.accent }}
+        backgroundColor={theme.colors.surface}>
         <NativeTabs.Trigger name="index">
           <NativeTabs.Trigger.Label>{t('tabs.today')}</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf="sun.max" md="today" />
