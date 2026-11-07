@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-07 13:43 · Korak 4 — Dizajn tokeni
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-4`; `npm ci`.
+2. NativeWind: docs.expo.dev nedostupan; npm pokazuje da je stabilni NativeWind 4.2.7 vezan uz Tailwind 3 + `react-native-css-interop`, a v5 je još RC — nije provjereno stabilno za SDK 58 / RN 0.88 + React Compiler. Prema kriteriju koraka → **StyleSheet + tokeni**, bez novih ovisnosti. Gradijent preko ugrađenog RN 0.88 stila `backgroundImage: 'linear-gradient(...)'` (tipovi potvrđeni u `node_modules/react-native`), pa ne treba `expo-linear-gradient`.
+3. Čisti tokeni u `src/core/theme/` (bez React importa): `palette` (dark primarna + light), semantičke boje (`background`, `surface`, `text`, `textMuted`, `border`, `accent`…), `spacing` (4-pt skala), `radius`, `typography` (veličine/težine/lineHeight, sistemski font), gradijenti `dawn`/`day`/`evening` kao tokeni po shemi.
+4. Čiste funkcije: `dayPhaseAt(minuteOfDay)` → `dawn | day | evening` (fiksne granice zasad: zora 05:00–09:00, dan 09:00–18:00, večer ostatak; kasnije se mogu vezati uz vrijeme buđenja — zapisati kao pitanje), `linearGradientCss(gradient)` → CSS string, `contrastRatio(a, b)` (WCAG). Testovi: granice faza, CSS string, kontrast teksta na pozadini/površini ≥ 4.5 i muted ≥ 3 za obje sheme, light i dark imaju iste ključeve.
+5. `src/ui/theme/`: `ThemeProvider` + `useTheme()` (shema iz `useColorScheme`, zadano dark kad je `null`; faza dana iz sata, osvježava se svake minute), `navigationTheme` za expo-router `ThemeProvider` iz tokena.
+6. Primijeniti tokene: `_layout.tsx` (provider + boje navigacije/tabova), `PlaceholderScreen` (pozadina s gradijentom faze dana), Profil — bez hardkodiranih boja/razmaka.
+7. Provjere: `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`.
+8. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji (dark-first paleta, gradijent zora/dan/večer kao tokeni, tipografija, razmaci, radius, tema provider, provjera NativeWinda) pokriveni točkama 2–6. Koncept ne propisuje konkretne boje — paleta je početni prijedlog (topli akcent zbog orb-plamena), lako promjenjiv na jednom mjestu; granice faza dana su tehnički zadane i zapisuju se kao pitanje. Ne uvodi Zustand/bazu/animacije (Skia/Reanimated su faza 3), ne dira `ios/`/`android/`, `app.json` (splash/ikona) ostaje netaknut.
+
 ## 2026-11-07 10:43 · Korak 3 — i18n
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-3`; `npm ci`.
