@@ -1,0 +1,20 @@
+{
+  "tabs": {
+    "today": "Danas",
+    "week": "Tjedan",
+    "quests": "Questovi",
+    "habits": "Navike",
+    "profile": "Profil"
+  },
+  "common": {
+    "comingSoon": "Uskoro"
+  },
+  "profile": {
+    "language": {
+      "title": "Jezik",
+      "system": "Jezik uređaja",
+      "hr": "Hrvatski",
+      "en": "English"
+    }
+  }
+}

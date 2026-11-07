@@ -1,0 +1,20 @@
+{
+  "tabs": {
+    "today": "Today",
+    "week": "Week",
+    "quests": "Quests",
+    "habits": "Habits",
+    "profile": "Profile"
+  },
+  "common": {
+    "comingSoon": "Coming soon"
+  },
+  "profile": {
+    "language": {
+      "title": "Language",
+      "system": "Device language",
+      "hr": "Hrvatski",
+      "en": "English"
+    }
+  }
+}

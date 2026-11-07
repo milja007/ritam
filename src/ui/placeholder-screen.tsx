@@ -1,4 +1,5 @@
 import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PlaceholderScreenProps = {
@@ -7,8 +8,9 @@ type PlaceholderScreenProps = {
 };
 
 // Privremeni ekran dok se značajka ne izgradi. Boje su namjerno minimalne —
-// pravi dizajn tokeni dolaze u koraku 4, a tekstovi kroz i18n u koraku 3.
-export function PlaceholderScreen({ title, subtitle = 'Uskoro' }: PlaceholderScreenProps) {
+// pravi dizajn tokeni dolaze u koraku 4.
+export function PlaceholderScreen({ title, subtitle }: PlaceholderScreenProps) {
+  const { t } = useTranslation();
   const isDark = useColorScheme() !== 'light';
   const textColor = isDark ? '#FFFFFF' : '#000000';
   const mutedColor = isDark ? '#A0A0A8' : '#5C5C66';
@@ -17,7 +19,7 @@ export function PlaceholderScreen({ title, subtitle = 'Uskoro' }: PlaceholderScr
     <View style={[styles.container, { backgroundColor: isDark ? '#0B0B10' : '#FFFFFF' }]}>
       <SafeAreaView style={styles.content}>
         <Text style={[styles.title, { color: textColor }]}>{title}</Text>
-        <Text style={[styles.subtitle, { color: mutedColor }]}>{subtitle}</Text>
+        <Text style={[styles.subtitle, { color: mutedColor }]}>{subtitle ?? t('common.comingSoon')}</Text>
       </SafeAreaView>
     </View>
   );
