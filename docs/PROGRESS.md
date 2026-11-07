@@ -2,6 +2,34 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-07 10:43 · Korak 3 — i18n
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-3`; `npm ci`.
+2. Paketi: `npx expo install expo-localization` (SDK 58) + `i18next` i `react-i18next` (čisti JS, kompatibilne verzije s React 19). Config plugin `expo-localization` u `app.json` ako ga paket traži.
+3. Čista logika u `src/core/i18n/language.ts` (bez React importa): tipovi `Language = 'hr' | 'en'`, `LanguagePreference = 'system' | Language`; `resolveLanguage(pref, deviceLanguageCodes)` → preferenca ako je ručna, inače prvi podržani jezik uređaja, fallback `en`. Testovi (HR uređaj, EN, nepodržan → en, redoslijed, velika slova/regije poput `hr-HR`).
+4. `src/i18n/hr.json`, `en.json` (isti ključevi), `src/i18n/index.ts`: init i18next (`compatibilityJSON` po potrebi, `fallbackLng: 'en'`, bez `escapeValue`), tipizirani ključevi preko `i18next` module augmentation (TS strict). Test da HR i EN imaju identične ključeve.
+5. Svi UI stringovi preko `t()`: labeli tabova u `_layout.tsx`, naslovi placeholder ekrana, "Uskoro".
+6. Profil: prekidač jezika (Sustav / Hrvatski / English) — jednostavni gumbi bez dizajn tokena (korak 4); `i18n.changeLanguage`. Trajno spremanje preferencije nije u ovom koraku (nema još settings/baze — korak 6/8); zapisati.
+7. Provjere: `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`.
+8. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji koraka (i18next + react-i18next + expo-localization, `hr.json`/`en.json`, jezik uređaja, prekidač u Profilu, tabovi prevedeni) pokriveni su točkama 2–6. Koncept navodi i18next (HR/EN) — u skladu. Fallback `en` je tehnički izbor za nepodržane jezike uređaja, ne promjena koncepta. Ne uvodi Zustand/bazu ni dizajn tokene; preferencija "sustav" samo u memoriji dok ne postoji settings tablica. Ne dira `ios/`/`android/`.
+
+**Napravljeno:**
+- Paketi: `expo-localization` ~58.0.5 (+ config plugin u `app.json`), `i18next` 27, `react-i18next` 18 (`expo install`).
+- `src/core/i18n/language.ts`: `resolveLanguage(preferencija, jezici uređaja)` i `toSupportedLanguage` — ručni odabir pobjeđuje, inače prvi podržani jezik uređaja, fallback `en`. 18 testova.
+- `src/i18n/hr.json` / `en.json`, `src/i18n/index.ts` (vlastita i18next instanca, sinkroni init, `setLanguagePreference`), `i18next.d.ts` — tipizirani ključevi (`t('tabs.today')` se provjerava u `tsc`). Test da HR i EN imaju iste, neprazne ključeve.
+- Labeli tabova, naslovi placeholder ekrana i "Uskoro" idu kroz `t()`. Root layout prati promjenu jezika uređaja (`useLocales`) kad je odabran "Jezik uređaja".
+- Profil: odabir jezika (Jezik uređaja / Hrvatski / English), privremeni minimalni stil.
+- Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (44/44), `expo export --platform android` ✅ (3 MB).
+
+**Problemi/napomene:**
+- Odabir jezika se **ne sprema trajno** — nakon restarta app opet prati jezik uređaja. Spremanje ide u settings (korak 6 baza, korak 8 onboarding s odabirom jezika).
+- Nije testirano na uređaju (samo bundle); prekidač vrijedi probati u `npx expo start` (expo-localization je u Expo Go-u, ali dodan config plugin → za dev build treba novi build).
+- Nepodržan jezik uređaja (npr. njemački) → engleski. Ako bi Borna radije hrvatski kao zadani, to je jedna konstanta (`FALLBACK_LANGUAGE`).
+
+**Sljedeće:** korak 4 — dizajn tokeni (dark-first paleta, gradijent po dobu dana, tipografija, razmaci, radius, tema provider; provjeriti NativeWind za SDK 58).
+
 ## 2026-11-07 06:44 · Korak 2 — Testovi
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-2`; `npm ci`.
