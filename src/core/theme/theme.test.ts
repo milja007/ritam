@@ -1,0 +1,140 @@
+import { describe, expect, it } from '@jest/globals';
+
+import { contrastRatio, parseHex, relativeLuminance } from './contrast';
+import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS } from './phase';
+import { DAY_PHASES, DEFAULT_SCHEME, spacing, radius, themes, typography } from './tokens';
+
+describe('dayPhaseAt', () => {
+  it.each([
+    [0, 'evening'],
+    [4 * 60 + 59, 'evening'],
+    [5 * 60, 'dawn'],
+    [8 * 60 + 59, 'dawn'],
+    [9 * 60, 'day'],
+    [17 * 60 + 59, 'day'],
+    [18 * 60, 'evening'],
+    [23 * 60 + 59, 'evening'],
+  ])('minuta %p → %p', (minute, phase) => {
+    expect(dayPhaseAt(minute)).toBe(phase);
+  });
+
+  it('omata vrijednosti izvan dana', () => {
+    expect(dayPhaseAt(24 * 60 + 6 * 60)).toBe('dawn');
+    expect(dayPhaseAt(-60)).toBe('evening');
+  });
+
+  it('granice faza idu redom zora < dan < večer', () => {
+    expect(PHASE_STARTS.dawn).toBeLessThan(PHASE_STARTS.day);
+    expect(PHASE_STARTS.day).toBeLessThan(PHASE_STARTS.evening);
+  });
+
+  it('dayPhaseOf koristi lokalno vrijeme datuma', () => {
+    expect(dayPhaseOf(new Date(2026, 10, 7, 6, 30))).toBe('dawn');
+    expect(dayPhaseOf(new Date(2026, 10, 7, 13, 0))).toBe('day');
+    expect(dayPhaseOf(new Date(2026, 10, 7, 21, 15))).toBe('evening');
+  });
+});
+
+describe('linearGradientCss', () => {
+  it('gradi CSS string', () => {
+    expect(linearGradientCss({ colors: ['#000000', '#FFFFFF'], angle: 180 })).toBe(
+      'linear-gradient(180deg, #000000, #FFFFFF)',
+    );
+  });
+});
+
+describe('kontrast', () => {
+  it('parseHex', () => {
+    expect(parseHex('#FF9F43')).toEqual([255, 159, 67]);
+    expect(parseHex('FF9F43')).toBeNull();
+    expect(parseHex('#FFF')).toBeNull();
+  });
+
+  it('crna/bijela su krajnosti', () => {
+    expect(relativeLuminance('#000000')).toBe(0);
+    expect(relativeLuminance('#FFFFFF')).toBeCloseTo(1);
+    expect(contrastRatio('#000000', '#FFFFFF')).toBeCloseTo(21);
+    expect(contrastRatio('#FFFFFF', '#000000')).toBeCloseTo(21);
+    expect(contrastRatio('#123456', '#123456')).toBeCloseTo(1);
+    expect(contrastRatio('nope', '#000000')).toBeNull();
+  });
+});
+
+describe('teme', () => {
+  const schemes = ['dark', 'light'] as const;
+
+  it('zadana shema je tamna (dark-first)', () => {
+    expect(DEFAULT_SCHEME).toBe('dark');
+  });
+
+  it('obje sheme imaju iste semantičke ključeve i sve faze gradijenta', () => {
+    expect(Object.keys(themes.light.colors).sort()).toEqual(Object.keys(themes.dark.colors).sort());
+    for (const scheme of schemes) {
+      expect(themes[scheme].scheme).toBe(scheme);
+      expect(Object.keys(themes[scheme].gradients).sort()).toEqual([...DAY_PHASES].sort());
+    }
+  });
+
+  it('sve boje su ispravni #RRGGBB', () => {
+    for (const scheme of schemes) {
+      const { colors, gradients } = themes[scheme];
+      for (const value of Object.values(colors)) expect(parseHex(value)).not.toBeNull();
+      for (const phase of DAY_PHASES) {
+        expect(gradients[phase].colors.length).toBeGreaterThanOrEqual(2);
+        for (const value of gradients[phase].colors) expect(parseHex(value)).not.toBeNull();
+      }
+    }
+  });
+
+  describe.each(schemes)('čitljivost (%s)', (scheme) => {
+    const { colors, gradients } = themes[scheme];
+    const ratio = (a: string, b: string) => contrastRatio(a, b) ?? 0;
+
+    it('tekst ≥ 4.5 na pozadini, površinama i svim gradijentima', () => {
+      const backgrounds = [
+        colors.background,
+        colors.surface,
+        colors.surfaceRaised,
+        ...DAY_PHASES.flatMap((phase) => gradients[phase].colors),
+      ];
+      for (const bg of backgrounds) expect(ratio(colors.text, bg)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('prigušeni tekst ≥ 4.5 na pozadini i površini', () => {
+      expect(ratio(colors.textMuted, colors.background)).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(colors.textMuted, colors.surface)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('akcent ≥ 3 na pozadini, onAccent ≥ 4.5 na akcentu', () => {
+      expect(ratio(colors.accent, colors.background)).toBeGreaterThanOrEqual(3);
+      expect(ratio(colors.onAccent, colors.accent)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('statusne boje ≥ 3 na pozadini', () => {
+      for (const c of [colors.success, colors.danger, colors.info]) {
+        expect(ratio(c, colors.background)).toBeGreaterThanOrEqual(3);
+      }
+    });
+  });
+});
+
+describe('razmaci, radius, tipografija', () => {
+  it('razmaci su na 4-pt skali (osim xxs) i rastu', () => {
+    const values = Object.values(spacing);
+    expect([...values].sort((a, b) => a - b)).toEqual(values);
+    for (const [key, value] of Object.entries(spacing)) {
+      if (key !== 'xxs') expect(value % 4).toBe(0);
+    }
+  });
+
+  it('radius raste', () => {
+    const values = Object.values(radius);
+    expect([...values].sort((a, b) => a - b)).toEqual(values);
+  });
+
+  it('lineHeight ≥ fontSize za svaku varijantu', () => {
+    for (const token of Object.values(typography)) {
+      expect(token.lineHeight).toBeGreaterThanOrEqual(token.fontSize);
+    }
+  });
+});

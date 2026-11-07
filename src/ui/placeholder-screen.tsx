@@ -1,46 +1,37 @@
-import { StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { spacing } from '@/core/theme';
+
+import { GradientBackground } from './gradient-background';
+import { Text } from './text';
 
 type PlaceholderScreenProps = {
   title: string;
   subtitle?: string;
 };
 
-// Privremeni ekran dok se značajka ne izgradi. Boje su namjerno minimalne —
-// pravi dizajn tokeni dolaze u koraku 4.
+// Privremeni ekran dok se značajka ne izgradi; pozadina prati doba dana.
 export function PlaceholderScreen({ title, subtitle }: PlaceholderScreenProps) {
   const { t } = useTranslation();
-  const isDark = useColorScheme() !== 'light';
-  const textColor = isDark ? '#FFFFFF' : '#000000';
-  const mutedColor = isDark ? '#A0A0A8' : '#5C5C66';
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#0B0B10' : '#FFFFFF' }]}>
+    <GradientBackground>
       <SafeAreaView style={styles.content}>
-        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
-        <Text style={[styles.subtitle, { color: mutedColor }]}>{subtitle ?? t('common.comingSoon')}</Text>
+        <Text variant="title">{title}</Text>
+        <Text tone="textMuted">{subtitle ?? t('common.comingSoon')}</Text>
       </SafeAreaView>
-    </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 16,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
 });
