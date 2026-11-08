@@ -2,6 +2,39 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-08 06:43 · Korak 6 — Lokalna baza
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-6`; `npm ci`; `expo-sqlite` (SDK 58) + `expo-crypto` (UUID) preko `EXPO_OFFLINE=1 npx expo install`; `drizzle-orm` (stabilni 0.45) i `drizzle-kit` (dev). Config plugin `expo-sqlite` u `app.json` ako ga paket traži.
+2. `src/db/schema.ts` (Drizzle `sqliteTable`): 7 tablica iz koraka 5 — `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`; stupci 1:1 s Zod shemama (snake_case u bazi), boolean kao `integer` mode boolean, `activeDays`/`activeHours` kao JSON tekst. Indeksi za upite po danu (`user_id, date`); jedinstveno samo ono što koncept implicira (jedan red settings po korisniku). FK `checkin_items → checkins`, `rule_logs → rules`.
+3. Migracije: `drizzle.config.ts` (dialect sqlite, driver expo) → `drizzle-kit generate` u `src/db/migrations/` (SQL + `migrations.js`); Metro `sourceExts += sql` i `babel-plugin-inline-import` da se SQL bundla; pokretanje preko `useMigrations` u root layoutu (ekran greške ako migracija padne).
+4. Repo funkcije (`src/db/repos/`), bez Reacta, primaju `db` kao parametar (lako testirati): settings — `getSettings(userId)`, `saveSettings` (upsert); schedule_blocks — `createBlock`, `getBlock`, `listBlocksForDate` (sortirano po početku), `updateBlock` (patch), `deleteBlock`. Ulaz se validira postojećim Zod shemama prije pisanja, izlaz se parsira u domenske tipove; `id`/`createdAt`/`updatedAt` postavlja repo (injektabilni `newId`/`now`).
+5. Testovi repoa nad stvarnim SQLite-om u Nodeu (ugrađeni `node:sqlite` preko Drizzle `sqlite-proxy` drivera, iste migracije): migracije se primjenjuju, CRUD radi, neispravan ulaz se odbija i ništa ne piše, `updatedAt` se mijenja, lista po danu je sortirana i filtrirana po korisniku. Ako `node:sqlite` ne radi u jestu → `better-sqlite3` (samo dev).
+6. Provjere: `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`.
+7. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = expo-sqlite + Drizzle, sheme i migracije za 7 tablica, CRUD za settings i schedule_blocks — točke 2–5. CRUD za ostale tablice nije tražen (dolazi s koracima 7/8/12). Nema UI-ja osim pokretanja migracija pri startu; nema synca (korak 19), Supabase sheme (17) ni lokalnog korisnika/onboardinga (8) — repo prima `userId` izvana. Drizzle 1.0 je beta → stabilni 0.45. Ne dira `ios/`/`android/`.
+
+**Napravljeno:**
+- Paketi: `expo-sqlite` ~58.0.15 (+ config plugin u `app.json`), `expo-crypto` ~58.0.7 (UUID), `drizzle-orm` 0.45.4; dev: `drizzle-kit` 0.31, `babel-plugin-inline-import`, `@types/node` 22 (samo za test adapter).
+- `src/db/schema.ts`: 7 tablica (snake_case stupci, boolean kao integer, `active_days`/`active_hours` kao JSON, `sleep_hours` real). Indeksi `(user_id, date)` za dnevne upite, jedinstveni `settings.user_id`, FK `checkin_items → checkins` (cascade), `rule_logs → rules` (cascade) i `→ checkins` (set null).
+- Migracije: `drizzle.config.ts` + `npm run db:generate` → `src/db/migrations/0000_init.sql` + `migrations.js`; `babel.config.js` (inline-import `.sql`) i `metro.config.js` (`sourceExts += sql`). SQL je potvrđeno u Android bundleu.
+- `src/db/db.ts` (`createDb` — uključuje `foreign_keys`), `src/db/open.ts` (`getDb()` — `ritam.db`, WAL). `src/ui/database-gate.tsx`: `useMigrations` u root layoutu; loader dok traje, poruka (HR/EN) ako padne.
+- Repoi (`src/db/repos/`): settings — `getSettings`, `saveSettings` (upsert, `id`/`createdAt` ostaju), `deleteSettings`; schedule_blocks — `createBlock`, `getBlock`, `listBlocksForDate` (po početku), `updateBlock` (patch, cijeli rezultat se validira), `deleteBlock`. Sve po `userId`; ulaz i izlaz kroz Zod sheme iz koraka 5; neispravan ulaz baca `ZodError` i ništa ne piše. `newId`/`now` injektabilni.
+- Testovi (`src/db/db.test.ts`, 19): pravi Drizzle expo driver i prave migracije nad Node `node:sqlite` (mali adapter u `src/db/testing/`), CRUD, izolacija po korisniku, odbijanje neispravnog ulaza, FK.
+- Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (140/140), `expo export --platform android` ✅ (3.4 MB).
+
+**Problemi/napomene:**
+- docs.expo.dev opet nedostupan; korišten SKILL.md iz `node_modules/expo-sqlite` i tipovi Drizzlea. Drizzle 1.0 je još beta → stabilni 0.45.
+- Nije pokrenuto na uređaju. expo-sqlite je u Expo Go-u, ali dodan je config plugin → za dev build treba novi build.
+- Web nije podešen za expo-sqlite (treba wasm + COOP/COEP zaglavlja) — app je mobilni; ako web zatreba, upute su u `node_modules/expo-sqlite/skills/.../web-and-config.md`.
+- Repoi su `async`, ali Drizzle expo driver je sinkron ispod — za male količine podataka ok.
+- Jedinstvenost checkina po (korisnik, dan, vrsta) i rule_loga po (zabrana, dan) **nije** nametnuta u bazi (samo indeksi) — vidi pitanje 7.
+
+**Pitanja za Bornu:**
+7. Smije li postojati samo jedan jutarnji i jedan večernji checkin po danu (i jedan zapis po zabrani po danu)? Ako da, dodat ću jedinstvene indekse u sljedećoj migraciji.
+
+**Sljedeće:** korak 7 — logika XP-a i streaka (`src/core/gamification/`: XP iz eventova, glavni streak iz checkina) s testovima.
+
 ## 2026-11-07 20:43 · Korak 5 — Domenski tipovi
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-5`; `npm ci`; `zod` (4.x, čisti JS) preko `expo install` (offline način — Expo API je iza proxyja blokiran).

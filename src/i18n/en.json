@@ -16,5 +16,9 @@
       "hr": "Hrvatski",
       "en": "English"
     }
+  },
+  "database": {
+    "preparing": "Preparing your data…",
+    "error": "The local database could not be prepared. Close and reopen the app."
   }
 }
