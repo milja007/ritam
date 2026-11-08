@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-08 06:43 · Korak 6 — Lokalna baza
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-6`; `npm ci`; `expo-sqlite` (SDK 58) + `expo-crypto` (UUID) preko `EXPO_OFFLINE=1 npx expo install`; `drizzle-orm` (stabilni 0.45) i `drizzle-kit` (dev). Config plugin `expo-sqlite` u `app.json` ako ga paket traži.
+2. `src/db/schema.ts` (Drizzle `sqliteTable`): 7 tablica iz koraka 5 — `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`; stupci 1:1 s Zod shemama (snake_case u bazi), boolean kao `integer` mode boolean, `activeDays`/`activeHours` kao JSON tekst. Indeksi za upite po danu (`user_id, date`); jedinstveno samo ono što koncept implicira (jedan red settings po korisniku). FK `checkin_items → checkins`, `rule_logs → rules`.
+3. Migracije: `drizzle.config.ts` (dialect sqlite, driver expo) → `drizzle-kit generate` u `src/db/migrations/` (SQL + `migrations.js`); Metro `sourceExts += sql` i `babel-plugin-inline-import` da se SQL bundla; pokretanje preko `useMigrations` u root layoutu (ekran greške ako migracija padne).
+4. Repo funkcije (`src/db/repos/`), bez Reacta, primaju `db` kao parametar (lako testirati): settings — `getSettings(userId)`, `saveSettings` (upsert); schedule_blocks — `createBlock`, `getBlock`, `listBlocksForDate` (sortirano po početku), `updateBlock` (patch), `deleteBlock`. Ulaz se validira postojećim Zod shemama prije pisanja, izlaz se parsira u domenske tipove; `id`/`createdAt`/`updatedAt` postavlja repo (injektabilni `newId`/`now`).
+5. Testovi repoa nad stvarnim SQLite-om u Nodeu (ugrađeni `node:sqlite` preko Drizzle `sqlite-proxy` drivera, iste migracije): migracije se primjenjuju, CRUD radi, neispravan ulaz se odbija i ništa ne piše, `updatedAt` se mijenja, lista po danu je sortirana i filtrirana po korisniku. Ako `node:sqlite` ne radi u jestu → `better-sqlite3` (samo dev).
+6. Provjere: `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`.
+7. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = expo-sqlite + Drizzle, sheme i migracije za 7 tablica, CRUD za settings i schedule_blocks — točke 2–5. CRUD za ostale tablice nije tražen (dolazi s koracima 7/8/12). Nema UI-ja osim pokretanja migracija pri startu; nema synca (korak 19), Supabase sheme (17) ni lokalnog korisnika/onboardinga (8) — repo prima `userId` izvana. Drizzle 1.0 je beta → stabilni 0.45. Ne dira `ios/`/`android/`.
+
 ## 2026-11-07 20:43 · Korak 5 — Domenski tipovi
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-5`; `npm ci`; `zod` (4.x, čisti JS) preko `expo install` (offline način — Expo API je iza proxyja blokiran).
