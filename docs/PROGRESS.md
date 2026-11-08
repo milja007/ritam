@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-08 13:43 · Korak 8 — Onboarding
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-8`; `npm ci`. Bez novih ovisnosti (unos vremena kao stepper ±15 min, ne date-picker paket).
+2. Čista logika `src/core/onboarding/`: `bedtimeFor(wake, sleepHours)` (preko ponoći), zadane vrijednosti (buđenje 07:00, 8 h, jutarnja obavijest = buđenje, večernja = krevet − wind-down − 60 min da upit bude *prije* wind-downa, wind-down 45 min), `stepClock` (±15 min s omatanjem), nacrt onboardinga + validacija po koraku i pretvorba u `SettingsInput` i 1–3 `RuleInput` (kroz postojeće Zod sheme). Testovi.
+3. Repo za zabrane (`createRule`, `listRules`) + `completeOnboarding(db, userId, draft)` koji u **jednoj transakciji** sprema settings i zabrane (sve ili ništa). Testovi nad Node SQLite-om.
+4. Lokalni korisnik: `LOCAL_USER_ID` konstanta dok ne stigne auth (korak 18).
+5. UI `src/features/onboarding/`: 4 ekrana redom — jezik → buđenje + sati sna (prikaz izračunatog kreveta) → vrijeme jutarnje/večernje obavijesti → 1–3 zabrane (naziv, zašto, težina 1–3; vrijedi svaki dan, cijeli dan — detaljno uređivanje je korak 28). Natrag/Dalje, gumb Dalje onemogućen dok korak nije ispravan.
+6. Root layout: `OnboardingGate` — učita settings; ako ih nema → onboarding, inače tabovi. Jezik iz settingsa primijeni se pri startu (zamjenjuje privremenu in-memory preferenciju za spremljene korisnike).
+7. Svi tekstovi HR/EN kroz i18n (+ test da ključevi postoje u oba jezika — već postoji).
+8. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = jezik → buđenje i sati sna → obavijesti → 1–3 zabrane, sprema u settings/rules — točke 2–6. Puni koncept onboarding ima i prijavu (Supabase), Google Calendar, tjedne zadatke, dopuštenje za notifikacije i prvi quest — to su kasniji koraci (18, 24, 25, 10, 34), ne sada. Koncept traži buđenje "odvojeno za radne dane i vikend" + upozorenje o socijalnom jetlagu, ali `settings` ima samo jedan `wakeTime` → ne mijenjam shemu, zapisujem kao pitanje. Nema zakazivanja obavijesti (korak 9/10).
+
 ## 2026-11-08 10:43 · Korak 7 — Logika XP-a i streaka
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-7`; `npm ci`. Bez novih ovisnosti.
