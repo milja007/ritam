@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocales } from 'expo-localization';
 
+import { OnboardingGate } from '@/features/onboarding';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
 import { DatabaseGate } from '@/ui/database-gate';
 import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
@@ -12,7 +13,9 @@ export default function RootLayout() {
   return (
     <AppThemeProvider>
       <DatabaseGate>
-        <AppTabs />
+        <OnboardingGate>
+          <AppTabs />
+        </OnboardingGate>
       </DatabaseGate>
     </AppThemeProvider>
   );

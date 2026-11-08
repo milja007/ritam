@@ -15,6 +15,28 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = jezik → buđenje i sati sna → obavijesti → 1–3 zabrane, sprema u settings/rules — točke 2–6. Puni koncept onboarding ima i prijavu (Supabase), Google Calendar, tjedne zadatke, dopuštenje za notifikacije i prvi quest — to su kasniji koraci (18, 24, 25, 10, 34), ne sada. Koncept traži buđenje "odvojeno za radne dane i vikend" + upozorenje o socijalnom jetlagu, ali `settings` ima samo jedan `wakeTime` → ne mijenjam shemu, zapisujem kao pitanje. Nema zakazivanja obavijesti (korak 9/10).
 
+**Napravljeno:**
+- Bez novih ovisnosti (vremena se unose stepperom ±15 min).
+- `src/core/onboarding/`: koraci `language → sleep → notifications → rules`; `bedtimeFor` (07:00 + 8 h → 23:00, preko ponoći), `shiftClock`, `clampSleepHours` (4–12 h, po 15 min), `splitHours`, `suggestNotificationTimes` (jutarnja = buđenje, večernji upit = krevet − wind-down 45 min − 60 min), `createDefaultDraft`, `isStepValid` / `isDraftComplete` (kroz postojeće Zod sheme), `toSettingsInput`, `toRuleInput` (svaki dan, cijeli dan, `icon: null`).
+- `src/db/repos/rules.ts`: `createRule`, `getRule`, `listRules`. `src/db/repos/onboarding.ts`: `completeOnboarding` — settings (upsert) + 1–3 zabrane u **jednoj transakciji**, nepotpun nacrt baca `IncompleteOnboardingError`.
+- `src/core/user/local-user.ts`: `LOCAL_USER_ID` dok ne stigne auth (korak 18).
+- UI: `src/ui/` dobio `Button`, `Stepper` (s accessibility adjustable akcijama), `TextField`, `ChoiceGroup`; `src/features/onboarding/` — `OnboardingFlow` (4 ekrana, Natrag/Dalje, Dalje onemogućen dok korak nije ispravan; promjena jezika odmah prevodi UI; vremena obavijesti prate san dok ih korisnik ručno ne pomakne) i `OnboardingGate` u root layoutu (nema settingsa → onboarding; inače primijeni spremljeni jezik i prikaže tabove).
+- i18n HR/EN za sve tekstove onboardinga.
+- 23 nova testa (logika + repo, uključujući rollback transakcije). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (189/189), `expo export --platform android` ✅ (4.2 MB).
+
+**Problemi/napomene:**
+- Nije pokrenuto na uređaju/simulatoru (web ne radi zbog expo-sqlite bez wasm postavki) — UI je provjeren samo typecheckom, lintom i bundleom.
+- Iz punog koncepta onboarding još ima prijavu, Google Calendar, tjedne zadatke, dopuštenje za notifikacije i prvi quest — dolaze s koracima 18, 24, 25, 10 i 34.
+- Promjena jezika u Profilu se još ne sprema u settings (Profil i dalje mijenja samo preferenciju u memoriji), pa pri sljedećem pokretanju pobjeđuje jezik iz onboardinga — vidi pitanje 11.
+
+**Pitanja za Bornu:**
+10. Koncept traži buđenje **odvojeno za radne dane i vikend** + upozorenje ako je razlika > ~1 h (socijalni jetlag), a `settings` ima samo jedan `wakeTime`. Da dodam `weekendWakeTime` (nova migracija) i drugi stepper u onboardingu, ili zasad ostaje jedno vrijeme?
+11. Profil nudi "Jezik uređaja", a `settings.language` može biti samo `hr`/`en`. Da dodam `system` kao dopuštenu vrijednost u settings (pa Profil sprema izbor), ili Profil sprema samo hr/en?
+12. Zadana vremena: jutarnja obavijest = vrijeme buđenja, večernji upit = 1 h prije wind-downa (07:00/8 h → 21:15), wind-down 45 min. Odgovara li?
+13. Onboarding traži barem 1 zabranu (koncept: "1–3"). Treba li dopustiti preskakanje?
+
+**Sljedeće:** korak 9 — notifikacije (logika): `src/core/notifications/` računa sljedeće okidače (jutro, večer, wind-down) iz settingsa, samo nekoliko dana unaprijed (limit iOS-a), s testovima.
+
 ## 2026-11-08 10:43 · Korak 7 — Logika XP-a i streaka
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-7`; `npm ci`. Bez novih ovisnosti.

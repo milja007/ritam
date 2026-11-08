@@ -10,6 +10,7 @@ import {
   isStepValid,
   MAX_RULES,
   shiftClock,
+  splitHours,
   suggestNotificationTimes,
   toRuleInput,
   toSettingsInput,
@@ -143,5 +144,13 @@ describe('pretvorba', () => {
   it('isDraftComplete', () => {
     expect(isDraftComplete(filled())).toBe(true);
     expect(isDraftComplete(createDefaultDraft('hr'))).toBe(false);
+  });
+});
+
+describe('splitHours', () => {
+  it('rastavlja sate na sate i minute', () => {
+    expect(splitHours(8)).toEqual({ hours: 8, minutes: 0 });
+    expect(splitHours(7.5)).toEqual({ hours: 7, minutes: 30 });
+    expect(splitHours(6.75)).toEqual({ hours: 6, minutes: 45 });
   });
 });

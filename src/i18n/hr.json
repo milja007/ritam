@@ -20,5 +20,50 @@
   "database": {
     "preparing": "Pripremam podatke…",
     "error": "Lokalna baza se nije mogla pripremiti. Zatvori i ponovno otvori app."
+  },
+  "onboarding": {
+    "progress": "Korak {{current}} od {{total}}",
+    "back": "Natrag",
+    "next": "Dalje",
+    "finish": "Kreni",
+    "saving": "Spremam…",
+    "saveError": "Spremanje nije uspjelo. Pokušaj ponovno.",
+    "decrease": "Smanji: {{label}}",
+    "increase": "Povećaj: {{label}}",
+    "language": {
+      "title": "Dobrodošao u Ritam",
+      "subtitle": "Na kojem jeziku želiš koristiti app? Možeš ga kasnije promijeniti u Profilu."
+    },
+    "sleep": {
+      "title": "San je temelj dana",
+      "subtitle": "Prvo postavljamo buđenje i san — sve ostalo slažemo oko toga.",
+      "wake": "Ciljano buđenje",
+      "hours": "Sati sna",
+      "hoursValue": "{{hours}} h",
+      "hoursMinutesValue": "{{hours}} h {{minutes}} min",
+      "bedtime": "Vrijeme za krevet: {{time}}"
+    },
+    "notifications": {
+      "title": "Kad da ti se javim?",
+      "subtitle": "Ujutro stiže raspored dana, navečer kratki upit (1–2 min). Upit dolazi prije wind-downa, da planiranje ne bude zadnja stvar pred san.",
+      "morning": "Jutarnja obavijest",
+      "evening": "Večernji upit"
+    },
+    "rules": {
+      "title": "Tvoje zabrane",
+      "subtitle": "Odaberi 1–3 stvari koje želiš prestati raditi. Malo po malo — kreni s onim što ti je najvažnije.",
+      "item": "Zabrana {{number}}",
+      "name": "Naziv",
+      "namePlaceholder": "npr. Bez mobitela u krevetu",
+      "why": "Zašto? (vidjet ćeš to kad si u iskušenju)",
+      "whyPlaceholder": "npr. Želim se ujutro budit odmoran",
+      "weight": "Težina",
+      "weight1": "Lagana",
+      "weight2": "Srednja",
+      "weight3": "Teška",
+      "add": "+ Dodaj zabranu",
+      "remove": "Ukloni",
+      "hint": "Zasad vrijede svaki dan, cijeli dan — detalje ćeš moći urediti kasnije."
+    }
   }
 }

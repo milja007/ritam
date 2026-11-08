@@ -154,3 +154,9 @@ export function isStepValid(step: OnboardingStep, draft: OnboardingDraft): boole
 export function isDraftComplete(draft: OnboardingDraft): boolean {
   return ONBOARDING_STEPS.every((step) => isStepValid(step, draft));
 }
+
+/** 7.5 → { hours: 7, minutes: 30 } (za prikaz sati sna). */
+export function splitHours(value: number): { hours: number; minutes: number } {
+  const total = Math.round(value * 60);
+  return { hours: Math.floor(total / 60), minutes: total % 60 };
+}
