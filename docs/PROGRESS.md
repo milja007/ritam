@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-08 20:43 · Korak 9 — Notifikacije (logika)
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-9`; `npm ci`. Bez novih ovisnosti, bez expo-notifications (to je korak 10).
+2. `src/core/notifications/triggers.ts` (čisto, bez Reacta): tri vrste okidača — `morning` (jutarnja obavijest), `evening` (večernji upit), `windDown` (krevet − `windDownMinutes`, krevet = buđenje − sati sna, preko postojećeg `bedtimeFor`).
+3. `dailyNotificationTimes(settings)` → `{ morning, evening, windDown }` kao "HH:MM" (neispravan ulaz → `null`, kao ostatak `core`-a).
+4. `upcomingTriggers(settings, now, { days })` → sortirani popis `{ id, kind, date, time, fireAt }` samo za okidače **nakon** `now`, od danas do `days` dana unaprijed (zadano 3 → najviše 9 obavijesti; tvrda granica 64 = limit iOS-a, `days` se ograničava). `fireAt` se gradi kao lokalno vrijeme uređaja (DST rješava `Date`); `date` je kalendarski dan okidanja. Stabilan `id` = `kind:date`.
+5. `planReschedule(scheduledIds, desired)` → `{ toCancel, toSchedule }` (čisto) — za ponovno zakazivanje pri otvaranju appa u koraku 10, da se ne briše i ponovno zakazuje sve.
+6. Testovi: zadane vrijednosti (07:00 / 8 h / 45 min → wind-down 22:15), krevet i wind-down preko ponoći, `windDownMinutes = 0`, okidač točno u `now` se preskače, današnji prošli okidači se preskaču, prijelaz mjeseca/godine, sortiranje, granica dana, neispravan ulaz, diff (ništa/sve/djelomično).
+7. Provjere `tsc --noEmit`, `expo lint`, `npm test`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = čisto računanje sljedećih okidača (jutro, večer, wind-down) iz settingsa + limit iOS-a — točke 2–4, 6. Vremena dolaze iz `settings` (koje je korisnik postavio u onboardingu), ne izmišljam nova pravila. Tekstovi obavijesti, akcije (Gotovo/Odgodi/Iskrslo), dopuštenja i podsjetnici za blokove su korak 10/11+, ne sada. Točka 5 je mala čista pomoćna funkcija koja služi kriteriju koraka 10 ("ponovno zakazivanje pri otvaranju appa") — ostaje jer je čista logika obavijesti.
+
 ## 2026-11-08 13:43 · Korak 8 — Onboarding
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-8`; `npm ci`. Bez novih ovisnosti (unos vremena kao stepper ±15 min, ne date-picker paket).
