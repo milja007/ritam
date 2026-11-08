@@ -20,5 +20,50 @@
   "database": {
     "preparing": "Preparing your data…",
     "error": "The local database could not be prepared. Close and reopen the app."
+  },
+  "onboarding": {
+    "progress": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Let's go",
+    "saving": "Saving…",
+    "saveError": "Saving failed. Please try again.",
+    "decrease": "Decrease: {{label}}",
+    "increase": "Increase: {{label}}",
+    "language": {
+      "title": "Welcome to Ritam",
+      "subtitle": "Which language would you like to use? You can change it later in Profile."
+    },
+    "sleep": {
+      "title": "Sleep comes first",
+      "subtitle": "We set your wake-up time and sleep first — everything else is planned around it.",
+      "wake": "Target wake-up",
+      "hours": "Hours of sleep",
+      "hoursValue": "{{hours}} h",
+      "hoursMinutesValue": "{{hours}} h {{minutes}} min",
+      "bedtime": "Bedtime: {{time}}"
+    },
+    "notifications": {
+      "title": "When should I check in?",
+      "subtitle": "Your day plan arrives in the morning, a short check-in (1–2 min) in the evening. The check-in comes before wind-down, so planning isn't the last thing before sleep.",
+      "morning": "Morning notification",
+      "evening": "Evening check-in"
+    },
+    "rules": {
+      "title": "Your rules",
+      "subtitle": "Pick 1–3 things you want to stop doing. Little by little — start with what matters most.",
+      "item": "Rule {{number}}",
+      "name": "Name",
+      "namePlaceholder": "e.g. No phone in bed",
+      "why": "Why? (you'll see this when tempted)",
+      "whyPlaceholder": "e.g. I want to wake up rested",
+      "weight": "Weight",
+      "weight1": "Light",
+      "weight2": "Medium",
+      "weight3": "Heavy",
+      "add": "+ Add rule",
+      "remove": "Remove",
+      "hint": "For now they apply every day, all day — you can fine-tune them later."
+    }
   }
 }
