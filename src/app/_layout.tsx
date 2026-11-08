@@ -5,12 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { useLocales } from 'expo-localization';
 
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
+import { DatabaseGate } from '@/ui/database-gate';
 import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
 
 export default function RootLayout() {
   return (
     <AppThemeProvider>
-      <AppTabs />
+      <DatabaseGate>
+        <AppTabs />
+      </DatabaseGate>
     </AppThemeProvider>
   );
 }

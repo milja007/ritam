@@ -16,5 +16,9 @@
       "hr": "Hrvatski",
       "en": "English"
     }
+  },
+  "database": {
+    "preparing": "Pripremam podatke…",
+    "error": "Lokalna baza se nije mogla pripremiti. Zatvori i ponovno otvori app."
   }
 }
