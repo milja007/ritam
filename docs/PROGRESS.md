@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-08 10:43 · Korak 7 — Logika XP-a i streaka
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-7`; `npm ci`. Bez novih ovisnosti.
+2. `src/core/time/local-date.ts` (čisto): `addDays(date, n)`, `daysBetween(a, b)` nad `YYYY-MM-DD` (UTC aritmetika, bez vremenskih zona i DST-a). Testovi: prijelaz mjeseca/godine, prijestupna godina, negativni pomaci.
+3. `src/core/gamification/xp.ts`: tablica XP-a točno iz koncepta (lagani/srednji/teški zadatak 10/25/50, +5 u planiranom terminu, zabrana 5/10/20 po težini, večernji upit 15, krevet ±30 min 20, buđenje bez snoozea 10, preraspoređeno s objašnjenjem 5) kao konstante + čiste funkcije koje vraćaju iznos (i `source` iz `XP_SOURCES`) za svaku akciju. Samo izračun iznosa — bez pisanja u bazu (to je korak 12).
+4. Agregacija iz `xp_events` ("izvedeno, ne spremljeno"): `totalXp(events)`, `xpForDate(events, date)`, `xpByDate(events)`. Bez levela (faza 3).
+5. `src/core/gamification/streak.ts`: glavni streak = dani zaredom s ispunjenom večernjom provjerom. `isEveningCheckinComplete` (večernji checkin s ocjenom dana — ocjena je zadnji obavezni korak provjere), generička `streakFromDates(dates, today)` → `{ current, longest, lastDate, doneToday }`: duplikati se ignoriraju, streak je živ ako je zadnji dan danas ili jučer (današnji upit još nije propušten), datumi iz budućnosti se ignoriraju. `mainStreak(checkins, today)` je preko nje. Generička funkcija služi kasnije i za streakove po zabrani (korak 28).
+6. Freeze tokeni **nisu** u ovom koraku (BUILD_PLAN: "freeze kasnije", koncept: faza 3) — samo ostaviti API koji ih kasnije može primiti.
+7. Testovi za sve (rubovi: prazno, samo danas, prekid jučer, prekid prije 2 dana, duplikati, budućnost, longest ≠ current, preko mjeseca). Provjere `tsc --noEmit`, `expo lint`, `npm test`.
+8. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = čiste funkcije u `src/core/gamification/` (XP iz eventova, glavni streak iz checkina) + testovi — točke 3–5, 7. Iznosi XP-a i definicija glavnog streaka doslovno iz punog koncepta (Gamifikacija); "nema kazni" poštovano (iznosi > 0, prekršaj ne oduzima). Leveli, freeze, questovi i streak po zabrani ostaju za kasnije korake. Nema UI-ja ni baze. "Ispunjena večernja provjera = postoji ocjena dana" je tehnička interpretacija — zapisuje se kao pitanje.
+
 ## 2026-11-08 06:43 · Korak 6 — Lokalna baza
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-6`; `npm ci`; `expo-sqlite` (SDK 58) + `expo-crypto` (UUID) preko `EXPO_OFFLINE=1 npx expo install`; `drizzle-orm` (stabilni 0.45) i `drizzle-kit` (dev). Config plugin `expo-sqlite` u `app.json` ako ga paket traži.
