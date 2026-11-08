@@ -15,6 +15,24 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = čiste funkcije u `src/core/gamification/` (XP iz eventova, glavni streak iz checkina) + testovi — točke 3–5, 7. Iznosi XP-a i definicija glavnog streaka doslovno iz punog koncepta (Gamifikacija); "nema kazni" poštovano (iznosi > 0, prekršaj ne oduzima). Leveli, freeze, questovi i streak po zabrani ostaju za kasnije korake. Nema UI-ja ni baze. "Ispunjena večernja provjera = postoji ocjena dana" je tehnička interpretacija — zapisuje se kao pitanje.
 
+**Napravljeno:**
+- Bez novih ovisnosti.
+- `src/core/time/local-date.ts`: `addDays`, `daysBetween` (UTC aritmetika nad `YYYY-MM-DD`, DST ne utječe), `localDateOf(Date)`.
+- `src/core/gamification/xp.ts`: `XP_TABLE` doslovno iz koncepta (zadatak 10/25/50 + 5 u terminu, zabrana 5/10/20, upit 15, krevet ±30 min 20, bez snoozea 10, preraspoređeno s objašnjenjem 5); funkcije `xpForTaskDone`, `xpForRuleKept`, `xpForEveningCheckin`, `xpForBedtime` (odstupanje preko ponoći, granica 30 min uključena), `xpForWakeWithoutSnooze`, `xpForRescheduledWithReason` → `{ source, amount }` spremno za `xp_events`; zbrojevi `totalXp`, `xpForDate`, `xpByDate`. `TASK_DIFFICULTIES` (`easy/medium/hard`) definirano ovdje jer tablica `tasks` još ne postoji.
+- `src/core/gamification/streak.ts`: generički `streakFromDates(dates, today)` → `{ current, longest, lastDate, doneToday }` (živ ako je zadnji dan danas ili jučer; duplikati, neispravni i budući datumi se ignoriraju); `isEveningCheckinComplete` i `mainStreak(checkins, today)`.
+- 26 novih testova. Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (166/166).
+
+**Problemi/napomene:**
+- Freeze tokeni, leveli i streak po zabrani namjerno nisu ovdje (faza 3 / korak 28); `streakFromDates` je spreman za ponovnu upotrebu.
+- "Preraspoređeno s objašnjenjem" ide pod XP izvor `task` (u `XP_SOURCES` nema zasebnog izvora za iskrsle stvari).
+- Spajanje s bazom (pisanje `xp_events`, čitanje checkina) dolazi s koracima 12 i 15.
+
+**Pitanja za Bornu:**
+8. Glavni streak računam kao "postoji večernji checkin s ocjenom dana" (ocjena je zadnji obavezni korak provjere). Je li to dovoljno, ili provjera mora biti ispunjena do kraja (i "Što imaš sutra?")?
+9. Treba li dan kad je sve "Nešto je iskrslo" (bez upita) čuvati glavni streak, ili to vrijedi samo za streakove zadataka/navika? (Koncept: preraspoređivanje "ne kvari streak".)
+
+**Sljedeće:** korak 8 — onboarding (jezik → buđenje i sati sna → vremena obavijesti → 1–3 zabrane; sprema u settings/rules).
+
 ## 2026-11-08 06:43 · Korak 6 — Lokalna baza
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-6`; `npm ci`; `expo-sqlite` (SDK 58) + `expo-crypto` (UUID) preko `EXPO_OFFLINE=1 npx expo install`; `drizzle-orm` (stabilni 0.45) i `drizzle-kit` (dev). Config plugin `expo-sqlite` u `app.json` ako ga paket traži.
