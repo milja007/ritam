@@ -14,6 +14,23 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = čisto računanje sljedećih okidača (jutro, večer, wind-down) iz settingsa + limit iOS-a — točke 2–4, 6. Vremena dolaze iz `settings` (koje je korisnik postavio u onboardingu), ne izmišljam nova pravila. Tekstovi obavijesti, akcije (Gotovo/Odgodi/Iskrslo), dopuštenja i podsjetnici za blokove su korak 10/11+, ne sada. Točka 5 je mala čista pomoćna funkcija koja služi kriteriju koraka 10 ("ponovno zakazivanje pri otvaranju appa") — ostaje jer je čista logika obavijesti.
 
+**Napravljeno:**
+- Bez novih ovisnosti.
+- `src/core/notifications/triggers.ts`: vrste `morning` / `evening` / `windDown`; `dailyNotificationTimes(settings)` (wind-down = krevet − `windDownMinutes`, krevet preko postojećeg `bedtimeFor`; 07:00 / 8 h / 45 min → 22:15); `upcomingTriggers(settings, now, { days })` → sortirani `{ id, kind, date, time, fireAt }` strogo nakon `now`, zadano 3 dana (9 obavijesti), horizont ograničen na [1, 21] tako da nikad ne prijeđe limit iOS-a od 64; `fireAt` je lokalno vrijeme uređaja (provjereno i preko prijelaza ljetno/zimsko vrijeme); `planReschedule(scheduledIds, desired)` → `{ toCancel, toSchedule }`.
+- Id okidača je `kind:YYYY-MM-DD@HH:MM` — sadrži vrijeme, pa promjena postavki sama otkaže stare okidače i zakaže nove.
+- 19 novih testova (pokrenuto i u UTC, Europe/Zagreb i America/New_York). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (208/208).
+
+**Problemi/napomene:**
+- Wind-down poslije ponoći (npr. krevet 02:00) pripada kalendarskom danu okidanja, ne "noći prethodnog dana" — za zakazivanje je to točno; ako večernji upit padne iza ponoći, povezivanje s danom checkina riješit će korak 12.
+- `windDownMinutes = 0` znači obavijest u vrijeme kreveta (ne "isključeno"). Isključivanje pojedinih obavijesti nije u konceptu ni u `settings` — vidi pitanje 14.
+- Horizont od 3 dana: ako korisnik ne otvori app 3 dana, obavijesti prestanu dok ga ponovo ne otvori (korak 10 zakazuje pri svakom otvaranju) — vidi pitanje 15.
+
+**Pitanja za Bornu:**
+14. Treba li u postavkama moći isključiti pojedinu obavijest (npr. wind-down), ili su sve tri uvijek uključene?
+15. Zakazujem 3 dana unaprijed (tehnički može do 21). Ako app ne otvoriš duže, obavijesti stanu. Želiš li duži horizont (npr. 7 dana), uz rizik da jutarnja obavijest pokaže zastario raspored?
+
+**Sljedeće:** korak 10 — notifikacije (integracija): `expo-notifications`, dopuštenje, zakazivanje okidača iz koraka 9 (`upcomingTriggers` + `planReschedule`), kategorije akcija (Gotovo / Odgodi / Iskrslo), ponovno zakazivanje pri otvaranju appa, config plugin u `app.json`.
+
 ## 2026-11-08 13:43 · Korak 8 — Onboarding
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-8`; `npm ci`. Bez novih ovisnosti (unos vremena kao stepper ±15 min, ne date-picker paket).

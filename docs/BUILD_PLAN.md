@@ -17,7 +17,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **6. Lokalna baza** — expo-sqlite + Drizzle ORM, sheme i migracije za tablice iz koraka 5, repo funkcije (CRUD) za settings i schedule_blocks.
 - [x] **7. Logika XP-a i streaka** — čiste funkcije u `src/core/gamification/` (XP iz eventova, glavni streak iz checkina, freeze kasnije). Testovi.
 - [x] **8. Onboarding** — jezik → vrijeme buđenja i sati sna → vrijeme jutarnje/večernje obavijesti → 1–3 zabrane. Sprema u settings/rules.
-- [ ] **9. Notifikacije (logika)** — `src/core/notifications/`: računanje sljedećih okidača (jutro, večer, wind-down) iz settingsa, čisto i testirano; poštuje limit iOS-a (zakazati samo sljedećih par dana).
+- [x] **9. Notifikacije (logika)** — `src/core/notifications/`: računanje sljedećih okidača (jutro, večer, wind-down) iz settingsa, čisto i testirano; poštuje limit iOS-a (zakazati samo sljedećih par dana).
 - [ ] **10. Notifikacije (integracija)** — expo-notifications: dopuštenje, zakazivanje, kategorije akcija (Gotovo / Odgodi / Iskrslo), ponovno zakazivanje pri otvaranju appa. Config plugin u app.json.
 - [ ] **11. Danas — timeline** — prikaz blokova dana, trenutni blok istaknut, označi gotovo, ručno dodaj/uredi/obriši blok.
 - [ ] **12. Večernji upit — checklist** — korak-po-korak flow: checklist (U redu / Nije + komentar), zabrane, ocjena dana. Sprema checkin + checkin_items + rule_logs + xp_events.
