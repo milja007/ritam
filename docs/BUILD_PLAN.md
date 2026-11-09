@@ -28,7 +28,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] **14. Jutarnji brief** — ekran iz notifikacije: pozdrav, prijava sna (2 taba), kartice dana, Prilagodi / Kreni.
 - [ ] **15. XP traka + streak u UI-ju** — na tabu Danas i Profil.
 - [ ] **16. Dnevni izvještaj (lokalni)** — statistika dana na kraju upita (bez LLM-a zasad).
-- [ ] **17. Supabase shema** — `supabase/migrations/` SQL za sve tablice + RLS (vlasnik), bez remote projekta dok korisnik ne da account. `supabase/config.toml`.
+- [ ] **17. Supabase shema** — `supabase/migrations/` SQL za sve tablice + RLS (vlasnik); remote projekt `ritam` postoji (vidi Odluke u PROGRESS.md), primijeniti tek kad migracije prođu lokalno. `supabase/config.toml`.
 - [ ] **18. Supabase klijent + auth** — `@supabase/supabase-js`, env varijable (`EXPO_PUBLIC_SUPABASE_URL/KEY`), auth ekran (email magic link) iza feature flaga dok nema accounta.
 - [ ] **19. Sync** — red promjena lokalno → Supabase, pull pri pokretanju; konflikti: zadnji updatedAt pobjeđuje.
 - [ ] **20. LLM provider** — Edge Function `llm-provider` modul (Claude sada, sučelje za DeepSeek), logiranje u `llm_calls`. Bez ključeva u repou.
