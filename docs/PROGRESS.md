@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 00:43 · Korak 13c — Postavke i onboarding: dorade
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-13c`. Migracija `0002_settings_refinements`: `settings` + `weekend_wake_time` (NULL = isto kao radni dan), `morning_notif_enabled` / `evening_notif_enabled` / `wind_down_notif_enabled` (default 1); `language` smije biti `system`. Zod shema i Drizzle prate; test migracije nad Node SQLite-om.
+2. Čisto (`src/core/schedule/wake.ts` ili `onboarding`): `isWeekend(date)` (sub/ned), `wakeTimeFor(settings, date)`, `bedtimeBefore(settings, date)` (krevet večer prije dana = buđenje tog dana − sati sna), `weekendWakeWarning` (razlika > 60 min, preko ponoći ispravno). Testovi.
+3. Okidači: horizont **7 dana** (`DEFAULT_SCHEDULE_DAYS = 7`, 7 × 3 = 21 ≤ 64); isključene vrste se ne zakazuju (i otkazuju); wind-down večeri prije vikend-dana računa se iz vikend buđenja; jutarnja obavijest vikendom pomaknuta za razliku vikend − radni dan buđenja (zadana jutarnja = buđenje). Podsjetnici blokova: isti horizont 7 dana, budžet ostaje 64 − dnevne − 4. Testovi.
+4. Jezik: `settings.language: system | hr | en`; app pri pokretanju primjenjuje spremljenu preferenciju; Profil sprema izbor u settings (trajno). Onboarding nudi i "Jezik uređaja".
+5. Onboarding: **0–3 zabrane** (korak se može preskočiti bez zabrane); korak sna dobiva vikend buđenje (zadano = radni dan) + upozorenje kad je razlika > 1 h.
+6. Profil: prekidač za svaku od tri dnevne obavijesti (sprema + resync), vikend/radni dan buđenje; **kartica "Obavijesti su isključene" s gumbom "Otvori postavke"** (`Linking.openSettings`) kad je dopuštenje odbijeno — na Profilu i na Danas.
+7. Doba dana prema buđenju: zora = buđenje → +3 h, dan do večeri, večer = krevet − 5 h (zadano 07:00 / 8 h → zora 07–10, dan 10–18, večer od 18; sada je fiksno 05/09/18); prije buđenja = večer. Theme provider čita postavke. Testovi.
+8. Privremena ikona/splash (narančasti orb na tamnoj pozadini, PNG generiran skriptom), `app.json` boje. i18n HR/EN za sve. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji koraka: vikend buđenje + upozorenje > 1 h (1, 2, 5), `language: system` (1, 4), 0–3 zabrane (5), prekidači tri dnevne obavijesti (1, 3, 6), horizont 7 dana (3), kartica za odbijeno dopuštenje (6), doba dana prema buđenju (7), ikona/splash (8). Odluka u izvedbi (nije Bornova): vikend = subota i nedjelja; jutarnja obavijest vikendom se pomiče s buđenjem, a wind-down prati buđenje sljedećeg dana — zapisati kao napomenu/pitanje. Granica večeri (krevet − 5 h) je moja pretpostavka da zadane vrijednosti ostanu slične — pitanje za Bornu. Prekidač za podsjetnike blokova nije dio koraka (pitanje 28 otvoreno). Korak je velik: radim redom 1→8 i commitam nakon svake cjeline; ako ponestane budžeta, nastavak na `wip/korak-13c`.
+
 ## 2026-11-09 22:43 · Korak 13b — Podsjetnici blokova
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-13b`; bez novih ovisnosti i bez migracije.
