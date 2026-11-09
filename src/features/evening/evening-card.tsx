@@ -14,12 +14,15 @@ export function EveningCard({
   forYesterday,
   disabled,
   onOpen,
+  onPlanTomorrow,
 }: {
   saved: SavedEveningCheckin | null;
   /** Prije 04:00 upit se odnosi na jučerašnji dan. */
   forYesterday: boolean;
   disabled: boolean;
   onOpen: () => void;
+  /** Kad je upit ispunjen: otvori "Što imaš sutra?". */
+  onPlanTomorrow: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -48,6 +51,13 @@ export function EveningCard({
         onPress={onOpen}
         disabled={disabled}
       />
+      {done ? (
+        <Button
+          label={t('evening.card.planTomorrow')}
+          onPress={onPlanTomorrow}
+          disabled={disabled}
+        />
+      ) : null}
     </View>
   );
 }

@@ -2,9 +2,9 @@
  * "Što imaš sutra?" — ručni unos blokova za sutra (brzi odabiri + tipkanje), bez LLM-a.
  * Čista logika: bez React importa. LLM `parse-input` (korak 21) kasnije zamjenjuje `parseTypedEntry`.
  */
-import type { BlockKind, ScheduleBlock } from "../domain";
-import { formatClock, parseClock } from "../time/clock";
-import { addDays } from "../time/local-date";
+import type { BlockKind, ScheduleBlock } from '../domain';
+import { formatClock, parseClock } from '../time/clock';
+import { addDays } from '../time/local-date';
 import {
   BLOCK_STEP_MINUTES,
   DEFAULT_BLOCK_MINUTES,
@@ -14,36 +14,35 @@ import {
   LAST_START,
   type BlockDraft,
   type BlockDraftInput,
-} from "./block-draft";
+} from './block-draft';
 
 /** Brzi odabir: naziv dolazi iz i18n (`evening.tomorrow.pick.<id>`), vrsta i trajanje odavde. */
 export type QuickPick = {
   id: string;
-  kind: Extract<BlockKind, "task" | "fixed">;
+  kind: Extract<BlockKind, 'task' | 'fixed'>;
   minutes: number;
 };
 
 export const QUICK_PICKS = [
-  { id: "work", kind: "fixed", minutes: 480 },
-  { id: "school", kind: "fixed", minutes: 360 },
-  { id: "workout", kind: "task", minutes: 60 },
-  { id: "study", kind: "task", minutes: 90 },
-  { id: "errands", kind: "task", minutes: 60 },
-  { id: "chores", kind: "task", minutes: 60 },
-  { id: "reading", kind: "task", minutes: 30 },
-  { id: "social", kind: "fixed", minutes: 120 },
+  { id: 'work', kind: 'fixed', minutes: 480 },
+  { id: 'school', kind: 'fixed', minutes: 360 },
+  { id: 'workout', kind: 'task', minutes: 60 },
+  { id: 'study', kind: 'task', minutes: 90 },
+  { id: 'errands', kind: 'task', minutes: 60 },
+  { id: 'chores', kind: 'task', minutes: 60 },
+  { id: 'reading', kind: 'task', minutes: 30 },
+  { id: 'social', kind: 'fixed', minutes: 120 },
 ] as const satisfies readonly QuickPick[];
 
-export type QuickPickId = (typeof QUICK_PICKS)[number]["id"];
+export type QuickPickId = (typeof QUICK_PICKS)[number]['id'];
 
 /** Prvi blok sutra počinje najranije ovoliko nakon buđenja. */
 export const PLAN_START_AFTER_WAKE_MINUTES = 30;
 
-type Occupied = Pick<ScheduleBlock, "start" | "end" | "kind">;
+type Occupied = Pick<ScheduleBlock, 'start' | 'end' | 'kind'>;
 
-const clock = (minutes: number): string => formatClock(minutes) ?? "00:00";
-const roundUpToStep = (minutes: number) =>
-  Math.ceil(minutes / BLOCK_STEP_MINUTES) * BLOCK_STEP_MINUTES;
+const clock = (minutes: number): string => formatClock(minutes) ?? '00:00';
+const roundUpToStep = (minutes: number) => Math.ceil(minutes / BLOCK_STEP_MINUTES) * BLOCK_STEP_MINUTES;
 
 /** Dan za "Što imaš sutra?": dan nakon dana upita (upit prije 04:00 → sutra je zapravo danas). */
 export function tomorrowOf(eveningDate: string): string | null {
@@ -53,10 +52,7 @@ export function tomorrowOf(eveningDate: string): string | null {
 /** Najraniji početak plana: buđenje + 30 min, na četvrt sata (neispravno buđenje → 07:00). */
 export function planStartMinutes(wakeTime: string): number {
   const wake = parseClock(wakeTime) ?? 7 * 60;
-  return Math.min(
-    roundUpToStep(wake + PLAN_START_AFTER_WAKE_MINUTES),
-    LAST_START,
-  );
+  return Math.min(roundUpToStep(wake + PLAN_START_AFTER_WAKE_MINUTES), LAST_START);
 }
 
 /**
@@ -70,11 +66,10 @@ export function nextFreeSlot(
 ): { start: string; end: string } {
   let start = planStartMinutes(wakeTime);
   for (const block of occupied) {
-    if (block.kind === "sleep") continue;
+    if (block.kind === 'sleep') continue;
     const blockStart = parseClock(block.start);
     const blockEnd = parseClock(block.end);
-    if (blockStart === null || blockEnd === null || blockEnd <= blockStart)
-      continue;
+    if (blockStart === null || blockEnd === null || blockEnd <= blockStart) continue;
     if (blockEnd > start) start = roundUpToStep(blockEnd);
   }
   start = Math.min(start, LAST_START);
@@ -106,30 +101,26 @@ const TIME = String.raw`(\d{1,2})(?:[:.](\d{2}))?\s*h?`;
 /** "9-11", "od 9:30 do 11", "18.00–19.30", "from 9 to 5pm"? (bez am/pm — 24 h). */
 const RANGE = new RegExp(
   String.raw`(?:^|\s)(?:od\s+|from\s+)?${TIME}\s*(?:-|do\s|to\s|until\s)\s*${TIME}(?=\s|[,;]|$)`,
-  "iu",
+  'iu',
 );
 /** "u 15", "at 9:30", "@ 18h", ili samostalno "18:00". */
 const SINGLE = new RegExp(
   String.raw`(?:^|\s)(?:(?:u|at|@)\s*${TIME}|(\d{1,2})[:.](\d{2})\s*h?)(?=\s|[,;]|$)`,
-  "iu",
+  'iu',
 );
 
-function toMinutes(
-  hours: string | undefined,
-  minutes: string | undefined,
-): number | null {
+function toMinutes(hours: string | undefined, minutes: string | undefined): number | null {
   if (hours === undefined) return null;
   const h = Number(hours);
   const m = minutes === undefined ? 0 : Number(minutes);
-  if (!Number.isInteger(h) || !Number.isInteger(m) || h > 23 || m > 59)
-    return null;
+  if (!Number.isInteger(h) || !Number.isInteger(m) || h > 23 || m > 59) return null;
   return h * 60 + m;
 }
 
 function cleanTitle(text: string): string {
   return text
-    .replace(/\s+/g, " ")
-    .replace(/^[\s,;:\-–—]+|[\s,;:\-–—]+$/g, "")
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s,;:\-–—]+|[\s,;:\-–—]+$/g, '')
     .trim();
 }
 
@@ -139,7 +130,7 @@ function cleanTitle(text: string): string {
  * Neispravno vrijeme (npr. 25:00, kraj prije početka) ostaje dio naziva. Prazan naziv → `null`.
  */
 export function parseTypedEntry(text: string): TypedEntry | null {
-  const normalized = text.replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
+  const normalized = text.replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim();
   if (normalized.length === 0) return null;
 
   const range = RANGE.exec(normalized);
@@ -147,7 +138,7 @@ export function parseTypedEntry(text: string): TypedEntry | null {
     const start = toMinutes(range[1], range[2]);
     const end = toMinutes(range[3], range[4]);
     if (start !== null && end !== null && end > start) {
-      const title = cleanTitle(normalized.replace(range[0], " "));
+      const title = cleanTitle(normalized.replace(range[0], ' '));
       return title ? { title, start: clock(start), end: clock(end) } : null;
     }
   }
@@ -156,7 +147,7 @@ export function parseTypedEntry(text: string): TypedEntry | null {
   if (single) {
     const start = toMinutes(single[1] ?? single[3], single[2] ?? single[4]);
     if (start !== null) {
-      const title = cleanTitle(normalized.replace(single[0], " "));
+      const title = cleanTitle(normalized.replace(single[0], ' '));
       return title ? { title, start: clock(start), end: null } : null;
     }
   }
@@ -169,24 +160,18 @@ export function parseTypedEntry(text: string): TypedEntry | null {
  * Nacrt iz tipkanog unosa: prepoznato vrijeme se koristi (samo početak → traje 1 h), inače
  * sljedeći slobodni termin. Vrsta je Zadatak (mijenja se u editoru). Prazan unos → `null`.
  */
-export function typedDraft(
-  text: string,
-  occupied: readonly Occupied[],
-  wakeTime: string,
-): BlockDraft | null {
+export function typedDraft(text: string, occupied: readonly Occupied[], wakeTime: string): BlockDraft | null {
   const entry = parseTypedEntry(text);
   if (!entry) return null;
   const start = entry.start === null ? null : parseClock(entry.start);
   if (start !== null) {
     const fromStart = Math.min(start, LAST_START);
     const end =
-      entry.end === null
-        ? Math.min(fromStart + DEFAULT_BLOCK_MINUTES, LAST_END)
-        : parseClock(entry.end);
+      entry.end === null ? Math.min(fromStart + DEFAULT_BLOCK_MINUTES, LAST_END) : parseClock(entry.end);
     if (end !== null && end > fromStart) {
       return {
         title: entry.title,
-        kind: "task",
+        kind: 'task',
         start: clock(fromStart),
         end: clock(end),
       };
@@ -194,16 +179,13 @@ export function typedDraft(
   }
   return {
     title: entry.title,
-    kind: "task",
+    kind: 'task',
     ...nextFreeSlot(occupied, DEFAULT_BLOCK_MINUTES, wakeTime),
   };
 }
 
 /** Nove stavke sutrašnjeg plana zajedno s već postojećim blokovima (za slaganje termina). */
-export function occupiedSlots(
-  existing: readonly Occupied[],
-  drafts: readonly BlockDraft[],
-): Occupied[] {
+export function occupiedSlots(existing: readonly Occupied[], drafts: readonly BlockDraft[]): Occupied[] {
   return [...existing, ...drafts];
 }
 
@@ -213,13 +195,8 @@ export function isTomorrowPlanValid(drafts: readonly BlockDraft[]): boolean {
 }
 
 /** Ulazi za repo, poredani po početku (ručni unos: `user` / `planned`). */
-export function tomorrowInputs(
-  drafts: readonly BlockDraft[],
-  date: string,
-): BlockDraftInput[] {
+export function tomorrowInputs(drafts: readonly BlockDraft[], date: string): BlockDraftInput[] {
   return [...drafts]
-    .sort(
-      (a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end),
-    )
+    .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end))
     .map((draft) => draftToInput(draft, date));
 }
