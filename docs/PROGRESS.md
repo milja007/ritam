@@ -14,6 +14,30 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = checklist U redu / Nije + komentar (2, 4), zabrane (2, 4), ocjena dana (2, 4), sprema checkin + checkin_items + rule_logs + xp_events (3). Koncept točke 3 (otvorena pitanja), "kad kasnije?" za zadatke i dnevni izvještaj su drugi koraci (16, 13/27) → ne sada, zapisano kao pitanja. Glas nije u ovom koraku (30). XP: tablica iz koncepta, bez kazni; blok nema težinu (zadaci s težinom dolaze u koraku 25) → zadatak "U redu" = lagani + bonus za planirani termin (15), samo za blokove vrste `task` — odluka zapisana kao pitanje. Glavni streak već čita `dayRating` (korak 7), pa ga spremljeni upit automatski produljuje. Datum upita = današnji lokalni dan (upit poslije ponoći ide na novi dan) — pitanje.
 
+**Napravljeno:**
+- Bez novih ovisnosti, bez nove migracije.
+- Čisto u `src/core/checkin/evening.ts`: koraci `checklist → rules → rating` (zabrane se preskaču kad danas nijedna ne vrijedi), `checklistBlocks` (bez sna), `weekdayOf` / `rulesActiveOn`, `createEveningDraft` (gotovi blokovi unaprijed "U redu"; već spremljen upit → njegovi odgovori), `isEveningStepValid` / `isEveningDraftComplete`, `blockStatusAfterCheckin` (U redu → `done`, Nije → `skipped`, `partial`/`moved` ostaju), `eveningXpAwards` (upit 15, zabrana 5/10/20, zadatak "U redu" 15 = lagani + planirani termin; bez kazni), `cleanText`, `sumAwards`.
+- Repo `src/db/repos/checkins.ts`: `getEveningCheckin`, `saveEveningCheckin` (jedna sinkrona transakcija: checkin, `checkin_items` s `kind: task` i `refId` = blok, `rule_logs` s okidačem samo za prekršaj, statusi blokova, `xp_events`; ponovno spremanje istog dana zamjenjuje stavke/zapise/XP tog upita — XP se ne duplicira, XP drugih izvora ostaje), `listXpEvents`.
+- `src/features/evening/`: `useEveningCheckin` (zabrane koje danas vrijede + spremljeni upit), `EveningCheckinFlow` (cijeli ekran u `Modal`: napredak, Natrag/Dalje/Spremi, Zatvori; nakon spremanja "+N XP" potvrda), koraci `ChecklistStep` (U redu / Nije + komentar), `RulesStep` (Držao sam se / Prekršio sam + okidač, prikazuje "zašto"), `RatingStep` (1–5 + rečenica), `EveningCard` na tabu Danas (Započni / Ispunjeno ✓ s ocjenom + Uredi).
+- Dodir večernje obavijesti otvara upit (`features/notifications/open-requests.ts`, Danas ga otvori čim su podaci učitani).
+- `ChoiceGroup` prima `selected: null` (još bez odgovora).
+- i18n HR/EN (`evening.*`).
+- 21 novi test. Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (285/285), `expo export --platform android` ✅ (4.2 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju/simulatoru (sandbox) — provjereno typecheckom, lintom, testovima i bundleom.
+- Kvačica na timelineu nakon spremljenog upita mijenja samo status bloka, XP se ne preračunava dok se upit ponovo ne spremi (Uredi).
+- Upit poslije ponoći ide na novi dan (vidi pitanje 22).
+- Glasovni komentar (korak 30), "kad kasnije?" za zadatke, otvorena pitanja dana i dnevni izvještaj nisu dio ovog koraka.
+
+**Pitanja za Bornu:**
+20. XP za zadatak "U redu" u upitu: blokovi još nemaju težinu, pa računam kao lagani zadatak + bonus za planirani termin (15 XP), samo za blokove vrste Zadatak (ne Fiksno/Kalendar). Odgovara li, ili želiš drukčiju zadanu težinu?
+21. "Nije" postavlja blok na `skipped` (preskočeno). Želiš li u upitu i izbor "Djelomično" (status `partial`)?
+22. Ako upit ispuniš poslije ponoći (npr. u 00:30), ide na novi dan i jučerašnji streak puca. Da upit do npr. 04:00 ide na prethodni dan?
+23. "Kad kasnije?" za zadatke koji nisu odrađeni (koncept, točka 1) — u kojem koraku: uz 13 ("Što imaš sutra?") ili uz 27 ("Nešto je iskrslo")?
+
+**Sljedeće:** korak 13 — večernji upit: "Što imaš sutra?" (ručni unos blokova za sutra: brzi odabiri + tipkanje, pregled, potvrdi).
+
 ## 2026-11-09 10:43 · Korak 11 — Danas: timeline
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-11`; `npm ci`. Bez novih ovisnosti (uređivanje u RN `Modal`, vremena stepperom ±15 min kao u onboardingu).
