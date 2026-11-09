@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocales } from 'expo-localization';
 
+import { NotificationsSync } from '@/features/notifications';
 import { OnboardingGate } from '@/features/onboarding';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
 import { DatabaseGate } from '@/ui/database-gate';
@@ -14,6 +15,7 @@ export default function RootLayout() {
     <AppThemeProvider>
       <DatabaseGate>
         <OnboardingGate>
+          <NotificationsSync />
           <AppTabs />
         </OnboardingGate>
       </DatabaseGate>

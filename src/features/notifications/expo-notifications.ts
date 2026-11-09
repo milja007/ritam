@@ -1,0 +1,111 @@
+/**
+ * Jedino mjesto koje izravno zove expo-notifications: handler u prvom planu, Android kanal,
+ * kategorija akcija bloka, dopuštenje i adapter za zakazivanje.
+ */
+import * as Notifications from 'expo-notifications';
+import { AndroidImportance, IosAuthorizationStatus } from 'expo-notifications';
+import type { TFunction } from 'i18next';
+import { Platform } from 'react-native';
+
+import {
+  BLOCK_ACTIONS,
+  BLOCK_CATEGORY_ID,
+  decidePermission,
+  type NotificationKind,
+  type PermissionDecision,
+} from '@/core/notifications';
+
+import { DAILY_CHANNEL_ID, type DailyNotificationTexts, type NotificationScheduler } from './sync';
+
+/** Obavijesti rade samo na iOS-u i Androidu (web nema lokalne obavijesti ni bazu). */
+export const notificationsSupported = Platform.OS === 'ios' || Platform.OS === 'android';
+
+/** Dok je app otvoren, obavijest se i dalje prikaže (inače bi ju sustav progutao). */
+export function installForegroundHandler(): void {
+  if (!notificationsSupported) return;
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
+
+/**
+ * Android kanal i kategorija akcija (Gotovo / Odgodi / Iskrslo) s prevedenim gumbima.
+ * Kanal mora postojati prije traženja dopuštenja na Androidu 13+.
+ */
+export async function registerChannelsAndCategories(t: TFunction): Promise<void> {
+  if (!notificationsSupported) return;
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync(DAILY_CHANNEL_ID, {
+      name: t('notifications.channel.daily'),
+      importance: AndroidImportance.DEFAULT,
+    });
+  }
+  await Notifications.setNotificationCategoryAsync(
+    BLOCK_CATEGORY_ID,
+    BLOCK_ACTIONS.map((action) => ({
+      identifier: action,
+      buttonTitle: t(`notifications.actions.${action}`),
+      // Učinci akcija trebaju bazu i ekrane (koraci 11 i 27), pa zasad otvaraju app.
+      options: { opensAppToForeground: true },
+    })),
+  );
+}
+
+/** Provjeri dopuštenje; pitaj samo ako korisnik još nije odlučio. */
+export async function ensurePermission(): Promise<PermissionDecision> {
+  if (!notificationsSupported) return 'denied';
+  const read = async () => {
+    const current = await Notifications.getPermissionsAsync();
+    return decidePermission({
+      status: current.status,
+      granted: current.granted,
+      canAskAgain: current.canAskAgain,
+      iosProvisional: current.ios?.status === IosAuthorizationStatus.PROVISIONAL,
+    });
+  };
+  const decision = await read();
+  if (decision !== 'ask') return decision;
+  const answer = await Notifications.requestPermissionsAsync();
+  return decidePermission({
+    status: answer.status,
+    granted: answer.granted,
+    // Upravo smo pitali — ne pitaj ponovo u istoj sesiji.
+    canAskAgain: false,
+    iosProvisional: answer.ios?.status === IosAuthorizationStatus.PROVISIONAL,
+  });
+}
+
+/** Tekstovi dnevnih obavijesti na zadanom jeziku. */
+export function dailyTexts(t: TFunction): DailyNotificationTexts {
+  const text = (kind: NotificationKind) => ({
+    title: t(`notifications.${kind}.title`),
+    body: t(`notifications.${kind}.body`),
+  });
+  return { morning: text('morning'), evening: text('evening'), windDown: text('windDown') };
+}
+
+export const expoScheduler: NotificationScheduler = {
+  async scheduledIds() {
+    const requests = await Notifications.getAllScheduledNotificationsAsync();
+    return requests.map((request) => request.identifier);
+  },
+  async cancel(identifier) {
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+  },
+  async schedule(request) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: request.identifier,
+      content: { title: request.title, body: request.body, data: request.data },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: request.fireAt,
+        channelId: request.channelId,
+      },
+    });
+  },
+};

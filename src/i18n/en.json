@@ -65,5 +65,27 @@
       "remove": "Remove",
       "hint": "For now they apply every day, all day — you can fine-tune them later."
     }
+  },
+  "notifications": {
+    "channel": {
+      "daily": "Daily rhythm"
+    },
+    "morning": {
+      "title": "Good morning",
+      "body": "Your day is ready. Check the plan and rate your sleep."
+    },
+    "evening": {
+      "title": "Evening check-in",
+      "body": "Two minutes: how did today go, and what's on tomorrow?"
+    },
+    "windDown": {
+      "title": "Time to wind down",
+      "body": "Bedtime is coming up. Put the screen down and slow down."
+    },
+    "actions": {
+      "done": "Done",
+      "snooze": "Snooze",
+      "cameUp": "Came up"
+    }
   }
 }

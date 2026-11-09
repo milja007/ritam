@@ -65,5 +65,27 @@
       "remove": "Ukloni",
       "hint": "Zasad vrijede svaki dan, cijeli dan — detalje ćeš moći urediti kasnije."
     }
+  },
+  "notifications": {
+    "channel": {
+      "daily": "Dnevni ritam"
+    },
+    "morning": {
+      "title": "Dobro jutro",
+      "body": "Tvoj dan je spreman. Pogledaj plan i ocijeni san."
+    },
+    "evening": {
+      "title": "Večernji upit",
+      "body": "Dvije minute: kako je prošao dan i što imaš sutra?"
+    },
+    "windDown": {
+      "title": "Vrijeme za smirivanje",
+      "body": "Uskoro je vrijeme za krevet. Spusti ekran i uspori."
+    },
+    "actions": {
+      "done": "Gotovo",
+      "snooze": "Odgodi",
+      "cameUp": "Iskrslo"
+    }
   }
 }

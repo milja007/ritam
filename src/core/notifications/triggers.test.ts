@@ -5,6 +5,7 @@ import {
   IOS_PENDING_NOTIFICATION_LIMIT,
   MAX_SCHEDULE_DAYS,
   dailyNotificationTimes,
+  isDailyTriggerId,
   planReschedule,
   triggerId,
   upcomingTriggers,
@@ -201,6 +202,28 @@ describe('planReschedule', () => {
   });
 
   it('duplikati u zakazanima se otkazuju jednom', () => {
-    expect(planReschedule(['x', 'x'], []).toCancel).toEqual(['x']);
+    const id = 'morning:2026-11-07@07:00';
+    expect(planReschedule([id, id], []).toCancel).toEqual([id]);
+  });
+
+  it('tuđe obavijesti i podsjetnici blokova se ne otkazuju', () => {
+    const plan = planReschedule(['block:abc', 'neki-drugi-id', ...desired.map((t) => t.id)], desired);
+    expect(plan).toEqual({ toCancel: [], toSchedule: [] });
   });
 });
+
+describe('isDailyTriggerId', () => {
+  it('prepoznaje id-jeve iz upcomingTriggers', () => {
+    for (const trigger of desiredForIds()) expect(isDailyTriggerId(trigger.id)).toBe(true);
+  });
+
+  it('odbija sve ostalo', () => {
+    for (const id of ['', 'block:abc', 'morning:2026-11-08', 'lunch:2026-11-08@12:00', 'morning:2026-11-08@07:00x']) {
+      expect(isDailyTriggerId(id)).toBe(false);
+    }
+  });
+});
+
+function desiredForIds() {
+  return upcomingTriggers(DEFAULTS, at(2026, 11, 8, 5), { days: 2 }) ?? [];
+}
