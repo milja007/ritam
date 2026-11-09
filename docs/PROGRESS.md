@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-09 06:43 · Korak 10 — Notifikacije (integracija)
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-10`; `npm ci`; `expo-notifications` (SDK 58 → 58.1.8) preko `EXPO_OFFLINE=1 npx expo install`. Config plugin u `app.json`: `["expo-notifications", { "enableRemoteNotifications": false }]` — koncept traži samo lokalne obavijesti, pa bez APNs entitlementa. API provjeren iz tipova paketa (docs.expo.dev nedostupan iz sandboxa).
+2. Čisto u `src/core/notifications/`: kategorija akcija `block` (bez `:`/`-`, pravilo paketa) s akcijama `done` / `snooze` / `cameUp` (Gotovo / Odgodi / Iskrslo); `parseNotificationResponse(actionId, data)` → namjera (`open` za dnevne obavijesti, `blockAction` za akcije bloka) ili `null`; payload `data` obavijesti `{ source: 'ritam', kind, triggerId }`; `isDailyTriggerId(id)` da se pri ponovnom zakazivanju otkazuju **samo** naši dnevni okidači.
+3. `src/features/notifications/sync.ts` (bez Reacta, s ubrizganim adapterom oko `expo-notifications`): `syncDailyNotifications(api, settings, now, t)` — `getAllScheduled` → `planReschedule` (samo naši id-jevi) → otkaži višak, zakaži nedostajuće s `DATE` okidačem, `identifier = trigger.id`, Android kanal `daily`, tekst na jeziku iz settingsa. Testovi s lažnim adapterom (ništa/sve/djelomično, tuđe obavijesti ostaju, bez dopuštenja se ništa ne zakazuje).
+4. `src/features/notifications/setup.ts`: `setNotificationHandler` (prikaži i u prvom planu), Android kanal, registracija kategorije `block` s prevedenim gumbima, `ensurePermission()` — pita samo ako status još nije određen.
+5. `NotificationsSync` komponenta u root layoutu unutar `OnboardingGate` (dakle nakon onboardinga — tada se prvi put traži dopuštenje, kako koncept predviđa): pri mountu i svakom povratku appa u prvi plan (`AppState` → `active`) učita settings, osigura dopuštenje i zakaže. Slušatelj odgovora na obavijest parsira namjeru; učinci akcija bloka (označi gotovo, odgodi, iskrslo) dolaze s koracima 11/27 — sada samo bilježi.
+6. i18n HR/EN: naslovi i tekstovi triju obavijesti, gumbi akcija, ime Android kanala.
+7. Provjere `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`, `expo config` (plugin se razrješava); BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = dopuštenje (4–5), zakazivanje (3), kategorije akcija Gotovo/Odgodi/Iskrslo (2, 4), ponovno zakazivanje pri otvaranju appa (5), config plugin (1). Okidači i horizont dolaze iz koraka 9, ne mijenjam pravila. Koncept: jutarnja obavijest sadrži raspored + prijavu sna — to je jutarnji brief (korak 14); sada je tekst općenit. Podsjetnici za pojedine blokove nisu u ovom koraku (nema ni timelinea, korak 11) — kategorija je spremna za njih. Trajanje "Odgodi" nije definirano u konceptu → pitanje, ne izmišljam.
+
 ## 2026-11-08 20:43 · Korak 9 — Notifikacije (logika)
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-9`; `npm ci`. Bez novih ovisnosti, bez expo-notifications (to je korak 10).
