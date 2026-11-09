@@ -15,6 +15,13 @@
       "when": 1794246320231,
       "tag": "0001_evening_refinements",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794267939566,
+      "tag": "0002_settings_refinements",
+      "breakpoints": true
     }
   ]
 }

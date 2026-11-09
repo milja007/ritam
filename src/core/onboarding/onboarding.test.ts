@@ -86,14 +86,20 @@ describe('suggestNotificationTimes', () => {
 });
 
 describe('createDefaultDraft', () => {
-  it('daje ispravne postavke i jednu praznu zabranu', () => {
+  it('daje ispravne postavke bez zabrana (zabrane su neobavezne)', () => {
     const draft = createDefaultDraft('en');
     expect(draft.language).toBe('en');
-    expect(draft.rules).toEqual([emptyRule()]);
+    expect(draft.rules).toEqual([]);
+    expect(draft.weekendWakeTime).toBe(draft.wakeTime);
     expect(isStepValid('language', draft)).toBe(true);
     expect(isStepValid('sleep', draft)).toBe(true);
     expect(isStepValid('notifications', draft)).toBe(true);
-    expect(isStepValid('rules', draft)).toBe(false);
+    expect(isStepValid('rules', draft)).toBe(true);
+  });
+  it('jezik može pratiti uređaj', () => {
+    const draft = createDefaultDraft('system');
+    expect(isStepValid('language', draft)).toBe(true);
+    expect(toSettingsInput(draft).language).toBe('system');
   });
 });
 
@@ -102,14 +108,17 @@ describe('isStepValid', () => {
     expect(isStepValid('sleep', filled({ wakeTime: '25:00' }))).toBe(false);
     expect(isStepValid('sleep', filled({ sleepHours: 3 }))).toBe(false);
     expect(isStepValid('sleep', filled({ sleepHours: 7.1 }))).toBe(false);
+    expect(isStepValid('sleep', filled({ weekendWakeTime: '9:00' }))).toBe(false);
+    expect(isStepValid('sleep', filled({ weekendWakeTime: '09:30' }))).toBe(true);
   });
   it('obavijesti: odbija neispravno vrijeme', () => {
     expect(isStepValid('notifications', filled({ eveningNotifTime: '9pm' }))).toBe(false);
     expect(isStepValid('notifications', filled({ sleepHours: 3 }))).toBe(true);
   });
-  it('zabrane: 1–3, svaka s nazivom', () => {
+  it('zabrane: 0–3, svaka s nazivom', () => {
     expect(isStepValid('rules', filled())).toBe(true);
-    expect(isStepValid('rules', filled({ rules: [] }))).toBe(false);
+    expect(isStepValid('rules', filled({ rules: [] }))).toBe(true);
+    expect(isStepValid('rules', filled({ rules: [emptyRule()] }))).toBe(false);
     expect(isStepValid('rules', filled({ rules: [{ title: '   ', why: '', weight: 1 }] }))).toBe(false);
     const rule = { title: 'Bez šećera', why: '', weight: 1 as const };
     expect(isStepValid('rules', filled({ rules: Array(MAX_RULES).fill(rule) }))).toBe(true);
@@ -127,7 +136,15 @@ describe('pretvorba', () => {
       windDownMinutes: 45,
       theme: 'system',
       googleCalendarConnected: false,
+      weekendWakeTime: null,
+      morningNotifEnabled: true,
+      eveningNotifEnabled: true,
+      windDownNotifEnabled: true,
     });
+  });
+  it('toSettingsInput: vikend buđenje se sprema samo kad se razlikuje', () => {
+    expect(toSettingsInput(filled({ weekendWakeTime: '09:00' })).weekendWakeTime).toBe('09:00');
+    expect(toSettingsInput(filled({ weekendWakeTime: '07:00' })).weekendWakeTime).toBeNull();
   });
   it('toRuleInput: svaki dan, cijeli dan, obrezan tekst', () => {
     const input = toRuleInput({ title: '  Bez kave poslije 14h ', why: ' San ', weight: 2 });
@@ -143,7 +160,8 @@ describe('pretvorba', () => {
   });
   it('isDraftComplete', () => {
     expect(isDraftComplete(filled())).toBe(true);
-    expect(isDraftComplete(createDefaultDraft('hr'))).toBe(false);
+    expect(isDraftComplete(createDefaultDraft('hr'))).toBe(true);
+    expect(isDraftComplete(filled({ rules: [emptyRule()] }))).toBe(false);
   });
 });
 

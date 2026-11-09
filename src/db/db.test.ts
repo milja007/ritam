@@ -5,6 +5,7 @@ import { describe, expect, it } from '@jest/globals';
 import { migrate } from 'drizzle-orm/expo-sqlite/migrator';
 import { ZodError } from 'zod';
 
+import { createDb } from './db';
 import migrations from './migrations/migrations';
 
 import {
@@ -21,6 +22,7 @@ import {
   type ScheduleBlockInput,
   type SettingsInput,
 } from './repos';
+import { createNodeSqliteClient } from './testing/node-sqlite-client';
 import { createTestDb, testDeps } from './testing/test-db';
 
 const USER = 'user-1';
@@ -29,10 +31,14 @@ const OTHER = 'user-2';
 const settingsInput: SettingsInput = {
   language: 'hr',
   wakeTime: '06:30',
+  weekendWakeTime: '08:00',
   sleepHours: 7.5,
   morningNotifTime: '06:45',
   eveningNotifTime: '21:00',
   windDownMinutes: 45,
+  morningNotifEnabled: true,
+  eveningNotifEnabled: false,
+  windDownNotifEnabled: true,
   theme: 'system',
   googleCalendarConnected: false,
 };
@@ -70,6 +76,28 @@ describe('migracije', () => {
   it('su idempotentne (drugo pokretanje ne pada)', async () => {
     const { db } = await createTestDb();
     await expect(migrate(db, migrations)).resolves.toBeUndefined();
+  });
+
+  it('0002 dodaje vikend buđenje i prekidače obavijesti postojećim postavkama', async () => {
+    const { client, raw } = createNodeSqliteClient();
+    const db = createDb(client);
+    const before = {
+      journal: { ...migrations.journal, entries: migrations.journal.entries.slice(0, 2) },
+      migrations: { m0000: migrations.migrations.m0000, m0001: migrations.migrations.m0001 },
+    };
+    await migrate(db, before);
+    raw
+      .prepare(
+        "INSERT INTO settings (id, user_id, created_at, updated_at, language, wake_time, sleep_hours, morning_notif_time, evening_notif_time, wind_down_minutes, theme, google_calendar_connected) VALUES ('s', 'u', '2026-11-08T06:00:00.000Z', '2026-11-08T06:00:00.000Z', 'hr', '07:00', 8, '07:00', '21:15', 45, 'system', 0)",
+      )
+      .run();
+    await migrate(db, migrations);
+    expect(await getSettings(db, 'u')).toMatchObject({
+      weekendWakeTime: null,
+      morningNotifEnabled: true,
+      eveningNotifEnabled: true,
+      windDownNotifEnabled: true,
+    });
   });
 
   it('uključuju strane ključeve', async () => {
