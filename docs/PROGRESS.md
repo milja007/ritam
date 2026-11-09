@@ -4,10 +4,10 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 ## Promjena koncepta (Borna, 2026-11-09 21:14) — dijagnoze, napredak, trackeri
 Borna je proširio koncept; detalji u `docs/CONCEPT.md` (sekcije Dijagnoze, Napredak u odnosu na prošlost, Opcionalni trackeri, Gamifikacija) i u Claude Docs konceptu. `BUILD_PLAN.md` je usklađen (16, 16b, 31, 31b, 34, 34b, 36–37c, 42).
-- **Dijagnoze** umjesto "izvještaja": svaku večer dan; nedjeljom dan + tjedan; kraj mjeseca dan + tjedan + mjesec; 31. 12. sve četiri. Struktura: Ukratko → Napredak → Pohvale → Što smo primijetili → Veliki problemi → Ideje za napredak → (Raspoloženje). Detaljno, psihološki, iskreno ali nikad bezobrazno. Najvažniji dio appa — kvaliteta promptova je prioritet.
+- **Dijagnoze** umjesto "izvještaja": svaku večer dan; nedjeljom dan + tjedan; kraj mjeseca dan + tjedan + mjesec; 31. 12. sve četiri. Struktura: Ukratko → Napredak → Pohvale → Što smo primijetili → Veliki problemi → Ideje za napredak. Detaljno, psihološki, iskreno ali nikad bezobrazno. Najvažniji dio appa — kvaliteta promptova je prioritet.
 - **Napredak naspram prošlosti, ne savršenstva**: dnevni rezultat 0–100, usporedbe s jučer / prošli tjedan / mjesec / godina, osobni rekordi, streak boljih tjedana. Mora se vidjeti na prvi pogled.
 - **Gamifikacija**: streakovi, questovi, bedževi; lagani Solo Leveling štih (rang E–S, statovi). Ne mora biti "igrica".
-- **Opcionalni trackeri** (isključeni po defaultu): kalorije (cilj vs pojedeno), novac (limit potrošnje vs potrošeno, po želji stanje), raspoloženje (samo dodatak dijagnozama, "krafna, ne plan").
+- **Opcionalni trackeri** (isključeni po defaultu): kalorije (cilj vs pojedeno), novac (limit potrošnje vs potrošeno, po želji stanje). **Raspoloženje se ne prati** (Borna odlučio 2026-11-09 22:02).
 
 ## Odluke (Borna, 2026-11-09) — odgovori na pitanja 1–24
 Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–24 su zatvorena.

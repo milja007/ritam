@@ -61,4 +61,4 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] 38. Teme boja
 
 ## Faza 4 — Nadogradnje
-- [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget · 42. Raspoloženje (krafna: ocjena 1–5 + oznake, samo za dijagnoze)
+- [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget

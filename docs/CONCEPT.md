@@ -33,7 +33,6 @@ Struktura svake dijagnoze, uvijek istim redom:
 4. **Što smo primijetili** — uzorci i mogući uzroci, psihološki pogled (kad padaš, što te diže, što pomaže).
 5. **Veliki problemi** — iskreno i objektivno, bez uljepšavanja, ali nikad bezobrazno ni s osudom.
 6. **Ideje za napredak** — konkretni mali koraci; malo po malo: najviše 1 nova promjena tjedno, 2 mjesečno, nova tek kad je prethodna stabilna ~2 tjedna; odbijeni prijedlog se ne nudi ponovo 2 tjedna.
-7. **Raspoloženje** — samo ako ga bilježi: kratka napomena (npr. preporuka odmora).
 
 Dan se čita za 30 s; tjedan, mjesec i godina su detaljni. Ton: kao dobar trener — iskren, topao, konkretan; prvo činjenice pa tumačenje; svaka kritika s idejom što napraviti; bez posramljivanja.
 Kvaliteta: LLM dobiva sve iz razdoblja (checklist + komentari, zabrane, san, XP, trackeri, prethodne dijagnoze — prati je li prošli savjet upalio); komentari postaju uvidi ("tri utorka zaredom *umoran*…"); promptovi verzionirani u repou i testirani na primjerima podataka; ispod svake dijagnoze **Pomoglo / Nije pomoglo** + komentar; arhiva svih dijagnoza na Profilu.
@@ -48,7 +47,6 @@ Savršen tjedan/mjesec gotovo nitko nikad neće imati — mjeri se jesi li bolji
 ## Opcionalni trackeri (isključeni po defaultu, uključuju se u Profilu)
 - **Kalorije**: dnevni cilj, unos kcal (po obroku ili zbroj) → večernja provjera: unutar / iznad / ispod i koliko. Upozorenje ako je cilj neuobičajeno nizak.
 - **Novac**: limit potrošnje za dan/tjedan/mjesec (npr. "najviše 100 € ovaj tjedan"), po želji trenutno stanje; unos potrošnje (iznos + bilješka) → koliko je ostalo, tjedni/mjesečni zbroj.
-- **Raspoloženje** — "krafna, ne plan": ocjena 1–5 + oznake što utječe; služi samo dijagnozama da primijete veze i ponekad preporuče odmor/lakši dan. Ne pravi planove iz njega. Ako je dulje vrijeme jako nisko, dijagnoza nježno predloži razgovor s nekim bliskim ili stručnjakom.
 - Kalorije i novac ulaze u dnevni rezultat i dijagnoze samo kad su uključeni; ciljeve postavlja korisnik.
 
 ## Tehnika (odluke)
@@ -58,4 +56,4 @@ Expo (SDK iz package.json) + TypeScript, Expo Router, Zustand + TanStack Query, 
 1. **Jezgra (MVP)**: jutarnja obavijest, večernji upit + checklist s komentarom, dnevna dijagnoza, timeline + uređivanje, Supabase + HR/EN, osnovni XP + streak + dnevni rezultat i usporedba s prošlošću. Gotovo kad: 7 dana zaredom ispunjen upit.
 2. **Pametni planer**: LLM raspoređivač, Google Calendar, tjedni zadaci, "Nešto je iskrslo", zabrane + san, glasovni unos, LLM dnevna dijagnoza, trackeri kalorija i novca.
 3. **Igra i animacije**: leveli, orb-plamen, questovi + freeze, animacije i haptika, bedževi + rang E–S i statovi, tjedna/mjesečna/godišnja dijagnoza, grafovi napretka.
-4. **Nadogradnje**: Health sync, prelazak na DeepSeek, home-screen widget, raspoloženje (krafna).
+4. **Nadogradnje**: Health sync, prelazak na DeepSeek, home-screen widget.
