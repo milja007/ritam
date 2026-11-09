@@ -1,2 +1,11 @@
 export { NotificationsSync, syncNotificationsNow } from './notifications-sync';
-export { consumeEveningRequest, requestEveningCheckin, useEveningRequested } from './open-requests';
+export {
+  consumeBlockRequest,
+  consumeEveningRequest,
+  notifyBlocksChanged,
+  requestEveningCheckin,
+  requestOpenBlock,
+  useBlockRequested,
+  useBlocksVersion,
+  useEveningRequested,
+} from './open-requests';

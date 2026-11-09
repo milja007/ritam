@@ -1,26 +1,18 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Zahtjev za otvaranje ekrana iz obavijesti (npr. dodir večernje obavijesti → večernji upit).
+ * Zahtjevi iz obavijesti prema ekranima (npr. dodir večernje obavijesti → večernji upit, Iskrslo na
+ * podsjetniku → uređivač bloka) i signal da su se blokovi promijenili izvan ekrana (Gotovo na obavijesti).
  * Obavijest stiže izvan React stabla, pa se zahtjev pamti dok ga ekran ne preuzme.
  */
-let eveningRequested = false;
+type State = { evening: boolean; blockId: string | null; blocksVersion: number };
+
+let state: State = { evening: false, blockId: null, blocksVersion: 0 };
 const listeners = new Set<() => void>();
 
-function emit() {
+function set(next: Partial<State>) {
+  state = { ...state, ...next };
   for (const listener of listeners) listener();
-}
-
-export function requestEveningCheckin(): void {
-  eveningRequested = true;
-  emit();
-}
-
-/** Ekran je otvorio upit — zahtjev se briše. */
-export function consumeEveningRequest(): void {
-  if (!eveningRequested) return;
-  eveningRequested = false;
-  emit();
 }
 
 function subscribe(listener: () => void) {
@@ -30,7 +22,40 @@ function subscribe(listener: () => void) {
   };
 }
 
+export function requestEveningCheckin(): void {
+  set({ evening: true });
+}
+
+/** Ekran je otvorio upit — zahtjev se briše. */
+export function consumeEveningRequest(): void {
+  if (state.evening) set({ evening: false });
+}
+
 /** Je li zatražen večernji upit (dok ga ekran ne preuzme s `consumeEveningRequest`). */
 export function useEveningRequested(): boolean {
-  return useSyncExternalStore(subscribe, () => eveningRequested, () => false);
+  return useSyncExternalStore(subscribe, () => state.evening, () => false);
+}
+
+/** Otvori blok u uređivaču na tabu Danas (Iskrslo / dodir podsjetnika). */
+export function requestOpenBlock(blockId: string): void {
+  set({ blockId });
+}
+
+export function consumeBlockRequest(): void {
+  if (state.blockId !== null) set({ blockId: null });
+}
+
+/** Id bloka koji treba otvoriti, dok ga ekran ne preuzme s `consumeBlockRequest`. */
+export function useBlockRequested(): string | null {
+  return useSyncExternalStore(subscribe, () => state.blockId, () => null);
+}
+
+/** Blokovi su se promijenili izvan ekrana (npr. Gotovo na obavijesti) — ekrani neka ponovo učitaju. */
+export function notifyBlocksChanged(): void {
+  set({ blocksVersion: state.blocksVersion + 1 });
+}
+
+/** Broj koji raste pri svakoj vanjskoj promjeni blokova (za ovisnosti učitavanja). */
+export function useBlocksVersion(): number {
+  return useSyncExternalStore(subscribe, () => state.blocksVersion, () => 0);
 }

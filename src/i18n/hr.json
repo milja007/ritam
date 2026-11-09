@@ -68,7 +68,8 @@
   },
   "notifications": {
     "channel": {
-      "daily": "Dnevni ritam"
+      "daily": "Dnevni ritam",
+      "blocks": "Podsjetnici blokova"
     },
     "morning": {
       "title": "Dobro jutro",
@@ -81,6 +82,10 @@
     "windDown": {
       "title": "Vrijeme za smirivanje",
       "body": "Uskoro je vrijeme za krevet. Spusti ekran i uspori."
+    },
+    "block": {
+      "body": "Počinje sada · {{start}}–{{end}}",
+      "snoozedBody": "Odgođeno 15 min · {{start}}–{{end}}"
     },
     "actions": {
       "done": "Gotovo",

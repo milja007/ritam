@@ -68,7 +68,8 @@
   },
   "notifications": {
     "channel": {
-      "daily": "Daily rhythm"
+      "daily": "Daily rhythm",
+      "blocks": "Block reminders"
     },
     "morning": {
       "title": "Good morning",
@@ -81,6 +82,10 @@
     "windDown": {
       "title": "Time to wind down",
       "body": "Bedtime is coming up. Put the screen down and slow down."
+    },
+    "block": {
+      "body": "Starting now · {{start}}–{{end}}",
+      "snoozedBody": "Snoozed 15 min · {{start}}–{{end}}"
     },
     "actions": {
       "done": "Done",
