@@ -19,10 +19,14 @@ import {
 
 const SETTINGS: NotificationSettings = {
   wakeTime: '07:00',
+  weekendWakeTime: null,
   sleepHours: 8,
   morningNotifTime: '07:00',
   eveningNotifTime: '21:15',
   windDownMinutes: 45,
+  morningNotifEnabled: true,
+  eveningNotifEnabled: true,
+  windDownNotifEnabled: true,
 };
 
 const TEXTS: DailyNotificationTexts = {
@@ -58,10 +62,10 @@ class FakeScheduler implements NotificationScheduler {
 }
 
 describe('syncDailyNotifications', () => {
-  it('prazno → zakaže 3 dana × 3 obavijesti s tekstom, kanalom i payloadom', async () => {
+  it('prazno → zakaže 7 dana × 3 obavijesti s tekstom, kanalom i payloadom', async () => {
     const scheduler = new FakeScheduler();
     const result = await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS);
-    expect(result).toEqual({ cancelled: 0, scheduled: 9 });
+    expect(result).toEqual({ cancelled: 0, scheduled: 21 });
 
     const first = scheduler.scheduled.get('morning:2026-11-09@07:00');
     expect(first).toEqual({
@@ -107,8 +111,21 @@ describe('syncDailyNotifications', () => {
       NOW,
       TEXTS,
     );
-    expect(result).toEqual({ cancelled: 3, scheduled: 3 });
-    expect(scheduler.calls.slice(0, 3).every((call) => call.startsWith('cancel evening:'))).toBe(true);
+    expect(result).toEqual({ cancelled: 7, scheduled: 7 });
+    expect(scheduler.calls.slice(0, 7).every((call) => call.startsWith('cancel evening:'))).toBe(true);
+  });
+
+  it('isključena vrsta se otkazuje i više ne zakazuje', async () => {
+    const scheduler = new FakeScheduler();
+    await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS);
+    const result = await syncDailyNotifications(
+      scheduler,
+      { ...SETTINGS, windDownNotifEnabled: false },
+      NOW,
+      TEXTS,
+    );
+    expect(result).toEqual({ cancelled: 7, scheduled: 0 });
+    expect([...scheduler.scheduled.keys()].some((id) => id.startsWith('windDown:'))).toBe(false);
   });
 
   it('tuđe obavijesti i podsjetnici blokova ostaju', async () => {

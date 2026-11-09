@@ -14,7 +14,7 @@ import { addDays, localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { getBlock, getSettings, listBlocksBetween, setBlockStatus } from '@/db/repos';
-import i18n from '@/i18n';
+import i18n, { languageFor } from '@/i18n';
 
 import {
   blockTexts,
@@ -26,7 +26,12 @@ import {
   notificationsSupported,
   registerChannelsAndCategories,
 } from './expo-notifications';
-import { notifyBlocksChanged, requestEveningCheckin, requestOpenBlock } from './open-requests';
+import {
+  notifyBlocksChanged,
+  requestEveningCheckin,
+  requestOpenBlock,
+  setPermissionDecision,
+} from './open-requests';
 import {
   cancelBlockReminders,
   cancelDailyNotifications,
@@ -44,9 +49,10 @@ async function syncOnce(): Promise<void> {
   const db = getDb();
   const settings = await getSettings(db, LOCAL_USER_ID);
   if (settings === null) return;
-  const t = i18n.getFixedT(settings.language);
+  const t = i18n.getFixedT(languageFor(settings.language));
   await registerChannelsAndCategories(t);
   const permission = await ensurePermission();
+  setPermissionDecision(permission);
   if (permission !== 'allowed') {
     await cancelDailyNotifications(expoScheduler);
     await cancelBlockReminders(expoScheduler);
@@ -106,7 +112,7 @@ async function handleBlockAction(action: BlockAction, blockId: string, notificat
       return;
     case 'snooze': {
       const settings = await getSettings(db, LOCAL_USER_ID);
-      const t = i18n.getFixedT(settings?.language ?? i18n.language);
+      const t = i18n.getFixedT(settings ? languageFor(settings.language) : i18n.language);
       await scheduleSnooze(expoScheduler, block, effect.fireAt, blockTexts(t));
       return;
     }

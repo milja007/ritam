@@ -16,7 +16,7 @@ import type {
   ThemePreference,
   XpSource,
 } from '@/core/domain';
-import type { Language } from '@/core/i18n/language';
+import type { LanguagePreference } from '@/core/i18n/language';
 
 const baseColumns = () => ({
   id: text('id').primaryKey().notNull(),
@@ -29,12 +29,16 @@ export const settings = sqliteTable(
   'settings',
   {
     ...baseColumns(),
-    language: text('language').$type<Language>().notNull(),
+    language: text('language').$type<LanguagePreference>().notNull(),
     wakeTime: text('wake_time').notNull(),
+    weekendWakeTime: text('weekend_wake_time'),
     sleepHours: real('sleep_hours').notNull(),
     morningNotifTime: text('morning_notif_time').notNull(),
     eveningNotifTime: text('evening_notif_time').notNull(),
     windDownMinutes: integer('wind_down_minutes').notNull(),
+    morningNotifEnabled: integer('morning_notif_enabled', { mode: 'boolean' }).notNull().default(true),
+    eveningNotifEnabled: integer('evening_notif_enabled', { mode: 'boolean' }).notNull().default(true),
+    windDownNotifEnabled: integer('wind_down_notif_enabled', { mode: 'boolean' }).notNull().default(true),
     theme: text('theme').$type<ThemePreference>().notNull(),
     googleCalendarConnected: integer('google_calendar_connected', { mode: 'boolean' }).notNull(),
   },

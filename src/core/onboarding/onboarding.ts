@@ -4,14 +4,15 @@
  * Čista logika: bez React importa.
  */
 import { ruleSchema, settingsSchema, type Rule, type RuleWeight, type Settings } from '../domain';
-import type { Language } from '../i18n/language';
+import type { LanguagePreference } from '../i18n/language';
 import { formatClock, MINUTES_PER_DAY, parseClock } from '../time/clock';
 
-/** Redoslijed koraka (koncept: jezik → buđenje i san → obavijesti → 1–3 zabrane). */
+/** Redoslijed koraka (koncept: jezik → buđenje i san → obavijesti → 0–3 zabrane). */
 export const ONBOARDING_STEPS = ['language', 'sleep', 'notifications', 'rules'] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
-export const MIN_RULES = 1;
+/** Zabrane su neobavezne u onboardingu (Bornova odluka: 0–3). */
+export const MIN_RULES = 0;
 export const MAX_RULES = 3;
 
 /** Korak stepera za vremena i sate sna (koncept: postupni pomaci po 15 min). */
@@ -31,8 +32,10 @@ export type RuleDraft = {
 };
 
 export type OnboardingDraft = {
-  language: Language;
+  language: LanguagePreference;
   wakeTime: string;
+  /** Buđenje vikendom; isto kao `wakeTime` dok ga korisnik ne promijeni (sprema se kao `null`). */
+  weekendWakeTime: string;
   sleepHours: number;
   morningNotifTime: string;
   eveningNotifTime: string;
@@ -81,14 +84,14 @@ export function suggestNotificationTimes(
   return { morningNotifTime: morning, eveningNotifTime: evening };
 }
 
-export function createDefaultDraft(language: Language): OnboardingDraft {
+export function createDefaultDraft(language: LanguagePreference): OnboardingDraft {
   const wakeTime = '07:00';
   const sleepHours = 8;
   const times = suggestNotificationTimes(wakeTime, sleepHours) ?? {
     morningNotifTime: '07:00',
     eveningNotifTime: '21:15',
   };
-  return { language, wakeTime, sleepHours, ...times, rules: [emptyRule()] };
+  return { language, wakeTime, weekendWakeTime: wakeTime, sleepHours, ...times, rules: [] };
 }
 
 export function emptyRule(): RuleDraft {
@@ -111,10 +114,14 @@ export function toSettingsInput(draft: OnboardingDraft): SettingsInput {
   return {
     language: draft.language,
     wakeTime: draft.wakeTime,
+    weekendWakeTime: draft.weekendWakeTime === draft.wakeTime ? null : draft.weekendWakeTime,
     sleepHours: draft.sleepHours,
     morningNotifTime: draft.morningNotifTime,
     eveningNotifTime: draft.eveningNotifTime,
     windDownMinutes: DEFAULT_WIND_DOWN_MINUTES,
+    morningNotifEnabled: true,
+    eveningNotifEnabled: true,
+    windDownNotifEnabled: true,
     theme: 'system',
     googleCalendarConnected: false,
   };
@@ -139,7 +146,11 @@ export function isStepValid(step: OnboardingStep, draft: OnboardingDraft): boole
     case 'language':
       return !issuePaths.includes('language');
     case 'sleep':
-      return !issuePaths.includes('wakeTime') && !issuePaths.includes('sleepHours');
+      return (
+        !issuePaths.includes('wakeTime') &&
+        !issuePaths.includes('weekendWakeTime') &&
+        !issuePaths.includes('sleepHours')
+      );
     case 'notifications':
       return !issuePaths.includes('morningNotifTime') && !issuePaths.includes('eveningNotifTime');
     case 'rules':

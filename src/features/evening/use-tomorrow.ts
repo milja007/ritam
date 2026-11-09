@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { ScheduleBlock } from '@/core/domain';
-import { tomorrowInputs, type BlockDraft } from '@/core/schedule';
+import { tomorrowInputs, wakeTimeFor, type BlockDraft } from '@/core/schedule';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { createBlocks, getSettings, listBlocksForDate } from '@/db/repos';
@@ -36,7 +36,8 @@ export function useTomorrowPlan(date: string) {
             date,
             status: 'ready',
             existing,
-            wakeTime: settings?.wakeTime ?? FALLBACK_WAKE_TIME,
+            // Sutrašnje buđenje (vikendom vikend vrijeme).
+            wakeTime: settings ? wakeTimeFor(settings, date) : FALLBACK_WAKE_TIME,
           });
         }
       })

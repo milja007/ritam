@@ -78,7 +78,7 @@ describe('completeOnboarding', () => {
 
   it('odbija nepotpun nacrt i ništa ne piše', async () => {
     const { db } = await createTestDb();
-    expect(() => completeOnboarding(db, USER, draft({ rules: [] }), testDeps())).toThrow(
+    expect(() => completeOnboarding(db, USER, draft({ rules: [{ title: ' ', why: '', weight: 2 }] }), testDeps())).toThrow(
       IncompleteOnboardingError,
     );
     expect(() => completeOnboarding(db, USER, draft({ wakeTime: '25:00' }), testDeps())).toThrow(

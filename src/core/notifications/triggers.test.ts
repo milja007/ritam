@@ -15,15 +15,27 @@ import {
 /** Zadane vrijednosti iz onboardinga: 07:00, 8 h, wind-down 45 min, večernji upit 21:15. */
 const DEFAULTS: NotificationSettings = {
   wakeTime: '07:00',
+  weekendWakeTime: null,
   sleepHours: 8,
   morningNotifTime: '07:00',
   eveningNotifTime: '21:15',
   windDownMinutes: 45,
+  morningNotifEnabled: true,
+  eveningNotifEnabled: true,
+  windDownNotifEnabled: true,
 };
 
 /** Lokalno vrijeme uređaja (testovi ne ovise o vremenskoj zoni). */
 function at(year: number, month: number, day: number, hours: number, minutes = 0): Date {
   return new Date(year, month - 1, day, hours, minutes, 0, 0);
+}
+
+/** Redoslijed id-a po trenutku okidanja (wind-down poslije ponoći pripada sljedećem danu). */
+function order(id: string): number {
+  const match = /:(\d{4})-(\d{2})-(\d{2})@(\d{2}):(\d{2})$/.exec(id);
+  if (!match) throw new Error(id);
+  const [, y, mo, d, h, mi] = match.map(Number);
+  return at(y ?? 0, mo ?? 0, d ?? 0, h ?? 0, mi ?? 0).getTime();
 }
 
 function summary(settings: NotificationSettings, now: Date, days?: number): string[] {
@@ -68,7 +80,7 @@ describe('dailyNotificationTimes', () => {
 
 describe('upcomingTriggers', () => {
   it('rano ujutro: svi okidači za zadani broj dana, sortirani', () => {
-    expect(summary(DEFAULTS, at(2026, 11, 8, 5))).toEqual([
+    expect(summary(DEFAULTS, at(2026, 11, 8, 5), 3)).toEqual([
       'morning:2026-11-08@07:00',
       'evening:2026-11-08@21:15',
       'windDown:2026-11-08@22:15',
@@ -79,7 +91,8 @@ describe('upcomingTriggers', () => {
       'evening:2026-11-10@21:15',
       'windDown:2026-11-10@22:15',
     ]);
-    expect(DEFAULT_SCHEDULE_DAYS).toBe(3);
+    expect(DEFAULT_SCHEDULE_DAYS).toBe(7);
+    expect(summary(DEFAULTS, at(2026, 11, 8, 5))).toHaveLength(21);
   });
 
   it('današnji prošli okidači se preskaču', () => {
@@ -148,7 +161,7 @@ describe('upcomingTriggers', () => {
     expect(many).toHaveLength(MAX_SCHEDULE_DAYS * 3);
     expect(summary(DEFAULTS, at(2026, 11, 8, 5), 0)).toHaveLength(3);
     expect(summary(DEFAULTS, at(2026, 11, 8, 5), -4)).toHaveLength(3);
-    expect(summary(DEFAULTS, at(2026, 11, 8, 5), Number.NaN)).toHaveLength(9);
+    expect(summary(DEFAULTS, at(2026, 11, 8, 5), Number.NaN)).toHaveLength(21);
     expect(summary(DEFAULTS, at(2026, 11, 8, 5), 2.9)).toHaveLength(6);
   });
 
@@ -161,6 +174,39 @@ describe('upcomingTriggers', () => {
         expect([trigger.fireAt.getHours(), trigger.fireAt.getMinutes()]).toEqual([hours, minutes]);
       }
     }
+  });
+
+  it('vikend buđenje: jutarnja se pomiče, wind-down prati buđenje sljedećeg dana', () => {
+    const weekend: NotificationSettings = { ...DEFAULTS, weekendWakeTime: '09:00' };
+    // Petak 13. 11. → subota i nedjelja vikend, ponedjeljak radni dan.
+    expect(summary(weekend, at(2026, 11, 13, 5), 4)).toEqual([
+      'morning:2026-11-13@07:00',
+      'evening:2026-11-13@21:15',
+      'morning:2026-11-14@09:00',
+      'windDown:2026-11-14@00:15',
+      'evening:2026-11-14@21:15',
+      'morning:2026-11-15@09:00',
+      'windDown:2026-11-15@00:15',
+      'evening:2026-11-15@21:15',
+      'windDown:2026-11-15@22:15',
+      'morning:2026-11-16@07:00',
+      'evening:2026-11-16@21:15',
+      'windDown:2026-11-16@22:15',
+    ].sort((a, b) => order(a) - order(b)));
+  });
+
+  it('isključene vrste se ne zakazuju', () => {
+    const onlyEvening: NotificationSettings = {
+      ...DEFAULTS,
+      morningNotifEnabled: false,
+      windDownNotifEnabled: false,
+    };
+    expect(summary(onlyEvening, at(2026, 11, 8, 5), 2)).toEqual([
+      'evening:2026-11-08@21:15',
+      'evening:2026-11-09@21:15',
+    ]);
+    const none = { ...onlyEvening, eveningNotifEnabled: false };
+    expect(summary(none, at(2026, 11, 8, 5))).toEqual([]);
   });
 
   it('neispravne postavke ili vrijeme → null', () => {
