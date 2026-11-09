@@ -15,6 +15,32 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriteriji koraka: vikend buđenje + upozorenje > 1 h (1, 2, 5), `language: system` (1, 4), 0–3 zabrane (5), prekidači tri dnevne obavijesti (1, 3, 6), horizont 7 dana (3), kartica za odbijeno dopuštenje (6), doba dana prema buđenju (7), ikona/splash (8). Odluka u izvedbi (nije Bornova): vikend = subota i nedjelja; jutarnja obavijest vikendom se pomiče s buđenjem, a wind-down prati buđenje sljedećeg dana — zapisati kao napomenu/pitanje. Granica večeri (krevet − 5 h) je moja pretpostavka da zadane vrijednosti ostanu slične — pitanje za Bornu. Prekidač za podsjetnike blokova nije dio koraka (pitanje 28 otvoreno). Korak je velik: radim redom 1→8 i commitam nakon svake cjeline; ako ponestane budžeta, nastavak na `wip/korak-13c`.
 
+**Napravljeno:**
+- Bez novih ovisnosti. Migracija `0002_settings_refinements`: `settings` + `weekend_wake_time` (NULL = kao radni dan) i `morning_notif_enabled` / `evening_notif_enabled` / `wind_down_notif_enabled` (zadano uključeno); `language` sada `system | hr | en`. Test migracije nad postojećim redom postavki.
+- Čisto `src/core/schedule/wake.ts`: vikend = subota i nedjelja, `wakeTimeFor`, `bedtimeOn` (krevet prati buđenje *sljedećeg* dana), `wakeShiftMinutes` (najkraćim putem preko ponoći), `weekendWakeWarning` (> 60 min).
+- Okidači: horizont **7 dana** (21 dnevna obavijest; podsjetnici blokova dobivaju 64 − 21 − 4 = 39 mjesta, isti horizont); isključene vrste se ne zakazuju, a već zakazane se otkažu; jutarnja vikendom pomaknuta za razliku vikend − radni dan; wind-down se računa po noći iz buđenja sljedećeg dana (petak i subota navečer prate vikend buđenje, ispravno i iza ponoći).
+- Onboarding: jezik nudi "Jezik uređaja" (zadano); korak sna ima buđenje radnim danom i vikendom (vikend prati radni dan dok se ne promijeni) + upozorenje > 1 h + krevet za petak/subotu; zabrane **0–3** (korak se može preskočiti).
+- `features/settings`: zajedničko stanje postavki (`loadSettings`, `updateSettings`, `useSettings`) — učitavanje/spremanje primijeni jezik i granice doba dana, spremanje ponovo zakaže obavijesti. Jezik je sada trajno spremljen (i `system`).
+- Profil (`features/profile`): jezik, buđenje radni dan / vikend s upozorenjem, **prekidač za svaku od tri dnevne obavijesti** (s vremenom, vikend jutro posebno). Sve se sprema odmah.
+- **Kartica "Obavijesti su isključene"** s gumbom **Otvori postavke** (`Linking.openSettings`) na Danas i Profilu kad je dopuštenje odbijeno; sync javlja stanje dopuštenja pri svakoj provjeri (i po povratku iz postavki).
+- **Doba dana prema buđenju:** zora = buđenje → +3 h, dan do 5 h prije kreveta, zatim večer (07:00 / 8 h → 07–10 / 10–18 / 18+); radi i preko ponoći; vikendom prema vikend buđenju. Dok nema postavki, stare fiksne granice.
+- "Što imaš sutra?" slaže termine od sutrašnjeg buđenja (vikendom vikend vrijeme).
+- **Privremena ikona i splash:** narančasti orb na tamnoj pozadini (`scripts/generate-placeholder-icons.py`, Pillow); iOS koristi `icon.png` (uklonjen template `expo.icon`), Android adaptive i splash na `#0B0B10`. `ClockStepper` premješten u `src/ui`.
+- 14 novih testova (ukupno 366). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (366/366), `expo export --platform android` ✅ (4.4 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox): Switch, kartica dopuštenja i povratak iz postavki, nova ikona/splash (treba novi dev build da se vide ikona i splash).
+- Odluke u izvedbi (moje, ne Bornove): vikend = subota i nedjelja; jutarnja obavijest se vikendom pomiče za istu razliku kao buđenje; večernji upit ostaje isto vrijeme svaki dan; večer počinje 5 h prije kreveta.
+- Vremena jutarnje/večernje obavijesti i sati sna se zasad mijenjaju samo u onboardingu (Profil ima buđenje i prekidače).
+- Supabase shema (korak 17) mora pratiti nove stupce `settings`.
+
+**Pitanja za Bornu:**
+29. Vikendom se jutarnja obavijest pomiče zajedno s buđenjem (npr. 07:00 → 09:00), a večernji upit ostaje isti. Odgovara li, ili želiš i večernji upit vikendom drukčije?
+30. Večer (tamniji gradijent) počinje 5 h prije kreveta (uz 23:00 krevet = 18:00). Odgovara li ta granica?
+31. Treba li u Profilu i uređivanje vremena obavijesti i sati sna (zasad samo u onboardingu)?
+
+**Sljedeće:** korak 14 — jutarnji brief (ekran iz notifikacije: pozdrav, prijava sna, kartice dana, Prilagodi / Kreni).
+
 ## 2026-11-09 22:43 · Korak 13b — Podsjetnici blokova
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-13b`; bez novih ovisnosti i bez migracije.
