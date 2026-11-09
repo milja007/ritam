@@ -1,9 +1,10 @@
 import { and, asc, eq } from 'drizzle-orm';
 
-import { scheduleBlockSchema, type LocalDate, type ScheduleBlock } from '@/core/domain';
+import { scheduleBlockSchema, type BlockStatus, type LocalDate, type ScheduleBlock } from '@/core/domain';
 
 import type { RitamDb } from '../db';
 import { scheduleBlocks } from '../schema';
+import { deleteBlockTaskXp, syncBlockTaskXp } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
 /** Polja bloka koja zadaje korisnik/planer (bez id-a, vlasnika i vremena). */
@@ -58,7 +59,8 @@ export async function listBlocksForDate(
 
 /**
  * Djelomično ažurira blok i osvježava `updatedAt`. Cijeli rezultat se validira (npr. novi `end`
- * prema starom `start`). Vraća `null` ako blok ne postoji.
+ * prema starom `start`). Promjena statusa ili vrste usklađuje XP zadatka u istoj transakciji.
+ * Vraća `null` ako blok ne postoji.
  */
 export async function updateBlock(
   db: RitamDb,
@@ -67,26 +69,60 @@ export async function updateBlock(
   patch: ScheduleBlockPatch,
   deps: RepoDeps = defaultRepoDeps,
 ): Promise<ScheduleBlock | null> {
-  const existing = await getBlock(db, userId, id);
-  if (!existing) return null;
   const definedPatch = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   );
-  const next = scheduleBlockSchema.parse({
-    ...existing,
-    ...definedPatch,
-    id: existing.id,
-    userId: existing.userId,
-    createdAt: existing.createdAt,
-    updatedAt: deps.now().toISOString(),
+  return db.transaction((tx) => {
+    const row = tx.select().from(scheduleBlocks).where(ownBlock(userId, id)).get();
+    if (!row) return null;
+    const existing = scheduleBlockSchema.parse(row);
+    const next = scheduleBlockSchema.parse({
+      ...existing,
+      ...definedPatch,
+      id: existing.id,
+      userId: existing.userId,
+      createdAt: existing.createdAt,
+      updatedAt: deps.now().toISOString(),
+    });
+    const { id: _id, userId: _owner, createdAt: _created, ...changes } = next;
+    tx.update(scheduleBlocks).set(changes).where(ownBlock(userId, id)).run();
+    if (next.status !== existing.status || next.kind !== existing.kind || next.date !== existing.date) {
+      syncBlockTaskXp(tx, next, deps);
+    }
+    return next;
   });
-  const { id: _id, userId: _owner, createdAt: _created, ...changes } = next;
-  await db.update(scheduleBlocks).set(changes).where(ownBlock(userId, id)).run();
-  return next;
 }
 
-/** Briše blok. Vraća je li nešto obrisano. */
-export async function deleteBlock(db: RitamDb, userId: string, id: string): Promise<boolean> {
-  const result = await db.delete(scheduleBlocks).where(ownBlock(userId, id)).run();
-  return result.changes > 0;
+/**
+ * Mijenja status bloka i u istoj transakciji usklađuje XP zadatka (kvačica Gotovo na timelineu
+ * daje XP odmah; vraćanje kvačice ga uklanja). Vraća `null` ako blok ne postoji.
+ */
+export function setBlockStatus(
+  db: RitamDb,
+  userId: string,
+  id: string,
+  status: BlockStatus,
+  deps: RepoDeps = defaultRepoDeps,
+): ScheduleBlock | null {
+  // Drizzle expo-sqlite driver je sinkron: callback transakcije mora biti sinkron.
+  return db.transaction((tx) => {
+    const row = tx.select().from(scheduleBlocks).where(ownBlock(userId, id)).get();
+    if (!row) return null;
+    const next = scheduleBlockSchema.parse({ ...row, status, updatedAt: deps.now().toISOString() });
+    tx.update(scheduleBlocks)
+      .set({ status: next.status, updatedAt: next.updatedAt })
+      .where(ownBlock(userId, id))
+      .run();
+    syncBlockTaskXp(tx, next, deps);
+    return next;
+  });
+}
+
+/** Briše blok i XP njegova izvršenja. Vraća je li nešto obrisano. */
+export function deleteBlock(db: RitamDb, userId: string, id: string): boolean {
+  return db.transaction((tx) => {
+    deleteBlockTaskXp(tx, userId, id);
+    const result = tx.delete(scheduleBlocks).where(ownBlock(userId, id)).run();
+    return result.changes > 0;
+  });
 }

@@ -1,4 +1,5 @@
 export * from './deps';
+export * from './block-xp';
 export * from './checkins';
 export * from './onboarding';
 export * from './rules';

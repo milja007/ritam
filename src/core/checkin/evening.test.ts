@@ -6,13 +6,20 @@ import {
   checklistBlocks,
   cleanText,
   createEveningDraft,
+  eveningCheckinDate,
   eveningSteps,
   eveningXpAwards,
+  isChecklistAnswerValid,
   isEveningDraftComplete,
   isEveningStepValid,
+  movedBlockFields,
+  otherDayOptions,
+  resolveLaterDate,
   rulesActiveOn,
   sumAwards,
+  taskXpForBlock,
   weekdayOf,
+  type ChecklistAnswer,
   type EveningDraft,
 } from './evening';
 
@@ -38,14 +45,31 @@ const checkin = (overrides: Partial<Checkin> = {}): Checkin => ({
   ...overrides,
 });
 
-const item = (refId: string, ok: boolean, comment: string | null = null): CheckinItem => ({
+const item = (
+  refId: string,
+  outcome: CheckinItem['outcome'],
+  comment: string | null = null,
+  laterDate: string | null = null,
+): CheckinItem => ({
   ...base,
   id: `i-${refId}`,
   checkinId: 'c1',
   kind: 'task',
   refId,
-  ok,
+  ok: outcome === 'ok',
+  outcome,
   comment,
+  laterDate,
+  movedBlockId: laterDate === null ? null : `m-${refId}`,
+});
+
+const answer = (blockId: string, overrides: Partial<ChecklistAnswer> = {}): ChecklistAnswer => ({
+  blockId,
+  outcome: 'ok',
+  comment: '',
+  later: null,
+  laterDate: null,
+  ...overrides,
 });
 
 const log = (ruleId: string, kept: boolean, trigger: string | null = null): RuleLog => ({
@@ -59,7 +83,8 @@ const log = (ruleId: string, kept: boolean, trigger: string | null = null): Rule
 });
 
 const complete = (overrides: Partial<EveningDraft> = {}): EveningDraft => ({
-  items: [{ blockId: 'a', ok: true, comment: '' }],
+  date: '2026-11-09',
+  items: [answer('a')],
   rules: [{ ruleId: 'r1', kept: true, trigger: '' }],
   rating: 3,
   note: '',
@@ -93,37 +118,117 @@ describe('weekdayOf / rulesActiveOn', () => {
   });
 });
 
+describe('eveningCheckinDate', () => {
+  it('prije 04:00 upit pripada prethodnom danu', () => {
+    expect(eveningCheckinDate(new Date(2026, 10, 9, 21, 30))).toBe('2026-11-09');
+    expect(eveningCheckinDate(new Date(2026, 10, 10, 0, 30))).toBe('2026-11-09');
+    expect(eveningCheckinDate(new Date(2026, 10, 10, 3, 59))).toBe('2026-11-09');
+    expect(eveningCheckinDate(new Date(2026, 10, 10, 4, 0))).toBe('2026-11-10');
+    expect(eveningCheckinDate(new Date(2026, 0, 1, 1, 0))).toBe('2025-12-31');
+  });
+});
+
+describe('kad kasnije?', () => {
+  it('drugi dan nudi prekosutra … +7 dana', () => {
+    expect(otherDayOptions('2026-11-28')).toEqual([
+      '2026-11-30',
+      '2026-12-01',
+      '2026-12-02',
+      '2026-12-03',
+      '2026-12-04',
+      '2026-12-05',
+    ]);
+  });
+
+  it('dan premještanja: sutra, odabrani drugi dan ili ništa', () => {
+    const d = '2026-11-09';
+    expect(resolveLaterDate(answer('a', { outcome: 'not', later: 'tomorrow' }), d)).toBe('2026-11-10');
+    expect(resolveLaterDate(answer('a', { outcome: 'partial', later: 'other', laterDate: '2026-11-12' }), d)).toBe(
+      '2026-11-12',
+    );
+    expect(resolveLaterDate(answer('a', { outcome: 'not', later: 'other', laterDate: '2026-11-10' }), d)).toBeNull();
+    expect(resolveLaterDate(answer('a', { outcome: 'not', later: 'other', laterDate: '2026-11-17' }), d)).toBeNull();
+    expect(resolveLaterDate(answer('a', { outcome: 'not', later: 'skip' }), d)).toBeNull();
+    expect(resolveLaterDate(answer('a', { outcome: 'ok', later: 'tomorrow' }), d)).toBeNull();
+  });
+
+  it('Djelomično i Nije traže "kad kasnije?", drugi dan traži ispravan dan', () => {
+    const d = '2026-11-09';
+    expect(isChecklistAnswerValid(answer('a'), d)).toBe(true);
+    expect(isChecklistAnswerValid(answer('a', { outcome: null }), d)).toBe(false);
+    expect(isChecklistAnswerValid(answer('a', { outcome: 'partial' }), d)).toBe(false);
+    expect(isChecklistAnswerValid(answer('a', { outcome: 'partial', later: 'skip' }), d)).toBe(true);
+    expect(isChecklistAnswerValid(answer('a', { outcome: 'not', later: 'tomorrow' }), d)).toBe(true);
+    expect(isChecklistAnswerValid(answer('a', { outcome: 'not', later: 'other' }), d)).toBe(false);
+    expect(isChecklistAnswerValid(answer('a', { outcome: 'not', later: 'other', laterDate: '2026-11-16' }), d)).toBe(
+      true,
+    );
+    expect(
+      isChecklistAnswerValid(answer('a', { outcome: 'not', later: 'skip', comment: 'x'.repeat(2001) }), d),
+    ).toBe(false);
+  });
+
+  it('premješteni blok: isti naziv i termin, planiran, ručni', () => {
+    expect(
+      movedBlockFields(
+        { title: 'Teretana', start: '18:00', end: '19:00', taskId: null, kind: 'task' },
+        '2026-11-10',
+      ),
+    ).toEqual({
+      date: '2026-11-10',
+      title: 'Teretana',
+      start: '18:00',
+      end: '19:00',
+      taskId: null,
+      kind: 'task',
+      source: 'user',
+      status: 'planned',
+    });
+    expect(
+      movedBlockFields({ title: 'Kava', start: '10:00', end: '10:30', taskId: null, kind: 'calendar' }, '2026-11-10')
+        .kind,
+    ).toBe('fixed');
+  });
+});
+
 describe('createEveningDraft', () => {
   it('novi upit: gotovi blokovi su unaprijed U redu, ostalo bez odgovora', () => {
     const draft = createEveningDraft(
+      '2026-11-09',
       [block('s', 'sleep'), block('a', 'task', 'done'), block('b')],
       [{ id: 'r1' }],
     );
     expect(draft).toEqual({
-      items: [
-        { blockId: 'a', ok: true, comment: '' },
-        { blockId: 'b', ok: null, comment: '' },
-      ],
+      date: '2026-11-09',
+      items: [answer('a'), answer('b', { outcome: null })],
       rules: [{ ruleId: 'r1', kept: null, trigger: '' }],
       rating: null,
       note: '',
     });
   });
 
-  it('postojeći upit: preuzima spremljene odgovore, novi blokovi su bez odgovora', () => {
+  it('postojeći upit: preuzima odgovore i "kad kasnije?", novi blokovi su bez odgovora', () => {
     const draft = createEveningDraft(
-      [block('a', 'task', 'done'), block('b'), block('novi')],
+      '2026-11-09',
+      [block('a', 'task', 'done'), block('b'), block('c'), block('d'), block('novi')],
       [{ id: 'r1' }, { id: 'r2' }],
       {
         checkin: checkin({ note: null }),
-        items: [item('a', false, 'Kasnio'), item('b', true)],
+        items: [
+          item('a', 'not', 'Kasnio'),
+          item('b', 'ok'),
+          item('c', 'partial', null, '2026-11-10'),
+          item('d', 'not', 'Gužva', '2026-11-13'),
+        ],
         ruleLogs: [log('r1', false, 'Stres')],
       },
     );
     expect(draft.items).toEqual([
-      { blockId: 'a', ok: false, comment: 'Kasnio' },
-      { blockId: 'b', ok: true, comment: '' },
-      { blockId: 'novi', ok: null, comment: '' },
+      answer('a', { outcome: 'not', comment: 'Kasnio', later: 'skip' }),
+      answer('b'),
+      answer('c', { outcome: 'partial', later: 'tomorrow' }),
+      answer('d', { outcome: 'not', comment: 'Gužva', later: 'other', laterDate: '2026-11-13' }),
+      answer('novi', { outcome: null }),
     ]);
     expect(draft.rules).toEqual([
       { ruleId: 'r1', kept: false, trigger: 'Stres' },
@@ -143,15 +248,11 @@ describe('koraci i validacija', () => {
   it('checklist traži odgovor na svaku stavku; prazna checklista je ispunjena', () => {
     expect(isEveningStepValid('checklist', complete())).toBe(true);
     expect(isEveningStepValid('checklist', complete({ items: [] }))).toBe(true);
+    expect(isEveningStepValid('checklist', complete({ items: [answer('a', { outcome: null })] }))).toBe(false);
+    expect(isEveningStepValid('checklist', complete({ items: [answer('a', { outcome: 'not' })] }))).toBe(false);
     expect(
-      isEveningStepValid('checklist', complete({ items: [{ blockId: 'a', ok: null, comment: '' }] })),
-    ).toBe(false);
-    expect(
-      isEveningStepValid(
-        'checklist',
-        complete({ items: [{ blockId: 'a', ok: false, comment: 'x'.repeat(2001) }] }),
-      ),
-    ).toBe(false);
+      isEveningStepValid('checklist', complete({ items: [answer('a', { outcome: 'not', later: 'skip' })] })),
+    ).toBe(true);
   });
 
   it('zabrane traže odgovor na svaku', () => {
@@ -175,6 +276,7 @@ describe('koraci i validacija', () => {
     expect(isEveningDraftComplete(complete())).toBe(true);
     expect(isEveningDraftComplete(complete({ rules: [] }))).toBe(true);
     expect(isEveningDraftComplete(complete({ rating: null }))).toBe(false);
+    expect(isEveningDraftComplete(complete({ date: '2026-13-01' }))).toBe(false);
   });
 });
 
@@ -186,61 +288,52 @@ describe('cleanText', () => {
 });
 
 describe('blockStatusAfterCheckin', () => {
-  it('U redu → done, Nije → skipped, djelomično/premješteno ostaje', () => {
-    expect(blockStatusAfterCheckin('planned', true)).toBe('done');
-    expect(blockStatusAfterCheckin('skipped', true)).toBe('done');
-    expect(blockStatusAfterCheckin('planned', false)).toBe('skipped');
-    expect(blockStatusAfterCheckin('done', false)).toBe('skipped');
-    expect(blockStatusAfterCheckin('partial', false)).toBe('partial');
-    expect(blockStatusAfterCheckin('moved', false)).toBe('moved');
+  it('U redu → done, Djelomično → partial, Nije → moved ili skipped', () => {
+    expect(blockStatusAfterCheckin('ok', null)).toBe('done');
+    expect(blockStatusAfterCheckin('partial', null)).toBe('partial');
+    expect(blockStatusAfterCheckin('partial', '2026-11-10')).toBe('partial');
+    expect(blockStatusAfterCheckin('not', '2026-11-10')).toBe('moved');
+    expect(blockStatusAfterCheckin('not', null)).toBe('skipped');
+  });
+});
+
+describe('taskXpForBlock', () => {
+  it('zadatak: gotovo 15, djelomično 8; ostalo bez XP-a', () => {
+    expect(taskXpForBlock({ kind: 'task', status: 'done' })).toEqual({ source: 'task', amount: 15 });
+    expect(taskXpForBlock({ kind: 'task', status: 'partial' })).toEqual({ source: 'task', amount: 8 });
+    expect(taskXpForBlock({ kind: 'task', status: 'planned' })).toBeNull();
+    expect(taskXpForBlock({ kind: 'task', status: 'skipped' })).toBeNull();
+    expect(taskXpForBlock({ kind: 'task', status: 'moved' })).toBeNull();
+    expect(taskXpForBlock({ kind: 'fixed', status: 'done' })).toBeNull();
   });
 });
 
 describe('eveningXpAwards', () => {
-  const blocks = [
-    { id: 'a', kind: 'task' as const },
-    { id: 'b', kind: 'task' as const },
-    { id: 'f', kind: 'fixed' as const },
-  ];
   const rules = [
     { id: 'r1', weight: 1 as const },
     { id: 'r3', weight: 3 as const },
   ];
 
-  it('upit + zadaci U redu + poštovane zabrane; bez kazni', () => {
+  it('upit + poštovane zabrane; bez kazni (XP zadataka ide preko statusa bloka)', () => {
     const awards = eveningXpAwards(
       {
-        items: [
-          { blockId: 'a', ok: true, comment: '' },
-          { blockId: 'b', ok: false, comment: 'Nisam stigao' },
-          { blockId: 'f', ok: true, comment: '' },
-        ],
         rules: [
           { ruleId: 'r1', kept: false, trigger: 'Umor' },
           { ruleId: 'r3', kept: true, trigger: '' },
         ],
-        rating: 4,
-        note: '',
       },
-      blocks,
       rules,
       'c1',
     );
     expect(awards).toEqual([
       { source: 'checkin', amount: 15, sourceId: 'c1' },
-      { source: 'task', amount: 15, sourceId: 'a' },
       { source: 'rule', amount: 20, sourceId: 'r3' },
     ]);
-    expect(sumAwards(awards)).toBe(50);
+    expect(sumAwards(awards)).toBe(35);
   });
 
-  it('nepoznati blok ili zabrana ne daju XP', () => {
-    const awards = eveningXpAwards(
-      complete({ items: [{ blockId: 'nema', ok: true, comment: '' }], rules: [{ ruleId: 'nema', kept: true, trigger: '' }] }),
-      blocks,
-      rules,
-      'c1',
-    );
+  it('nepoznata zabrana ne daje XP', () => {
+    const awards = eveningXpAwards({ rules: [{ ruleId: 'nema', kept: true, trigger: '' }] }, rules, 'c1');
     expect(awards).toEqual([{ source: 'checkin', amount: 15, sourceId: 'c1' }]);
   });
 });

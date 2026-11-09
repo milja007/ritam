@@ -12,6 +12,7 @@ import type {
   BlockStatus,
   CheckinItemKind,
   CheckinKind,
+  CheckinOutcome,
   ThemePreference,
   XpSource,
 } from '@/core/domain';
@@ -68,7 +69,8 @@ export const checkins = sqliteTable(
     dayRating: integer('day_rating'),
     note: text('note'),
   },
-  (table) => [index('checkins_user_date_idx').on(table.userId, table.date)],
+  // Jedan jutarnji i jedan večernji checkin po danu.
+  (table) => [uniqueIndex('checkins_user_date_kind_unique').on(table.userId, table.date, table.kind)],
 );
 
 export const checkinItems = sqliteTable(
@@ -81,7 +83,10 @@ export const checkinItems = sqliteTable(
     kind: text('kind').$type<CheckinItemKind>().notNull(),
     refId: text('ref_id'),
     ok: integer('ok', { mode: 'boolean' }).notNull(),
+    outcome: text('outcome').$type<CheckinOutcome>().notNull().default('ok'),
     comment: text('comment'),
+    laterDate: text('later_date'),
+    movedBlockId: text('moved_block_id'),
   },
   (table) => [index('checkin_items_checkin_idx').on(table.checkinId)],
 );
@@ -114,7 +119,8 @@ export const ruleLogs = sqliteTable(
     trigger: text('trigger'),
     checkinId: text('checkin_id').references(() => checkins.id, { onDelete: 'set null' }),
   },
-  (table) => [index('rule_logs_rule_date_idx').on(table.ruleId, table.date)],
+  // Jedan zapis po zabrani po danu.
+  (table) => [uniqueIndex('rule_logs_rule_date_unique').on(table.ruleId, table.date)],
 );
 
 export const xpEvents = sqliteTable(

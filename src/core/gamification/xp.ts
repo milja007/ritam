@@ -46,6 +46,12 @@ export function xpForTaskDone(difficulty: TaskDifficulty, onTime: boolean): XpAw
   };
 }
 
+/** Djelomično odrađen zadatak: pola XP-a zadatka, zaokruženo naviše (15 → 8). */
+export function xpForTaskPartial(difficulty: TaskDifficulty, onTime: boolean): XpAward {
+  const full = xpForTaskDone(difficulty, onTime);
+  return { source: 'task', amount: Math.ceil(full.amount / 2) };
+}
+
 export function xpForRuleKept(weight: RuleWeight): XpAward {
   return { source: 'rule', amount: XP_TABLE.ruleKept[weight] };
 }

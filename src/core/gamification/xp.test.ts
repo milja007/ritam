@@ -11,6 +11,7 @@ import {
   xpForRescheduledWithReason,
   xpForRuleKept,
   xpForTaskDone,
+  xpForTaskPartial,
   xpForWakeWithoutSnooze,
 } from './xp';
 
@@ -21,6 +22,12 @@ describe('iznosi XP-a (tablica iz koncepta)', () => {
     expect(xpForTaskDone('hard', false).amount).toBe(50);
     expect(xpForTaskDone('easy', true).amount).toBe(15);
     expect(xpForTaskDone('hard', true).amount).toBe(55);
+  });
+
+  it('djelomično: pola XP-a zadatka, zaokruženo naviše', () => {
+    expect(xpForTaskPartial('easy', true)).toEqual({ source: 'task', amount: 8 });
+    expect(xpForTaskPartial('easy', false).amount).toBe(5);
+    expect(xpForTaskPartial('hard', true).amount).toBe(28);
   });
 
   it('zabrana po težini 5/10/20', () => {
