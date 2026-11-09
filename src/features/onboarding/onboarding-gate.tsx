@@ -1,10 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { LOCAL_USER_ID } from '@/core/user/local-user';
-import { getDb } from '@/db/open';
-import { getSettings } from '@/db/repos';
-import { setLanguagePreference } from '@/i18n';
+import { loadSettings } from '@/features/settings';
 import { useAppTheme } from '@/ui/theme';
 
 import { OnboardingFlow } from './onboarding-flow';
@@ -18,10 +15,10 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    getSettings(getDb(), LOCAL_USER_ID)
+    // Učitavanje primijeni spremljeni jezik i granice doba dana.
+    loadSettings()
       .then((settings) => {
         if (!active) return;
-        if (settings) setLanguagePreference(settings.language);
         setStatus(settings ? 'done' : 'needed');
       })
       .catch((error: unknown) => {
@@ -35,7 +32,16 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
   }, []);
 
   if (status === 'done') return children;
-  if (status === 'needed') return <OnboardingFlow onDone={() => setStatus('done')} />;
+  if (status === 'needed') {
+    return (
+      <OnboardingFlow
+        onDone={() => {
+          loadSettings().catch((error: unknown) => console.error('Loading settings failed', error));
+          setStatus('done');
+        }}
+      />
+    );
+  }
   return (
     <View style={[styles.center, { backgroundColor: colors.background }]}>
       <ActivityIndicator color={colors.accent} />

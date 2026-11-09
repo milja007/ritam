@@ -15,7 +15,19 @@
       "system": "Device language",
       "hr": "Hrvatski",
       "en": "English"
-    }
+    },
+    "sleep": {
+      "title": "Sleep and wake-up"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "morning": "Morning notification",
+      "evening": "Evening check-in",
+      "windDown": "Wind-down before bed",
+      "time": "at {{time}}",
+      "weekendTime": "at {{time}}, weekends {{weekend}}"
+    },
+    "saveError": "The change wasn't saved. Please try again."
   },
   "database": {
     "preparing": "Preparing your data…",
@@ -71,6 +83,11 @@
     }
   },
   "notifications": {
+    "permission": {
+      "title": "Notifications are off",
+      "body": "Without notifications you won't get your morning plan, the evening check-in or block reminders. Turn them on in your device settings.",
+      "openSettings": "Open settings"
+    },
     "channel": {
       "daily": "Daily rhythm",
       "blocks": "Block reminders"

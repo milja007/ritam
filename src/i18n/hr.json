@@ -15,7 +15,19 @@
       "system": "Jezik uređaja",
       "hr": "Hrvatski",
       "en": "English"
-    }
+    },
+    "sleep": {
+      "title": "San i buđenje"
+    },
+    "notifications": {
+      "title": "Obavijesti",
+      "morning": "Jutarnja obavijest",
+      "evening": "Večernji upit",
+      "windDown": "Wind-down prije spavanja",
+      "time": "u {{time}}",
+      "weekendTime": "u {{time}}, vikendom {{weekend}}"
+    },
+    "saveError": "Promjena se nije spremila. Pokušaj ponovo."
   },
   "database": {
     "preparing": "Pripremam podatke…",
@@ -71,6 +83,11 @@
     }
   },
   "notifications": {
+    "permission": {
+      "title": "Obavijesti su isključene",
+      "body": "Bez obavijesti ne stižu jutarnji raspored, večernji upit ni podsjetnici blokova. Uključi ih u postavkama uređaja.",
+      "openSettings": "Otvori postavke"
+    },
     "channel": {
       "daily": "Dnevni ritam",
       "blocks": "Podsjetnici blokova"

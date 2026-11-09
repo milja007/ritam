@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
-import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS } from './phase';
+import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS, phaseStartsFor } from './phase';
 import { DAY_PHASES, DEFAULT_SCHEME, spacing, radius, themes, typography } from './tokens';
 
 describe('dayPhaseAt', () => {
@@ -26,6 +26,28 @@ describe('dayPhaseAt', () => {
   it('granice faza idu redom zora < dan < večer', () => {
     expect(PHASE_STARTS.dawn).toBeLessThan(PHASE_STARTS.day);
     expect(PHASE_STARTS.day).toBeLessThan(PHASE_STARTS.evening);
+  });
+
+  it('granice prate buđenje: zora +3 h, večer 5 h prije kreveta', () => {
+    const starts = phaseStartsFor('07:00', 8);
+    expect(starts).toEqual({ dawn: 7 * 60, day: 10 * 60, evening: 18 * 60 });
+    expect(dayPhaseAt(6 * 60 + 59, starts ?? PHASE_STARTS)).toBe('evening');
+    expect(dayPhaseAt(7 * 60, starts ?? PHASE_STARTS)).toBe('dawn');
+    expect(dayPhaseAt(10 * 60, starts ?? PHASE_STARTS)).toBe('day');
+    expect(dayPhaseAt(18 * 60, starts ?? PHASE_STARTS)).toBe('evening');
+    expect(phaseStartsFor('05:30', 7.5)).toEqual({ dawn: 330, day: 510, evening: 1020 }); // krevet 22:00
+  });
+
+  it('kasno buđenje preko ponoći i vrlo dug san', () => {
+    // Noćna smjena: buđenje 22:00, 8 h sna → zora 22–01, dan 01–09, večer 09–22.
+    const night = phaseStartsFor('22:00', 8);
+    expect(night).toEqual({ dawn: 22 * 60, day: 60, evening: 9 * 60 });
+    expect(dayPhaseAt(23 * 60, night ?? PHASE_STARTS)).toBe('dawn');
+    expect(dayPhaseAt(3 * 60, night ?? PHASE_STARTS)).toBe('day');
+    expect(dayPhaseAt(12 * 60, night ?? PHASE_STARTS)).toBe('evening');
+    // 12 h sna: krevet 20:00 → večer od 15:00.
+    expect(phaseStartsFor('08:00', 12)).toEqual({ dawn: 480, day: 660, evening: 900 });
+    expect(phaseStartsFor('8', 8)).toBeNull();
   });
 
   it('dayPhaseOf koristi lokalno vrijeme datuma', () => {

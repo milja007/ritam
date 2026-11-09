@@ -1,13 +1,21 @@
 import { useSyncExternalStore } from 'react';
 
+import type { PermissionDecision } from '@/core/notifications';
+
 /**
  * Zahtjevi iz obavijesti prema ekranima (npr. dodir večernje obavijesti → večernji upit, Iskrslo na
  * podsjetniku → uređivač bloka) i signal da su se blokovi promijenili izvan ekrana (Gotovo na obavijesti).
  * Obavijest stiže izvan React stabla, pa se zahtjev pamti dok ga ekran ne preuzme.
  */
-type State = { evening: boolean; blockId: string | null; blocksVersion: number };
+type State = {
+  evening: boolean;
+  blockId: string | null;
+  blocksVersion: number;
+  /** Zadnje poznato stanje dopuštenja za obavijesti (`null` dok ga sync ne provjeri). */
+  permission: PermissionDecision | null;
+};
 
-let state: State = { evening: false, blockId: null, blocksVersion: 0 };
+let state: State = { evening: false, blockId: null, blocksVersion: 0, permission: null };
 const listeners = new Set<() => void>();
 
 function set(next: Partial<State>) {
@@ -58,4 +66,14 @@ export function notifyBlocksChanged(): void {
 /** Broj koji raste pri svakoj vanjskoj promjeni blokova (za ovisnosti učitavanja). */
 export function useBlocksVersion(): number {
   return useSyncExternalStore(subscribe, () => state.blocksVersion, () => 0);
+}
+
+/** Sync javlja stanje dopuštenja nakon svake provjere. */
+export function setPermissionDecision(permission: PermissionDecision): void {
+  if (state.permission !== permission) set({ permission });
+}
+
+/** Stanje dopuštenja za obavijesti (`null` dok nije provjereno). */
+export function usePermissionDecision(): PermissionDecision | null {
+  return useSyncExternalStore(subscribe, () => state.permission, () => null);
 }

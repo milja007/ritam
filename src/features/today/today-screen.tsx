@@ -17,6 +17,7 @@ import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from
 import {
   consumeBlockRequest,
   consumeEveningRequest,
+  PermissionCard,
   useBlockRequested,
   useEveningRequested,
 } from '@/features/notifications';
@@ -122,6 +123,8 @@ export function TodayScreen() {
               {formatDay(now.date, i18n.language)}
             </Text>
           </View>
+
+          <PermissionCard />
 
           {day.status === 'loading' ? (
             <ActivityIndicator color={colors.accent} style={styles.loading} />

@@ -1,20 +1,26 @@
 import { createContext, type PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { wakeTimeFor } from '@/core/schedule';
 import {
   type ColorScheme,
   type DayPhase,
   dayPhaseOf,
   DEFAULT_SCHEME,
+  PHASE_STARTS,
+  phaseStartsFor,
   radius,
   spacing,
   type Theme,
   themes,
   typography,
 } from '@/core/theme';
+import { localDateOf } from '@/core/time/local-date';
+
+import { usePhaseAnchor } from './phase-anchor';
 
 export type AppTheme = Theme & {
-  /** Trenutno doba dana (zora/dan/večer) — osvježava se svake minute. */
+  /** Trenutno doba dana (zora/dan/večer, prema buđenju) — osvježava se svake minute. */
   phase: DayPhase;
   spacing: typeof spacing;
   radius: typeof radius;
@@ -24,12 +30,18 @@ export type AppTheme = Theme & {
 const PHASE_REFRESH_MS = 60_000;
 
 function useDayPhase(): DayPhase {
-  const [phase, setPhase] = useState<DayPhase>(() => dayPhaseOf(new Date()));
+  const anchor = usePhaseAnchor();
+  const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const id = setInterval(() => setPhase(dayPhaseOf(new Date())), PHASE_REFRESH_MS);
+    const id = setInterval(() => setNow(new Date()), PHASE_REFRESH_MS);
     return () => clearInterval(id);
   }, []);
-  return phase;
+  // Granice prema današnjem buđenju (vikend ili radni dan); bez postavki fiksne.
+  const starts =
+    anchor === null
+      ? PHASE_STARTS
+      : (phaseStartsFor(wakeTimeFor(anchor, localDateOf(now)), anchor.sleepHours) ?? PHASE_STARTS);
+  return dayPhaseOf(now, starts);
 }
 
 function buildTheme(scheme: ColorScheme, phase: DayPhase): AppTheme {

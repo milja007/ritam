@@ -26,7 +26,12 @@ import {
   notificationsSupported,
   registerChannelsAndCategories,
 } from './expo-notifications';
-import { notifyBlocksChanged, requestEveningCheckin, requestOpenBlock } from './open-requests';
+import {
+  notifyBlocksChanged,
+  requestEveningCheckin,
+  requestOpenBlock,
+  setPermissionDecision,
+} from './open-requests';
 import {
   cancelBlockReminders,
   cancelDailyNotifications,
@@ -47,6 +52,7 @@ async function syncOnce(): Promise<void> {
   const t = i18n.getFixedT(languageFor(settings.language));
   await registerChannelsAndCategories(t);
   const permission = await ensurePermission();
+  setPermissionDecision(permission);
   if (permission !== 'allowed') {
     await cancelDailyNotifications(expoScheduler);
     await cancelBlockReminders(expoScheduler);

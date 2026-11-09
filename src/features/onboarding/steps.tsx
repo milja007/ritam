@@ -10,7 +10,6 @@ import {
   MAX_SLEEP_HOURS,
   MIN_RULES,
   MIN_SLEEP_HOURS,
-  shiftClock,
   splitHours,
   TIME_STEP_MINUTES,
   type OnboardingDraft,
@@ -19,6 +18,7 @@ import {
 import { weekendWakeWarning } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { Button } from '@/ui/button';
+import { ClockStepper } from '@/ui/clock-stepper';
 import { ChoiceGroup } from '@/ui/choice-group';
 import { Stepper } from '@/ui/stepper';
 import { Text } from '@/ui/text';
@@ -43,32 +43,6 @@ export function LanguageStep({ draft, update }: StepProps) {
       choices={choices}
       selected={draft.language}
       onSelect={(language) => update({ language })}
-    />
-  );
-}
-
-function ClockStepper({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (next: string) => void;
-}) {
-  const { t } = useTranslation();
-  const shift = (delta: number) => {
-    const next = shiftClock(value, delta);
-    if (next !== null) onChange(next);
-  };
-  return (
-    <Stepper
-      label={label}
-      value={value}
-      onDecrease={() => shift(-TIME_STEP_MINUTES)}
-      onIncrease={() => shift(TIME_STEP_MINUTES)}
-      decreaseLabel={t('onboarding.decrease', { label })}
-      increaseLabel={t('onboarding.increase', { label })}
     />
   );
 }
