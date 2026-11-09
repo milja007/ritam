@@ -140,7 +140,8 @@
       "doneTitle": "Check-in done ✓",
       "doneBody": "Day rating: {{rating}}/5. You can still edit it.",
       "edit": "Edit",
-      "titleYesterday": "Evening check-in · yesterday"
+      "titleYesterday": "Evening check-in · yesterday",
+      "planTomorrow": "Plan tomorrow"
     },
     "checklist": {
       "title": "Today's checklist",
@@ -181,6 +182,39 @@
       "xp": "+{{xp}} XP",
       "title": "Day logged",
       "body": "Nice job taking a minute for yourself. See you tomorrow.",
+      "close": "Done",
+      "planTomorrow": "What's on tomorrow?"
+    },
+    "tomorrow": {
+      "overline": "Tomorrow · {{day}}",
+      "title": "What's on tomorrow?",
+      "subtitle": "Add commitments and tasks for tomorrow. Times stack from the morning — tap an item to change them.",
+      "loadError": "Couldn't load tomorrow's plan.",
+      "existing": "Already planned",
+      "quickPicks": "Quick picks",
+      "pickHint": "Adds a block in the next free slot.",
+      "pick": {
+        "work": "Work",
+        "school": "School / uni",
+        "workout": "Workout",
+        "study": "Study",
+        "errands": "Errands",
+        "chores": "Chores",
+        "reading": "Reading",
+        "social": "Friends"
+      },
+      "typeLabel": "Or type it",
+      "typePlaceholder": "e.g. Workout 18-19 or Dentist at 15",
+      "add": "Add",
+      "newItems": "New for tomorrow",
+      "empty": "Nothing yet — use a quick pick or type.",
+      "remove": "Remove",
+      "removeLabel": "Remove {{title}}",
+      "skip": "Skip",
+      "confirm": "Confirm",
+      "saveError": "The plan wasn't saved. Try again.",
+      "doneTitle": "Tomorrow is ready",
+      "doneBody": "New blocks: {{count}}. See you in the morning.",
       "close": "Done"
     }
   }

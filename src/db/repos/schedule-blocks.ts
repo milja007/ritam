@@ -33,6 +33,28 @@ export async function createBlock(
   return block;
 }
 
+/**
+ * Stvara više blokova odjednom (npr. sutrašnji plan iz večernjeg upita) u jednoj sinkronoj
+ * transakciji: ako je ijedan ulaz neispravan, baca `ZodError` i ništa se ne zapisuje.
+ */
+export function createBlocks(
+  db: RitamDb,
+  userId: string,
+  inputs: readonly ScheduleBlockInput[],
+  deps: RepoDeps = defaultRepoDeps,
+): ScheduleBlock[] {
+  const now = deps.now().toISOString();
+  const blocks = inputs.map((input) =>
+    scheduleBlockSchema.parse({ ...input, id: deps.newId(), userId, createdAt: now, updatedAt: now }),
+  );
+  if (blocks.length === 0) return [];
+  // Drizzle expo-sqlite driver je sinkron: callback transakcije mora biti sinkron.
+  db.transaction((tx) => {
+    for (const block of blocks) tx.insert(scheduleBlocks).values(block).run();
+  });
+  return blocks;
+}
+
 export async function getBlock(
   db: RitamDb,
   userId: string,

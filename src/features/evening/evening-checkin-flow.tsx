@@ -29,6 +29,8 @@ type EveningCheckinFlowProps = {
   /** Sprema upit i vraća zarađeni XP; baca grešku ako spremanje ne uspije. */
   onSave: (draft: EveningDraft) => number;
   onClose: () => void;
+  /** Nakon spremanja: prijeđi na "Što imaš sutra?". */
+  onPlanTomorrow: () => void;
 };
 
 /**
@@ -42,6 +44,7 @@ export function EveningCheckinFlow({
   saved,
   onSave,
   onClose,
+  onPlanTomorrow,
 }: EveningCheckinFlowProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<EveningDraft>(() =>
@@ -99,7 +102,12 @@ export function EveningCheckinFlow({
                   {t('evening.done.title')}
                 </Text>
                 <Text tone="textMuted">{t('evening.done.body')}</Text>
-                <Button label={t('evening.done.close')} onPress={onClose} style={styles.primary} />
+                <Button
+                  label={t('evening.done.planTomorrow')}
+                  onPress={onPlanTomorrow}
+                  style={styles.primary}
+                />
+                <Button variant="ghost" label={t('evening.done.close')} onPress={onClose} />
               </View>
             ) : (
               <>

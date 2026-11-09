@@ -9,6 +9,7 @@ import migrations from './migrations/migrations';
 
 import {
   createBlock,
+  createBlocks,
   deleteBlock,
   deleteSettings,
   getBlock,
@@ -241,5 +242,29 @@ describe('schedule_blocks repo', () => {
     expect(await deleteBlock(db, USER, created.id)).toBe(true);
     expect(await getBlock(db, USER, created.id)).toBeNull();
     expect(await deleteBlock(db, USER, created.id)).toBe(false);
+  });
+
+  it('createBlocks sprema sve blokove odjednom', async () => {
+    const { db } = await createTestDb();
+    const created = createBlocks(
+      db,
+      USER,
+      [
+        block({ title: 'Posao', start: '08:00', end: '16:00', kind: 'fixed' }),
+        block({ title: 'Trening', start: '18:00', end: '19:00' }),
+      ],
+      testDeps(),
+    );
+    expect(created.map((b) => b.title)).toEqual(['Posao', 'Trening']);
+    const stored = await listBlocksForDate(db, USER, '2026-11-08');
+    expect(stored.map((b) => b.title)).toEqual(['Posao', 'Trening']);
+    expect(createBlocks(db, USER, [], testDeps())).toEqual([]);
+  });
+
+  it('createBlocks: neispravan ulaz → ništa se ne zapisuje', async () => {
+    const { db } = await createTestDb();
+    const inputs = [block({ title: 'Dobar' }), block({ title: 'Loš', start: '10:00', end: '09:00' })];
+    expect(() => createBlocks(db, USER, inputs, testDeps())).toThrow(ZodError);
+    expect(await listBlocksForDate(db, USER, '2026-11-08')).toEqual([]);
   });
 });

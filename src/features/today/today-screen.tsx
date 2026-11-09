@@ -9,10 +9,11 @@ import {
   currentBlockId,
   draftFromBlock,
   newBlockDraft,
+  tomorrowOf,
   type BlockDraft,
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
-import { EveningCard, EveningCheckinFlow, useEveningCheckin } from '@/features/evening';
+import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
 import { consumeEveningRequest, useEveningRequested } from '@/features/notifications';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
@@ -21,26 +22,15 @@ import { useAppTheme } from '@/ui/theme';
 
 import { BlockCard } from './block-card';
 import { BlockEditor } from './block-editor';
+import { formatDay } from './format-day';
 import { useDayBlocks, useNow } from './use-today';
+
+/** Pauza između zatvaranja upita i otvaranja "Što imaš sutra?" (iOS ne prikaže novi modal dok se stari zatvara). */
+const MODAL_SWAP_DELAY_MS = 400;
 
 type Editing =
   | { mode: 'add'; draft: BlockDraft }
   | { mode: 'edit'; draft: BlockDraft; id: string };
-
-/** "2026-11-09" → "ponedjeljak, 9. studenoga" / "Monday, November 9" (po jeziku appa). */
-function formatDay(date: string, language: string): string {
-  const [y, m, d] = date.split('-').map(Number);
-  const value = new Date(y ?? 2000, (m ?? 1) - 1, d ?? 1);
-  try {
-    return new Intl.DateTimeFormat(language === 'hr' ? 'hr-HR' : 'en-US', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    }).format(value);
-  } catch {
-    return date;
-  }
-}
 
 /** Tab Danas: timeline današnjih blokova, trenutni istaknut, kvačica Gotovo, dodavanje/uređivanje. */
 export function TodayScreen() {
@@ -58,9 +48,18 @@ export function TodayScreen() {
   // Dodir večernje obavijesti otvara upit čim su podaci dana učitani; zahtjev se briše pri zatvaranju.
   const showEvening = eveningReady && (eveningOpen || eveningRequested);
 
+  // "Što imaš sutra?" = dan nakon dana upita (prije 04:00 je to današnji dan).
+  const tomorrowDate = tomorrowOf(now.eveningDate);
+  const [tomorrowOpen, setTomorrowOpen] = useState(false);
+
   function closeEvening() {
     setEveningOpen(false);
     consumeEveningRequest();
+  }
+
+  function planTomorrow() {
+    closeEvening();
+    setTimeout(() => setTomorrowOpen(true), MODAL_SWAP_DELAY_MS);
   }
 
   const currentId = currentBlockId(day.blocks, now.minutes);
@@ -141,6 +140,7 @@ export function TodayScreen() {
               forYesterday={now.eveningDate !== now.date}
               disabled={!eveningReady}
               onOpen={() => setEveningOpen(true)}
+              onPlanTomorrow={() => setTomorrowOpen(true)}
             />
           ) : null}
         </ScrollView>
@@ -171,6 +171,16 @@ export function TodayScreen() {
             return xp;
           }}
           onClose={closeEvening}
+          onPlanTomorrow={planTomorrow}
+        />
+      ) : null}
+
+      {tomorrowOpen && tomorrowDate !== null ? (
+        // Prije 04:00 "sutra" je današnji timeline, pa se dan nakon spremanja osvježava.
+        <TomorrowPlan
+          date={tomorrowDate}
+          onSaved={day.reload}
+          onClose={() => setTomorrowOpen(false)}
         />
       ) : null}
     </GradientBackground>

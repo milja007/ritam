@@ -140,7 +140,8 @@
       "doneTitle": "Upit je ispunjen ✓",
       "doneBody": "Ocjena dana: {{rating}}/5. Možeš ga još urediti.",
       "edit": "Uredi",
-      "titleYesterday": "Večernji upit · jučer"
+      "titleYesterday": "Večernji upit · jučer",
+      "planTomorrow": "Planiraj sutra"
     },
     "checklist": {
       "title": "Checklist dana",
@@ -181,6 +182,39 @@
       "xp": "+{{xp}} XP",
       "title": "Dan je zapisan",
       "body": "Bravo što si odvojio minutu za sebe. Vidimo se sutra.",
+      "close": "Gotovo",
+      "planTomorrow": "Što imaš sutra?"
+    },
+    "tomorrow": {
+      "overline": "Sutra · {{day}}",
+      "title": "Što imaš sutra?",
+      "subtitle": "Dodaj obaveze i zadatke za sutra. Termini se slažu od jutra — dodirni stavku da ih promijeniš.",
+      "loadError": "Sutrašnji plan se nije učitao.",
+      "existing": "Već u planu",
+      "quickPicks": "Brzi odabir",
+      "pickHint": "Dodaje blok u sljedeći slobodni termin.",
+      "pick": {
+        "work": "Posao",
+        "school": "Škola / faks",
+        "workout": "Trening",
+        "study": "Učenje",
+        "errands": "Obaveze",
+        "chores": "Kućanski poslovi",
+        "reading": "Čitanje",
+        "social": "Druženje"
+      },
+      "typeLabel": "Ili upiši",
+      "typePlaceholder": "npr. Trening 18-19 ili Zubar u 15",
+      "add": "Dodaj",
+      "newItems": "Novo za sutra",
+      "empty": "Još ništa — dodaj brzim odabirom ili upiši.",
+      "remove": "Ukloni",
+      "removeLabel": "Ukloni {{title}}",
+      "skip": "Preskoči",
+      "confirm": "Potvrdi",
+      "saveError": "Plan nije spremljen. Pokušaj ponovo.",
+      "doneTitle": "Sutra je spremno",
+      "doneBody": "Novih blokova: {{count}}. Vidimo se ujutro.",
       "close": "Gotovo"
     }
   }
