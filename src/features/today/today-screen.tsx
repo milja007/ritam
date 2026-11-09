@@ -12,6 +12,8 @@ import {
   type BlockDraft,
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
+import { EveningCard, EveningCheckinFlow, useEveningCheckin } from '@/features/evening';
+import { consumeEveningRequest, useEveningRequested } from '@/features/notifications';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -48,6 +50,17 @@ export function TodayScreen() {
   const day = useDayBlocks(now.date);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [actionFailed, setActionFailed] = useState(false);
+  const evening = useEveningCheckin(now.date);
+  const [eveningOpen, setEveningOpen] = useState(false);
+  const eveningRequested = useEveningRequested();
+  const eveningReady = day.status === 'ready' && evening.status === 'ready';
+  // Dodir večernje obavijesti otvara upit čim su podaci dana učitani; zahtjev se briše pri zatvaranju.
+  const showEvening = eveningReady && (eveningOpen || eveningRequested);
+
+  function closeEvening() {
+    setEveningOpen(false);
+    consumeEveningRequest();
+  }
 
   const currentId = currentBlockId(day.blocks, now.minutes);
 
@@ -119,6 +132,14 @@ export function TodayScreen() {
           {day.status === 'ready' ? (
             <Button variant="secondary" label={t('today.addBlock')} onPress={openAdd} />
           ) : null}
+
+          {day.status === 'ready' && evening.status !== 'error' ? (
+            <EveningCard
+              saved={evening.saved}
+              disabled={!eveningReady}
+              onOpen={() => setEveningOpen(true)}
+            />
+          ) : null}
         </ScrollView>
       </SafeAreaView>
 
@@ -132,6 +153,20 @@ export function TodayScreen() {
             editing.mode === 'add' ? day.add(draft) : day.edit(editing.id, draft)
           }
           onDelete={editing.mode === 'edit' ? () => day.remove(editing.id) : undefined}
+        />
+      ) : null}
+
+      {showEvening ? (
+        <EveningCheckinFlow
+          blocks={day.blocks}
+          activeRules={evening.activeRules}
+          saved={evening.saved}
+          onSave={(draft) => {
+            const xp = evening.save(draft);
+            day.reload(); // statusi blokova su se promijenili
+            return xp;
+          }}
+          onClose={closeEvening}
         />
       ) : null}
     </GradientBackground>

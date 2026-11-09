@@ -16,6 +16,7 @@ import {
   notificationsSupported,
   registerChannelsAndCategories,
 } from './expo-notifications';
+import { requestEveningCheckin } from './open-requests';
 import { cancelDailyNotifications, syncDailyNotifications } from './sync';
 
 installForegroundHandler();
@@ -50,12 +51,14 @@ export function syncNotificationsNow(): Promise<void> {
 }
 
 /**
- * Što napraviti kad korisnik dotakne obavijest. Ekrani jutarnjeg briefa (korak 14) i večernjeg
- * upita (korak 12) te učinci akcija bloka (koraci 11 i 27) još ne postoje — app se samo otvori.
+ * Što napraviti kad korisnik dotakne obavijest. Večernja obavijest otvara večernji upit (tab Danas
+ * preuzima zahtjev). Jutarnji brief (korak 14) i učinci akcija bloka (korak 27) još ne postoje —
+ * tada se app samo otvori.
  */
 function handleIntent(intent: NotificationIntent | null): void {
   if (intent === null) return;
   if (__DEV__) console.info('Notification intent', intent);
+  if (intent.type === 'open' && intent.kind === 'evening') requestEveningCheckin();
 }
 
 function handleResponse(response: Notifications.NotificationResponse): void {

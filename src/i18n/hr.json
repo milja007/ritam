@@ -124,5 +124,56 @@
       "deleteMessage": "\"{{title}}\" bit će uklonjen s današnjeg dana.",
       "error": "Spremanje nije uspjelo. Pokušaj ponovo."
     }
+  },
+  "evening": {
+    "close": "Zatvori",
+    "progress": "Korak {{current}} od {{total}}",
+    "back": "Natrag",
+    "next": "Dalje",
+    "finish": "Spremi",
+    "saveError": "Upit nije spremljen. Pokušaj ponovo.",
+    "card": {
+      "title": "Večernji upit",
+      "pendingTitle": "Kako je prošao dan?",
+      "pendingBody": "Minuta-dvije: checklist, zabrane i ocjena dana.",
+      "start": "Započni",
+      "doneTitle": "Upit je ispunjen ✓",
+      "doneBody": "Ocjena dana: {{rating}}/5. Možeš ga još urediti.",
+      "edit": "Uredi"
+    },
+    "checklist": {
+      "title": "Checklist dana",
+      "subtitle": "Je li sve bilo u redu?",
+      "empty": "Danas nije bilo isplaniranih blokova — idemo dalje.",
+      "question": "Je li u redu: {{title}}",
+      "ok": "U redu",
+      "notOk": "Nije",
+      "comment": "Što se dogodilo?",
+      "commentPlaceholder": "npr. nisam stigao, bilo je preumorno…"
+    },
+    "rules": {
+      "title": "Zabrane",
+      "subtitle": "Kako je prošlo sa zabranama danas?",
+      "why": "Zašto: {{why}}",
+      "kept": "Držao sam se",
+      "broken": "Prekršio sam",
+      "trigger": "Što je bio okidač?",
+      "triggerPlaceholder": "npr. stres, dosada, društvo…"
+    },
+    "rating": {
+      "title": "Ocjena dana",
+      "subtitle": "Kakav je bio dan, od 1 do 5?",
+      "label": "Ocjena dana",
+      "low": "1 · loš",
+      "high": "5 · odličan",
+      "note": "Jedna rečenica o danu",
+      "notePlaceholder": "Što ti je ostalo u glavi?"
+    },
+    "done": {
+      "xp": "+{{xp}} XP",
+      "title": "Dan je zapisan",
+      "body": "Bravo što si odvojio minutu za sebe. Vidimo se sutra.",
+      "close": "Gotovo"
+    }
   }
 }
