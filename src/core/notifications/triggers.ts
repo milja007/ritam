@@ -70,7 +70,7 @@ export function isDailyTriggerId(id: string): boolean {
 }
 
 /** Lokalni `Date` za dan "YYYY-MM-DD" i vrijeme "HH:MM" (DST prijelaze rješava `Date`). */
-function localDateTime(date: string, time: string): Date | null {
+export function localDateTime(date: string, time: string): Date | null {
   const minutes = parseClock(time);
   const [year, month, day] = date.split('-').map(Number);
   if (minutes === null || year === undefined || month === undefined || day === undefined) return null;

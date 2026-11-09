@@ -14,6 +14,7 @@ import {
   deleteSettings,
   getBlock,
   getSettings,
+  listBlocksBetween,
   listBlocksForDate,
   saveSettings,
   updateBlock,
@@ -194,6 +195,19 @@ describe('schedule_blocks repo', () => {
     await createBlock(db, USER, block({ title: 'Rad', start: '09:00', end: '12:00' }), deps);
     const titles = (await listBlocksForDate(db, USER, '2026-11-08')).map((b) => b.title);
     expect(titles).toEqual(['Doručak', 'Rad', 'Teretana']);
+  });
+
+  it('lista raspona: dani od–do uključivo, samo korisnik, po danu pa početku', async () => {
+    const { db } = await createTestDb();
+    const deps = testDeps();
+    await createBlock(db, USER, block({ title: 'Prije', date: '2026-11-07' }), deps);
+    await createBlock(db, USER, block({ title: 'Kraj', date: '2026-11-10', start: '07:00', end: '08:00' }), deps);
+    await createBlock(db, USER, block({ title: 'Kasno', start: '18:00', end: '19:00' }), deps);
+    await createBlock(db, USER, block({ title: 'Rano', start: '07:00', end: '08:00' }), deps);
+    await createBlock(db, USER, block({ title: 'Poslije', date: '2026-11-11' }), deps);
+    await createBlock(db, OTHER, block({ title: 'Tuđi' }), deps);
+    const titles = (await listBlocksBetween(db, USER, '2026-11-08', '2026-11-10')).map((b) => b.title);
+    expect(titles).toEqual(['Rano', 'Kasno', 'Kraj']);
   });
 
   it('ažurira dio polja i osvježava updatedAt', async () => {
