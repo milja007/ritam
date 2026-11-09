@@ -3,12 +3,14 @@
  */
 import { describe, expect, it } from '@jest/globals';
 
-import type { EveningDraft } from '@/core/checkin';
+import type { ChecklistAnswer, EveningDraft } from '@/core/checkin';
 import { mainStreak } from '@/core/gamification';
 
 import {
   createBlock,
   createRule,
+  deleteBlock,
+  setBlockStatus,
   getEveningCheckin,
   IncompleteEveningCheckinError,
   listBlocksForDate,
@@ -16,11 +18,24 @@ import {
   saveEveningCheckin,
   type RuleInput,
 } from './repos';
-import { xpEvents } from './schema';
+import { checkins, ruleLogs, xpEvents } from './schema';
 import { createTestDb, testDeps } from './testing/test-db';
 
 const USER = 'user-1';
 const DATE = '2026-11-09';
+
+const ans = (
+  blockId: string,
+  outcome: ChecklistAnswer['outcome'],
+  comment = '',
+  later: Partial<Pick<ChecklistAnswer, 'later' | 'laterDate'>> = {},
+): ChecklistAnswer => ({
+  blockId,
+  outcome,
+  comment,
+  later: later.later ?? (outcome === 'ok' || outcome === null ? null : 'skip'),
+  laterDate: later.laterDate ?? null,
+});
 
 const ruleInput = (title: string, weight: 1 | 2 | 3): RuleInput => ({
   title,
@@ -54,10 +69,11 @@ describe('saveEveningCheckin', () => {
   it('sprema checkin, stavke, zapise zabrana, statuse blokova i XP', async () => {
     const { db, deps, work, gym, meeting, phone, sugar } = await setup();
     const draft: EveningDraft = {
+      date: DATE,
       items: [
-        { blockId: work.id, ok: true, comment: 'ignorira se' },
-        { blockId: meeting.id, ok: true, comment: '' },
-        { blockId: gym.id, ok: false, comment: '  Umor  ' },
+        ans(work.id, 'ok', 'ignorira se'),
+        ans(meeting.id, 'ok', ''),
+        ans(gym.id, 'not', '  Umor  '),
       ],
       rules: [
         { ruleId: phone.id, kept: true, trigger: 'ignorira se' },
@@ -67,7 +83,7 @@ describe('saveEveningCheckin', () => {
       note: ' Solidan dan ',
     };
 
-    const result = saveEveningCheckin(db, USER, DATE, draft, deps);
+    const result = saveEveningCheckin(db, USER, draft, deps);
     // upit 15 + zadatak Rad 15 + zabrana težine 3 = 20 (sastanak je fiksan, Teretana "Nije", šećer prekršen)
     expect(result.xpEarned).toBe(50);
     expect(result.checkin).toMatchObject({ date: DATE, kind: 'evening', dayRating: 4, note: 'Solidan dan' });
@@ -91,8 +107,8 @@ describe('saveEveningCheckin', () => {
 
     const xp = await listXpEvents(db, USER);
     expect(xp.map((e) => [e.source, e.sourceId, e.amount, e.date])).toEqual([
-      ['checkin', result.checkin.id, 15, DATE],
       ['task', work.id, 15, DATE],
+      ['checkin', result.checkin.id, 15, DATE],
       ['rule', phone.id, 20, DATE],
     ]);
 
@@ -105,12 +121,12 @@ describe('saveEveningCheckin', () => {
     const first = saveEveningCheckin(
       db,
       USER,
-      DATE,
       {
+        date: DATE,
         items: [
-          { blockId: work.id, ok: true, comment: '' },
-          { blockId: gym.id, ok: true, comment: '' },
-          { blockId: meeting.id, ok: true, comment: '' },
+          ans(work.id, 'ok', ''),
+          ans(gym.id, 'ok', ''),
+          ans(meeting.id, 'ok', ''),
         ],
         rules: [
           { ruleId: phone.id, kept: true, trigger: '' },
@@ -126,12 +142,12 @@ describe('saveEveningCheckin', () => {
     const second = saveEveningCheckin(
       db,
       USER,
-      DATE,
       {
+        date: DATE,
         items: [
-          { blockId: work.id, ok: true, comment: '' },
-          { blockId: gym.id, ok: false, comment: 'Ipak nisam' },
-          { blockId: meeting.id, ok: true, comment: '' },
+          ans(work.id, 'ok', ''),
+          ans(gym.id, 'not', 'Ipak nisam'),
+          ans(meeting.id, 'ok', ''),
         ],
         rules: [
           { ruleId: phone.id, kept: false, trigger: '' },
@@ -160,12 +176,13 @@ describe('saveEveningCheckin', () => {
   it('ne dira XP drugih izvora istog dana', async () => {
     const { db, deps, work } = await setup();
     const draft: EveningDraft = {
-      items: [{ blockId: work.id, ok: true, comment: '' }],
+      date: DATE,
+      items: [ans(work.id, 'ok', '')],
       rules: [],
       rating: 4,
       note: '',
     };
-    saveEveningCheckin(db, USER, DATE, draft, deps);
+    saveEveningCheckin(db, USER, draft, deps);
     // Npr. XP za san iz jutarnje prijave (korak 14) — ručno upisan.
     await db
       .insert(xpEvents)
@@ -180,7 +197,7 @@ describe('saveEveningCheckin', () => {
         amount: 10,
       })
       .run();
-    saveEveningCheckin(db, USER, DATE, draft, deps);
+    saveEveningCheckin(db, USER, draft, deps);
     const xp = await listXpEvents(db, USER);
     expect(xp.map((e) => e.amount).sort((a, b) => a - b)).toEqual([10, 15, 15]);
   });
@@ -190,11 +207,11 @@ describe('saveEveningCheckin', () => {
     const result = saveEveningCheckin(
       db,
       USER,
-      DATE,
       {
+        date: DATE,
         items: [
-          { blockId: work.id, ok: true, comment: '' },
-          { blockId: 'obrisan', ok: true, comment: '' },
+          ans(work.id, 'ok', ''),
+          ans('obrisan', 'ok', ''),
         ],
         rules: [{ ruleId: 'nema', kept: true, trigger: '' }],
         rating: 2,
@@ -214,13 +231,13 @@ describe('saveEveningCheckin', () => {
       saveEveningCheckin(
         db,
         USER,
-        DATE,
-        { items: [{ blockId: work.id, ok: null, comment: '' }], rules: [], rating: 4, note: '' },
+        {
+          date: DATE, items: [ans(work.id, null, '')], rules: [], rating: 4, note: '' },
         deps,
       ),
     ).toThrow(IncompleteEveningCheckinError);
     expect(() =>
-      saveEveningCheckin(db, USER, DATE, { items: [], rules: [], rating: null, note: '' }, deps),
+      saveEveningCheckin(db, USER, { date: DATE, items: [], rules: [], rating: null, note: '' }, deps),
     ).toThrow(IncompleteEveningCheckinError);
     expect(await getEveningCheckin(db, USER, DATE)).toBeNull();
     expect(await listXpEvents(db, USER)).toEqual([]);
@@ -233,8 +250,8 @@ describe('saveEveningCheckin', () => {
       saveEveningCheckin(
         db,
         USER,
-        DATE,
-        { items: [{ blockId: work.id, ok: true, comment: '' }], rules: [], rating: 4, note: '' },
+        {
+          date: DATE, items: [ans(work.id, 'ok', '')], rules: [], rating: 4, note: '' },
         clashing,
       ),
     ).toThrow();
@@ -246,8 +263,189 @@ describe('saveEveningCheckin', () => {
 
   it('upit je po korisniku i danu', async () => {
     const { db, deps } = await setup();
-    saveEveningCheckin(db, USER, DATE, { items: [], rules: [], rating: 3, note: '' }, deps);
+    saveEveningCheckin(db, USER, { date: DATE, items: [], rules: [], rating: 3, note: '' }, deps);
     expect(await getEveningCheckin(db, 'user-2', DATE)).toBeNull();
     expect(await getEveningCheckin(db, USER, '2026-11-10')).toBeNull();
+  });
+
+  it('Djelomično: blok ostaje partial i daje pola XP-a (8)', async () => {
+    const { db, deps, work } = await setup();
+    const result = saveEveningCheckin(
+      db,
+      USER,
+      { date: DATE, items: [ans(work.id, 'partial', 'Pola', { later: 'skip' })], rules: [], rating: 3, note: '' },
+      deps,
+    );
+    expect(result.xpEarned).toBe(15 + 8);
+    const saved = await getEveningCheckin(db, USER, DATE);
+    expect(saved?.items.map((i) => [i.ok, i.outcome, i.comment, i.laterDate])).toEqual([
+      [false, 'partial', 'Pola', null],
+    ]);
+    expect((await listBlocksForDate(db, USER, DATE)).find((b) => b.id === work.id)?.status).toBe('partial');
+  });
+
+  it('kad kasnije? sutra / drugi dan: novi planirani blok, original moved (Djelomično ostaje partial)', async () => {
+    const { db, deps, work, gym } = await setup();
+    saveEveningCheckin(
+      db,
+      USER,
+      {
+        date: DATE,
+        items: [
+          ans(gym.id, 'not', 'Umor', { later: 'tomorrow' }),
+          ans(work.id, 'partial', '', { later: 'other', laterDate: '2026-11-12' }),
+        ],
+        rules: [],
+        rating: 3,
+        note: '',
+      },
+      deps,
+    );
+    const today = Object.fromEntries((await listBlocksForDate(db, USER, DATE)).map((b) => [b.title, b.status]));
+    expect(today).toMatchObject({ Teretana: 'moved', Rad: 'partial' });
+
+    const tomorrow = await listBlocksForDate(db, USER, '2026-11-10');
+    expect(tomorrow.map((b) => [b.title, b.start, b.end, b.kind, b.source, b.status])).toEqual([
+      ['Teretana', '18:00', '19:00', 'task', 'user', 'planned'],
+    ]);
+    const later = await listBlocksForDate(db, USER, '2026-11-12');
+    expect(later.map((b) => b.title)).toEqual(['Rad']);
+
+    const saved = await getEveningCheckin(db, USER, DATE);
+    const gymItem = saved?.items.find((i) => i.refId === gym.id);
+    expect(gymItem).toMatchObject({ outcome: 'not', laterDate: '2026-11-10', movedBlockId: tomorrow[0]?.id });
+  });
+
+  it('ponovno spremanje: premješteni blok se ne duplicira, prati novi dan, a uz preskoči nestaje', async () => {
+    const { db, deps, gym } = await setup();
+    const save = (later: Partial<Pick<ChecklistAnswer, 'later' | 'laterDate'>>) =>
+      saveEveningCheckin(
+        db,
+        USER,
+        { date: DATE, items: [ans(gym.id, 'not', '', later)], rules: [], rating: 3, note: '' },
+        deps,
+      );
+    save({ later: 'tomorrow' });
+    save({ later: 'tomorrow' });
+    expect(await listBlocksForDate(db, USER, '2026-11-10')).toHaveLength(1);
+
+    save({ later: 'other', laterDate: '2026-11-14' });
+    expect(await listBlocksForDate(db, USER, '2026-11-10')).toHaveLength(0);
+    expect(await listBlocksForDate(db, USER, '2026-11-14')).toHaveLength(1);
+
+    save({ later: 'skip' });
+    expect(await listBlocksForDate(db, USER, '2026-11-14')).toHaveLength(0);
+    expect((await listBlocksForDate(db, USER, DATE)).find((b) => b.id === gym.id)?.status).toBe('skipped');
+  });
+
+  it('odrađeni premješteni blok se ne briše ni ne seli pri ponovnom spremanju', async () => {
+    const { db, deps, gym } = await setup();
+    const save = (later: Partial<Pick<ChecklistAnswer, 'later' | 'laterDate'>>) =>
+      saveEveningCheckin(
+        db,
+        USER,
+        { date: DATE, items: [ans(gym.id, 'not', '', later)], rules: [], rating: 3, note: '' },
+        deps,
+      );
+    save({ later: 'tomorrow' });
+    const [moved] = await listBlocksForDate(db, USER, '2026-11-10');
+    if (!moved) throw new Error('moved block missing');
+    setBlockStatus(db, USER, moved.id, 'done', deps);
+
+    save({ later: 'other', laterDate: '2026-11-14' });
+    expect((await listBlocksForDate(db, USER, '2026-11-10')).map((b) => b.status)).toEqual(['done']);
+    expect(await listBlocksForDate(db, USER, '2026-11-14')).toHaveLength(0);
+    save({ later: 'skip' });
+    expect(await listBlocksForDate(db, USER, '2026-11-10')).toHaveLength(1);
+  });
+
+  it('kvačica na timelineu daje XP odmah; upit ga potvrđuje bez dupliciranja', async () => {
+    const { db, deps, work, meeting } = await setup();
+    setBlockStatus(db, USER, work.id, 'done', deps);
+    setBlockStatus(db, USER, meeting.id, 'done', deps); // fiksna obaveza — bez XP-a
+    expect((await listXpEvents(db, USER)).map((e) => [e.source, e.sourceId, e.amount])).toEqual([
+      ['task', work.id, 15],
+    ]);
+
+    const result = saveEveningCheckin(
+      db,
+      USER,
+      { date: DATE, items: [ans(work.id, 'ok'), ans(meeting.id, 'ok')], rules: [], rating: 4, note: '' },
+      deps,
+    );
+    expect(result.xpEarned).toBe(30);
+    const xp = await listXpEvents(db, USER);
+    expect(xp.filter((e) => e.source === 'task')).toHaveLength(1);
+    expect(xp.reduce((sum, e) => sum + e.amount, 0)).toBe(30);
+
+    // Upit kaže Djelomično → XP zadatka se smanjuje na 8, ne dodaje.
+    saveEveningCheckin(
+      db,
+      USER,
+      { date: DATE, items: [ans(work.id, 'partial', '', { later: 'skip' })], rules: [], rating: 4, note: '' },
+      deps,
+    );
+    expect((await listXpEvents(db, USER)).reduce((sum, e) => sum + e.amount, 0)).toBe(15 + 8);
+  });
+
+  it('jedan zapis po zabrani po danu i jedan večernji checkin po danu (jedinstveni indeksi)', async () => {
+    const { db, deps, phone } = await setup();
+    // Zapis iste zabrane istog dana izvan upita (npr. budući ekran zabrana) — upit ga zamjenjuje.
+    await db
+      .insert(ruleLogs)
+      .values({
+        id: 'stari-log',
+        userId: USER,
+        createdAt: '2026-11-09T12:00:00.000Z',
+        updatedAt: '2026-11-09T12:00:00.000Z',
+        ruleId: phone.id,
+        date: DATE,
+        kept: false,
+        trigger: null,
+        checkinId: null,
+      })
+      .run();
+    saveEveningCheckin(
+      db,
+      USER,
+      { date: DATE, items: [], rules: [{ ruleId: phone.id, kept: true, trigger: '' }], rating: 4, note: '' },
+      deps,
+    );
+    const saved = await getEveningCheckin(db, USER, DATE);
+    expect(saved?.ruleLogs.map((l) => [l.ruleId, l.kept])).toEqual([[phone.id, true]]);
+
+    const duplicate = {
+      id: 'drugi-checkin',
+      userId: USER,
+      createdAt: '2026-11-09T21:00:00.000Z',
+      updatedAt: '2026-11-09T21:00:00.000Z',
+      date: DATE,
+      kind: 'evening' as const,
+    };
+    expect(() => db.insert(checkins).values(duplicate).run()).toThrow();
+    expect(() =>
+      db
+        .insert(ruleLogs)
+        .values({ ...duplicate, ruleId: phone.id, kept: true, trigger: null, checkinId: null })
+        .run(),
+    ).toThrow();
+    // Jutarnji checkin istog dana je dopušten.
+    expect(() => db.insert(checkins).values({ ...duplicate, kind: 'morning' }).run()).not.toThrow();
+  });
+});
+
+describe('setBlockStatus / deleteBlock', () => {
+  it('kvačica daje i vraća XP; brisanje bloka briše njegov XP', async () => {
+    const { db, deps, work } = await setup();
+    expect(setBlockStatus(db, USER, work.id, 'done', deps)?.status).toBe('done');
+    setBlockStatus(db, USER, work.id, 'done', deps);
+    expect((await listXpEvents(db, USER)).map((e) => e.amount)).toEqual([15]);
+    setBlockStatus(db, USER, work.id, 'planned', deps);
+    expect(await listXpEvents(db, USER)).toEqual([]);
+
+    setBlockStatus(db, USER, work.id, 'done', deps);
+    expect(deleteBlock(db, USER, work.id)).toBe(true);
+    expect(await listXpEvents(db, USER)).toEqual([]);
+    expect(setBlockStatus(db, USER, work.id, 'done', deps)).toBeNull();
   });
 });
