@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## Odluke (Borna, 2026-11-09) — odgovori na pitanja 1–23
+Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–23 su zatvorena.
+- **Večernji upit (12b):** checklist ima tri opcije **U redu / Djelomično / Nije** (`partial`); za Djelomično i Nije odmah u checklisti pitanje **"kad kasnije?"** (sutra / drugi dan / preskoči). Upit ispunjen **prije 04:00 pripada prethodnom danu**. Glavni streak = postoji ocjena dana (ostaje); dan samo s "Nešto je iskrslo" bez upita **ne** čuva streak. (P8, 9, 21, 22, 23)
+- **XP:** zadatak bez težine = lagani + bonus za planirani termin (**15**), samo blokovi vrste Zadatak (P20). **Kvačica Gotovo na timelineu daje XP odmah**; upit samo potvrđuje i ne smije duplicirati (P18). XP za Djelomično nije određen → zasad 0, pitanje 24.
+- **Baza:** jedinstveni indeksi — jedan jutarnji i jedan večernji checkin po danu, jedan `rule_log` po zabrani po danu (P7). `rule_logs` model odgovara (P6).
+- **Podsjetnici blokova (13b, mali korak nakon 13):** za **sve blokove osim sna**, s akcijama Gotovo / Odgodi / Iskrslo; **Odgodi = 15 min** (P16, 19).
+- **Postavke i onboarding:** dodati **vikend vrijeme buđenja** + upozorenje ako je razlika > 1 h (P10); `settings.language` dobiva **`system`** (P5, 11); onboarding dopušta **0–3 zabrane** (P13); zadana vremena ostaju (P12); svaka od tri dnevne obavijesti se može **isključiti** u Profilu (P14); horizont zakazivanja **7 dana** (P15); kad je dopuštenje odbijeno — **kartica s gumbom "Otvori postavke"** (P17).
+- **Dizajn:** paleta ostaje (P1); granice doba dana **prate vrijeme buđenja** (npr. zora = buđenje do +3 h) (P2); tema prati sustav, tamna zadana (P3); napraviti **jednostavnu privremenu ikonu/splash** (narančasti orb na tamnoj pozadini) (P4).
+
+**Otvoreno pitanje:**
+24. Koliko XP-a za zadatak označen "Djelomično" (npr. pola, ili ništa)? Zasad 0.
+
 ## 2026-11-09 13:43 · Korak 12 — Večernji upit: checklist
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-12`; `npm ci`. Bez novih ovisnosti i bez nove migracije (tablice `checkins`, `checkin_items`, `rule_logs`, `xp_events` već postoje).
