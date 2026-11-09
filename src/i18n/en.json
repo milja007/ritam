@@ -124,5 +124,56 @@
       "deleteMessage": "\"{{title}}\" will be removed from today.",
       "error": "Saving failed. Please try again."
     }
+  },
+  "evening": {
+    "close": "Close",
+    "progress": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Save",
+    "saveError": "The check-in wasn't saved. Try again.",
+    "card": {
+      "title": "Evening check-in",
+      "pendingTitle": "How did today go?",
+      "pendingBody": "A minute or two: checklist, rules and a rating for the day.",
+      "start": "Start",
+      "doneTitle": "Check-in done ✓",
+      "doneBody": "Day rating: {{rating}}/5. You can still edit it.",
+      "edit": "Edit"
+    },
+    "checklist": {
+      "title": "Today's checklist",
+      "subtitle": "Did everything go OK?",
+      "empty": "Nothing was planned today — let's move on.",
+      "question": "Was it OK: {{title}}",
+      "ok": "OK",
+      "notOk": "Not really",
+      "comment": "What happened?",
+      "commentPlaceholder": "e.g. ran out of time, too tired…"
+    },
+    "rules": {
+      "title": "Rules",
+      "subtitle": "How did your rules go today?",
+      "why": "Why: {{why}}",
+      "kept": "I kept it",
+      "broken": "I broke it",
+      "trigger": "What triggered it?",
+      "triggerPlaceholder": "e.g. stress, boredom, friends…"
+    },
+    "rating": {
+      "title": "Rate the day",
+      "subtitle": "How was today, from 1 to 5?",
+      "label": "Day rating",
+      "low": "1 · bad",
+      "high": "5 · great",
+      "note": "One sentence about the day",
+      "notePlaceholder": "What stuck with you?"
+    },
+    "done": {
+      "xp": "+{{xp}} XP",
+      "title": "Day logged",
+      "body": "Nice job taking a minute for yourself. See you tomorrow.",
+      "close": "Done"
+    }
   }
 }

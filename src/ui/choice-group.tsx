@@ -9,7 +9,8 @@ export type Choice<T> = { value: T; label: string };
 
 export type ChoiceGroupProps<T> = {
   choices: readonly Choice<T>[];
-  selected: T;
+  /** `null` = još ništa nije odabrano. */
+  selected: T | null;
   onSelect: (value: T) => void;
   /** `row` = segmentirani prekidač, `list` = popis s kvačicom. */
   layout?: 'row' | 'list';
