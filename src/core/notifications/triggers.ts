@@ -57,6 +57,18 @@ export function triggerId(kind: NotificationKind, date: string, time: string): s
   return `${kind}:${date}@${time}`;
 }
 
+const TRIGGER_ID_PATTERN = new RegExp(
+  `^(?:${NOTIFICATION_KINDS.join('|')}):\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}$`,
+);
+
+/**
+ * Je li id zakazane obavijesti naš dnevni okidač (`kind:YYYY-MM-DD@HH:MM`). Pri ponovnom
+ * zakazivanju otkazujemo samo takve — podsjetnici blokova i tuđe obavijesti ostaju.
+ */
+export function isDailyTriggerId(id: string): boolean {
+  return TRIGGER_ID_PATTERN.test(id);
+}
+
 /** Lokalni `Date` za dan "YYYY-MM-DD" i vrijeme "HH:MM" (DST prijelaze rješava `Date`). */
 function localDateTime(date: string, time: string): Date | null {
   const minutes = parseClock(time);
@@ -119,13 +131,13 @@ export type ReschedulePlan = {
 
 /**
  * Razlika između već zakazanih obavijesti i željenih okidača, da se pri otvaranju appa
- * ne briše i ponovno zakazuje sve. Id sadrži vrijeme, pa promjena postavki otkazuje stare okidače.
+ * ne briše i ponovno zakazuje sve. Gledaju se samo naši dnevni okidači (`isDailyTriggerId`). Id sadrži vrijeme, pa promjena postavki otkazuje stare okidače.
  */
 export function planReschedule(
   scheduledIds: readonly string[],
   desired: readonly NotificationTrigger[],
 ): ReschedulePlan {
-  const scheduled = new Set(scheduledIds);
+  const scheduled = new Set(scheduledIds.filter(isDailyTriggerId));
   const desiredIds = new Set(desired.map((trigger) => trigger.id));
   return {
     toCancel: [...scheduled].filter((id) => !desiredIds.has(id)),
