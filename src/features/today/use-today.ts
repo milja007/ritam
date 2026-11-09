@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { eveningCheckinDate } from '@/core/checkin';
 import type { ScheduleBlock } from '@/core/domain';
 import {
   draftToInput,
@@ -11,18 +12,21 @@ import {
 import { localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { createBlock, deleteBlock, listBlocksForDate, updateBlock } from '@/db/repos';
+import { createBlock, deleteBlock, listBlocksForDate, setBlockStatus, updateBlock } from '@/db/repos';
 
 const CLOCK_REFRESH_MS = 30_000;
 
-/** Trenutni lokalni dan i minuta u danu; osvježava se dok je ekran otvoren (i preko ponoći). */
-export function useNow(): { date: string; minutes: number } {
+/**
+ * Trenutni lokalni dan i minuta u danu, te dan večernjeg upita (prije 04:00 je to jučer);
+ * osvježava se dok je ekran otvoren (i preko ponoći).
+ */
+export function useNow(): { date: string; minutes: number; eveningDate: string } {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), CLOCK_REFRESH_MS);
     return () => clearInterval(id);
   }, []);
-  return { date: localDateOf(now), minutes: minutesOfDay(now) };
+  return { date: localDateOf(now), minutes: minutesOfDay(now), eveningDate: eveningCheckinDate(now) };
 }
 
 type Loaded = { date: string; status: 'ready' | 'error'; blocks: ScheduleBlock[] };
@@ -76,7 +80,7 @@ export function useDayBlocks(date: string) {
 
   const remove = useCallback(
     async (id: string) => {
-      await deleteBlock(getDb(), LOCAL_USER_ID, id);
+      deleteBlock(getDb(), LOCAL_USER_ID, id);
       reload();
     },
     [reload],
@@ -84,7 +88,8 @@ export function useDayBlocks(date: string) {
 
   const toggleDone = useCallback(
     async (block: ScheduleBlock) => {
-      await updateBlock(getDb(), LOCAL_USER_ID, block.id, { status: toggledStatus(block.status) });
+      // Status + XP zadatka u jednoj transakciji: kvačica daje XP odmah, vraćanje ga uklanja.
+      setBlockStatus(getDb(), LOCAL_USER_ID, block.id, toggledStatus(block.status));
       reload();
     },
     [reload],

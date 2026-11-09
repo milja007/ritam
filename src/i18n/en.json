@@ -139,17 +139,25 @@
       "start": "Start",
       "doneTitle": "Check-in done ✓",
       "doneBody": "Day rating: {{rating}}/5. You can still edit it.",
-      "edit": "Edit"
+      "edit": "Edit",
+      "titleYesterday": "Evening check-in · yesterday"
     },
     "checklist": {
       "title": "Today's checklist",
-      "subtitle": "Did everything go OK?",
+      "subtitle": "Did everything go OK? Whatever didn't can move to later.",
       "empty": "Nothing was planned today — let's move on.",
       "question": "Was it OK: {{title}}",
       "ok": "OK",
       "notOk": "Not really",
       "comment": "What happened?",
-      "commentPlaceholder": "e.g. ran out of time, too tired…"
+      "commentPlaceholder": "e.g. ran out of time, too tired…",
+      "partial": "Partly",
+      "later": "When later?",
+      "laterTomorrow": "Tomorrow",
+      "laterOther": "Another day",
+      "laterSkip": "Skip",
+      "laterDay": "Which day?",
+      "laterHint": "The rest gets a new block at the same time."
     },
     "rules": {
       "title": "Rules",

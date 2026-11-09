@@ -11,10 +11,13 @@ import { useAppTheme } from '@/ui/theme';
 /** Kartica na tabu Danas: pokreni večernji upit ili, ako je ispunjen, prikaži ocjenu i Uredi. */
 export function EveningCard({
   saved,
+  forYesterday,
   disabled,
   onOpen,
 }: {
   saved: SavedEveningCheckin | null;
+  /** Prije 04:00 upit se odnosi na jučerašnji dan. */
+  forYesterday: boolean;
   disabled: boolean;
   onOpen: () => void;
 }) {
@@ -29,7 +32,7 @@ export function EveningCard({
         { backgroundColor: colors.surface, borderColor: done ? colors.success : colors.border },
       ]}>
       <Text variant="overline" tone={done ? 'success' : 'textMuted'}>
-        {t('evening.card.title')}
+        {forYesterday ? t('evening.card.titleYesterday') : t('evening.card.title')}
       </Text>
       <Text variant="heading">
         {done ? t('evening.card.doneTitle') : t('evening.card.pendingTitle')}
