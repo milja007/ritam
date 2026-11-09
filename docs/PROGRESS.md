@@ -14,6 +14,18 @@ Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–24 su zatvor
 - **LLM (2026-11-09):** Borna je upisao `ANTHROPIC_API_KEY` u Supabase secrets projekta `ritam` (jedan ključ za sve modele). Modeli po funkciji, kao postavka u Edge Functionu (ne u kodu appa): **plan-day i write-report → `claude-sonnet-5-5`**, **parse-input → `claude-haiku-5-5`**. Ključ se prvi put provjerava u koraku 20 (MCP nema popis secreta).
 
 
+## 2026-11-09 18:43 · Korak 12b — Večernji upit: dorade (odluke 2026-11-09)
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-12b`; `npm ci`. Bez novih ovisnosti.
+2. Migracija `0001` (drizzle-kit + ručni dodaci): `checkin_items` dobiva `outcome` (`ok` / `partial` / `not`, popunjeno iz `ok`), `later_date` (kamo je premješteno; NULL = preskoči) i `moved_block_id`; prije indeksa uklanja duplikate (ostaje najnoviji); **jedinstveni indeksi** `checkins(user_id, date, kind)` i `rule_logs(rule_id, date)`. Domenske Zod sheme prate (`ok` ostaje = `outcome === 'ok'`). Test migracije nad Node SQLite-om.
+3. Čisto u `src/core/checkin/evening.ts`: odgovor checkliste `outcome: ok | partial | not | null` + `later: tomorrow | other | skip | null` + `laterDate`; validacija (Djelomično/Nije traži "kad kasnije?", "drugi dan" traži dan 2–7 dana unaprijed); `blockStatusAfterCheckin` (U redu → `done`, Djelomično → `partial`, Nije + kasnije → `moved`, Nije + preskoči → `skipped`); `movedBlockInput` (isti naziv i vrijeme na novi dan, `planned`); `eveningCheckinDate(now)` (prije 04:00 → prethodni dan); nacrt iz spremljenog upita vraća i "kad kasnije?".
+4. XP zadatka **izveden iz statusa bloka** (`taskXpForBlock`: zadatak `done` → 15, `partial` → ceil(15/2) = 8, ostalo 0) i jedna sinkronizacija po bloku (`syncBlockTaskXp`: obriši XP zadatka tog bloka, upiši ispravan). Koristi je i kvačica timelinea (XP odmah) i upit → nikad duplicirano; upit sam piše samo XP upita (15) i zabrana.
+5. Repo: `setBlockStatus` (transakcija: status + XP) za kvačicu; `deleteBlock` briše i XP zadatka bloka; `saveEveningCheckin` — statusi + XP preko sinkronizacije, premješteni blokovi stvoreni/ažurirani/obrisani (ponovno spremanje ne duplicira; dirnuti premješteni blok se ne briše). Testovi.
+6. UI: checklist s tri opcije **U redu / Djelomično / Nije**; za Djelomično/Nije komentar + "Kad kasnije?" (Sutra / Drugi dan / Preskoči; Drugi dan → izbor dana). Upit koristi vlastiti datum (prije 04:00 jučerašnji) i učitava blokove tog dana; kvačica osvježava i upit. i18n HR/EN.
+7. Provjere `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = Djelomično s pola XP-a (3, 4, 6), "kad kasnije?" s novim blokom i statusom (3, 5, 6), upit prije 04:00 (3, 6), XP odmah na kvačicu bez dupliciranja (4, 5), jedinstveni indeksi (2). Odluka o statusu: Djelomično **ostaje `partial`** i kad se ostatak premjesti (da XP za djelomično ne nestane), a premješta se samo ostatak kao novi blok; Nije + kasnije → `moved` — zapisano kao napomena. Promjena modela `checkin_items` (outcome, later_date, moved_block_id) je nužna da Djelomično i premještanje prežive ponovno otvaranje upita; Supabase shema (korak 17) će to pratiti.
+
 ## 2026-11-09 13:43 · Korak 12 — Večernji upit: checklist
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-12`; `npm ci`. Bez novih ovisnosti i bez nove migracije (tablice `checkins`, `checkin_items`, `rule_logs`, `xp_events` već postoje).
