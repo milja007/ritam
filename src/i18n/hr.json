@@ -139,17 +139,25 @@
       "start": "Započni",
       "doneTitle": "Upit je ispunjen ✓",
       "doneBody": "Ocjena dana: {{rating}}/5. Možeš ga još urediti.",
-      "edit": "Uredi"
+      "edit": "Uredi",
+      "titleYesterday": "Večernji upit · jučer"
     },
     "checklist": {
       "title": "Checklist dana",
-      "subtitle": "Je li sve bilo u redu?",
+      "subtitle": "Je li sve bilo u redu? Što nije, može ići na kasnije.",
       "empty": "Danas nije bilo isplaniranih blokova — idemo dalje.",
       "question": "Je li u redu: {{title}}",
       "ok": "U redu",
       "notOk": "Nije",
       "comment": "Što se dogodilo?",
-      "commentPlaceholder": "npr. nisam stigao, bilo je preumorno…"
+      "commentPlaceholder": "npr. nisam stigao, bilo je preumorno…",
+      "partial": "Djelomično",
+      "later": "Kad kasnije?",
+      "laterTomorrow": "Sutra",
+      "laterOther": "Drugi dan",
+      "laterSkip": "Preskoči",
+      "laterDay": "Koji dan?",
+      "laterHint": "Ostatak dobiva novi blok u isto vrijeme."
     },
     "rules": {
       "title": "Zabrane",

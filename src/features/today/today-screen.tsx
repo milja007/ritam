@@ -50,7 +50,8 @@ export function TodayScreen() {
   const day = useDayBlocks(now.date);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [actionFailed, setActionFailed] = useState(false);
-  const evening = useEveningCheckin(now.date);
+  // Upit prije 04:00 pripada prethodnom danu, pa ima vlastiti dan i blokove.
+  const evening = useEveningCheckin(now.eveningDate);
   const [eveningOpen, setEveningOpen] = useState(false);
   const eveningRequested = useEveningRequested();
   const eveningReady = day.status === 'ready' && evening.status === 'ready';
@@ -76,6 +77,7 @@ export function TodayScreen() {
     setActionFailed(false);
     try {
       await day.toggleDone(block);
+      evening.reload(); // nacrt upita kreće od svježih statusa
     } catch (error: unknown) {
       console.error('Toggling block failed', error);
       setActionFailed(true);
@@ -136,6 +138,7 @@ export function TodayScreen() {
           {day.status === 'ready' && evening.status !== 'error' ? (
             <EveningCard
               saved={evening.saved}
+              forYesterday={now.eveningDate !== now.date}
               disabled={!eveningReady}
               onOpen={() => setEveningOpen(true)}
             />
@@ -158,12 +161,13 @@ export function TodayScreen() {
 
       {showEvening ? (
         <EveningCheckinFlow
-          blocks={day.blocks}
+          date={now.eveningDate}
+          blocks={evening.blocks}
           activeRules={evening.activeRules}
           saved={evening.saved}
           onSave={(draft) => {
             const xp = evening.save(draft);
-            day.reload(); // statusi blokova su se promijenili
+            day.reload(); // statusi blokova (i premješteni blokovi) su se promijenili
             return xp;
           }}
           onClose={closeEvening}

@@ -21,6 +21,8 @@ import { Text } from '@/ui/text';
 import { ChecklistStep, RatingStep, RulesStep } from './steps';
 
 type EveningCheckinFlowProps = {
+  /** Dan na koji se upit odnosi (prije 04:00 jučerašnji). */
+  date: string;
   blocks: readonly ScheduleBlock[];
   activeRules: readonly Rule[];
   saved: SavedEveningCheckin | null;
@@ -33,9 +35,18 @@ type EveningCheckinFlowProps = {
  * Večernji upit, korak po korak: checklist dana → zabrane (ako danas vrijede) → ocjena dana.
  * Nakon spremanja kratka potvrda sa zarađenim XP-om. Montira se pri svakom otvaranju (svjež nacrt).
  */
-export function EveningCheckinFlow({ blocks, activeRules, saved, onSave, onClose }: EveningCheckinFlowProps) {
+export function EveningCheckinFlow({
+  date,
+  blocks,
+  activeRules,
+  saved,
+  onSave,
+  onClose,
+}: EveningCheckinFlowProps) {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState<EveningDraft>(() => createEveningDraft(blocks, activeRules, saved));
+  const [draft, setDraft] = useState<EveningDraft>(() =>
+    createEveningDraft(date, blocks, activeRules, saved),
+  );
   const [index, setIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);

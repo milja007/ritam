@@ -61,7 +61,10 @@ const valid = {
     kind: 'task',
     refId: 'block-1',
     ok: false,
+    outcome: 'not',
     comment: 'Nisam stigao, sutra ujutro.',
+    laterDate: '2026-11-10',
+    movedBlockId: 'block-2',
   },
   rule: {
     ...base,
@@ -212,6 +215,17 @@ describe('checkins', () => {
     expect(checkinItemSchema.safeParse({ ...valid.checkinItem, checkinId: '' }).success).toBe(false);
     expect(checkinItemSchema.safeParse({ ...valid.checkinItem, kind: 'mood' }).success).toBe(false);
     expect(checkinItemSchema.safeParse({ ...valid.checkinItem, ok: 'yes' }).success).toBe(false);
+  });
+
+  it('checkin item outcome: U redu / Djelomično / Nije, `ok` only for U redu', () => {
+    const partial = { ...valid.checkinItem, outcome: 'partial' };
+    expect(checkinItemSchema.safeParse(partial).success).toBe(true);
+    expect(checkinItemSchema.safeParse({ ...partial, outcome: 'half' }).success).toBe(false);
+    expect(checkinItemSchema.safeParse({ ...partial, ok: true }).success).toBe(false);
+    const done = { ...valid.checkinItem, ok: true, outcome: 'ok', laterDate: null, movedBlockId: null };
+    expect(checkinItemSchema.safeParse(done).success).toBe(true);
+    expect(checkinItemSchema.safeParse({ ...done, laterDate: '2026-11-10' }).success).toBe(false);
+    expect(checkinItemSchema.safeParse({ ...valid.checkinItem, laterDate: '2026-02-30' }).success).toBe(false);
   });
 });
 

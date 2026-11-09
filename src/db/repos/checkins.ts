@@ -5,6 +5,8 @@ import {
   cleanText,
   eveningXpAwards,
   isEveningDraftComplete,
+  movedBlockFields,
+  resolveLaterDate,
   sumAwards,
   type EveningDraft,
   type SavedEveningCheckin,
@@ -22,6 +24,7 @@ import {
 
 import type { RitamDb } from '../db';
 import { checkinItems, checkins, ruleLogs, rules, scheduleBlocks, xpEvents } from '../schema';
+import { syncBlockTaskXp } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
 export class IncompleteEveningCheckinError extends Error {
@@ -63,19 +66,22 @@ export async function getEveningCheckin(
 export type SavedEveningResult = { checkin: Checkin; xpEarned: number };
 
 /**
- * Sprema večernji upit u jednoj transakciji (sve ili ništa): checkin (jedan večernji po danu),
- * stavke checkliste (`checkin_items`), zapise zabrana (`rule_logs`), statuse blokova i XP
- * (`xp_events`). Ponovno spremanje istog dana zamjenjuje stavke, zapise i XP tog upita —
- * XP se ne duplicira. Odgovori na blokove/zabrane kojih (više) nema se preskaču.
+ * Sprema večernji upit dana `draft.date` u jednoj transakciji (sve ili ništa): checkin (jedan
+ * večernji po danu), stavke checkliste (`checkin_items`), zapise zabrana (`rule_logs`, jedan po
+ * zabrani po danu), statuse blokova, premještene blokove ("kad kasnije?") i XP (`xp_events`).
+ * XP zadataka ide preko statusa bloka (`syncBlockTaskXp`) — isti put kao kvačica na timelineu,
+ * pa se ne duplicira. Ponovno spremanje istog dana zamjenjuje stavke, zapise i XP tog upita;
+ * premješteni blok se ponovo koristi (ili obriše ako više ne treba, dok je još neodrađen).
+ * Odgovori na blokove/zabrane kojih (više) nema se preskaču.
  */
 export function saveEveningCheckin(
   db: RitamDb,
   userId: string,
-  date: LocalDate,
   draft: EveningDraft,
   deps: RepoDeps = defaultRepoDeps,
 ): SavedEveningResult {
   if (!isEveningDraftComplete(draft)) throw new IncompleteEveningCheckinError();
+  const { date } = draft;
   const now = deps.now().toISOString();
   const stamp = { userId, createdAt: now, updatedAt: now };
 
@@ -114,11 +120,22 @@ export function saveEveningCheckin(
       note: cleanText(draft.note),
     });
 
+    const oldItems = existing
+      ? tx.select().from(checkinItems).where(eq(checkinItems.checkinId, existing.id)).all()
+      : [];
+    const oldMovedByBlock = new Map(
+      oldItems.flatMap((item) =>
+        item.refId !== null && item.movedBlockId !== null ? [[item.refId, item.movedBlockId] as const] : [],
+      ),
+    );
+
     if (existing) {
-      const oldItems = tx.select().from(checkinItems).where(eq(checkinItems.checkinId, existing.id)).all();
-      const oldLogs = tx.select().from(ruleLogs).where(eq(ruleLogs.checkinId, existing.id)).all();
-      const oldBlockIds = oldItems.flatMap((item) => (item.refId === null ? [] : [item.refId]));
-      const oldRuleIds = oldLogs.map((log) => log.ruleId);
+      const oldRuleIds = tx
+        .select()
+        .from(ruleLogs)
+        .where(eq(ruleLogs.checkinId, existing.id))
+        .all()
+        .map((log) => log.ruleId);
       tx.delete(xpEvents)
         .where(
           and(
@@ -126,7 +143,6 @@ export function saveEveningCheckin(
             eq(xpEvents.date, date),
             or(
               and(eq(xpEvents.source, 'checkin'), eq(xpEvents.sourceId, existing.id)),
-              and(eq(xpEvents.source, 'task'), inArray(xpEvents.sourceId, oldBlockIds)),
               and(eq(xpEvents.source, 'rule'), inArray(xpEvents.sourceId, oldRuleIds)),
             ),
           ),
@@ -140,29 +156,74 @@ export function saveEveningCheckin(
       tx.insert(checkins).values(checkin).run();
     }
 
+    let taskXp = 0;
     for (const answer of answeredItems) {
-      const ok = answer.ok === true;
+      const block = blocksById.get(answer.blockId);
+      if (!block || answer.outcome === null) continue;
+      const outcome = answer.outcome;
+      const laterDate = resolveLaterDate(answer, date);
+
+      // "Kad kasnije?": premješteni blok (novi, ili onaj iz prošlog spremanja).
+      const oldMovedId = oldMovedByBlock.get(block.id);
+      const oldMovedRow = oldMovedId
+        ? tx
+            .select()
+            .from(scheduleBlocks)
+            .where(and(eq(scheduleBlocks.userId, userId), eq(scheduleBlocks.id, oldMovedId)))
+            .get()
+        : undefined;
+      const oldMoved = oldMovedRow ? scheduleBlockSchema.parse(oldMovedRow) : null;
+      let movedBlockId: string | null = null;
+      if (laterDate !== null) {
+        if (oldMoved) {
+          movedBlockId = oldMoved.id;
+          // Još neodrađen premješteni blok prati novi odabrani dan; odrađen ostaje gdje je.
+          if (oldMoved.status === 'planned' && oldMoved.date !== laterDate) {
+            tx.update(scheduleBlocks)
+              .set({ date: laterDate, updatedAt: now })
+              .where(eq(scheduleBlocks.id, oldMoved.id))
+              .run();
+          }
+        } else {
+          const moved = scheduleBlockSchema.parse({
+            ...stamp,
+            id: deps.newId(),
+            ...movedBlockFields(block, laterDate),
+          });
+          tx.insert(scheduleBlocks).values(moved).run();
+          movedBlockId = moved.id;
+        }
+      } else if (oldMoved && oldMoved.status === 'planned') {
+        // Više se ne premješta — ukloni neodrađeni premješteni blok (dirnuti ostaje).
+        tx.delete(scheduleBlocks).where(eq(scheduleBlocks.id, oldMoved.id)).run();
+      }
+
       const item = checkinItemSchema.parse({
         ...stamp,
         id: deps.newId(),
         checkinId: checkin.id,
         kind: 'task',
-        refId: answer.blockId,
-        ok,
-        comment: ok ? null : cleanText(answer.comment),
+        refId: block.id,
+        ok: outcome === 'ok',
+        outcome,
+        comment: outcome === 'ok' ? null : cleanText(answer.comment),
+        laterDate,
+        movedBlockId,
       });
       tx.insert(checkinItems).values(item).run();
 
-      const block = blocksById.get(answer.blockId);
-      const status = block ? blockStatusAfterCheckin(block.status, ok) : null;
-      if (block && status !== block.status) {
-        tx.update(scheduleBlocks)
-          .set({ status: status ?? block.status, updatedAt: now })
-          .where(eq(scheduleBlocks.id, block.id))
-          .run();
+      const status = blockStatusAfterCheckin(outcome, laterDate);
+      if (status !== block.status) {
+        tx.update(scheduleBlocks).set({ status, updatedAt: now }).where(eq(scheduleBlocks.id, block.id)).run();
       }
+      taskXp += syncBlockTaskXp(tx, { ...block, status }, deps)?.amount ?? 0;
     }
 
+    // Jedan zapis po zabrani po danu: zamijeni i zapis istog dana koji nije iz ovog upita.
+    const answeredRuleIds = answeredRules.map((answer) => answer.ruleId);
+    tx.delete(ruleLogs)
+      .where(and(eq(ruleLogs.userId, userId), eq(ruleLogs.date, date), inArray(ruleLogs.ruleId, answeredRuleIds)))
+      .run();
     for (const answer of answeredRules) {
       const kept = answer.kept === true;
       const log = ruleLogSchema.parse({
@@ -177,18 +238,13 @@ export function saveEveningCheckin(
       tx.insert(ruleLogs).values(log).run();
     }
 
-    const awards = eveningXpAwards(
-      { ...draft, items: answeredItems, rules: answeredRules },
-      dayBlocks,
-      userRules,
-      checkin.id,
-    );
+    const awards = eveningXpAwards({ rules: answeredRules }, userRules, checkin.id);
     for (const award of awards) {
       const event = xpEventSchema.parse({ ...stamp, id: deps.newId(), date, ...award });
       tx.insert(xpEvents).values(event).run();
     }
 
-    return { checkin, xpEarned: sumAwards(awards) };
+    return { checkin, xpEarned: sumAwards(awards) + taskXp };
   });
 }
 
