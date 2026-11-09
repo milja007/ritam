@@ -27,7 +27,8 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] **13c. Postavke i onboarding — dorade (odluke 2026-11-09)** — vikend vrijeme buđenja + upozorenje > 1 h; `language: system`; 0–3 zabrane u onboardingu; prekidači za svaku dnevnu obavijest u Profilu; horizont 7 dana; kartica kad je dopuštenje odbijeno; doba dana prema buđenju; privremena ikona/splash.
 - [ ] **14. Jutarnji brief** — ekran iz notifikacije: pozdrav, prijava sna (2 taba), kartice dana, Prilagodi / Kreni.
 - [ ] **15. XP traka + streak u UI-ju** — na tabu Danas i Profil.
-- [ ] **16. Dnevni izvještaj (lokalni)** — statistika dana na kraju upita (bez LLM-a zasad).
+- [ ] **16. Dnevna dijagnoza (lokalna)** — na kraju upita prikaz u strukturi dijagnoze iz CONCEPT.md (Ukratko, Napredak, Pohvale, …) koliko se može bez LLM-a: statistika dana i usporedba s jučer. Sprema u `reports` (period `day`).
+- [ ] **16b. Napredak — dnevni rezultat** — `src/core/progress/` (čisto + testovi): dnevni rezultat 0–100 (plan, zabrane, san; trackeri kasnije), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi. Prikaz rezultata sa strelicom trenda na tabu Danas.
 - [ ] **17. Supabase shema** — `supabase/migrations/` SQL za sve tablice + RLS (vlasnik); remote projekt `ritam` postoji (vidi Odluke u PROGRESS.md), primijeniti tek kad migracije prođu lokalno. `supabase/config.toml`.
 - [ ] **18. Supabase klijent + auth** — `@supabase/supabase-js`, env varijable (`EXPO_PUBLIC_SUPABASE_URL/KEY`), auth ekran (email magic link) iza feature flaga dok nema accounta.
 - [ ] **19. Sync** — red promjena lokalno → Supabase, pull pri pokretanju; konflikti: zadnji updatedAt pobjeđuje.
@@ -44,16 +45,20 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] 28. Zabrane: ekran upravljanja + streakovi po zabrani
 - [ ] 29. San: wind-down, prilagodba rasporeda lošem snu
 - [ ] 30. Glasovni unos (on-device speech-to-text, HR/EN)
-- [ ] 31. LLM dnevni izvještaj (`write-report`)
+- [ ] 31. LLM dnevna dijagnoza (`write-report`) — struktura i ton iz CONCEPT.md (sekcija Dijagnoze), promptovi verzionirani u repou s testnim primjerima podataka, prethodne dijagnoze u kontekstu, gumbi Pomoglo / Nije pomoglo + komentar
+- [ ] 31b. Opcionalni trackeri: kalorije i novac — postavke (isključeni po defaultu), unos, večernja provjera, ulaze u dnevni rezultat i dijagnozu; upozorenje za neuobičajeno nizak cilj kalorija
 
 ## Faza 3 — Igra i animacije
 - [ ] 32. Leveli + otključavanja
 - [ ] 33. Orb-plamen avatar (Skia)
-- [ ] 34. Questovi (dnevni/tjedni/epski) + freeze tokeni
+- [ ] 34. Questovi (dnevni/tjedni/epski) + freeze tokeni + bedževi
+- [ ] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]"
 - [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika
-- [ ] 36. Tjedni izvještaj + prijedlog jedne promjene
-- [ ] 37. Mjesečni izvještaj
+- [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
+- [ ] 37. Mjesečna dijagnoza (zadnji dan u mjesecu: dan + tjedan + mjesec)
+- [ ] 37b. Godišnja dijagnoza (31. 12.: dan + tjedan + mjesec + godina)
+- [ ] 37c. Grafovi napretka: 30 dana na Profilu, godišnja toplinska karta, arhiva dijagnoza
 - [ ] 38. Teme boja
 
 ## Faza 4 — Nadogradnje
-- [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget
+- [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget · 42. Raspoloženje (krafna: ocjena 1–5 + oznake, samo za dijagnoze)
