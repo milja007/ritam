@@ -14,6 +14,18 @@ Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–24 su zatvor
 - **LLM (2026-11-09):** Borna je upisao `ANTHROPIC_API_KEY` u Supabase secrets projekta `ritam` (jedan ključ za sve modele). Modeli po funkciji, kao postavka u Edge Functionu (ne u kodu appa): **plan-day i write-report → `claude-sonnet-5-5`**, **parse-input → `claude-haiku-5-5`**. Ključ se prvi put provjerava u koraku 20 (MCP nema popis secreta).
 
 
+## 2026-11-09 20:43 · Korak 13 — Večernji upit: "Što imaš sutra?"
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-13`; `npm ci`. Bez novih ovisnosti i bez migracije (blokovi idu u postojeći `schedule_blocks`).
+2. Čisto u `src/core/schedule/tomorrow.ts`: `QUICK_PICKS` (brzi odabiri: id, vrsta, trajanje — npr. posao/škola fiksno, trening/učenje/obaveze zadatak); `planStartMinutes(wakeTime)` (buđenje + 30 min, na četvrt sata); `nextFreeSlot(occupied, minutes, wakeTime)` (nastavlja iza zadnjeg bloka, ne prije buđenja, unutar dana); `parseTypedEntry(text)` — lokalno prepoznaje vrijeme u tipkanom tekstu ("Trening 18-19", "sastanak 9:30–11", "zubar u 15") i ostatak je naziv (LLM `parse-input` dolazi u koraku 21); `quickPickDraft` / `typedDraft` → `BlockDraft`; `tomorrowDraftsValid`. Testovi.
+3. Repo `createBlocks(db, user, inputs)` — svi blokovi u jednoj sinkronoj transakciji (sve ili ništa). Test nad Node SQLite-om.
+4. UI `src/features/evening/tomorrow-plan.tsx`: ekran "Što imaš sutra?" — gore "već u planu" (sutrašnji blokovi, npr. premješteni iz "kad kasnije?"), brzi odabiri (čipovi), polje za tipkanje + Dodaj, popis novih stavki (dodir → postojeći `BlockEditor` za vrijeme/naziv/vrstu, ukloni), Potvrdi (sprema) / Preskoči.
+5. Ulaz: nakon spremanja upita ekran potvrde (+XP) nudi "Što imaš sutra?" (koncept: izvještaj, pa sutra); kartica upita kad je ispunjen nudi i "Planiraj sutra". Sutra = dan upita + 1 (prije 04:00 → današnji dan). Nakon potvrde osvježi Danas.
+6. i18n HR/EN (`evening.tomorrow.*`, nazivi brzih odabira) + pristupačnost.
+7. Provjere `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = ručni unos (brzi odabiri 2/4 + tipkanje 2/4), pregled (4), potvrdi (3/4). Google Calendar (24), glas (30) i LLM (21) su drugi koraci — ne sada; tipkano se lokalno pretvara u jedan blok po unosu, bez LLM-a. Brzi odabiri su fiksni popis (bez učenja iz povijesti) — pitanje za Bornu. Vrijeme brzog odabira se slaže iza zadnjeg bloka od buđenja; korisnik ga mijenja u editoru. Blokovi su `source: user`, `status: planned`. Dnevni izvještaj (16) još ne postoji, pa "sutra" ide odmah iza potvrde upita.
+
 ## 2026-11-09 18:43 · Korak 12b — Večernji upit: dorade (odluke 2026-11-09)
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-12b`; `npm ci`. Bez novih ovisnosti.
