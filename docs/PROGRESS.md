@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-09 22:43 · Korak 13b — Podsjetnici blokova
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-13b`; bez novih ovisnosti i bez migracije.
+2. Čisto u `src/core/notifications/block-reminders.ts`: id podsjetnika `block:<blokId>@<dan>T<HH:MM>` (promjena termina → novi id), odgoda `snooze:<blokId>`; `upcomingBlockReminders(blocks, now, limit)` — samo `planned`, sve vrste osim sna, okida na početku bloka, strogo poslije `now`, sortirano, unutar budžeta; `blockReminderBudget` = 64 − dnevni okidači − rezerva za odgode; `SNOOZE_MINUTES = 15`, `snoozeFireAt`; `planBlockReschedule` (otkaži zastarjele, zakaži nedostajuće; odgode blokova koji više nisu planirani se otkazuju); `blockActionEffect(block, action)` → označi gotovo / odgodi / otvori blok / ništa (blok obrisan ili već riješen). Testovi.
+3. Repo `listBlocksBetween(db, user, from, to)` (+ test) za horizont zakazivanja (isti kao dnevne obavijesti, 3 dana).
+4. Feature `sync.ts`: zajednički `NotificationRequest` (kategorija, kanal), `syncBlockReminders` kroz isti `NotificationScheduler` adapter, Android kanal `blocks`; `expoScheduler` postavlja `categoryIdentifier`. Testovi s lažnim schedulerom.
+5. `notifications-sync`: uz dnevne zakaže i podsjetnike; odgovori — Gotovo → `setBlockStatus(done)` (XP odmah, isti put kao kvačica) + makni obavijest; Odgodi → nova obavijest za 15 min; Iskrslo i dodir → otvori app na Danas s uređivačem tog bloka (puni "Iskrslo" flow je korak 27). Danas se osvježi (store promjena blokova).
+6. Ponovno zakazivanje nakon svake promjene blokova (timeline, upit, "Što imaš sutra?").
+7. i18n HR/EN (tekst podsjetnika, kanal), provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = obavijest na početku svakog bloka osim sna (2, 4, 5), Gotovo = status + XP (2, 5 — `setBlockStatus` već ne duplicira XP s upitom), Odgodi 15 min (2, 5), Iskrslo otvara app (5), zakazivanje uz dnevne unutar iOS limita (2, 4). Akcije zasad otvaraju app (`opensAppToForeground: true`) jer obrada u pozadini dok je app ugašen nije pouzdana bez dev builda za provjeru — napomena/pitanje. Horizont ostaje 3 dana (7 dana je korak 13c). Isključivanje podsjetnika u Profilu nije u ovom koraku.
+
 ## Promjena koncepta (Borna, 2026-11-09 21:14) — dijagnoze, napredak, trackeri
 Borna je proširio koncept; detalji u `docs/CONCEPT.md` (sekcije Dijagnoze, Napredak u odnosu na prošlost, Opcionalni trackeri, Gamifikacija) i u Claude Docs konceptu. `BUILD_PLAN.md` je usklađen (16, 16b, 31, 31b, 34, 34b, 36–37c, 42).
 - **Dijagnoze** umjesto "izvještaja": svaku večer dan; nedjeljom dan + tjedan; kraj mjeseca dan + tjedan + mjesec; 31. 12. sve četiri. Struktura: Ukratko → Napredak → Pohvale → Što smo primijetili → Veliki problemi → Ideje za napredak. Detaljno, psihološki, iskreno ali nikad bezobrazno. Najvažniji dio appa — kvaliteta promptova je prioritet.
