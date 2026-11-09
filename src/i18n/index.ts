@@ -18,7 +18,7 @@ export const resources = {
   en: { translation: en },
 } as const;
 
-// Preferencija živi samo u memoriji dok ne postoji settings tablica (korak 6/8).
+// Aktivna preferencija; trajno se sprema u `settings.language` (onboarding i Profil).
 let preference: LanguagePreference = 'system';
 
 function deviceLanguageTags(): string[] {
@@ -41,6 +41,11 @@ void i18n.use(initReactI18next).init({
 
 export function getLanguagePreference(): LanguagePreference {
   return preference;
+}
+
+/** Jezik koji preferencija daje na ovom uređaju ('system' → jezik uređaja ili fallback). */
+export function languageFor(next: LanguagePreference): Language {
+  return resolveLanguage(next, deviceLanguageTags());
 }
 
 /** Postavlja preferenciju i primjenjuje jezik. Vraća jezik koji je aktivan. */

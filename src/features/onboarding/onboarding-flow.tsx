@@ -29,12 +29,10 @@ const STEP_COMPONENTS = {
   rules: RulesStep,
 } satisfies Record<OnboardingStep, unknown>;
 
-/** Prvo pokretanje: jezik → buđenje i san → obavijesti → 1–3 zabrane; na kraju sprema sve odjednom. */
+/** Prvo pokretanje: jezik → buđenje i san → obavijesti → 0–3 zabrane; na kraju sprema sve odjednom. */
 export function OnboardingFlow({ onDone }: { onDone: () => void }) {
-  const { t, i18n } = useTranslation();
-  const [draft, setDraft] = useState<OnboardingDraft>(() =>
-    createDefaultDraft(i18n.language === 'hr' ? 'hr' : 'en'),
-  );
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<OnboardingDraft>(() => createDefaultDraft('system'));
   // Dok korisnik ručno ne pomakne vremena obavijesti, prate buđenje i san.
   const [notifTouched, setNotifTouched] = useState(false);
   const [index, setIndex] = useState(0);
@@ -52,6 +50,10 @@ export function OnboardingFlow({ onDone }: { onDone: () => void }) {
     }
     setDraft((current) => {
       const next = { ...current, ...patch };
+      // Vikend buđenje prati radni dan dok ga korisnik ne promijeni.
+      if (patch.wakeTime !== undefined && current.weekendWakeTime === current.wakeTime) {
+        next.weekendWakeTime = patch.wakeTime;
+      }
       const sleepChanged = patch.wakeTime !== undefined || patch.sleepHours !== undefined;
       if (sleepChanged && !notifTouched) {
         const suggested = suggestNotificationTimes(next.wakeTime, next.sleepHours);

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { RULE_WEIGHTS, type RuleWeight } from '@/core/domain';
-import type { Language } from '@/core/i18n/language';
+import type { LanguagePreference } from '@/core/i18n/language';
 import {
   bedtimeFor,
   clampSleepHours,
@@ -16,6 +16,7 @@ import {
   type OnboardingDraft,
   type RuleDraft,
 } from '@/core/onboarding';
+import { weekendWakeWarning } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { Button } from '@/ui/button';
 import { ChoiceGroup } from '@/ui/choice-group';
@@ -29,17 +30,17 @@ type StepProps = {
   update: (patch: Partial<OnboardingDraft>) => void;
 };
 
-const LANGUAGE_CHOICES: readonly { value: Language; label: string }[] = [
-  { value: 'hr', label: 'Hrvatski' },
-  { value: 'en', label: 'English' },
-];
-
 export function LanguageStep({ draft, update }: StepProps) {
   const { t } = useTranslation();
+  const choices: readonly { value: LanguagePreference; label: string }[] = [
+    { value: 'system', label: t('profile.language.system') },
+    { value: 'hr', label: 'Hrvatski' },
+    { value: 'en', label: 'English' },
+  ];
   return (
     <ChoiceGroup
       accessibilityLabel={t('profile.language.title')}
-      choices={LANGUAGE_CHOICES}
+      choices={choices}
       selected={draft.language}
       onSelect={(language) => update({ language })}
     />
@@ -80,16 +81,28 @@ export function SleepStep({ draft, update }: StepProps) {
       ? t('onboarding.sleep.hoursValue', { hours })
       : t('onboarding.sleep.hoursMinutesValue', { hours, minutes });
   const bedtime = bedtimeFor(draft.wakeTime, draft.sleepHours);
+  const weekendBedtime = bedtimeFor(draft.weekendWakeTime, draft.sleepHours);
+  const showWarning = weekendWakeWarning(draft.wakeTime, draft.weekendWakeTime);
   const step = TIME_STEP_MINUTES / 60;
   const sleepLabel = t('onboarding.sleep.hours');
 
   return (
     <View style={styles.stack}>
       <ClockStepper
-        label={t('onboarding.sleep.wake')}
+        label={t('onboarding.sleep.wakeWeekday')}
         value={draft.wakeTime}
         onChange={(wakeTime) => update({ wakeTime })}
       />
+      <ClockStepper
+        label={t('onboarding.sleep.wakeWeekend')}
+        value={draft.weekendWakeTime}
+        onChange={(weekendWakeTime) => update({ weekendWakeTime })}
+      />
+      {showWarning ? (
+        <Text tone="info" accessibilityLiveRegion="polite">
+          {t('onboarding.sleep.weekendWarning')}
+        </Text>
+      ) : null}
       <Stepper
         label={sleepLabel}
         value={hoursLabel}
@@ -104,6 +117,9 @@ export function SleepStep({ draft, update }: StepProps) {
         <Text variant="bodyStrong" tone="accent" accessibilityLiveRegion="polite">
           {t('onboarding.sleep.bedtime', { time: bedtime })}
         </Text>
+      ) : null}
+      {weekendBedtime && weekendBedtime !== bedtime ? (
+        <Text tone="textMuted">{t('onboarding.sleep.bedtimeWeekend', { time: weekendBedtime })}</Text>
       ) : null}
     </View>
   );
