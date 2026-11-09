@@ -5,6 +5,7 @@ import type { Rule, ScheduleBlock } from '@/core/domain';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { getEveningCheckin, listBlocksForDate, listRules, saveEveningCheckin } from '@/db/repos';
+import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
 
 type Loaded = {
   date: string;
@@ -21,6 +22,7 @@ type Loaded = {
 export function useEveningCheckin(date: string) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [version, setVersion] = useState(0);
+  const externalVersion = useBlocksVersion();
 
   useEffect(() => {
     let active = true;
@@ -42,7 +44,7 @@ export function useEveningCheckin(date: string) {
     return () => {
       active = false;
     };
-  }, [date, version]);
+  }, [date, version, externalVersion]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
 
@@ -51,6 +53,8 @@ export function useEveningCheckin(date: string) {
     (draft: EveningDraft) => {
       const result = saveEveningCheckin(getDb(), LOCAL_USER_ID, draft);
       reload();
+      // Statusi i premješteni blokovi su se promijenili → podsjetnici.
+      void syncNotificationsNow();
       return result.xpEarned;
     },
     [reload],

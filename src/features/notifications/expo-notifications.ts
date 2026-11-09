@@ -15,7 +15,13 @@ import {
   type PermissionDecision,
 } from '@/core/notifications';
 
-import { DAILY_CHANNEL_ID, type DailyNotificationTexts, type NotificationScheduler } from './sync';
+import {
+  BLOCKS_CHANNEL_ID,
+  DAILY_CHANNEL_ID,
+  type BlockReminderTexts,
+  type DailyNotificationTexts,
+  type NotificationScheduler,
+} from './sync';
 
 /** Obavijesti rade samo na iOS-u i Androidu (web nema lokalne obavijesti ni bazu). */
 export const notificationsSupported = Platform.OS === 'ios' || Platform.OS === 'android';
@@ -44,13 +50,18 @@ export async function registerChannelsAndCategories(t: TFunction): Promise<void>
       name: t('notifications.channel.daily'),
       importance: AndroidImportance.DEFAULT,
     });
+    await Notifications.setNotificationChannelAsync(BLOCKS_CHANNEL_ID, {
+      name: t('notifications.channel.blocks'),
+      importance: AndroidImportance.HIGH,
+    });
   }
   await Notifications.setNotificationCategoryAsync(
     BLOCK_CATEGORY_ID,
     BLOCK_ACTIONS.map((action) => ({
       identifier: action,
       buttonTitle: t(`notifications.actions.${action}`),
-      // Učinci akcija trebaju bazu i ekrane (koraci 11 i 27), pa zasad otvaraju app.
+      // Akcije otvaraju app: tako ih JS sigurno obradi i kad je app bio ugašen
+      // (obrada u pozadini nije provjerena na uređaju — vidi PROGRESS, korak 13b).
       options: { opensAppToForeground: true },
     })),
   );
@@ -89,6 +100,20 @@ export function dailyTexts(t: TFunction): DailyNotificationTexts {
   return { morning: text('morning'), evening: text('evening'), windDown: text('windDown') };
 }
 
+/** Tekstovi podsjetnika blokova na zadanom jeziku. */
+export function blockTexts(t: TFunction): BlockReminderTexts {
+  return {
+    body: ({ start, end }) => t('notifications.block.body', { start, end }),
+    snoozedBody: ({ start, end }) => t('notifications.block.snoozedBody', { start, end }),
+  };
+}
+
+/** Makni prikazanu obavijest iz centra obavijesti (nakon akcije na njoj). */
+export async function dismissNotification(identifier: string): Promise<void> {
+  if (!notificationsSupported) return;
+  await Notifications.dismissNotificationAsync(identifier);
+}
+
 export const expoScheduler: NotificationScheduler = {
   async scheduledIds() {
     const requests = await Notifications.getAllScheduledNotificationsAsync();
@@ -100,7 +125,12 @@ export const expoScheduler: NotificationScheduler = {
   async schedule(request) {
     await Notifications.scheduleNotificationAsync({
       identifier: request.identifier,
-      content: { title: request.title, body: request.body, data: request.data },
+      content: {
+        title: request.title,
+        body: request.body,
+        data: request.data,
+        ...(request.categoryId === undefined ? {} : { categoryIdentifier: request.categoryId }),
+      },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: request.fireAt,

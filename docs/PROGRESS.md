@@ -2,6 +2,42 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-09 22:43 · Korak 13b — Podsjetnici blokova
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-13b`; bez novih ovisnosti i bez migracije.
+2. Čisto u `src/core/notifications/block-reminders.ts`: id podsjetnika `block:<blokId>@<dan>T<HH:MM>` (promjena termina → novi id), odgoda `snooze:<blokId>`; `upcomingBlockReminders(blocks, now, limit)` — samo `planned`, sve vrste osim sna, okida na početku bloka, strogo poslije `now`, sortirano, unutar budžeta; `blockReminderBudget` = 64 − dnevni okidači − rezerva za odgode; `SNOOZE_MINUTES = 15`, `snoozeFireAt`; `planBlockReschedule` (otkaži zastarjele, zakaži nedostajuće; odgode blokova koji više nisu planirani se otkazuju); `blockActionEffect(block, action)` → označi gotovo / odgodi / otvori blok / ništa (blok obrisan ili već riješen). Testovi.
+3. Repo `listBlocksBetween(db, user, from, to)` (+ test) za horizont zakazivanja (isti kao dnevne obavijesti, 3 dana).
+4. Feature `sync.ts`: zajednički `NotificationRequest` (kategorija, kanal), `syncBlockReminders` kroz isti `NotificationScheduler` adapter, Android kanal `blocks`; `expoScheduler` postavlja `categoryIdentifier`. Testovi s lažnim schedulerom.
+5. `notifications-sync`: uz dnevne zakaže i podsjetnike; odgovori — Gotovo → `setBlockStatus(done)` (XP odmah, isti put kao kvačica) + makni obavijest; Odgodi → nova obavijest za 15 min; Iskrslo i dodir → otvori app na Danas s uređivačem tog bloka (puni "Iskrslo" flow je korak 27). Danas se osvježi (store promjena blokova).
+6. Ponovno zakazivanje nakon svake promjene blokova (timeline, upit, "Što imaš sutra?").
+7. i18n HR/EN (tekst podsjetnika, kanal), provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = obavijest na početku svakog bloka osim sna (2, 4, 5), Gotovo = status + XP (2, 5 — `setBlockStatus` već ne duplicira XP s upitom), Odgodi 15 min (2, 5), Iskrslo otvara app (5), zakazivanje uz dnevne unutar iOS limita (2, 4). Akcije zasad otvaraju app (`opensAppToForeground: true`) jer obrada u pozadini dok je app ugašen nije pouzdana bez dev builda za provjeru — napomena/pitanje. Horizont ostaje 3 dana (7 dana je korak 13c). Isključivanje podsjetnika u Profilu nije u ovom koraku.
+
+**Napravljeno:**
+- Bez novih ovisnosti, bez migracije.
+- Čisto u `src/core/notifications/block-reminders.ts`: id `block:<blokId>@<dan>T<HH:MM>` i odgoda `snooze:<blokId>`; `needsReminder` (planiran, nije san); `upcomingBlockReminders` (početak bloka, strogo poslije sada, sortirano, do budžeta); `blockReminderBudget` (64 − dnevne − rezerva 4 za odgode); `planBlockReschedule` (zastarjeli podsjetnici i odgode riješenih blokova se otkazuju; dnevne i tuđe se ne diraju); `SNOOZE_MINUTES = 15`, `snoozeFireAt`; `blockActionEffect` (Gotovo/Odgodi samo za planiran blok, Iskrslo otvara blok, obrisan blok → ništa). `localDateTime` iz `triggers.ts` je izvezen.
+- Repo `listBlocksBetween(db, user, from, to)`.
+- `features/notifications/sync.ts`: zajednički `NotificationRequest` (kanal + kategorija akcija), `syncBlockReminders`, `scheduleSnooze` (zamjenjuje prethodnu odgodu bloka), `cancelBlockReminders`; Android kanal `blocks` (HIGH); `expoScheduler` postavlja `categoryIdentifier`.
+- `syncNotificationsNow`: uz dnevne zakazuje podsjetnike za blokove od danas do +2 dana (isti horizont), unutar ostatka limita iOS-a; bez dopuštenja otkazuje i njih; poziv dok sync traje pokreće još jedan prolaz (promjena blokova se ne gubi).
+- Akcije: **Gotovo** → `setBlockStatus(done)` (isti put kao kvačica: status + XP u transakciji, upit ne duplicira) + osvježi Danas/upit + resync; **Odgodi** → nova obavijest za 15 min; **Iskrslo** → app se otvori na Danas s uređivačem tog bloka (ako je blok danas). Dodir podsjetnika samo otvara app. Obavijest se nakon akcije miče iz centra obavijesti.
+- Ponovno zakazivanje nakon svake promjene blokova: timeline (dodaj/uredi/obriši/kvačica), spremanje upita, "Što imaš sutra?".
+- i18n HR/EN (`notifications.block.*`, `notifications.channel.blocks`).
+- 18 novih testova (ukupno 352). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (352/352), `expo export --platform android` ✅ (4.4 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox). Akcije zasad **otvaraju app** (`opensAppToForeground: true`) jer obrada u pozadini dok je app ugašen nije pouzdana bez provjere na dev buildu; Gotovo/Odgodi bi idealno radili bez otvaranja — provjeriti na uređaju (pitanje 27).
+- Iskrslo za blok koji nije današnji (npr. sutrašnji) samo otvara Danas. Puni "Iskrslo" flow je korak 27.
+- Blokovi preko 3 dana unaprijed dobivaju podsjetnik tek kad uđu u horizont (pri otvaranju appa); horizont 7 dana dolazi u 13c — tada provjeriti budžet (7 × 3 dnevne = 21, ostaje 39 za blokove).
+- Android 12+: točno vrijeme okidanja ovisi o dopuštenju za exact alarm (nije traženo; obavijesti mogu kasniti nekoliko minuta).
+- Isključivanje podsjetnika blokova u Profilu nije dio koraka (13c ima prekidače samo za tri dnevne obavijesti).
+
+**Pitanja za Bornu:**
+27. Da li Gotovo i Odgodi na podsjetniku smiju raditi bez otvaranja appa (kad se provjeri na uređaju), ili ti je ok da se app otvori?
+28. Želiš li prekidač u Profilu i za podsjetnike blokova (uz tri dnevne obavijesti iz 13c)?
+
+**Sljedeće:** korak 13c — postavke i onboarding: dorade (vikend buđenje, `language: system`, 0–3 zabrane, prekidači obavijesti, horizont 7 dana, kartica za odbijeno dopuštenje, doba dana prema buđenju, privremena ikona/splash).
+
 ## Promjena koncepta (Borna, 2026-11-09 21:14) — dijagnoze, napredak, trackeri
 Borna je proširio koncept; detalji u `docs/CONCEPT.md` (sekcije Dijagnoze, Napredak u odnosu na prošlost, Opcionalni trackeri, Gamifikacija) i u Claude Docs konceptu. `BUILD_PLAN.md` je usklađen (16, 16b, 31, 31b, 34, 34b, 36–37c, 42).
 - **Dijagnoze** umjesto "izvještaja": svaku večer dan; nedjeljom dan + tjedan; kraj mjeseca dan + tjedan + mjesec; 31. 12. sve četiri. Struktura: Ukratko → Napredak → Pohvale → Što smo primijetili → Veliki problemi → Ideje za napredak. Detaljno, psihološki, iskreno ali nikad bezobrazno. Najvažniji dio appa — kvaliteta promptova je prioritet.

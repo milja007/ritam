@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,7 +14,12 @@ import {
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
-import { consumeEveningRequest, useEveningRequested } from '@/features/notifications';
+import {
+  consumeBlockRequest,
+  consumeEveningRequest,
+  useBlockRequested,
+  useEveningRequested,
+} from '@/features/notifications';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -63,6 +68,28 @@ export function TodayScreen() {
   }
 
   const currentId = currentBlockId(day.blocks, now.minutes);
+
+  // Iskrslo na podsjetniku otvara taj blok u uređivaču (puni "Iskrslo" flow je korak 27).
+  const blockRequest = useBlockRequested();
+  const requestedBlock =
+    blockRequest !== null && day.status === 'ready'
+      ? (day.blocks.find((block) => block.id === blockRequest) ?? null)
+      : null;
+  const blockRequestMissing = blockRequest !== null && day.status === 'ready' && requestedBlock === null;
+  useEffect(() => {
+    // Blok nije na današnjem timelineu (npr. sutrašnji) — app se samo otvori na Danas.
+    if (blockRequestMissing) consumeBlockRequest();
+  }, [blockRequestMissing]);
+  const activeEditing: Editing | null =
+    editing ??
+    (requestedBlock !== null && !showEvening && !tomorrowOpen
+      ? { mode: 'edit', draft: draftFromBlock(requestedBlock), id: requestedBlock.id }
+      : null);
+
+  function closeEditor() {
+    setEditing(null);
+    consumeBlockRequest();
+  }
 
   function openAdd() {
     setEditing({ mode: 'add', draft: newBlockDraft(day.blocks, now.minutes) });
@@ -146,16 +173,16 @@ export function TodayScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      {editing ? (
+      {activeEditing ? (
         // Editor se montira pri svakom otvaranju, pa uvijek kreće od svježeg nacrta.
         <BlockEditor
-          mode={editing.mode}
-          initial={editing.draft}
-          onClose={() => setEditing(null)}
+          mode={activeEditing.mode}
+          initial={activeEditing.draft}
+          onClose={closeEditor}
           onSave={(draft) =>
-            editing.mode === 'add' ? day.add(draft) : day.edit(editing.id, draft)
+            activeEditing.mode === 'add' ? day.add(draft) : day.edit(activeEditing.id, draft)
           }
-          onDelete={editing.mode === 'edit' ? () => day.remove(editing.id) : undefined}
+          onDelete={activeEditing.mode === 'edit' ? () => day.remove(activeEditing.id) : undefined}
         />
       ) : null}
 

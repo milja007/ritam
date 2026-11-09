@@ -13,6 +13,7 @@ import { localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { createBlock, deleteBlock, listBlocksForDate, setBlockStatus, updateBlock } from '@/db/repos';
+import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
 
 const CLOCK_REFRESH_MS = 30_000;
 
@@ -38,6 +39,8 @@ type Loaded = { date: string; status: 'ready' | 'error'; blocks: ScheduleBlock[]
 export function useDayBlocks(date: string) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [version, setVersion] = useState(0);
+  // Gotovo na obavijesti mijenja blok izvan ekrana.
+  const externalVersion = useBlocksVersion();
 
   useEffect(() => {
     let active = true;
@@ -52,10 +55,16 @@ export function useDayBlocks(date: string) {
     return () => {
       active = false;
     };
-  }, [date, version]);
+  }, [date, version, externalVersion]);
 
   /** Ponovo učitaj dan (nakon promjene ili greške). */
   const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+  /** Nakon zapisa: ponovo učitaj dan i uskladi podsjetnike blokova. */
+  const changed = useCallback(() => {
+    reload();
+    void syncNotificationsNow();
+  }, [reload]);
 
   // Dok se novi dan (npr. nakon ponoći) ne učita, prikazuje se učitavanje, ne jučerašnji blokovi.
   const current = loaded?.date === date ? loaded : null;
@@ -65,34 +74,34 @@ export function useDayBlocks(date: string) {
   const add = useCallback(
     async (draft: BlockDraft) => {
       await createBlock(getDb(), LOCAL_USER_ID, draftToInput(draft, date));
-      reload();
+      changed();
     },
-    [date, reload],
+    [date, changed],
   );
 
   const edit = useCallback(
     async (id: string, draft: BlockDraft) => {
       await updateBlock(getDb(), LOCAL_USER_ID, id, draftToPatch(draft));
-      reload();
+      changed();
     },
-    [reload],
+    [changed],
   );
 
   const remove = useCallback(
     async (id: string) => {
       deleteBlock(getDb(), LOCAL_USER_ID, id);
-      reload();
+      changed();
     },
-    [reload],
+    [changed],
   );
 
   const toggleDone = useCallback(
     async (block: ScheduleBlock) => {
       // Status + XP zadatka u jednoj transakciji: kvačica daje XP odmah, vraćanje ga uklanja.
       setBlockStatus(getDb(), LOCAL_USER_ID, block.id, toggledStatus(block.status));
-      reload();
+      changed();
     },
-    [reload],
+    [changed],
   );
 
   return { status, blocks, reload, add, edit, remove, toggleDone };

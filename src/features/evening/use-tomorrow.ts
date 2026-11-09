@@ -5,6 +5,7 @@ import { tomorrowInputs, type BlockDraft } from '@/core/schedule';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { createBlocks, getSettings, listBlocksForDate } from '@/db/repos';
+import { syncNotificationsNow } from '@/features/notifications';
 
 /** Zadano buđenje ako postavke (još) nisu spremljene — isto kao u onboardingu. */
 const FALLBACK_WAKE_TIME = '07:00';
@@ -57,8 +58,12 @@ export function useTomorrowPlan(date: string) {
   const reload = useCallback(() => setVersion((v) => v + 1), []);
 
   const confirm = useCallback(
-    (drafts: readonly BlockDraft[]) =>
-      createBlocks(getDb(), LOCAL_USER_ID, tomorrowInputs(drafts, date)).length,
+    (drafts: readonly BlockDraft[]) => {
+      const count = createBlocks(getDb(), LOCAL_USER_ID, tomorrowInputs(drafts, date)).length;
+      // Novi blokovi za sutra dobivaju podsjetnike.
+      void syncNotificationsNow();
+      return count;
+    },
     [date],
   );
 

@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, gte, lte } from 'drizzle-orm';
 
 import { scheduleBlockSchema, type BlockStatus, type LocalDate, type ScheduleBlock } from '@/core/domain';
 
@@ -75,6 +75,24 @@ export async function listBlocksForDate(
     .from(scheduleBlocks)
     .where(and(eq(scheduleBlocks.userId, userId), eq(scheduleBlocks.date, date)))
     .orderBy(asc(scheduleBlocks.start), asc(scheduleBlocks.end))
+    .all();
+  return rows.map((row) => scheduleBlockSchema.parse(row));
+}
+
+/** Blokovi od dana `from` do dana `to` (uključivo), poredani po danu pa po početku. */
+export async function listBlocksBetween(
+  db: RitamDb,
+  userId: string,
+  from: LocalDate,
+  to: LocalDate,
+): Promise<ScheduleBlock[]> {
+  const rows = await db
+    .select()
+    .from(scheduleBlocks)
+    .where(
+      and(eq(scheduleBlocks.userId, userId), gte(scheduleBlocks.date, from), lte(scheduleBlocks.date, to)),
+    )
+    .orderBy(asc(scheduleBlocks.date), asc(scheduleBlocks.start), asc(scheduleBlocks.end))
     .all();
   return rows.map((row) => scheduleBlockSchema.parse(row));
 }
