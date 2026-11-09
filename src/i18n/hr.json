@@ -87,5 +87,42 @@
       "snooze": "Odgodi",
       "cameUp": "Iskrslo"
     }
+  },
+  "today": {
+    "now": "Sada",
+    "timeRange": "{{start}}–{{end}}",
+    "editBlockLabel": "{{title}}, {{time}}",
+    "editBlockHint": "Otvara blok za uređivanje",
+    "markDone": "Gotovo: {{title}}",
+    "emptyTitle": "Još ništa nije isplanirano",
+    "emptyBody": "Dodaj prvi blok za danas — zadatak ili fiksnu obavezu.",
+    "addBlock": "+ Dodaj blok",
+    "loadError": "Današnji blokovi se nisu mogli učitati.",
+    "retry": "Pokušaj ponovo",
+    "actionError": "Promjena nije spremljena. Pokušaj ponovo.",
+    "kind": {
+      "task": "Zadatak",
+      "fixed": "Fiksno",
+      "calendar": "Kalendar",
+      "sleep": "San",
+      "unexpected": "Iskrslo"
+    },
+    "editor": {
+      "addTitle": "Novi blok",
+      "editTitle": "Uredi blok",
+      "name": "Naziv",
+      "namePlaceholder": "npr. Fokusirani rad",
+      "start": "Početak",
+      "end": "Kraj",
+      "kind": "Vrsta",
+      "decrease": "Ranije: {{label}}",
+      "increase": "Kasnije: {{label}}",
+      "save": "Spremi",
+      "cancel": "Odustani",
+      "delete": "Obriši",
+      "deleteTitle": "Obrisati blok?",
+      "deleteMessage": "\"{{title}}\" bit će uklonjen s današnjeg dana.",
+      "error": "Spremanje nije uspjelo. Pokušaj ponovo."
+    }
   }
 }

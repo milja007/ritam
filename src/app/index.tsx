@@ -1,8 +1,3 @@
-import { useTranslation } from 'react-i18next';
+import { TodayScreen } from '@/features/today';
 
-import { PlaceholderScreen } from '@/ui/placeholder-screen';
-
-export default function TodayScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen title={t('tabs.today')} />;
-}
+export default TodayScreen;

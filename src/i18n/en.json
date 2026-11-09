@@ -87,5 +87,42 @@
       "snooze": "Snooze",
       "cameUp": "Came up"
     }
+  },
+  "today": {
+    "now": "Now",
+    "timeRange": "{{start}}–{{end}}",
+    "editBlockLabel": "{{title}}, {{time}}",
+    "editBlockHint": "Opens the block for editing",
+    "markDone": "Done: {{title}}",
+    "emptyTitle": "Nothing planned yet",
+    "emptyBody": "Add your first block for today — a task or a fixed commitment.",
+    "addBlock": "+ Add block",
+    "loadError": "Today's blocks could not be loaded.",
+    "retry": "Try again",
+    "actionError": "The change was not saved. Please try again.",
+    "kind": {
+      "task": "Task",
+      "fixed": "Fixed",
+      "calendar": "Calendar",
+      "sleep": "Sleep",
+      "unexpected": "Came up"
+    },
+    "editor": {
+      "addTitle": "New block",
+      "editTitle": "Edit block",
+      "name": "Name",
+      "namePlaceholder": "e.g. Deep work",
+      "start": "Start",
+      "end": "End",
+      "kind": "Type",
+      "decrease": "Earlier: {{label}}",
+      "increase": "Later: {{label}}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteTitle": "Delete block?",
+      "deleteMessage": "\"{{title}}\" will be removed from today.",
+      "error": "Saving failed. Please try again."
+    }
   }
 }

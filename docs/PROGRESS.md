@@ -2,6 +2,38 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-09 10:43 · Korak 11 — Danas: timeline
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-11`; `npm ci`. Bez novih ovisnosti (uređivanje u RN `Modal`, vremena stepperom ±15 min kao u onboardingu).
+2. Čisto u `src/core/schedule/timeline.ts`: `blockPhase(block, nowMinutes)` → `past` / `current` / `upcoming` (san koji prelazi ponoć: tekući od početka do kraja dana); `currentBlockId(blocks, nowMinutes)` (kod preklapanja — onaj koji je kasnije počeo); `isDone(block)` / `toggledStatus(status)` (`planned` ↔ `done`; ostali statusi pripadaju večernjem upitu, pa ih dodir vraća u `done`).
+3. Čisto u `src/core/schedule/block-draft.ts`: nacrt bloka `{ title, start, end, kind }` (ručno: `task` / `fixed`; uređeni blok drugog tipa zadržava svoj tip), `newBlockDraft(blocks, nowMinutes)` (počinje na kraju zadnjeg bloka ili na sljedećih 15 min, traje 1 h, ostaje unutar dana), `shiftDraftStart/End` bez omatanja (kraj uvijek nakon početka), `isBlockDraftValid`, `draftFromBlock`, `draftToInput(draft, date)` (izvor `user`, status `planned`). Testovi za sve rubove (kraj dana, preko ponoći, prazan naziv).
+4. `src/features/today/`: `useTodayBlocks()` (učita blokove za današnji lokalni dan, sat se osvježava svake minute, novi dan u ponoć → novi popis; `reload` nakon svake promjene) — preko postojećih repo funkcija (`listBlocksForDate`, `createBlock`, `updateBlock`, `deleteBlock`).
+5. UI: ekran Danas (`src/app/index.tsx`) — naslov s datumom (lokaliziran), popis blokova (vrijeme, naziv, tip, kvačica Gotovo), trenutni blok istaknut (akcent okvir + oznaka "Sada"), prošli prigušeni; prazno stanje s pozivom na dodavanje; gumb "+ Dodaj blok". Dodir kartice → uređivanje; `BlockEditor` modal (naziv, početak/kraj, tip, Spremi / Obriši s potvrdom / Odustani).
+6. i18n HR/EN za sve nove tekstove.
+7. Provjere `tsc --noEmit`, `expo lint`, `npm test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = prikaz blokova dana (5), trenutni blok istaknut (2, 5), označi gotovo (2, 5), ručno dodaj/uredi/obriši (3–5). XP za izvršen blok **ne** pišem ovdje — koncept i plan stavljaju pisanje `xp_events` u večernji upit (korak 12), inače bi se XP dupliciralo; zapisano kao pitanje. Podsjetnici za pojedine blokove (obavijesti s Gotovo/Odgodi/Iskrslo) nisu u kriteriju koraka 11 → ne sada (pitanje 16 i dalje otvoreno). Preklapanje blokova se ne zabranjuje (koncept ništa ne kaže, a fiksne obaveze se mogu preklapati) — samo prikaz. Jutarnji dio sna od jučer se ne prikazuje (pripada jučerašnjem bloku).
+
+**Napravljeno:**
+- Bez novih ovisnosti.
+- Čisto u `src/core/schedule/`: `timeline.ts` — `blockRange`, `blockPhase` (`past` / `current` / `upcoming`; san preko ponoći je na današnjem timelineu tekući do ponoći), `currentBlockId` (kod preklapanja kasnije započeti), `toggledStatus` (`planned` ↔ `done`), `minutesOfDay`; `block-draft.ts` — nacrt bloka, `newBlockDraft` (nastavlja na kraj zadnjeg bloka ili na prvih punih 15 min, 1 h, unutar dana), `shiftDraftStart` (čuva trajanje) / `shiftDraftEnd` (kraj ≥ početak + 15 min, najkasnije 23:59), `isBlockDraftValid` (ista Zod shema kao spremljeni blok), `draftToInput` (`user` / `planned`), `draftToPatch` (mijenja samo naziv, vrijeme, tip — status i izvor ostaju).
+- `src/features/today/`: `useNow` (lokalni dan + minuta, osvježava se svakih 30 s, prelazi na novi dan u ponoć), `useDayBlocks` (učitavanje preko postojećih repo funkcija, akcije dodaj / uredi / obriši / Gotovo, ponovno učitavanje nakon svake), `BlockCard` (vrijeme, naziv, vrsta, kvačica; trenutni blok s akcent okvirom i oznakom "Sada", prošli i gotovi prigušeni, gotovi precrtani), `BlockEditor` (modal: naziv, početak/kraj stepperom ±15 min, vrsta Zadatak/Fiksno, Spremi / Odustani / Obriši s potvrdom), `TodayScreen` (lokalizirani datum, prazno stanje, greška s "Pokušaj ponovo", "+ Dodaj blok"). Tab Danas više nije placeholder.
+- i18n HR/EN (`today.*`), uključujući pristupačnost (checkbox, opis kartice).
+- 31 novi test. Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (264/264), `expo export --platform android` ✅ (4.4 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju/simulatoru (sandbox) — provjereno typecheckom, lintom, testovima i bundleom.
+- Označavanje Gotovo zasad samo mijenja status bloka; XP ne piše (vidi pitanje 18). Večernji upit (korak 12) će iz statusa znati što je napravljeno.
+- Blokovi se mogu preklapati; nema upozorenja. Ručno se biraju samo vrste Zadatak i Fiksno; blok druge vrste (kalendar, san, iskrslo) pri uređivanju zadržava vrstu.
+- Najkasniji kraj bloka je 23:59 (format `HH:MM` nema 24:00); blok preko ponoći ručno nije moguć (samo san).
+- Podsjetnici za pojedine blokove (obavijest s Gotovo/Odgodi/Iskrslo) se još ne zakazuju — čeka odgovor na pitanje 16 i bit će prirodan dio koraka 27 ili zasebnog malog koraka; ne radim bez odluke.
+
+**Pitanja za Bornu:**
+18. Treba li kvačica "Gotovo" na timelineu odmah dati XP (10/25/50 po težini zadatka, +5 u planiranom terminu), ili se XP dodjeljuje tek u večernjem upitu (korak 12) kad potvrdiš dan? Zasad: tek u upitu, da se ne duplicira.
+19. Podsjetnik na početku svakog bloka (obavijest s Gotovo/Odgodi/Iskrslo) — želiš li ga za sve blokove, samo za zadatke, ili uključivo u postavkama? I u kojem koraku (predlažem mali zaseban korak nakon 12)?
+
+**Sljedeće:** korak 12 — večernji upit, checklist (U redu / Nije + komentar), zabrane, ocjena dana; sprema checkin + checkin_items + rule_logs + xp_events.
+
 ## 2026-11-09 06:43 · Korak 10 — Notifikacije (integracija)
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-10`; `npm ci`; `expo-notifications` (SDK 58 → 58.1.8) preko `EXPO_OFFLINE=1 npx expo install`. Config plugin u `app.json`: `["expo-notifications", { "enableRemoteNotifications": false }]` — koncept traži samo lokalne obavijesti, pa bez APNs entitlementa. API provjeren iz tipova paketa (docs.expo.dev nedostupan iz sandboxa).
