@@ -17,7 +17,8 @@
       "en": "English"
     },
     "sleep": {
-      "title": "San i buđenje"
+      "title": "San i buđenje",
+      "bedtimeWeekend": "Vrijeme za krevet: {{time}}, petkom i subotom {{weekend}}"
     },
     "notifications": {
       "title": "Obavijesti",
@@ -25,7 +26,10 @@
       "evening": "Večernji upit",
       "windDown": "Wind-down prije spavanja",
       "time": "u {{time}}",
-      "weekendTime": "u {{time}}, vikendom {{weekend}}"
+      "weekendTime": "u {{time}}, vikendom {{weekend}}",
+      "weekendEveningTime": "u {{time}}, petkom i subotom {{weekend}}",
+      "blocks": "Podsjetnici blokova",
+      "blocksDetail": "Na početku svakog bloka, s gumbima Gotovo / Odgodi / Iskrslo"
     },
     "saveError": "Promjena se nije spremila. Pokušaj ponovo.",
     "progress": "Napredak",

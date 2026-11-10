@@ -7,7 +7,15 @@ import type { Settings } from '@/core/domain';
 import type { LanguagePreference } from '@/core/i18n/language';
 import { dailyNotificationTimes, type NotificationKind } from '@/core/notifications';
 import { weekendShiftMinutes, weekendWakeOf, weekendWakeWarning } from '@/core/schedule';
-import { shiftClock } from '@/core/onboarding';
+import {
+  bedtimeFor,
+  clampSleepHours,
+  MAX_SLEEP_HOURS,
+  MIN_SLEEP_HOURS,
+  shiftClock,
+  splitHours,
+  TIME_STEP_MINUTES,
+} from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
@@ -15,6 +23,7 @@ import { updateSettings, useSettings } from '@/features/settings';
 import { useNow } from '@/features/today';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
+import { Stepper } from '@/ui/stepper';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -29,7 +38,10 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
   { kind: 'windDown', field: 'windDownNotifEnabled' },
 ];
 
-/** Profil: napredak (XP, razina, streak), jezik, buđenje (radni dan / vikend) i prekidači dnevnih obavijesti. Sve se sprema odmah. */
+/**
+ * Profil: napredak (XP, streak), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
+ * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
+ */
 export function ProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -95,6 +107,7 @@ export function ProfileScreen() {
               </Section>
 
               <Section title={t('profile.notifications.title')}>
+                <NotificationTimes settings={settings} save={save} />
                 <NotificationToggles settings={settings} save={save} />
               </Section>
 
@@ -131,6 +144,15 @@ type EditorProps = { settings: Settings; save: (patch: Partial<SettingsInput>) =
 function WakeTimes({ settings, save }: EditorProps) {
   const { t } = useTranslation();
   const weekend = weekendWakeOf(settings);
+  const { hours, minutes } = splitHours(settings.sleepHours);
+  const sleepLabel = t('onboarding.sleep.hours');
+  const hoursLabel =
+    minutes === 0
+      ? t('onboarding.sleep.hoursValue', { hours })
+      : t('onboarding.sleep.hoursMinutesValue', { hours, minutes });
+  const step = TIME_STEP_MINUTES / 60;
+  const bedtime = bedtimeFor(settings.wakeTime, settings.sleepHours);
+  const weekendBedtime = bedtimeFor(weekend, settings.sleepHours);
   return (
     <View style={styles.stack}>
       <ClockStepper
@@ -149,6 +171,42 @@ function WakeTimes({ settings, save }: EditorProps) {
           {t('onboarding.sleep.weekendWarning')}
         </Text>
       ) : null}
+      <Stepper
+        label={sleepLabel}
+        value={hoursLabel}
+        onDecrease={() => save({ sleepHours: clampSleepHours(settings.sleepHours - step) })}
+        onIncrease={() => save({ sleepHours: clampSleepHours(settings.sleepHours + step) })}
+        canDecrease={settings.sleepHours > MIN_SLEEP_HOURS}
+        canIncrease={settings.sleepHours < MAX_SLEEP_HOURS}
+        decreaseLabel={t('onboarding.decrease', { label: sleepLabel })}
+        increaseLabel={t('onboarding.increase', { label: sleepLabel })}
+      />
+      {bedtime ? (
+        <Text tone="textMuted" accessibilityLiveRegion="polite">
+          {weekendBedtime && weekendBedtime !== bedtime
+            ? t('profile.sleep.bedtimeWeekend', { time: bedtime, weekend: weekendBedtime })
+            : t('onboarding.sleep.bedtime', { time: bedtime })}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** Vremena jutarnje obavijesti i večernjeg upita (radni dan; vikend pomak se računa iz buđenja). */
+function NotificationTimes({ settings, save }: EditorProps) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.stack}>
+      <ClockStepper
+        label={t('onboarding.notifications.morning')}
+        value={settings.morningNotifTime}
+        onChange={(morningNotifTime) => save({ morningNotifTime })}
+      />
+      <ClockStepper
+        label={t('onboarding.notifications.evening')}
+        value={settings.eveningNotifTime}
+        onChange={(eveningNotifTime) => save({ eveningNotifTime })}
+      />
     </View>
   );
 }
@@ -157,18 +215,27 @@ function NotificationToggles({ settings, save }: EditorProps) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const times = dailyNotificationTimes(settings);
-  const weekendMorning = times ? shiftClock(times.morning, weekendShiftMinutes(settings)) : null;
+  const shift = weekendShiftMinutes(settings);
+  // Jutarnja se pomiče subotom i nedjeljom, večernji upit petkom i subotom (prati buđenje sljedećeg dana).
+  const weekendTimes: Partial<Record<NotificationKind, string | null>> = times
+    ? { morning: shiftClock(times.morning, shift), evening: shiftClock(times.evening, shift) }
+    : {};
+  const blockLabel = t('profile.notifications.blocks');
 
   return (
     <View style={[styles.group, { borderColor: colors.border, backgroundColor: colors.surface }]}>
       {TOGGLES.map(({ kind, field }) => {
         const label = t(`profile.notifications.${kind}`);
         const time = times?.[kind];
+        const weekend = weekendTimes[kind];
         const detail =
           time === undefined
             ? null
-            : kind === 'morning' && weekendMorning !== null && weekendMorning !== time
-              ? t('profile.notifications.weekendTime', { time, weekend: weekendMorning })
+            : weekend !== undefined && weekend !== null && weekend !== time
+              ? t(`profile.notifications.${kind === 'morning' ? 'weekendTime' : 'weekendEveningTime'}`, {
+                  time,
+                  weekend,
+                })
               : t('profile.notifications.time', { time });
         return (
           <View key={kind} style={styles.row}>
@@ -189,6 +256,20 @@ function NotificationToggles({ settings, save }: EditorProps) {
           </View>
         );
       })}
+      <View style={styles.row}>
+        <View style={styles.rowText}>
+          <Text>{blockLabel}</Text>
+          <Text variant="caption" tone="textMuted">
+            {t('profile.notifications.blocksDetail')}
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel={blockLabel}
+          value={settings.blockRemindersEnabled}
+          onValueChange={(value) => save({ blockRemindersEnabled: value })}
+          trackColor={{ true: colors.accent, false: colors.border }}
+        />
+      </View>
     </View>
   );
 }

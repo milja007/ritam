@@ -17,7 +17,8 @@
       "en": "English"
     },
     "sleep": {
-      "title": "Sleep and wake-up"
+      "title": "Sleep and wake-up",
+      "bedtimeWeekend": "Bedtime: {{time}}, Fridays and Saturdays {{weekend}}"
     },
     "notifications": {
       "title": "Notifications",
@@ -25,7 +26,10 @@
       "evening": "Evening check-in",
       "windDown": "Wind-down before bed",
       "time": "at {{time}}",
-      "weekendTime": "at {{time}}, weekends {{weekend}}"
+      "weekendTime": "at {{time}}, weekends {{weekend}}",
+      "weekendEveningTime": "at {{time}}, Fridays and Saturdays {{weekend}}",
+      "blocks": "Block reminders",
+      "blocksDetail": "At the start of each block, with Done / Snooze / Came up buttons"
     },
     "saveError": "The change wasn't saved. Please try again.",
     "progress": "Progress",
