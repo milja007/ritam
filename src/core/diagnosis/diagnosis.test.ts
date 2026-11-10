@@ -214,6 +214,39 @@ describe('buildDayDiagnosis', () => {
     });
   });
 
+  it('dijagnoza govori samo o odabranim područjima (P50)', () => {
+    const day = stats({
+      blocks: [block('a', 'done')],
+      rules: [{ id: 'r', title: 'Bez slatkiša', weight: 3 }],
+      ruleLogs: [{ ruleId: 'r', kept: false, trigger: 'stres' }],
+      morning: { sleepStart: '02:00', wakeTime: '07:00' },
+    });
+    const planOnly = buildDayDiagnosis(day, null, { areas: ['plan'] });
+    const text = JSON.stringify(planOnly);
+    expect(text).not.toMatch(/Rule|rule|Sleep|sleep|earlierBed/);
+    expect(planOnly.progress.map((row) => row.metric)).not.toContain('sleep');
+    expect(planOnly.ideas).toEqual([{ key: 'ideas.keepRhythm' }]);
+
+    const withSleep = buildDayDiagnosis(day, null, { areas: ['plan', 'sleep'] });
+    expect(withSleep.problems).toEqual([{ key: 'problems.shortSleep', params: { hours: 5 } }]);
+    expect(withSleep.ideas[0]?.key).toBe('ideas.earlierBed');
+
+    const all = buildDayDiagnosis(day, null, { areas: ['plan', 'rules', 'sleep'] });
+    expect(all.ideas[0]?.key).toBe('ideas.ruleTrigger');
+  });
+
+  it('jučerašnji rezultat se računa s jučerašnjim područjima', () => {
+    const day = stats({
+      blocks: [block('a', 'done')],
+      rules: [{ id: 'r', title: 'R', weight: 3 }],
+      ruleLogs: [{ ruleId: 'r', kept: false, trigger: null }],
+    });
+    const d = buildDayDiagnosis(day, day, { areas: ['plan'], yesterdayAreas: ['plan', 'rules'] });
+    // danas plan 100; jučer (50 × 1 + 30 × 0) / 80 → 63
+    expect(d.progress[0]).toMatchObject({ metric: 'score', value: 100, previous: 63 });
+    expect(d.trend).toBe('better');
+  });
+
   it('bez jučer: nema usporedbe', () => {
     const rows = buildDayDiagnosis(stats({ blocks: [block('a', 'done')] }), null).progress;
     expect(rows[0]).toEqual({ metric: 'score', value: 100, previous: null, change: null, good: null });

@@ -2,6 +2,23 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 18:15 · Korak 16c (dorada) — Bornovi odgovori na pitanja 48–51
+**Odluke (Borna, anketa 2026-11-10):**
+- **P48:** prošli dani **zadrže staro bodovanje** — promjena područja vrijedi od danas.
+- **P49:** odabrano područje bez podataka tog dana **ne ulazi** (ostaje).
+- **P50 (+ promjena P39):** **plan je uvijek uključen** i uvijek nosi najviše; **zabrane i san su opcionalni**. Dijagnoza govori **samo o odabranim područjima**: samo plan → samo plan; plan + san → oboje; plan + zabrane → oboje; sva tri → sve.
+- **P51:** smijem primijeniti `fk_indexes` i `score_areas` na remote `ritam`.
+
+**Plan (recenziran):** (1) `scorePlan` uvijek `true` (Zod literal, Supabase CHECK), u izboru plan bez prekidača ("Uvijek"); (2) snimka područja uz večernji upit (`checkins.score_areas`, migracija `0005`) — prvo spremanje upita zaključuje dan s trenutnim odabirom, kasnije uređivanje je zadržava; (3) `listDayScores` i dijagnoza boduju zaključen dan po snimci, dan u tijeku po postavkama; (4) dijagnoza: `statsForAreas` skriva neodabrane zabrane/san iz svih sekcija; (5) Supabase migracija dorađena (još nije bila na remoteu) pa primijenjena; (6) testovi, provjere, merge.
+
+**Napravljeno:**
+- Plan obavezan: `settingsSchema.scorePlan` = `true`; uklonjeno pravilo "barem jedno"; onboarding korak "Što prati tvoj rezultat?" uvijek valjan; `ScoreAreasPicker` — plan "Uvijek", prekidači samo za zabrane i san, napomena (plan nosi najviše, promjena od danas, dijagnoza samo o odabranom).
+- Snimka: `checkins.scoreAreas` (JSON niz s planom, `null` za jutro i upite prije 16c → koriste trenutni odabir). `saveEveningCheckin` je postavlja pri prvom spremanju.
+- `listDayScores`: zaključen dan po snimci, dan u tijeku po postavkama. `generateDayReport`: `areas` (snimka dana) i `yesterdayAreas` (jučerašnja snimka) — jučerašnji rezultat u usporedbi je onaj kakav je bio.
+- Dijagnoza: `statsForAreas(stats, areas)` — bez zabrana/sna u napretku, pohvalama, primijećenom, problemima i idejama kad nisu odabrani.
+- Supabase `20261110163500_score_areas.sql`: `score_plan` CHECK uvijek, `checkins.score_areas jsonb` s CHECK (niz, sadrži plan, samo poznata područja). Lokalni `test:supabase` ✅.
+- Testovi: 471/471 ✅, `tsc` ✅, `lint` ✅, `expo export` ✅.
+
 ## 2026-11-10 17:29 · Korak 16c — Rezultat po odabranim područjima
 Borna je potvrdio (2026-11-10 ~17:20) da sesije nastave dok on testira 16-dev na svom Macu — `wip/korak-16-dev` ne diram, 16c ide s `main`.
 

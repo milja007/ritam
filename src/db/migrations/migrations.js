@@ -6,6 +6,7 @@ import m0001 from './0001_evening_refinements.sql';
 import m0002 from './0002_settings_refinements.sql';
 import m0003 from './0003_reports.sql';
 import m0004 from './0004_score_areas.sql';
+import m0005 from './0005_checkin_score_areas.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_score_areas.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005
     }
   }
   

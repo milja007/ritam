@@ -116,9 +116,10 @@ export function dayTrend(
   today: DayStats,
   yesterday: DayStats | null,
   areas: readonly ScorePart[] = SCORE_PARTS,
+  yesterdayAreas: readonly ScorePart[] = areas,
 ): Trend {
   const now = dayScore(today, areas).score;
-  const before = yesterday ? dayScore(yesterday, areas).score : null;
+  const before = yesterday ? dayScore(yesterday, yesterdayAreas).score : null;
   if (now === null || before === null) return 'first';
   return scoreTrend(now - before);
 }
@@ -137,11 +138,16 @@ function goodFor(direction: ProgressRow['change']): boolean | null {
 /** Omjer za usporedbu plana/zabrana (različiti ukupni brojevi dana). */
 const ratio = (value: number, total: number) => (total > 0 ? value / total : 0);
 
-function progressRows(today: DayStats, yesterday: DayStats | null, areas: readonly ScorePart[]): ProgressRow[] {
+function progressRows(
+  today: DayStats,
+  yesterday: DayStats | null,
+  previousScore: number | null,
+  areas: readonly ScorePart[],
+): ProgressRow[] {
   const rows: ProgressRow[] = [];
   const score = dayScore(today, areas).score;
   if (score !== null) {
-    const previous = yesterday ? dayScore(yesterday, areas).score : null;
+    const previous = previousScore;
     const dir = previous === null ? null : scoreTrend(score - previous);
     const direction = dir === null ? null : dir === 'better' ? 'up' : dir === 'worse' ? 'down' : 'same';
     rows.push({ metric: 'score', value: score, previous, change: direction, good: goodFor(direction) });
@@ -336,23 +342,50 @@ export function ideaLines(today: DayStats, previous: DayDiagnosis | null = null)
 export type DayDiagnosisOptions = {
   /** Jučerašnja spremljena dijagnoza (za ponovljene ideje); bez nje nema ponavljanja. */
   previous?: DayDiagnosis | null;
-  /** Područja dnevnog rezultata iz postavki (korak 16c); zadano sva tri. */
+  /** Područja koja korisnik prati za ovaj dan (korak 16c); zadano sva tri. */
   areas?: readonly ScorePart[];
+  /** Područja s kojima je bodovan jučerašnji dan (P48); zadano isto kao `areas`. */
+  yesterdayAreas?: readonly ScorePart[];
 };
+
+const NO_RULES: DayStats['rules'] = {
+  active: 0,
+  kept: 0,
+  broken: 0,
+  brokenRules: [],
+  activeWeight: 0,
+  keptWeight: 0,
+};
+
+/**
+ * Statistika svedena na područja koja korisnik prati (odluka P50): neodabrane zabrane i san se ne
+ * spominju ni u jednoj sekciji dijagnoze. Plan je uvijek uključen.
+ */
+export function statsForAreas(stats: DayStats, areas: readonly ScorePart[]): DayStats {
+  return {
+    ...stats,
+    rules: areas.includes('rules') ? stats.rules : NO_RULES,
+    sleep: areas.includes('sleep') ? stats.sleep : null,
+  };
+}
 
 /** Dijagnoza dana iz statistike dana i jučer (jučer `null` = prvi dan / nema podataka). */
 export function buildDayDiagnosis(
-  today: DayStats,
-  yesterday: DayStats | null,
-  { previous = null, areas = SCORE_PARTS }: DayDiagnosisOptions = {},
+  fullToday: DayStats,
+  fullYesterday: DayStats | null,
+  { previous = null, areas = SCORE_PARTS, yesterdayAreas = areas }: DayDiagnosisOptions = {},
 ): DayDiagnosis {
-  const trend = dayTrend(today, yesterday, areas);
+  const today = statsForAreas(fullToday, areas);
+  // Jučer: sekcije vide samo područja koja se prate danas; rezultat jučer je onaj s jučerašnjim područjima.
+  const yesterday = fullYesterday ? statsForAreas(fullYesterday, areas) : null;
+  const yesterdayScore = fullYesterday ? dayScore(fullYesterday, yesterdayAreas).score : null;
+  const trend = dayTrend(fullToday, fullYesterday, areas, yesterdayAreas);
   return {
     version: LOCAL_DAY_DIAGNOSIS_VERSION,
     date: today.date,
     trend,
     summary: summaryLine(today, trend),
-    progress: progressRows(today, yesterday, areas),
+    progress: progressRows(today, yesterday, yesterdayScore, areas),
     praise: praiseLines(today, yesterday),
     noticed: noticedLines(today),
     problems: problemLines(today),

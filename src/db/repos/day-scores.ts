@@ -36,7 +36,8 @@ function groupByDate<T extends { date: string }>(rows: readonly T[]): Map<string
  * Dnevni rezultat (korak 16b) za svaki dan s ispunjenim večernjim upitom do `through` te za sam
  * `through` (dan upita) i kad upit još nije ispunjen — tada je rezultat "u tijeku"
  * (`final: false`). Dani bez ispunjenog upita ne ulaze: statusi blokova nisu potvrđeni.
- * Boduju se područja odabrana u postavkama (korak 16c) — promjena odabira preračuna i prošle dane.
+ * Boduju se područja rezultata (korak 16c): zaključen dan prema snimci uz svoj večernji upit
+ * (prošli dani zadrže staro bodovanje, P48), dan u tijeku prema trenutnim postavkama.
  * Jedno čitanje u transakciji; rezultat se ne sprema (izveden je, kao razina).
  */
 export function listDayScores(db: RitamDb, userId: string, through: LocalDate): DayScoreHistory {
@@ -86,8 +87,8 @@ export function listDayScores(db: RitamDb, userId: string, through: LocalDate): 
     const checkinsByDate = groupByDate(userCheckins.filter((checkin) => dates.has(checkin.date)));
     const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
     const sleepSettings = settingsRow ? settingsSchema.parse(settingsRow) : null;
-    // Prije onboardinga (nema postavki) boduje se zadano područje — samo plan.
-    const areas = sleepSettings ? selectedScoreAreas(sleepSettings) : (['plan'] as const);
+    // Trenutni odabir (prije onboardinga samo plan) vrijedi za dan u tijeku i za upite bez snimke.
+    const currentAreas = sleepSettings ? selectedScoreAreas(sleepSettings) : (['plan'] as const);
 
     const days: ScoredDay[] = [];
     for (const date of [...dates].sort()) {
@@ -104,7 +105,9 @@ export function listDayScores(db: RitamDb, userId: string, through: LocalDate): 
         xpEvents: [],
         streak: 0,
       });
-      const { score } = dayScore(stats, areas);
+      // Zaključen dan zadrži područja koja su tada vrijedila (P48).
+      const evening = dayCheckins.find((checkin) => checkin.kind === 'evening');
+      const { score } = dayScore(stats, evening?.scoreAreas ?? currentAreas);
       if (score !== null) days.push({ date, score, final: complete.has(date) });
     }
     return { days, longestStreak: mainStreak(evenings, through).longest };

@@ -99,22 +99,34 @@ describe('listDayScores', () => {
     expect(listDayScores(db, USER, YESTERDAY).days).toEqual([{ date: YESTERDAY, score: 50, final: true }]);
   });
 
-  it('boduje samo područja odabrana u postavkama, s težinama 50/30/20 razmjerno', async () => {
+  it('boduje odabrana područja; zaključen dan zadrži područja iz svog upita (P48)', async () => {
     const { db, deps, block, rule } = await setup();
     const y1 = await block(YESTERDAY, 'Učenje', '09:00', '10:00');
     const y2 = await block(YESTERDAY, 'Trening', '18:00', '19:00');
-    saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, false), deps);
+    const t1 = await block(DATE, 'Učenje', '09:00', '10:00');
+    const t2 = await block(DATE, 'Trening', '18:00', '19:00');
     const base = toSettingsInput(createDefaultDraft('hr'));
 
-    await saveSettings(db, USER, { ...base, scorePlan: true, scoreRules: true }, deps);
-    // plan 0,5 × 50 + zabrane 0 × 30 → 25 / 80 → 31
+    // Jučer zaključen s planom i zabranama: plan 0,5 × 50 + zabrane 0 × 30 → 25 / 80 → 31.
+    await saveSettings(db, USER, { ...base, scoreRules: true }, deps);
+    saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, false), deps);
     expect(listDayScores(db, USER, YESTERDAY).days).toEqual([{ date: YESTERDAY, score: 31, final: true }]);
 
-    await saveSettings(db, USER, { ...base, scorePlan: false, scoreRules: true }, deps);
-    expect(listDayScores(db, USER, YESTERDAY).days).toEqual([{ date: YESTERDAY, score: 0, final: true }]);
+    // Danas samo plan: jučer ostaje 31, danas u tijeku po novom odabiru.
+    await saveSettings(db, USER, { ...base, scoreRules: false }, deps);
+    expect(listDayScores(db, USER, DATE).days).toEqual([
+      { date: YESTERDAY, score: 31, final: true },
+      { date: DATE, score: 0, final: false },
+    ]);
 
-    // Samo san, a san nije prijavljen → nema rezultata.
-    await saveSettings(db, USER, { ...base, scorePlan: false, scoreSleep: true }, deps);
-    expect(listDayScores(db, USER, YESTERDAY).days).toEqual([]);
+    // Današnji upit (zabrana opet prekršena) zaključuje dan samo s planom → 50; uređivanje upita
+    // nakon nove promjene postavki ne mijenja snimku.
+    saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok'), ans(t2.id, 'not')], rule.id, false), deps);
+    await saveSettings(db, USER, { ...base, scoreRules: true }, deps);
+    saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok'), ans(t2.id, 'not')], rule.id, false), deps);
+    expect(listDayScores(db, USER, DATE).days).toEqual([
+      { date: YESTERDAY, score: 31, final: true },
+      { date: DATE, score: 50, final: true },
+    ]);
   });
 });

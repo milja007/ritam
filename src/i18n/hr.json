@@ -87,7 +87,7 @@
     },
     "score": {
       "title": "Što prati tvoj rezultat?",
-      "subtitle": "Rezultat dana 0–100 mjeri napredak u onome što odabereš. Kreni s jednim područjem, kasnije možeš dodati ostala u Profilu."
+      "subtitle": "Rezultat dana 0–100 uvijek mjeri tvoj plan. Po želji dodaj zabrane i san — možeš ih uključiti i kasnije u Profilu."
     }
   },
   "notifications": {
@@ -457,7 +457,8 @@
     "sleep": "San",
     "sleepHint": "Jesi li otišao spavati na vrijeme.",
     "weight": "{{weight}} % rezultata",
-    "lastOne": "Barem jedno područje ostaje uključeno.",
-    "a11y": "{{area}}, {{weight}} % rezultata"
+    "a11y": "{{area}}, {{weight}} % rezultata",
+    "always": "Uvijek",
+    "note": "Plan je uvijek u rezultatu i nosi najviše. Promjena vrijedi od danas — prošli dani zadržavaju bodovanje kakvo je tada bilo. Dijagnoza dana govori samo o odabranim područjima."
   }
 }

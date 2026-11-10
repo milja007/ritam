@@ -87,7 +87,7 @@
     },
     "score": {
       "title": "What should your score track?",
-      "subtitle": "Your 0–100 day score measures progress in what you choose. Start with one area — you can add the others later in Profile."
+      "subtitle": "Your 0–100 day score always tracks your plan. Optionally add rules and sleep — you can also turn them on later in Profile."
     }
   },
   "notifications": {
@@ -457,7 +457,8 @@
     "sleep": "Sleep",
     "sleepHint": "Whether you went to bed on time.",
     "weight": "{{weight}}% of the score",
-    "lastOne": "At least one area stays on.",
-    "a11y": "{{area}}, {{weight}}% of the score"
+    "a11y": "{{area}}, {{weight}}% of the score",
+    "always": "Always",
+    "note": "Your plan is always part of the score and counts the most. Changes apply from today — past days keep the scoring they had. The day diagnosis only covers the selected areas."
   }
 }

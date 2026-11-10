@@ -146,9 +146,8 @@ describe('pretvorba', () => {
       scoreSleep: false,
     });
   });
-  it('područja rezultata: zadano samo plan, bilo koja kombinacija, barem jedno', () => {
-    expect(isStepValid('score', filled({ scorePlan: false, scoreSleep: true }))).toBe(true);
-    expect(isStepValid('score', filled({ scorePlan: false }))).toBe(false);
+  it('područja rezultata: plan uvijek, zabrane i san opcionalni', () => {
+    expect(isStepValid('score', filled({ scoreSleep: true }))).toBe(true);
     expect(toSettingsInput(filled({ scoreRules: true, scoreSleep: true }))).toMatchObject({
       scorePlan: true,
       scoreRules: true,

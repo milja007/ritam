@@ -16,16 +16,16 @@ const FIELD: Record<ScoreArea, keyof ScoreAreaFlags> = {
 };
 
 /**
- * Izbor područja dnevnog rezultata (korak 16c, odluka P39): plan / zabrane / san, bilo koja
- * kombinacija, barem jedno. Uz svako uključeno područje piše njegov udio u rezultatu.
- * Koristi se u onboardingu i u Profilu.
+ * Izbor područja dnevnog rezultata (korak 16c, odluka P39 dorađena 2026-11-10): plan je uvijek
+ * uključen (bez prekidača), zabrane i san su opcionalni. Uz svako uključeno područje piše njegov
+ * udio u rezultatu. Koristi se u onboardingu i u Profilu.
  */
 export function ScoreAreasPicker({
   value,
   onChange,
 }: {
   value: ScoreAreaFlags;
-  onChange: (patch: Partial<ScoreAreaFlags>) => void;
+  onChange: (patch: Partial<Omit<ScoreAreaFlags, 'scorePlan'>>) => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -38,7 +38,8 @@ export function ScoreAreasPicker({
         {SCORE_AREAS.map((area) => {
           const field = FIELD[area];
           const on = value[field];
-          const isLastOn = on && selected.length === 1;
+          // Plan se ne može isključiti.
+          const fixed = area === 'plan';
           const label = t(`scoreAreas.${area}`);
           return (
             <View key={area} style={styles.row}>
@@ -53,23 +54,25 @@ export function ScoreAreasPicker({
                   </Text>
                 ) : null}
               </View>
-              <Switch
-                accessibilityLabel={on ? t('scoreAreas.a11y', { area: label, weight: weights[area] }) : label}
-                value={on}
-                // Zadnje uključeno područje se ne može isključiti.
-                disabled={isLastOn}
-                onValueChange={(next) => onChange({ [field]: next })}
-                trackColor={{ true: colors.accent, false: colors.border }}
-              />
+              {fixed ? (
+                <Text variant="caption" tone="textMuted">
+                  {t('scoreAreas.always')}
+                </Text>
+              ) : (
+                <Switch
+                  accessibilityLabel={on ? t('scoreAreas.a11y', { area: label, weight: weights[area] }) : label}
+                  value={on}
+                  onValueChange={(next) => onChange({ [field]: next })}
+                  trackColor={{ true: colors.accent, false: colors.border }}
+                />
+              )}
             </View>
           );
         })}
       </View>
-      {selected.length === 1 ? (
-        <Text variant="caption" tone="textMuted">
-          {t('scoreAreas.lastOne')}
-        </Text>
-      ) : null}
+      <Text variant="caption" tone="textMuted">
+        {t('scoreAreas.note')}
+      </Text>
     </View>
   );
 }

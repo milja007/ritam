@@ -5,6 +5,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { ChecklistAnswer, EveningDraft } from '@/core/checkin';
 import { parseDayDiagnosis } from '@/core/diagnosis';
+import { createDefaultDraft, toSettingsInput } from '@/core/onboarding';
 
 import {
   createBlock,
@@ -12,6 +13,7 @@ import {
   generateDayReport,
   getReport,
   saveEveningCheckin,
+  saveSettings,
   type RuleInput,
 } from './repos';
 import { reports } from './schema';
@@ -49,6 +51,8 @@ async function setup() {
       deps,
     );
   const rule = await createRule(db, USER, ruleInput, deps);
+  // Prate se sva tri područja, da dijagnoza govori i o zabranama i snu.
+  await saveSettings(db, USER, { ...toSettingsInput(createDefaultDraft('hr')), scoreRules: true, scoreSleep: true }, deps);
   return { db, raw, deps, block, rule };
 }
 

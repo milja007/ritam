@@ -162,9 +162,16 @@ export function generateDayReport(
     const previousRow =
       yesterdayDate === null ? undefined : tx.select().from(reports).where(reportOf(userId, 'day', yesterdayDate)).get();
     const previous = previousRow ? parseDayDiagnosis(previousRow.sections) : null;
+    // Područja: snimka uz večernji upit dana (P48), inače trenutne postavke (prije onboardinga plan).
     const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
-    const areas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
-    const diagnosis = buildDayDiagnosis(today, yesterday, { previous, areas });
+    const currentAreas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const areasOf = (day: LocalDate | null) =>
+      eveningRows.find((row) => row.date === day)?.scoreAreas ?? currentAreas;
+    const diagnosis = buildDayDiagnosis(today, yesterday, {
+      previous,
+      areas: areasOf(date),
+      yesterdayAreas: areasOf(yesterdayDate),
+    });
     const suggestion = diagnosisSuggestion(diagnosis);
     const existing = tx.select().from(reports).where(reportOf(userId, 'day', date)).get();
     const report = reportSchema.parse({
