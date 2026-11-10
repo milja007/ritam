@@ -20,8 +20,13 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 - Testovi: 471/471 ✅, `tsc` ✅, `lint` ✅, `expo export` ✅ (nakon spajanja sa 16d: 487/487 ✅).
 - **Remote `ritam` (P51):** primijenjeni `fk_indexes` (verzija `20261110181502`) i `score_areas` (`20261110181521`); lokalne datoteke preimenovane na te verzije, `test:supabase` ✅. `block_reminders` (16d) **nije** primijenjen — provjera dopuštenja ga je odbila jer Borna nije odobrio tu migraciju.
 
-**Pitanja za Bornu:**
-55. Smijem li primijeniti i `block_reminders` (16d, samo dodaje stupac `settings.block_reminders_enabled`) na remote? Nakon toga datoteku `20261110175500_block_reminders.sql` preimenujem na verziju s remotea.
+- Nakon Bornova odobrenja (P55) primijenjen i `block_reminders` (`20261110181938`), datoteka preimenovana. Remote je sada usklađen s repoom (`init`, `fk_indexes`, `score_areas`, `block_reminders`).
+
+**Odluke (Borna, anketa 2026-11-10) — pitanja 52–55 zatvorena:**
+- **P52:** večernji upit vikendom ostaje pomaknut **petkom i subotom navečer**.
+- **P53:** brzi odabiri ostaju: **barem 2 različita dana u zadnja 4 tjedna**, najčešći termin.
+- **P54 (smjer za fazu 2, koraci 25–26 i 36–37b):** **tjedno planiranje se radi nedjeljom** (za sljedeći tjedan); isto tako **mjesečno i godišnje planiranje na kraju razdoblja za novo**. Kad korisnik tek kreće usred razdoblja, može planirati **odmah pri ulasku**, ali app jasno pokaže da je ostalo **manje dana / tjedana / mjeseci** nego da je krenuo na početku (npr. godišnji plan u studenom). Brojanje tjednih zadataka u jutarnjoj obavijesti odlučuje se uz korak 25/26.
+- **P55:** `block_reminders` smije na remote — primijenjeno.
 - Paralelno je sesija 18:43 napravila korak 16d i spojila ga na `main` (migracija `0005_block_reminders`) — moja migracija snimke je zato `0006_checkin_score_areas`.
 
 ## 2026-11-10 17:46 · Korak 16d — Obavijesti i postavke: dorade

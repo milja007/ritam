@@ -43,7 +43,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 
 ## Faza 2 — Pametni planer
 - [ ] 24. Google Calendar OAuth + uvoz fiksnih obaveza
-- [ ] 25. Tjedni zadaci: unos s pitanjima + tab Tjedan
+- [ ] 25. Tjedni zadaci: unos s pitanjima + tab Tjedan *(P54: planiranje nedjeljom za sljedeći tjedan; mjesečno/godišnje na kraju razdoblja za novo; ulazak usred razdoblja → plan odmah, uz jasno "ostalo je manje dana/tjedana/mjeseci")*
 - [ ] 26. Tjedni zadaci u plan-day
 - [ ] 27. "Nešto je iskrslo" flow
 - [ ] 28. Zabrane: ekran upravljanja + streakovi po zabrani
