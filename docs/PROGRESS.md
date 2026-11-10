@@ -14,6 +14,27 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = struktura dijagnoze iz koncepta (3, 5), samo statistika dana + usporedba s jučer, bez LLM-a (2, 3), spremanje u `reports` s `period = day` (1, 4). Dnevni rezultat 0–100, isti dan prošli tjedan, 7 vs 7 dana i rekordi su korak 16b — ovdje trend "bolje/isto/lošije" koristi jednostavan omjer (odrađeni plan + poštovane zabrane) naspram jučer, a 16b ga zamijeni pravim rezultatom. Gumbi Pomoglo / Nije pomoglo, prethodne dijagnoze u kontekstu i "odbijeni prijedlog 2 tjedna" su korak 31 (LLM) — stupci postoje, UI ne. Arhiva dijagnoza na Profilu je 37c. Ton: činjenice pa tumačenje, kritika uvijek s idejom, bez posramljivanja i bez crvenog.
 
+**Napravljeno:**
+- Bez novih ovisnosti. Migracija `0003_reports`: tablica `reports` po modelu iz punog koncepta (`period`, `period_start`, `sections` i `stats` kao JSON, `prompt_version`, `suggestion`, `suggestion_accepted`, `helpful`, `feedback_comment`), jedinstveni indeks (korisnik, period, početak). Zod `reportSchema` u `src/core/domain/report.ts`.
+- Čisto `src/core/diagnosis/day-stats.ts`: `dayStats` — plan bez sna (gotovo, djelomično = pola, nije, premješteno, otvoreno, udio), zabrane (poštovane / prekršene s okidačem, teže prve), san iz jutarnje prijave (trajanje, krevet ±30 min od cilja), XP dana, ocjena, streak, komentari Djelomično/Nije, propušteni blokovi; `dayBalance` (privremena mjera dana za trend).
+- Čisto `src/core/diagnosis/day-diagnosis.ts`: `buildDayDiagnosis(danas, jučer)` → **Ukratko** (trend bolje/slično/slabije/prvi dan + rečenica), **Napredak** (plan, zabrane, san, XP, ocjena, niz — danas vs jučer, strelica; san neutralan), **Pohvale** (1–3, uvijek barem jedna), **Što smo primijetili** (komentari, okidači, propusti navečer/ujutro, premještanja, ocjena koja se ne slaže s planom), **Veliki problemi** (manje od pola plana, prekršene zabrane, < 6 h sna), **Ideje za napredak** (točno jedna mala, prema najvećem problemu). Retci su tipizirani i18n ključevi (`DIAGNOSIS_LINE_KEYS`) + parametri; `parseDayDiagnosis` za čitanje iz baze.
+- Repo `generateDayReport` (jedna transakcija: dan + jučer, upsert u `reports`, `prompt_version = local-day-v1`, `suggestion` = ključ ideje; ponovno spremanje upita osvježi sekcije, `helpful`/komentar ostaju) i `getReport`. Jučer se uspoređuje samo kad je jučerašnji upit ispunjen.
+- UI `src/features/diagnosis/`: `DayDiagnosisView` (šest kartica redom iz koncepta, trend strelica, bez crvenog), `DiagnosisModal`, `useDayReport` (ako dijagnoze nema — npr. upit od prije — napravi se iz spremljenih podataka). Ekran nakon upita: +XP → **Dijagnoza dana** → "Što imaš sutra?" / Gotovo. Kartica ispunjenog upita na Danas ima **Dijagnoza dana**. Greška dijagnoze ne ruši spremanje upita.
+- i18n HR/EN (`diagnosis.*`, `evening.card.diagnosis`, `evening.done.diagnosisTitle`) + test da svaki redak, trend i metrika postoje u oba jezika.
+- 23 nova testa (ukupno 426). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (426/426), `expo export --platform android` ✅ (4.4 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox): izgled kartica dijagnoze, dugi komentari, prijelaz na "Što imaš sutra?".
+- Trend koristi privremenu mjeru (odrađeni plan + poštovane zabrane; ±10 postotnih bodova naspram jučer). Korak 16b je zamjenjuje dnevnim rezultatom 0–100 i dodaje isti dan prošli tjedan, 7 vs 7 dana i rekorde.
+- Pomoglo / Nije pomoglo, prethodne dijagnoze i pravilo "odbijeni prijedlog 2 tjedna" su korak 31 (stupci već postoje). Arhiva na Profilu je 37c.
+- Supabase shema (korak 17) mora dobiti i tablicu `reports`.
+
+**Pitanja za Bornu:**
+37. Dok ne dođe dnevni rezultat (16b), "bolje / slično / slabije nego jučer" računa se iz udjela odrađenog plana i poštovanih zabrana (razlika ≥ 10 postotnih bodova). Odgovara li kao privremeno rješenje?
+38. Lokalna dijagnoza uvijek nudi točno jednu malu ideju (npr. "Sutra planiraj jedan blok manje…", "Večeras 15 min ranije u krevet"). Želiš li da se ista ideja ne ponavlja više dana zaredom već sada, ili to ostaje za LLM dijagnozu (korak 31)?
+
+**Sljedeće:** korak 16b — napredak: dnevni rezultat 0–100 (plan, zabrane, san), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi; rezultat sa strelicom trenda na Danas.
+
 ## 2026-11-10 08:43 · Korak 15 — XP traka + streak u UI-ju
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-15`; bez novih ovisnosti i bez migracije (sve izvedeno iz `xp_events` i `checkins`).
