@@ -6,6 +6,7 @@ import {
   blockActionEffect,
   blockReminderBudget,
   DEFAULT_SCHEDULE_DAYS,
+  morningSummary,
   parseNotificationResponse,
   reminderBlocks,
   upcomingTriggers,
@@ -27,6 +28,7 @@ import {
   notificationsSupported,
   registerChannelsAndCategories,
 } from './expo-notifications';
+import { morningBody } from './morning-text';
 import {
   notifyBlocksChanged,
   requestEveningCheckin,
@@ -61,13 +63,20 @@ async function syncOnce(): Promise<void> {
     return;
   }
   const now = new Date();
-  await syncDailyNotifications(expoScheduler, settings, now, dailyTexts(t));
-
-  // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
   const today = localDateOf(now);
   const last = addDays(today, DEFAULT_SCHEDULE_DAYS - 1) ?? today;
+  const horizon = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
+
+  // Jutarnja obavijest nosi pregled plana tog dana (mijenja se s blokovima).
+  const texts = dailyTexts(t);
+  await syncDailyNotifications(expoScheduler, settings, now, texts, (date) => ({
+    title: texts.morning.title,
+    body: morningBody(t, morningSummary(horizon, date)),
+  }));
+
+  // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
   // Isključeni podsjetnici (Profil) → prazan popis, pa se zakazani podsjetnici i odgode otkažu.
-  const blocks = reminderBlocks(settings, await listBlocksBetween(db, LOCAL_USER_ID, today, last));
+  const blocks = reminderBlocks(settings, horizon);
   const dailyCount = upcomingTriggers(settings, now)?.length ?? 0;
   await syncBlockReminders(expoScheduler, blocks, now, blockReminderBudget(dailyCount), blockTexts(t));
 }

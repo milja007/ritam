@@ -79,6 +79,35 @@ describe('syncDailyNotifications', () => {
     expect(scheduler.scheduled.get('windDown:2026-11-11@22:15')?.title).toBe('Wind-down');
   });
 
+  it('jutarnja s tekstom po danu: ključ sadržaja u id-ju, promjena plana je ponovo zakaže', async () => {
+    const scheduler = new FakeScheduler();
+    let body = 'Danas 2 bloka';
+    const morning = (date: string) => (date === '2026-11-09' ? { title: 'Jutro', body } : null);
+    await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning);
+    const first = [...scheduler.scheduled.values()].find((request) =>
+      request?.identifier.startsWith('morning:2026-11-09@07:00#'),
+    );
+    expect(first?.body).toBe('Danas 2 bloka');
+    expect(first?.data).toMatchObject({ type: 'daily', triggerId: first?.identifier });
+    expect(scheduler.scheduled.get('morning:2026-11-10@07:00')?.body).toBe('Tvoj dan');
+
+    scheduler.calls.length = 0;
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning)).toEqual({
+      cancelled: 0,
+      scheduled: 0,
+    });
+
+    body = 'Danas 3 bloka';
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning)).toEqual({
+      cancelled: 1,
+      scheduled: 1,
+    });
+    const updated = [...scheduler.scheduled.values()].filter((request) =>
+      request?.identifier.startsWith('morning:2026-11-09@07:00'),
+    );
+    expect(updated.map((request) => request?.body)).toEqual(['Danas 3 bloka']);
+  });
+
   it('drugi poziv ne radi ništa (idempotentno)', async () => {
     const scheduler = new FakeScheduler();
     await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS);

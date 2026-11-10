@@ -106,7 +106,17 @@
     },
     "morning": {
       "title": "Dobro jutro",
-      "body": "Tvoj dan je spreman. Pogledaj plan i ocijeni san."
+      "body": "Tvoj dan je spreman. Pogledaj plan i ocijeni san.",
+      "day": {
+        "blocks_one": "Danas {{count}} blok",
+        "blocks_few": "Danas {{count}} bloka",
+        "blocks_other": "Danas {{count}} blokova",
+        "tasks_one": ", od toga {{count}} zadatak",
+        "tasks_few": ", od toga {{count}} zadatka",
+        "tasks_other": ", od toga {{count}} zadataka",
+        "first": "Prvi: {{title}} u {{start}}.",
+        "empty": "Za danas još nemaš plan. Otvori Ritam i složi dan."
+      }
     },
     "evening": {
       "title": "Večernji upit",

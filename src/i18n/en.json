@@ -106,7 +106,15 @@
     },
     "morning": {
       "title": "Good morning",
-      "body": "Your day is ready. Check the plan and rate your sleep."
+      "body": "Your day is ready. Check the plan and rate your sleep.",
+      "day": {
+        "blocks_one": "Today: {{count}} block",
+        "blocks_other": "Today: {{count}} blocks",
+        "tasks_one": ", {{count}} of them a task",
+        "tasks_other": ", {{count}} of them tasks",
+        "first": "First: {{title}} at {{start}}.",
+        "empty": "No plan for today yet. Open Ritam and set up your day."
+      }
     },
     "evening": {
       "title": "Evening check-in",

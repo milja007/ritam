@@ -11,6 +11,8 @@ import {
   planBlockReschedule,
   planReschedule,
   snoozeReminderId,
+  contentKey,
+  triggerIdWithContent,
   upcomingBlockReminders,
   upcomingTriggers,
   type BlockReminder,
@@ -48,18 +50,31 @@ export type NotificationScheduler = {
 
 export type SyncResult = { cancelled: number; scheduled: number };
 
+/** Tekst jutarnje obavijesti za dan (pregled plana); `null` → opći tekst iz `DailyNotificationTexts`. */
+export type MorningText = (date: string) => NotificationText | null;
+
 /**
  * Uskladi zakazane dnevne obavijesti s postavkama: otkaži zastarjele, zakaži nedostajuće.
- * Tuđe obavijesti i podsjetnici blokova se ne diraju. Neispravne postavke → ništa se ne mijenja.
+ * Jutarnja s tekstom po danu (`morningText`) dobiva ključ sadržaja u id-ju, pa se nakon promjene plana
+ * ponovo zakaže s novim tekstom. Tuđe obavijesti i podsjetnici blokova se ne diraju.
+ * Neispravne postavke → ništa se ne mijenja.
  */
 export async function syncDailyNotifications(
   scheduler: NotificationScheduler,
   settings: NotificationSettings,
   now: Date,
   texts: DailyNotificationTexts,
+  morningText?: MorningText,
 ): Promise<SyncResult> {
-  const desired = upcomingTriggers(settings, now);
-  if (desired === null) return { cancelled: 0, scheduled: 0 };
+  const triggers = upcomingTriggers(settings, now);
+  if (triggers === null) return { cancelled: 0, scheduled: 0 };
+
+  const desired = triggers.map((trigger) => {
+    const custom = trigger.kind === 'morning' && morningText ? morningText(trigger.date) : null;
+    if (custom === null) return { ...trigger, text: texts[trigger.kind] };
+    const id = triggerIdWithContent(trigger.id, contentKey(`${custom.title}\n${custom.body}`));
+    return { ...trigger, id, text: custom };
+  });
 
   const plan = planReschedule(await scheduler.scheduledIds(), desired);
   for (const id of plan.toCancel) await scheduler.cancel(id);
@@ -69,7 +84,7 @@ export async function syncDailyNotifications(
       fireAt: trigger.fireAt,
       channelId: DAILY_CHANNEL_ID,
       data: dailyNotificationData(trigger.kind, trigger.id),
-      ...texts[trigger.kind],
+      ...trigger.text,
     });
   }
   return { cancelled: plan.toCancel.length, scheduled: plan.toSchedule.length };
