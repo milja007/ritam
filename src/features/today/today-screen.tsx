@@ -8,7 +8,9 @@ import {
   blockPhase,
   currentBlockId,
   draftFromBlock,
+  needsTodayPlan,
   newBlockDraft,
+  shouldAutoOpenTodayPlan,
   tomorrowOf,
   type BlockDraft,
 } from '@/core/schedule';
@@ -34,6 +36,7 @@ import { useAppTheme } from '@/ui/theme';
 import { BlockCard } from './block-card';
 import { BlockEditor } from './block-editor';
 import { formatDay } from './format-day';
+import { TodayPlan } from './today-plan';
 import { useDayBlocks, useNow } from './use-today';
 
 /** Pauza između zatvaranja upita i otvaranja "Što imaš sutra?" (iOS ne prikaže novi modal dok se stari zatvara). */
@@ -89,6 +92,11 @@ export function TodayScreen() {
 
   const currentId = currentBlockId(day.blocks, now.minutes);
 
+  // Plan za danas (17b): bez plana se izrada otvara sama — jednom po danu, ne preko drugih modala.
+  const [planOpen, setPlanOpen] = useState(false);
+  const [planDismissedFor, setPlanDismissedFor] = useState<string | null>(null);
+  const needsPlan = day.status === 'ready' && needsTodayPlan(day.blocks);
+
   // Iskrslo na podsjetniku otvara taj blok u uređivaču (puni "Iskrslo" flow je korak 27).
   const blockRequest = useBlockRequested();
   const requestedBlock =
@@ -105,6 +113,26 @@ export function TodayScreen() {
     (requestedBlock !== null && !showEvening && !showMorning && !tomorrowOpen
       ? { mode: 'edit', draft: draftFromBlock(requestedBlock), id: requestedBlock.id }
       : null);
+
+  const otherModalOpen =
+    showEvening || showMorning || tomorrowOpen || diagnosisOpen || activeEditing !== null;
+  const autoOpenPlan =
+    day.status === 'ready' &&
+    !planOpen &&
+    !otherModalOpen &&
+    planDismissedFor !== now.date &&
+    shouldAutoOpenTodayPlan(day.blocks, now.minutes);
+  useEffect(() => {
+    if (!autoOpenPlan) return;
+    // Pauza: iOS ne prikaže novi modal dok se prethodni (npr. jutarnji brief) zatvara.
+    const id = setTimeout(() => setPlanOpen(true), MODAL_SWAP_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [autoOpenPlan]);
+
+  function closePlan() {
+    setPlanOpen(false);
+    setPlanDismissedFor(now.date);
+  }
 
   function closeEditor() {
     setEditing(null);
@@ -160,14 +188,16 @@ export function TodayScreen() {
               <Text tone="danger">{t('today.loadError')}</Text>
               <Button variant="secondary" label={t('today.retry')} onPress={day.reload} />
             </View>
-          ) : day.blocks.length === 0 ? (
-            <View
-              style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text variant="heading">{t('today.emptyTitle')}</Text>
-              <Text tone="textMuted">{t('today.emptyBody')}</Text>
-            </View>
           ) : (
             <View style={styles.list}>
+              {needsPlan ? (
+                <View
+                  style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
+                  <Text variant="heading">{t('todayPlan.cardTitle')}</Text>
+                  <Text tone="textMuted">{t('todayPlan.cardBody')}</Text>
+                  <Button label={t('todayPlan.cardAction')} onPress={() => setPlanOpen(true)} />
+                </View>
+              ) : null}
               {day.blocks.map((block) => (
                 <BlockCard
                   key={block.id}
@@ -251,6 +281,16 @@ export function TodayScreen() {
           date={now.eveningDate}
           dayLabel={formatDay(now.eveningDate, i18n.language)}
           onClose={() => setDiagnosisOpen(false)}
+        />
+      ) : null}
+
+      {planOpen && day.status === 'ready' ? (
+        <TodayPlan
+          date={now.date}
+          nowMinutes={now.minutes}
+          existing={day.blocks}
+          onSaved={day.reload}
+          onClose={closePlan}
         />
       ) : null}
 

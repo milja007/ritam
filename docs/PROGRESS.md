@@ -2,6 +2,57 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 21:25 · Korak 17b (dorada) — po Bornovim ispravkama od 20:48
+Dok sam radio 17b (ispod), Borna je na `main` ispravio kriterije 17b (P61): **glavni unos je da sam napišeš aktivnost i od–do ili samo trajanje**; upisane ideje (naziv, trajanje, doba dana) se pamte i nude; **samo 2–3 primjera, jasno označena kao "primjer kako se piše"**, ne gotov popis i ne zauzimaju mjesto; generičke kategorije ("Škola") se uklanjaju. Moj katalog od 12 ideja kao čipova to krši — dorađujem prije spajanja na `main`.
+
+**Plan dorade (recenziran):**
+1. `src/core/schedule/plan-entry.ts`: `parseTypedEntry` premješten iz `tomorrow.ts` (bez promjene ponašanja) + novi `parsePlanEntry`: uz od–do / početak prepoznaje **trajanje** ("45 min", "1h", "1,5 h", "90min", "2 sata") i **doba dana** ("ujutro", "poslijepodne", "navečer", EN "morning/afternoon/evening/tonight"); oboje se miče iz naziva.
+2. `typedTodayDraft`: trajanje iz unosa; doba dana → prvi slobodni termin od početka tog doba (jutro 08:00, poslijepodne 12:00, večer 17:00), nikad prije sada. Isto u "Što imaš sutra?" (`typedDraft`, od buđenja).
+3. Uklanjam katalog `PLAN_IDEAS` i čipove primjera; ostaju **"Tvoje ideje"** (iz onoga što si upisivao, s trajanjem i dobom dana). Primjeri samo kao jedan prigušeni redak ispod polja: "Primjer kako se piše: …" (3 primjera).
+4. Unos je na vrhu ekrana plana za danas (prvo polje), ideje ispod.
+5. "Što imaš sutra?": uklanjam generičke brze odabire (`QUICK_PICKS`: Posao, Škola…) i dodajem isti redak s primjerima; "Ponavlja se" ostaje.
+6. Testovi (trajanje, doba dana, unos za danas/sutra), provjere, BUILD_PLAN `[x]`, PROGRESS, merge, push.
+
+*Recenzija:* novi kriteriji — sam napišeš aktivnost + od–do ili trajanje (1, 2), ideje se pamte (3; iz povijesti, bez nove tablice), 2–3 primjera označena, ne zauzimaju mjesto (3), generičke kategorije uklonjene (3, 5), od sada / 5 min / ništa u prošlosti (postojeće). Glas je korak 30 — ne radim.
+
+**Napravljeno (dorada):**
+- `plan-entry.ts`: `parseTypedEntry` premješten iz `tomorrow.ts`; novi `parsePlanEntry` — trajanje ("45 min", "1h", "1,5 h", "2 sata", "30 minutes"; 5 min–12 h) i doba dana ("ujutro/poslijepodne/popodne/navečer/večeras", EN "morning/afternoon/evening/tonight") se čitaju i miču iz naziva; vrijeme se čita prvo ("u 15h" je početak, ne trajanje). `DAY_PART_START`: jutro 08:00, poslijepodne 12:00, večer 17:00.
+- `typedTodayDraft` (danas): trajanje iz unosa; doba dana → prva rupa od početka tog doba, nikad prije sada (prošlo doba → od sada). `typedDraft` (sutra): isto, od buđenja.
+- Uklonjeni katalog `PLAN_IDEAS` i čipovi primjera, te generički `QUICK_PICKS` / `quickPickDraft` u "Što imaš sutra?" (+ i18n ključevi). Ostaju "Tvoje ideje" (danas) i "Ponavlja se" (sutra).
+- UI: polje "Što radiš?" je prvo na ekranu plana za danas; ispod jedan prigušeni redak "Primjer kako se piše: „Ponavljanje kemije 45 min poslijepodne“ · „Zubar u 16“ · „Trening 18–19“" (isti redak i u "Što imaš sutra?").
+- Testovi: 530/530 ✅ (novi `plan-entry.test.ts`, dorađeni testovi za danas/sutra), `tsc` ✅, `expo lint` ✅, `expo export --platform android` ✅.
+
+## 2026-11-10 20:44 · Korak 17b — Plan za danas pri ulasku
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min.
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17b`. Čisto `src/core/schedule/today-plan.ts`: `needsTodayPlan(blocks)` (nema bloka osim sna), `todayPlanStart(nowMinutes)` (sljedećih 5 min), `nextFreeSlotFrom(occupied, minutes, from)` (iza blokova koji završavaju poslije sada, nikad u prošlosti, unutar dana; nema mjesta → `null`), `isTodayPlanValid(drafts, now)` (ništa ne počinje prije sada).
+2. Ideje: katalog konkretnih primjera (`PLAN_IDEAS`: naziv iz i18n, trajanje, najbolje doba dana jutro/poslijepodne/večer) + vlastite ideje iz onoga što si već jednom upisao (`ownIdeas(history)`: naziv, najčešće trajanje, doba dana najčešćeg početka) — bez nove tablice. `rankIdeas` stavlja ideje za trenutno doba dana prve, prošla doba zadnja. Bez generičkih "Škola".
+3. Tipkani unos za danas: prepoznato vrijeme vrijedi samo ako nije u prošlosti, inače sljedeći slobodni termin.
+4. Testovi za sve gore (zaokruživanje, kraj dana, preklapanja, prošla vremena, rangiranje, vlastite ideje).
+5. UI `TodayPlan` (full-screen, kao "Što imaš sutra?"): "Plan za danas · od HH:MM", ideje kao čipovi "Naziv · 45 min · poslijepodne", tipkanje, pregled s uređivanjem, Potvrdi sprema sve. Zajednički dijelovi s `TomorrowPlan` izdvojeni.
+6. Danas: kad je dan učitan, nema plana i nije prije 04:00 → plan se otvara sam (jednom po danu, ne preko drugih modala, uz pauzu za iOS); prazno stanje postaje kartica "Napravi plan za danas". i18n HR/EN.
+7. Provjere `tsc`, `lint`, `test`, `expo export`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 17b — automatski ulaz kad nema plana (6), od sada, prvi termin na sljedećih 5 min, vremena točna prema satu (1, 3), čisto u `core` s testovima (1–4), konkretne ideje s trajanjem i dobom dana (2), početni primjeri + vlastite (2). "Trenutno" i veliki raspored su 17c — ne radim. Tumačenja (vlastite ideje iz povijesti umjesto tablice; bez automatskog otvaranja prije 04:00) → pitanja.
+
+**Napravljeno:**
+- `src/core/schedule/today-plan.ts`: `needsTodayPlan` (nema bloka osim sna), `shouldAutoOpenTodayPlan` (od 04:00), `todayPlanStart` (sljedećih 5 min), `nextFreeSlotFrom` (prva rupa u koju stane cijeli blok, inače iza zadnjeg; prošli blokovi ne smetaju; kraj dana skraćuje do 23:59, bez mjesta `null`), `dayPartOf` (jutro 05–12, poslijepodne 12–17, večer), ~~`PLAN_IDEAS` (12 konkretnih primjera, npr. "Ponavljanje kemije · 45 min · poslijepodne", "Trčanje 5 km · 40 min · ujutro")~~ *(uklonjeno u doradi)*, `ownIdeas` (sve što si upisao kao Zadatak/Fiksno u zadnja 4 tjedna, s najčešćim trajanjem i dobom dana), `rankIdeas` (trenutno doba → kasnije → prošlo; skriva već dodane), `typedTodayDraft` (vrijeme u prošlosti se zanemari, trajanje raspona ostaje), `isTodayPlanValid` (ništa ne počinje više od 10 min prije sada — zadrška dok slažeš plan).
+- 30 novih testova (ukupno 517).
+- UI `TodayPlan` (full-screen): "Plan za danas", podnaslov "sve se slaže od HH:MM", "Već u planu", "Tvoje ideje", "Ideje", tipkanje, "Plan od sada" s uređivanjem, upozorenje za stavku u prošlosti, Kasnije / Potvrdi. Zajednički `Chip`/`DraftRow`/`ExistingRow` izdvojeni u `features/today/plan-parts.tsx` (koristi ih i "Što imaš sutra?").
+- Danas: bez plana se izrada otvara sama (jednom po danu dok app radi, nikad preko drugog modala, 400 ms pauza za iOS); "Kasnije" je zatvori, a umjesto praznog stanja stoji kartica "Za danas još nemaš plan" s gumbom. Ponovno pokretanje appa bez plana je opet otvara.
+- i18n HR/EN (`todayPlan.*`, HR množine); uklonjeni nekorišteni `today.emptyTitle/emptyBody`.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 517/517, `expo export --platform android` ✅.
+
+**Na uređaju neprovjereno (Borna):** automatsko otvaranje pri ulasku (i nakon onboardinga), izgled čipova s dugim nazivima, uređivač bloka s vremenima na 5 min (strelice i dalje skaču po 15 min).
+
+**Pitanja za Bornu:**
+62. Vlastite ideje sada dolaze iz **onoga što si već upisao** (zadnja 4 tjedna, trajanje i doba dana iz povijesti) — bez posebnog spremanja. Odgovara li, ili želiš izričito "Spremi kao ideju" i popis ideja u Profilu (nova tablica)? (vezano uz P61)
+63. Prije 04:00 plan za danas se **ne otvara sam** (dan još pripada jučer, kao večernji upit) — kartica je i dalje tu. U redu?
+64. ~~"Što imaš sutra?" generički brzi odabiri~~ — riješeno u doradi (uklonjeni po kriteriju 17b).
+
+**Sljedeće:** korak 17c — veliki raspored + "Trenutno: …" sa živim satom i odbrojavanjem; komentar / otkaži / bilješka na blokovima.
+
 ## 2026-11-10 · Promjena koncepta (Borna) — Danas kao glavni ekran, planovi godina/mjesec/tjedan
 Borna je isprobao app na iPhoneu i dao smjer. Upisano u puni koncept (Claude Docs: nove sekcije "Danas — glavni ekran" i "Planovi: godina, mjesec, tjedan", tablica ekrana, questovi, zabrane, odluke), u `docs/CONCEPT.md` i u `BUILD_PLAN.md`. Kod nije mijenjan.
 
