@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Supabase / lokalne vrijednosti (u repou samo .env.example)
+.env
