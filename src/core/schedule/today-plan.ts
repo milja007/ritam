@@ -1,7 +1,7 @@
 /**
  * Plan za danas pri ulasku (korak 17b, Borna 2026-11-10): kad za danas nema plana, Danas odmah vodi
  * u izradu plana **od sada prema naprijed** — ništa u prošlosti, prvi termin na sljedećih 5 min.
- * Ponuđene ideje su konkretne (naziv, trajanje, najbolje doba dana), ne generičke kategorije.
+ * Glavni unos je tipkanje (što + od–do ili trajanje); upisane ideje se pamte (naziv, trajanje, doba dana).
  * Čista logika: bez React importa.
  */
 import type { BlockKind, ScheduleBlock } from '../domain';
@@ -9,7 +9,7 @@ import { formatClock, parseClock } from '../time/clock';
 import { addDays } from '../time/local-date';
 import { isBlockDraftValid, LAST_END, type BlockDraft } from './block-draft';
 import { pickKey } from './learned-picks';
-import { parseTypedEntry } from './tomorrow';
+import { DAY_PART_START, DAY_PARTS, parsePlanEntry, type DayPart } from './plan-entry';
 
 /** Plan za danas počinje na sljedećoj granici od ovoliko minuta. */
 export const TODAY_PLAN_STEP_MINUTES = 5;
@@ -86,10 +86,6 @@ export function nextFreeSlotFrom(
   return { start: clock(start), end: clock(end) };
 }
 
-/** Doba dana za ideje. */
-export const DAY_PARTS = ['morning', 'afternoon', 'evening'] as const;
-export type DayPart = (typeof DAY_PARTS)[number];
-
 /** Jutro do 12:00, poslijepodne do 17:00, večer poslije (noć prije 05:00 se broji kao večer). */
 export function dayPartOf(minutes: number): DayPart {
   if (minutes >= 5 * 60 && minutes < 12 * 60) return 'morning';
@@ -97,41 +93,14 @@ export function dayPartOf(minutes: number): DayPart {
   return 'evening';
 }
 
-/** Početna ideja: naziv dolazi iz i18n (`todayPlan.idea.<id>`), ostalo odavde. */
-export type PlanIdeaTemplate = {
-  id: string;
-  kind: Extract<BlockKind, 'task' | 'fixed'>;
-  minutes: number;
-  bestPart: DayPart;
-};
-
-/** Konkretni početni primjeri (ne "Škola" ili "Učenje"): naziv + trajanje + najbolje doba dana. */
-export const PLAN_IDEAS = [
-  { id: 'deepWork', kind: 'task', minutes: 90, bestPart: 'morning' },
-  { id: 'chemistryReview', kind: 'task', minutes: 45, bestPart: 'afternoon' },
-  { id: 'vocabulary', kind: 'task', minutes: 20, bestPart: 'morning' },
-  { id: 'emails', kind: 'task', minutes: 30, bestPart: 'morning' },
-  { id: 'run', kind: 'task', minutes: 40, bestPart: 'morning' },
-  { id: 'gymUpper', kind: 'task', minutes: 60, bestPart: 'afternoon' },
-  { id: 'groceries', kind: 'task', minutes: 45, bestPart: 'afternoon' },
-  { id: 'tidyRoom', kind: 'task', minutes: 30, bestPart: 'afternoon' },
-  { id: 'cookTomorrow', kind: 'task', minutes: 60, bestPart: 'evening' },
-  { id: 'walkNoPhone', kind: 'task', minutes: 30, bestPart: 'evening' },
-  { id: 'readPages', kind: 'task', minutes: 30, bestPart: 'evening' },
-  { id: 'stretching', kind: 'task', minutes: 15, bestPart: 'evening' },
-] as const satisfies readonly PlanIdeaTemplate[];
-
-export type PlanIdeaId = (typeof PLAN_IDEAS)[number]['id'];
-
-/** Ideja spremna za prikaz i dodavanje (naziv već preveden ili korisnikov). */
+/** Zapamćena ideja: nešto što je korisnik već upisao, s trajanjem i dobom dana. */
 export type PlanIdea = {
-  /** Stabilan ključ: `example:<id>` ili `own:<normalizirani naziv>`. */
+  /** Stabilan ključ: `own:<normalizirani naziv>`. */
   key: string;
   title: string;
   kind: Extract<BlockKind, 'task' | 'fixed'>;
   minutes: number;
   bestPart: DayPart;
-  source: 'example' | 'own';
 };
 
 /** Koliko dana unatrag se traže vlastite ideje. */
@@ -200,7 +169,6 @@ export function ownIdeas(
       kind,
       minutes,
       bestPart: dayPartOf(start),
-      source: 'own',
       days: new Set(entries.map((entry) => entry.date)).size,
       latest: latest.date,
     });
@@ -209,18 +177,6 @@ export function ownIdeas(
     .sort((a, b) => b.days - a.days || b.latest.localeCompare(a.latest) || a.title.localeCompare(b.title))
     .slice(0, OWN_IDEAS_MAX)
     .map(({ days: _days, latest: _latest, ...idea }) => idea);
-}
-
-/** Početni primjeri s prevedenim nazivima. */
-export function exampleIdeas(titleOf: (id: PlanIdeaId) => string): PlanIdea[] {
-  return PLAN_IDEAS.map((idea) => ({
-    key: `example:${idea.id}`,
-    title: titleOf(idea.id),
-    kind: idea.kind,
-    minutes: idea.minutes,
-    bestPart: idea.bestPart,
-    source: 'example',
-  }));
 }
 
 /** 0 = trenutno doba dana, 1–2 = kasnije danas (bliže prvo), 3 = već prošlo. */
@@ -255,31 +211,33 @@ export function ideaDraft(idea: PlanIdea, occupied: readonly Timed[], nowMinutes
 }
 
 /**
- * Tipkani unos za danas: prepoznato vrijeme vrijedi samo ako nije u prošlosti (početak najranije
- * sada); inače — i bez vremena — prvi slobodni termin od sada. Prazan unos ili nema mjesta → `null`.
+ * Tipkani unos za danas ("Ponavljanje kemije 45 min poslijepodne", "Zubar u 16", "Trening 18-19"):
+ * prepoznato vrijeme vrijedi samo ako nije u prošlosti; inače prvi slobodni termin navedenog
+ * trajanja (ili trajanja raspona, ili 1 h) — od sada, a s dobom dana od početka tog doba (nikad prije
+ * sada). Prazan unos ili nema mjesta → `null`.
  */
 export function typedTodayDraft(
   text: string,
   occupied: readonly Timed[],
   nowMinutes: number,
 ): BlockDraft | null {
-  const entry = parseTypedEntry(text);
+  const entry = parsePlanEntry(text);
   if (!entry) return null;
   const from = todayPlanStart(nowMinutes);
   const start = entry.start === null ? null : parseClock(entry.start);
+  const parsedEnd = entry.end === null ? null : parseClock(entry.end);
+  const minutes =
+    start !== null && parsedEnd !== null && parsedEnd > start
+      ? parsedEnd - start
+      : (entry.minutes ?? TODAY_DEFAULT_MINUTES);
   if (start !== null && start >= from) {
-    const parsedEnd = entry.end === null ? null : parseClock(entry.end);
-    const end = parsedEnd ?? Math.min(start + TODAY_DEFAULT_MINUTES, LAST_END);
+    const end = parsedEnd ?? Math.min(start + minutes, LAST_END);
     if (end > start) return { title: entry.title, kind: 'task', start: clock(start), end: clock(end) };
   }
-  // Trajanje iz raspona se čuva i kad je raspon bio u prošlosti.
-  const rangeStart = entry.start === null ? null : parseClock(entry.start);
-  const rangeEnd = entry.end === null ? null : parseClock(entry.end);
-  const minutes =
-    rangeStart !== null && rangeEnd !== null && rangeEnd > rangeStart
-      ? rangeEnd - rangeStart
-      : TODAY_DEFAULT_MINUTES;
-  const slot = nextFreeSlotFrom(occupied, minutes, from);
+  const partFrom = entry.part === null ? from : Math.max(from, DAY_PART_START[entry.part]);
+  const slot =
+    nextFreeSlotFrom(occupied, minutes, partFrom) ??
+    (partFrom > from ? nextFreeSlotFrom(occupied, minutes, from) : null);
   return slot === null ? null : { title: entry.title, kind: 'task', ...slot };
 }
 

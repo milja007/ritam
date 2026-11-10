@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { ScheduleBlock } from '@/core/domain';
 import {
-  exampleIdeas,
   ideaDraft,
   isTodayPlanValid,
   occupiedSlots,
@@ -52,9 +51,9 @@ type TodayPlanProps = {
 type Item = { key: number; draft: BlockDraft };
 
 /**
- * Plan za danas (korak 17b): od sada prema naprijed. Konkretne ideje (vlastite + primjeri, s
- * trajanjem i dobom dana) i tipkanje dodaju blokove u prvi slobodni termin od sada; pregled s
- * uređivanjem; Potvrdi sprema sve odjednom.
+ * Plan za danas (korak 17b): od sada prema naprijed. Glavni unos je tipkanje (što + od–do ili
+ * trajanje, opcionalno doba dana); ispod su zapamćene ideje (ono što si već upisivao) i samo
+ * jedan redak s primjerima kako se piše. Pregled s uređivanjem; Potvrdi sprema sve odjednom.
  */
 export function TodayPlan({ date, nowMinutes, existing, onSaved, onClose }: TodayPlanProps) {
   const { t, i18n } = useTranslation();
@@ -76,9 +75,7 @@ export function TodayPlan({ date, nowMinutes, existing, onSaved, onClose }: Toda
   const drafts = items.map((item) => item.draft);
   const occupied = occupiedSlots(existing, drafts);
   const addedTitles = drafts.map((draft) => draft.title);
-  const examples = useMemo(() => exampleIdeas((id) => t(`todayPlan.idea.${id}`)), [t]);
   const own = rankIdeas(plan.own, nowMinutes, addedTitles);
-  const ideas = rankIdeas(examples, nowMinutes, [...addedTitles, ...plan.own.map((idea) => idea.title)]);
   const startLabel = formatClock(Math.min(todayPlanStart(nowMinutes), 23 * 60 + 59)) ?? '';
 
   function add(draft: BlockDraft | null) {
@@ -174,6 +171,28 @@ export function TodayPlan({ date, nowMinutes, existing, onSaved, onClose }: Toda
                     </View>
                   ) : (
                     <>
+                      <View style={styles.section}>
+                        <TextField
+                          label={t('todayPlan.typeLabel')}
+                          placeholder={t('todayPlan.typePlaceholder')}
+                          value={typed}
+                          onChangeText={setTyped}
+                          onSubmitEditing={addTyped}
+                          maxLength={200}
+                          returnKeyType="done"
+                          submitBehavior="submit"
+                        />
+                        <Button
+                          variant="secondary"
+                          label={t('todayPlan.add')}
+                          onPress={addTyped}
+                          disabled={typed.trim().length === 0}
+                        />
+                        <Text variant="caption" tone="textMuted">
+                          {t('todayPlan.examplesHint')}
+                        </Text>
+                      </View>
+
                       {visibleExisting.length > 0 ? (
                         <View style={styles.section}>
                           <Text variant="caption" tone="textMuted">
@@ -193,32 +212,6 @@ export function TodayPlan({ date, nowMinutes, existing, onSaved, onClose }: Toda
                           <View style={styles.chips}>{own.map(ideaChip)}</View>
                         </View>
                       ) : null}
-
-                      <View style={styles.section}>
-                        <Text variant="caption" tone="textMuted">
-                          {t('todayPlan.examples')}
-                        </Text>
-                        <View style={styles.chips}>{ideas.map(ideaChip)}</View>
-                      </View>
-
-                      <View style={styles.section}>
-                        <TextField
-                          label={t('todayPlan.typeLabel')}
-                          placeholder={t('todayPlan.typePlaceholder')}
-                          value={typed}
-                          onChangeText={setTyped}
-                          onSubmitEditing={addTyped}
-                          maxLength={200}
-                          returnKeyType="done"
-                          submitBehavior="submit"
-                        />
-                        <Button
-                          variant="secondary"
-                          label={t('todayPlan.add')}
-                          onPress={addTyped}
-                          disabled={typed.trim().length === 0}
-                        />
-                      </View>
 
                       {noRoom ? (
                         <Text tone="danger" accessibilityLiveRegion="polite">

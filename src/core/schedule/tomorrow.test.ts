@@ -7,8 +7,6 @@ import {
   occupiedSlots,
   parseTypedEntry,
   planStartMinutes,
-  QUICK_PICKS,
-  quickPickDraft,
   tomorrowInputs,
   tomorrowOf,
   typedDraft,
@@ -79,20 +77,6 @@ describe('nextFreeSlot', () => {
   });
 });
 
-describe('quickPickDraft', () => {
-  it('vrsta i trajanje iz brzog odabira, naziv iz UI-ja', () => {
-    const work = QUICK_PICKS.find((pick) => pick.id === 'work');
-    expect(work).toBeDefined();
-    if (!work) return;
-    expect(quickPickDraft(work, 'Posao', [], '06:30')).toEqual(draft('Posao', '07:00', '15:00', 'fixed'));
-  });
-  it('svi brzi odabiri imaju jedinstven id i trajanje u koracima od 15 min', () => {
-    const ids = new Set(QUICK_PICKS.map((pick) => pick.id));
-    expect(ids.size).toBe(QUICK_PICKS.length);
-    for (const pick of QUICK_PICKS) expect(pick.minutes % 15).toBe(0);
-  });
-});
-
 describe('parseTypedEntry', () => {
   it.each([
     ['Trening 18-19', { title: 'Trening', start: '18:00', end: '19:00' }],
@@ -143,6 +127,20 @@ describe('typedDraft', () => {
   });
   it('prazno → null', () => {
     expect(typedDraft(' ', [], '07:00')).toBeNull();
+  });
+  it('samo trajanje → sljedeći slobodni termin tog trajanja', () => {
+    expect(typedDraft('Ponavljanje kemije 45 min', [], '07:00')).toEqual(
+      draft('Ponavljanje kemije', '07:30', '08:15'),
+    );
+  });
+  it('početak + trajanje', () => {
+    expect(typedDraft('Trening u 18 1,5 h', [], '07:00')).toEqual(draft('Trening', '18:00', '19:30'));
+  });
+  it('doba dana → od početka tog doba, u prvu rupu', () => {
+    expect(typedDraft('Kemija 45 min poslijepodne', [slot('12:00', '13:00')], '07:00')).toEqual(
+      draft('Kemija', '13:00', '13:45'),
+    );
+    expect(typedDraft('Šetnja navečer', [], '07:00')).toEqual(draft('Šetnja', '17:00', '18:00'));
   });
 });
 

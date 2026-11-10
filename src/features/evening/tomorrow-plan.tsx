@@ -15,8 +15,6 @@ import {
   isTomorrowPlanValid,
   occupiedSlots,
   pickKey,
-  QUICK_PICKS,
-  quickPickDraft,
   typedDraft,
   type BlockDraft,
   type LearnedPick,
@@ -44,7 +42,7 @@ type TomorrowPlanProps = {
 type Item = { key: number; draft: BlockDraft };
 
 /**
- * "Što imaš sutra?": brzi odabiri i tipkanje dodaju blokove za sutra (termini se slažu iza
+ * "Što imaš sutra?": tipkanje i naučeni odabiri dodaju blokove za sutra (termini se slažu iza
  * zadnjeg bloka od buđenja), pregled s uređivanjem, Potvrdi sprema sve odjednom.
  */
 export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
@@ -65,10 +63,6 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   function add(draft: BlockDraft) {
     const key = nextKey.current++;
     setItems((current) => [...current, { key, draft }]);
-  }
-
-  function addPick(pick: (typeof QUICK_PICKS)[number]) {
-    add(quickPickDraft(pick, t(`evening.tomorrow.pick.${pick.id}`), occupied, plan.wakeTime));
   }
 
   /** Naučeni odabir dolazi u svom uobičajenom terminu (korisnik ga mijenja u editoru). */
@@ -182,22 +176,6 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                       ) : null}
 
                       <View style={styles.section}>
-                        <Text variant="caption" tone="textMuted">
-                          {t('evening.tomorrow.quickPicks')}
-                        </Text>
-                        <View style={styles.chips}>
-                          {QUICK_PICKS.map((pick) => (
-                            <Chip
-                              key={pick.id}
-                              label={t(`evening.tomorrow.pick.${pick.id}`)}
-                              hint={t('evening.tomorrow.pickHint')}
-                              onPress={() => addPick(pick)}
-                            />
-                          ))}
-                        </View>
-                      </View>
-
-                      <View style={styles.section}>
                         <TextField
                           label={t('evening.tomorrow.typeLabel')}
                           placeholder={t('evening.tomorrow.typePlaceholder')}
@@ -214,6 +192,9 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                           onPress={addTyped}
                           disabled={typed.trim().length === 0}
                         />
+                        <Text variant="caption" tone="textMuted">
+                          {t('todayPlan.examplesHint')}
+                        </Text>
                       </View>
 
                       <View style={styles.section}>

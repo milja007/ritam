@@ -3,13 +3,11 @@ import { describe, expect, it } from '@jest/globals';
 import type { BlockKind, BlockStatus } from '../domain';
 import {
   dayPartOf,
-  exampleIdeas,
   ideaDraft,
   isTodayPlanValid,
   needsTodayPlan,
   nextFreeSlotFrom,
   ownIdeas,
-  PLAN_IDEAS,
   rankIdeas,
   shouldAutoOpenTodayPlan,
   startsInPast,
@@ -36,7 +34,6 @@ const idea = (title: string, bestPart: PlanIdea['bestPart'], minutes = 30): Plan
   kind: 'task',
   minutes,
   bestPart,
-  source: 'own',
 });
 
 describe('needsTodayPlan / shouldAutoOpenTodayPlan', () => {
@@ -116,21 +113,6 @@ describe('dayPartOf', () => {
   });
 });
 
-describe('PLAN_IDEAS / exampleIdeas', () => {
-  it('svaka ideja ima trajanje i doba dana, ključevi su jedinstveni', () => {
-    const ids = PLAN_IDEAS.map((i) => i.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const i of PLAN_IDEAS) {
-      expect(i.minutes).toBeGreaterThanOrEqual(15);
-      expect(['morning', 'afternoon', 'evening']).toContain(i.bestPart);
-    }
-  });
-  it('nazivi dolaze iz prijevoda', () => {
-    const ideas = exampleIdeas((id) => `T:${id}`);
-    expect(ideas[0]).toMatchObject({ key: 'example:deepWork', title: 'T:deepWork', source: 'example' });
-  });
-});
-
 describe('ownIdeas', () => {
   const date = '2026-11-10';
   it('jednom upisano postaje ideja s trajanjem i dobom dana', () => {
@@ -142,7 +124,6 @@ describe('ownIdeas', () => {
         kind: 'task',
         minutes: 45,
         bestPart: 'afternoon',
-        source: 'own',
       },
     ]);
   });
@@ -217,6 +198,19 @@ describe('typedTodayDraft', () => {
   it('bez vremena → od sada, 1 h, iza zauzetog', () => {
     expect(typedTodayDraft('Mailovi', [slot('14:00', '14:30')], at(14, 10))).toEqual(
       draft('Mailovi', '14:30', '15:30'),
+    );
+  });
+  it('trajanje: od sada, ili od navedenog početka', () => {
+    expect(typedTodayDraft('Ponavljanje kemije 45 min', [], at(14, 2))).toEqual(
+      draft('Ponavljanje kemije', '14:05', '14:50'),
+    );
+    expect(typedTodayDraft('Trening u 18 90 min', [], at(14))).toEqual(draft('Trening', '18:00', '19:30'));
+  });
+  it('doba dana: od početka tog doba, nikad prije sada', () => {
+    expect(typedTodayDraft('Kemija 45 min navečer', [], at(14))).toEqual(draft('Kemija', '17:00', '17:45'));
+    expect(typedTodayDraft('Mailovi 30 min ujutro', [], at(14, 2))).toEqual(draft('Mailovi', '14:05', '14:35'));
+    expect(typedTodayDraft('Kemija 1h poslijepodne', [slot('14:00', '15:00')], at(13, 58))).toEqual(
+      draft('Kemija', '15:00', '16:00'),
     );
   });
   it('prazno ili bez mjesta → null', () => {
