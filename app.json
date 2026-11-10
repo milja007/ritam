@@ -7,8 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "ritam",
     "userInterfaceStyle": "automatic",
-    "ios": {},
+    "ios": {
+      "bundleIdentifier": "com.milja007.ritam"
+    },
     "android": {
+      "package": "com.milja007.ritam",
       "adaptiveIcon": {
         "backgroundColor": "#0B0B10",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

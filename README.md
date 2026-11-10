@@ -2,6 +2,23 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Ritam na iPhoneu (development build, besplatni Apple ID)
+
+Treba: Mac s Xcodeom ≥ 26.4 (licenca prihvaćena, Apple ID prijavljen u Xcode → Settings → Accounts), iPhone s uključenim Developer Modeom, spojen kabelom i otključan, na istoj Wi-Fi mreži kao Mac.
+
+```bash
+npm ci
+LANG=en_US.UTF-8 npx expo run:ios --device
+```
+
+`run:ios` generira `ios/` (CNG, nije u gitu), instalira podove, gradi i instalira app (pri prvom pokretanju odaberi svoj osobni tim). Ako CocoaPods padne na `UnicodeNormalize`, nedostaje `LANG=en_US.UTF-8`.
+
+Prvi put na iPhoneu: **Postavke → Općenito → VPN i upravljanje uređajem → Apple Development: … → Vjeruj**.
+
+Svakodnevno: `npx expo start --dev-client` na Macu, pa otvori Ritam na iPhoneu (promjene JS koda stižu bez novog builda; novi build samo kad se mijenjaju nativni paketi ili `app.json`).
+
+Besplatni profil vrijedi **7 dana** — nakon toga ponovi `npx expo run:ios --device`. EAS build / TestFlight (`eas.json`, profil `development`) tek uz plaćeni Apple Developer Program: `npx eas-cli login`, `eas device:create`, `eas build --profile development --platform ios`.
+
 ## Get started
 
 1. Install dependencies
