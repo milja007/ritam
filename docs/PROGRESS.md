@@ -2,6 +2,20 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 20:44 · Korak 17b — Plan za danas pri ulasku
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min.
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17b`. Čisto `src/core/schedule/today-plan.ts`: `needsTodayPlan(blocks)` (nema bloka osim sna), `todayPlanStart(nowMinutes)` (sljedećih 5 min), `nextFreeSlotFrom(occupied, minutes, from)` (iza blokova koji završavaju poslije sada, nikad u prošlosti, unutar dana; nema mjesta → `null`), `isTodayPlanValid(drafts, now)` (ništa ne počinje prije sada).
+2. Ideje: katalog konkretnih primjera (`PLAN_IDEAS`: naziv iz i18n, trajanje, najbolje doba dana jutro/poslijepodne/večer) + vlastite ideje iz onoga što si već jednom upisao (`ownIdeas(history)`: naziv, najčešće trajanje, doba dana najčešćeg početka) — bez nove tablice. `rankIdeas` stavlja ideje za trenutno doba dana prve, prošla doba zadnja. Bez generičkih "Škola".
+3. Tipkani unos za danas: prepoznato vrijeme vrijedi samo ako nije u prošlosti, inače sljedeći slobodni termin.
+4. Testovi za sve gore (zaokruživanje, kraj dana, preklapanja, prošla vremena, rangiranje, vlastite ideje).
+5. UI `TodayPlan` (full-screen, kao "Što imaš sutra?"): "Plan za danas · od HH:MM", ideje kao čipovi "Naziv · 45 min · poslijepodne", tipkanje, pregled s uređivanjem, Potvrdi sprema sve. Zajednički dijelovi s `TomorrowPlan` izdvojeni.
+6. Danas: kad je dan učitan, nema plana i nije prije 04:00 → plan se otvara sam (jednom po danu, ne preko drugih modala, uz pauzu za iOS); prazno stanje postaje kartica "Napravi plan za danas". i18n HR/EN.
+7. Provjere `tsc`, `lint`, `test`, `expo export`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 17b — automatski ulaz kad nema plana (6), od sada, prvi termin na sljedećih 5 min, vremena točna prema satu (1, 3), čisto u `core` s testovima (1–4), konkretne ideje s trajanjem i dobom dana (2), početni primjeri + vlastite (2). "Trenutno" i veliki raspored su 17c — ne radim. Tumačenja (vlastite ideje iz povijesti umjesto tablice; bez automatskog otvaranja prije 04:00) → pitanja.
+
 ## 2026-11-10 · Promjena koncepta (Borna) — Danas kao glavni ekran, planovi godina/mjesec/tjedan
 Borna je isprobao app na iPhoneu i dao smjer. Upisano u puni koncept (Claude Docs: nove sekcije "Danas — glavni ekran" i "Planovi: godina, mjesec, tjedan", tablica ekrana, questovi, zabrane, odluke), u `docs/CONCEPT.md` i u `BUILD_PLAN.md`. Kod nije mijenjan.
 
