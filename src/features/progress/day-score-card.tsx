@@ -20,8 +20,10 @@ const TREND_TONE: Record<Trend, NonNullable<TextProps['tone']>> = {
 };
 
 /**
- * Dnevni rezultat 0–100 na tabu Danas (korak 16b): broj, strelica trenda naspram jučer, isti dan
- * prošli tjedan, prosjek 7 dana naspram 7 prije i osobni rekord. Dok se učitava ili kod greške — ništa.
+ * Dnevni rezultat 0–100 na tabu Danas (korak 16b): broj, strelica trenda naspram dana prije, isti dan
+ * prošli tjedan, prosjek 7 dana naspram 7 prije i osobni rekord. Do večernjeg upita velik je
+ * jučerašnji konačni rezultat, a današnji "u tijeku" manji ispod (korak 16c, odluka P43).
+ * Dok se učitava ili kod greške — ništa.
  */
 export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
   const { t, i18n } = useTranslation();
@@ -33,7 +35,8 @@ export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
   const signed = (comparison: ScoreComparison) =>
     comparison.diff > 0 ? `+${number(comparison.diff)}` : comparison.diff < 0 ? `−${number(-comparison.diff)}` : '±0';
 
-  const { today, vsYesterday, vsLastWeek, last7, prev7, last7Trend, records, isDayRecord } = state.overview;
+  const { featured, featuresYesterday, todayInProgress } = state.headline;
+  const { today, vsYesterday, vsLastWeek, last7, prev7, last7Trend, records, isDayRecord } = featured;
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 
   if (today === null) {
@@ -50,9 +53,11 @@ export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
   }
 
   const trend: Trend = vsYesterday?.trend ?? 'first';
-  const trendText = t(`score.trend.${trend}`);
+  const trendText = featuresYesterday ? t(`score.trendPrev.${trend}`) : t(`score.trend.${trend}`);
   const details = [
-    vsYesterday ? t('score.yesterday', { score: number(vsYesterday.previous) }) : null,
+    vsYesterday
+      ? t(featuresYesterday ? 'score.dayBefore' : 'score.yesterday', { score: number(vsYesterday.previous) })
+      : null,
     vsLastWeek ? t('score.lastWeek', { score: number(vsLastWeek.previous) }) : null,
     last7 !== null
       ? prev7 !== null
@@ -66,13 +71,25 @@ export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
       ? t('score.record', { score: number(records.day.score) })
       : null;
 
+  const todayLine = featuresYesterday
+    ? todayInProgress
+      ? t('score.todayProgress', { score: number(todayInProgress.score) })
+      : t('score.todayEmpty')
+    : null;
+
   return (
     <View
       style={cardStyle}
       accessible
       accessibilityLabel={[
-        t('score.a11y', { score: today.score, trend: trendText }),
-        today.final ? null : t('score.inProgress'),
+        featuresYesterday
+          ? t('score.a11yYesterday', {
+              score: today.score,
+              trend: trendText,
+              today: todayInProgress ? todayInProgress.score : '—',
+            })
+          : t('score.a11y', { score: today.score, trend: trendText }),
+        featuresYesterday || today.final ? null : t('score.inProgress'),
         ...details,
         record,
       ]
@@ -83,7 +100,7 @@ export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
           {t('score.title')}
         </Text>
         <Text variant="caption" tone="textMuted">
-          {today.final ? t('score.final') : t('score.inProgress')}
+          {featuresYesterday ? t('score.yesterdayFinal') : today.final ? t('score.final') : t('score.inProgress')}
         </Text>
       </View>
       <View style={styles.scoreRow}>
@@ -101,6 +118,14 @@ export function DayScoreCard({ checkinDay }: { checkinDay: string }) {
           </Text>
         </View>
       </View>
+      {todayLine ? (
+        <View style={[styles.todayRow, { borderColor: colors.border }]}>
+          <Text variant="bodyStrong">{todayLine}</Text>
+          <Text variant="caption" tone="textMuted">
+            {t('score.inProgress')}
+          </Text>
+        </View>
+      ) : null}
       {details.length > 0 ? (
         <View style={styles.details}>
           {details.map((line) => (
@@ -136,4 +161,9 @@ const styles = StyleSheet.create({
   outOf: { marginBottom: spacing.xs },
   trend: { flex: 1, alignItems: 'flex-end' },
   details: { gap: spacing.xs },
+  todayRow: {
+    gap: spacing.xxs,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
 });

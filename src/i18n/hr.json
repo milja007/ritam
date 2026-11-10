@@ -28,7 +28,10 @@
       "weekendTime": "u {{time}}, vikendom {{weekend}}"
     },
     "saveError": "Promjena se nije spremila. Pokušaj ponovo.",
-    "progress": "Napredak"
+    "progress": "Napredak",
+    "score": {
+      "title": "Rezultat dana"
+    }
   },
   "database": {
     "preparing": "Pripremam podatke…",
@@ -81,6 +84,10 @@
       "add": "+ Dodaj zabranu",
       "remove": "Ukloni",
       "hint": "Zasad vrijede svaki dan, cijeli dan — detalje ćeš moći urediti kasnije."
+    },
+    "score": {
+      "title": "Što prati tvoj rezultat?",
+      "subtitle": "Rezultat dana 0–100 mjeri napredak u onome što odabereš. Kreni s jednim područjem, kasnije možeš dodati ostala u Profilu."
     }
   },
   "notifications": {
@@ -297,8 +304,6 @@
     }
   },
   "progress": {
-    "level": "Razina {{level}}",
-    "toNext": "{{xp}} / {{total}} XP do razine {{next}}",
     "todayXp": "+{{xp}} XP danas",
     "totalXp": "{{xp}} XP ukupno",
     "loadError": "Napredak se nije učitao.",
@@ -313,7 +318,9 @@
       "hintDone": "Današnji upit je ubrojen u niz.",
       "hintKeep": "Ispuni večernji upit i niz raste.",
       "hintStart": "Večernji upit danas pokreće novi niz."
-    }
+    },
+    "toNextXp": "{{xp}} / {{total}} XP do sljedećeg praga",
+    "xpTitle": "Iskustvo (XP)"
   },
   "diagnosis": {
     "title": "Dijagnoza dana",
@@ -400,9 +407,14 @@
         "eveningEarlier": "Najzahtjevniji večernji blok sutra probaj pomaknuti ranije u dan.",
         "earlierBed": "Večeras probaj otići u krevet 15 minuta ranije.",
         "fewerMoves": "Sutra planiraj samo ono za što stvarno imaš vremena — manje premještanja.",
-        "keepRhythm": "Zadrži isti ritam i sutra — bez novih promjena."
+        "keepRhythm": "Zadrži isti ritam i sutra — bez novih promjena.",
+        "ruleSmallStep": "Za „{{rule}}”: smanji priliku — makni okidač iz dosega barem za sutra (npr. mobitel izvan sobe).",
+        "planBuffer": "Sutra ostavi 30 minuta praznog prostora između blokova — za ono što iskrsne.",
+        "eveningPrep": "Večernji blok pripremi već ujutro (stvari, mjesto, prvi korak), da navečer samo kreneš.",
+        "screensOff": "Ekrane ugasi 30 minuta prije kreveta i stavi mobitel na punjač izvan kreveta."
       }
-    }
+    },
+    "repeated": "Ponavlja se {{count}}. dan zaredom — ideja i dalje vrijedi."
   },
   "score": {
     "title": "Rezultat dana",
@@ -424,6 +436,28 @@
     "record": "Rekord dana: {{score}}",
     "recordWeek": "Najbolji tjedan: {{avg}}",
     "loadError": "Rezultat dana se nije učitao.",
-    "a11y": "Rezultat dana {{score}} od 100. {{trend}}."
+    "a11y": "Rezultat dana {{score}} od 100. {{trend}}.",
+    "yesterdayFinal": "Jučer · konačan",
+    "todayProgress": "Danas u tijeku: {{score}}",
+    "todayEmpty": "Danas još nema rezultata.",
+    "a11yYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}. Danas u tijeku: {{today}}.",
+    "dayBefore": "Prekjučer: {{score}}",
+    "trendPrev": {
+      "better": "Bolje nego prekjučer",
+      "same": "Slično kao prekjučer",
+      "worse": "Slabije nego prekjučer",
+      "first": "Prvi konačni rezultat"
+    }
+  },
+  "scoreAreas": {
+    "plan": "Plan dana",
+    "planHint": "Koliko si odradio od isplaniranog.",
+    "rules": "Zabrane",
+    "rulesHint": "Koliko si poštovao svoje zabrane.",
+    "sleep": "San",
+    "sleepHint": "Jesi li otišao spavati na vrijeme.",
+    "weight": "{{weight}} % rezultata",
+    "lastOne": "Barem jedno područje ostaje uključeno.",
+    "a11y": "{{area}}, {{weight}} % rezultata"
   }
 }

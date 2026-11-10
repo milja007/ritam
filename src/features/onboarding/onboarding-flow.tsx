@@ -20,16 +20,17 @@ import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 
-import { LanguageStep, NotificationsStep, RulesStep, SleepStep } from './steps';
+import { LanguageStep, NotificationsStep, RulesStep, ScoreStep, SleepStep } from './steps';
 
 const STEP_COMPONENTS = {
   language: LanguageStep,
   sleep: SleepStep,
   notifications: NotificationsStep,
   rules: RulesStep,
+  score: ScoreStep,
 } satisfies Record<OnboardingStep, unknown>;
 
-/** Prvo pokretanje: jezik → buđenje i san → obavijesti → 0–3 zabrane; na kraju sprema sve odjednom. */
+/** Prvo pokretanje: jezik → buđenje i san → obavijesti → 0–3 zabrane → područja rezultata; na kraju sprema sve odjednom. */
 export function OnboardingFlow({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<OnboardingDraft>(() => createDefaultDraft('system'));

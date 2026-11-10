@@ -6,6 +6,7 @@ import {
   dayStats,
   diagnosisSuggestion,
   LOCAL_DAY_DIAGNOSIS_VERSION,
+  parseDayDiagnosis,
   type DayDiagnosis,
   type DayStats,
 } from '@/core/diagnosis';
@@ -16,6 +17,7 @@ import {
   ruleLogSchema,
   ruleSchema,
   scheduleBlockSchema,
+  selectedScoreAreas,
   settingsSchema,
   xpEventSchema,
   type LocalDate,
@@ -156,7 +158,13 @@ export function generateDayReport(
       eveningRows.some((row) => row.date === yesterdayDate && isEveningCheckinComplete(row));
     const yesterday = yesterdayDone ? readDayStats(tx, userId, yesterdayDate, eveningRows) : null;
 
-    const diagnosis = buildDayDiagnosis(today, yesterday);
+    // Jučerašnja spremljena dijagnoza: ponovljena ideja ostaje i dodaje se nova (odluka P38).
+    const previousRow =
+      yesterdayDate === null ? undefined : tx.select().from(reports).where(reportOf(userId, 'day', yesterdayDate)).get();
+    const previous = previousRow ? parseDayDiagnosis(previousRow.sections) : null;
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const areas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const diagnosis = buildDayDiagnosis(today, yesterday, { previous, areas });
     const suggestion = diagnosisSuggestion(diagnosis);
     const existing = tx.select().from(reports).where(reportOf(userId, 'day', date)).get();
     const report = reportSchema.parse({

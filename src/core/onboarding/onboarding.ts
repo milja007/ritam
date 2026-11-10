@@ -3,12 +3,22 @@
  * validacija po koraku i pretvorba u ulaz za `settings` i `rules`.
  * Čista logika: bez React importa.
  */
-import { ruleSchema, settingsSchema, type Rule, type RuleWeight, type Settings } from '../domain';
+import {
+  DEFAULT_SCORE_AREAS,
+  ruleSchema,
+  settingsSchema,
+  type Rule,
+  type RuleWeight,
+  type Settings,
+} from '../domain';
 import type { LanguagePreference } from '../i18n/language';
 import { formatClock, MINUTES_PER_DAY, parseClock } from '../time/clock';
 
-/** Redoslijed koraka (koncept: jezik → buđenje i san → obavijesti → 0–3 zabrane). */
-export const ONBOARDING_STEPS = ['language', 'sleep', 'notifications', 'rules'] as const;
+/**
+ * Redoslijed koraka (koncept: jezik → buđenje i san → obavijesti → 0–3 zabrane), na kraju izbor
+ * područja dnevnog rezultata (odluka P39).
+ */
+export const ONBOARDING_STEPS = ['language', 'sleep', 'notifications', 'rules', 'score'] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 /** Zabrane su neobavezne u onboardingu (Bornova odluka: 0–3). */
@@ -40,6 +50,10 @@ export type OnboardingDraft = {
   morningNotifTime: string;
   eveningNotifTime: string;
   rules: RuleDraft[];
+  /** Područja dnevnog rezultata (zadano samo plan). */
+  scorePlan: boolean;
+  scoreRules: boolean;
+  scoreSleep: boolean;
 };
 
 export type SettingsInput = Omit<Settings, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
@@ -91,7 +105,15 @@ export function createDefaultDraft(language: LanguagePreference): OnboardingDraf
     morningNotifTime: '07:00',
     eveningNotifTime: '21:15',
   };
-  return { language, wakeTime, weekendWakeTime: wakeTime, sleepHours, ...times, rules: [] };
+  return {
+    language,
+    wakeTime,
+    weekendWakeTime: wakeTime,
+    sleepHours,
+    ...times,
+    rules: [],
+    ...DEFAULT_SCORE_AREAS,
+  };
 }
 
 export function emptyRule(): RuleDraft {
@@ -124,6 +146,9 @@ export function toSettingsInput(draft: OnboardingDraft): SettingsInput {
     windDownNotifEnabled: true,
     theme: 'system',
     googleCalendarConnected: false,
+    scorePlan: draft.scorePlan,
+    scoreRules: draft.scoreRules,
+    scoreSleep: draft.scoreSleep,
   };
 }
 
@@ -159,6 +184,8 @@ export function isStepValid(step: OnboardingStep, draft: OnboardingDraft): boole
         draft.rules.length <= MAX_RULES &&
         draft.rules.every(isRuleDraftValid)
       );
+    case 'score':
+      return draft.scorePlan || draft.scoreRules || draft.scoreSleep;
   }
 }
 

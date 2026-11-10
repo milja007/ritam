@@ -199,14 +199,19 @@ describe('buildDayDiagnosis', () => {
     });
     const rows = buildDayDiagnosis(today, yesterday).progress;
     expect(rows).toEqual([
-      // rezultat: plan 50 % i san 60 min kasnije (2/3) → 58; jučer sve → 100
-      { metric: 'score', value: 58, previous: 100, change: 'down', good: false },
+      // rezultat (sva područja, 50/20): plan 50 % i san 60 min kasnije (2/3) → 38,3 / 70 → 55; jučer → 100
+      { metric: 'score', value: 55, previous: 100, change: 'down', good: false },
       { metric: 'plan', value: 1, total: 2, previous: 3, previousTotal: 3, change: 'down', good: false },
       { metric: 'sleep', value: 420, previous: 480, change: 'down', good: null },
       { metric: 'xp', value: 30, previous: 30, change: 'same', good: null },
       { metric: 'rating', value: 2, previous: 4, change: 'down', good: false },
       { metric: 'streak', value: 2, previous: null, change: null, good: null },
     ]);
+    // Samo plan odabran → rezultat je udio plana.
+    expect(buildDayDiagnosis(today, yesterday, { areas: ['plan'] }).progress[0]).toMatchObject({
+      metric: 'score',
+      value: 50,
+    });
   });
 
   it('bez jučer: nema usporedbe', () => {
@@ -260,6 +265,44 @@ describe('buildDayDiagnosis', () => {
       blocks: [block('a', 'moved', '09:00'), block('b', 'moved', '14:00'), block('c', 'done'), block('d', 'done'), block('e', 'done')],
     });
     expect(buildDayDiagnosis(moves, null).ideas[0]?.key).toBe('ideas.fewerMoves');
+  });
+
+  it('ponovljena ideja ostaje (s brojem dana) i dodaje se nova (odluka P38)', () => {
+    const rule = { rules: [{ id: 'r', title: 'R', weight: 1 as const }] };
+    const brokenWithLowPlan = stats({
+      ...rule,
+      ruleLogs: [{ ruleId: 'r', kept: false, trigger: null }],
+      blocks: [block('a', 'skipped', '09:00'), block('b', 'skipped', '14:00')],
+    });
+    const day1 = buildDayDiagnosis(brokenWithLowPlan, null);
+    expect(day1.ideas).toEqual([{ key: 'ideas.ruleNote', params: { rule: 'R' } }]);
+
+    // Isti problem drugi dan → ista ideja ostaje + sljedeći problem dana kao nova ideja.
+    const day2 = buildDayDiagnosis(brokenWithLowPlan, null, { previous: day1 });
+    expect(day2.ideas).toEqual([
+      { key: 'ideas.ruleNote', params: { rule: 'R', repeatedDays: 2 } },
+      { key: 'ideas.smallerPlan' },
+    ]);
+    expect(diagnosisSuggestion(day2)).toBe('ideas.ruleNote');
+
+    // Treći dan, samo zabrana → ista ideja (3. dan) + drugi pristup istom problemu.
+    const onlyRule = stats({ ...rule, ruleLogs: [{ ruleId: 'r', kept: false, trigger: null }] });
+    const day3 = buildDayDiagnosis(onlyRule, null, { previous: day2 });
+    expect(day3.ideas).toEqual([
+      { key: 'ideas.ruleNote', params: { rule: 'R', repeatedDays: 3 } },
+      { key: 'ideas.ruleSmallStep', params: { rule: 'R' } },
+    ]);
+  });
+
+  it('bez ponavljanja: druga ideja jučer, ili "zadrži ritam" → samo jedna ideja', () => {
+    const tired = stats({ morning: { sleepStart: '02:00', wakeTime: '07:00' } });
+    const lowPlan = stats({ blocks: [block('a', 'skipped', '09:00'), block('b', 'skipped', '14:00')] });
+    const yesterday = buildDayDiagnosis(lowPlan, null);
+    expect(buildDayDiagnosis(tired, null, { previous: yesterday }).ideas).toEqual([{ key: 'ideas.earlierBed' }]);
+
+    const calm = stats({ blocks: [block('a', 'done')] });
+    const calmYesterday = buildDayDiagnosis(calm, null);
+    expect(buildDayDiagnosis(calm, null, { previous: calmYesterday }).ideas).toEqual([{ key: 'ideas.keepRhythm' }]);
   });
 
   it('ocjena se ne slaže s planom → primijećeno', () => {

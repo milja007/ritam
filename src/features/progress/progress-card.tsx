@@ -34,24 +34,21 @@ export function ProgressCard({ today, checkinDay }: { today: string; checkinDay:
 
   const { totalXp, todayXp, level, streak } = progress.summary;
   const number = (value: number) => value.toLocaleString(i18n.language);
-  const levelLabel = t('progress.level', { level: level.level });
-  const valueText = t('progress.toNext', {
-    xp: number(level.xpIntoLevel),
-    total: number(level.xpForNext),
-    next: level.level + 1,
-  });
+  // Bez broja razine dok ne dođu otključavanja (odluka P35, korak 32): samo XP.
+  const xpTitle = t('progress.xpTitle');
+  const valueText = t('progress.toNextXp', { xp: number(level.xpIntoLevel), total: number(level.xpForNext) });
 
   return (
     <View style={cardStyle}>
       <View style={styles.row}>
-        <Text variant="heading">{levelLabel}</Text>
+        <Text variant="heading">{xpTitle}</Text>
         <Text variant="bodyStrong" tone="accent">
           {t('progress.totalXp', { xp: number(totalXp) })}
         </Text>
       </View>
       <ProgressBar
         fraction={level.fraction}
-        accessibilityLabel={levelLabel}
+        accessibilityLabel={xpTitle}
         valueText={valueText}
         height={10}
       />

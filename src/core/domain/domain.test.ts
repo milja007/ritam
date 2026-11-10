@@ -10,7 +10,9 @@ import {
   ruleLogSchema,
   ruleSchema,
   scheduleBlockSchema,
+  selectedScoreAreas,
   settingsSchema,
+  DEFAULT_SCORE_AREAS,
   timestampSchema,
   xpEventSchema,
 } from './index';
@@ -37,6 +39,9 @@ const valid = {
     windDownNotifEnabled: true,
     theme: 'system',
     googleCalendarConnected: false,
+    scorePlan: true,
+    scoreRules: false,
+    scoreSleep: true,
   },
   block: {
     ...base,
@@ -157,8 +162,17 @@ describe('settings', () => {
     ['negative wind-down', { windDownMinutes: -5 }],
     ['unknown theme', { theme: 'blue' }],
     ['missing calendar flag', { googleCalendarConnected: undefined }],
+    ['no score area', { scorePlan: false, scoreRules: false, scoreSleep: false }],
+    ['missing score area flag', { scoreRules: undefined }],
   ])('rejects %s', (_name, patch) => {
     expect(settingsSchema.safeParse({ ...valid.settings, ...patch }).success).toBe(false);
+  });
+});
+
+describe('selectedScoreAreas', () => {
+  it('vraća uključena područja redom plan, zabrane, san', () => {
+    expect(selectedScoreAreas({ scorePlan: true, scoreRules: false, scoreSleep: true })).toEqual(['plan', 'sleep']);
+    expect(selectedScoreAreas(DEFAULT_SCORE_AREAS)).toEqual(['plan']);
   });
 });
 
