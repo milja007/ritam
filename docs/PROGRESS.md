@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 14:43 · Korak 17 — Supabase shema
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17`; bez novih npm ovisnosti (Supabase CLI kroz `npx supabase`). `supabase init` → `supabase/config.toml` (project_id `ritam`, auth samo email, ostalo zadano).
+2. Migracija `supabase/migrations/<ts>_init.sql` za sve tablice koje app danas ima: `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`, `reports` + `llm_calls` (koncept; treba ga korak 20). Stupci 1:1 s lokalnom shemom (snake_case): `id uuid`, `user_id uuid` → `auth.users` (default `auth.uid()`, brisanje korisnika briše podatke), `timestamptz`, `date`, sati `text` s CHECK `HH:MM`, JSON → `jsonb`, vrijednosti iz domene kao CHECK (lakše proširiti od enum tipova). Isti jedinstveni indeksi kao lokalno (settings po korisniku, checkin po danu i vrsti, rule_log po zabrani i danu, report po razdoblju).
+3. Strani ključevi kao lokalno (`checkin_items → checkins` cascade, `rule_logs → rules` cascade, `rule_logs.checkin_id` set null) i **složeni s `user_id`** da redak ne može pokazivati na tuđi checkin/zabranu. Polimorfni `ref_id`/`source_id`/`task_id`/`moved_block_id` bez FK (tablica `tasks` dolazi u fazi 2).
+4. RLS na svim tablicama: vlasnik (`(select auth.uid()) = user_id`) za select/insert/update/delete, samo uloga `authenticated`; `anon` bez pristupa. `llm_calls`: korisnik samo čita svoje, piše Edge Function (service role). `updated_at` postavlja klijent (sync: zadnji `updatedAt` pobjeđuje — korak 19).
+5. Lokalna provjera bez Dockera: skripta `scripts/supabase-local-test.sh` digne privremeni Postgres 16 (initdb), napravi minimalni `auth` stub (`auth.users`, `auth.uid()` iz JWT claima, uloge anon/authenticated/service_role), primijeni migracije i pokrene `supabase/tests/schema.sql` (izolacija dva korisnika, anon ništa, CHECK-ovi, jedinstveni indeksi, složeni FK). `npm run test:supabase`.
+6. Jest test pariteta: svaki stupac lokalne Drizzle sheme postoji u Supabase migraciji (čuvar da sljedeće lokalne migracije ne zaborave Supabase).
+7. Tek kad lokalno prođe: primijeni migraciju na remote `ritam` (MCP `apply_migration`), provjeri `list_tables` i sigurnosne savjete (`get_advisors`). `.env.example` s `EXPO_PUBLIC_SUPABASE_URL/KEY` (bez vrijednosti ključa) i `.env` u `.gitignore`.
+8. Provjere `tsc`, `lint`, `test`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = SQL za sve tablice (2), RLS vlasnik (4), `config.toml` (1), na remote tek kad prođe lokalno (5 → 7). "Sve tablice" tumačim kao tablice koje app koristi + `llm_calls` (koraci 20–22 ga trebaju odmah); `tasks`, `disruptions`, `quests`, `trackers`, `tracker_entries`, `badges` dobivaju vlastite migracije sa svojim značajkama (faze 2–3) — da shema ne nagađa polja prije odluka. Klijent, auth i sync su koraci 18–19 (ovdje ništa u appu). Tombstoni za brisanje (sync) — odluka koraka 19. Lokalno `supabase start` traži Docker koji sandbox nema, pa koristim pravi Postgres sa stubom `auth`; razlika zapisana u napomenama.
+
 ## 2026-11-10 12:43 · Korak 16b — Napredak: dnevni rezultat
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-16b`; bez novih ovisnosti i bez migracije (rezultat se izvodi iz postojećih tablica, ne sprema se).
