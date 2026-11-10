@@ -482,7 +482,13 @@
         "screensOff": "Ekrane ugasi 30 minuta prije kreveta i stavi mobitel na punjač izvan kreveta."
       }
     },
-    "repeated": "Ponavlja se {{count}}. dan zaredom — ideja i dalje vrijedi."
+    "repeated": "Ponavlja se {{count}}. dan zaredom — ideja i dalje vrijedi.",
+    "ready": {
+      "overline": "Dan je zaokružen",
+      "title": "Dijagnoza dana je spremna",
+      "body": "Sve aktivnosti imaju ishod. Pogledaj što je išlo, što nije i jednu ideju za sutra.",
+      "open": "Pokupi dijagnozu"
+    }
   },
   "score": {
     "title": "Rezultat dana",
@@ -562,5 +568,22 @@
     "cardAction": "Napravi plan za danas",
     "examplesHint": "Primjer kako se piše: „Ponavljanje kemije 45 min poslijepodne“ · „Zubar u 16“ · „Trening 18–19“",
     "ownIdeas": "Tvoje ideje"
+  },
+  "giveUp": {
+    "action": "Odustajem od svega",
+    "overline": "Zatvaranje dana",
+    "title": "U redu je stati.",
+    "body": "Neki dani jednostavno ne idu. Zatvorit ćemo ostatak dana i odmah krenuti na sutra — bez osude.",
+    "factRemaining_one": "· {{count}} preostala aktivnost bit će neodrađena, bez XP-a.",
+    "factRemaining_few": "· {{count}} preostale aktivnosti bit će neodrađene, bez XP-a.",
+    "factRemaining_other": "· {{count}} preostalih aktivnosti bit će neodrađeno, bez XP-a.",
+    "factStreak": "· Streak ostaje — ne gubiš niz.",
+    "factTomorrow": "· Zatim odmah slažeš plan za sutra.",
+    "noteLabel": "Što se dogodilo? (neobavezno)",
+    "notePlaceholder": "Npr. razbolio sam se, iskrsla je obaveza, nisam imao snage…",
+    "noteHint": "Zapis ide u dijagnozu dana, da sutrašnji plan uzme u obzir što se dogodilo.",
+    "confirm": "Zatvori dan i planiraj sutra",
+    "cancel": "Ipak nastavljam",
+    "saveError": "Spremanje nije uspjelo. Pokušaj ponovo."
   }
 }

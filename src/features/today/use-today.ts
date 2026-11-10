@@ -14,6 +14,7 @@ import { getDb } from '@/db/open';
 import {
   createBlock,
   deleteBlock,
+  giveUpDay,
   listBlocksForDate,
   setBlockNote,
   setBlockStatus,
@@ -121,5 +122,14 @@ export function useDayBlocks(date: string) {
     [reload],
   );
 
-  return { status, blocks, reload, add, edit, remove, setStatus, setNote };
+  /** Odustajem od svega (17d): neriješeno → neodrađeno bez XP-a, bilješka u večernji checkin. */
+  const giveUp = useCallback(
+    async (note: string) => {
+      giveUpDay(getDb(), LOCAL_USER_ID, date, note);
+      changed(); // statusi, streak, podsjetnici
+    },
+    [date, changed],
+  );
+
+  return { status, blocks, reload, add, edit, remove, setStatus, setNote, giveUp };
 }

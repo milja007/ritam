@@ -6,19 +6,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { BlockStatus, ScheduleBlock } from '@/core/domain';
 import {
   blockPhase,
+  canGiveUp,
   daySchedule,
   draftFromBlock,
+  giveUpBlocks,
   isCancelled,
   needsTodayPlan,
   newBlockDraft,
   reportedStatus,
   secondsOfDay,
   shouldAutoOpenTodayPlan,
+  shouldOfferDiagnosis,
   tomorrowOf,
   type BlockDraft,
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
-import { DiagnosisModal } from '@/features/diagnosis';
+import { DiagnosisModal, DiagnosisReadyCard, useDiagnosisPickup } from '@/features/diagnosis';
 import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
 import { MorningBrief, MorningCard, useMorningCheckin } from '@/features/morning';
 import {
@@ -40,6 +43,7 @@ import { BlockCard } from './block-card';
 import { BlockEditor } from './block-editor';
 import { BlockSheet } from './block-sheet';
 import { formatDay } from './format-day';
+import { GiveUp } from './give-up';
 import { NowCard } from './now-card';
 import { TodayPlan } from './today-plan';
 import { useLiveClock } from './use-live-clock';
@@ -84,10 +88,16 @@ export function TodayScreen() {
     consumeMorningRequest();
   }
 
-  // "Što imaš sutra?" = dan nakon dana upita (prije 04:00 je to današnji dan).
+  // "Što imaš sutra?" = dan nakon dana upita (prije 04:00 je to današnji dan); nakon Odustajem
+  // dan nakon današnjeg timelinea.
   const tomorrowDate = tomorrowOf(now.eveningDate);
-  const [tomorrowOpen, setTomorrowOpen] = useState(false);
-  const [diagnosisOpen, setDiagnosisOpen] = useState(false);
+  const [tomorrowFor, setTomorrowFor] = useState<string | null>(null);
+  const tomorrowOpen = tomorrowFor !== null;
+  // Dijagnoza: s večernje kartice (dan upita) ili pokupljena na Dan (današnji dan).
+  const [diagnosisFor, setDiagnosisFor] = useState<string | null>(null);
+  const diagnosisOpen = diagnosisFor !== null;
+  const pickup = useDiagnosisPickup(now.date);
+  const [giveUpOpen, setGiveUpOpen] = useState(false);
 
   function closeEvening() {
     setEveningOpen(false);
@@ -96,7 +106,21 @@ export function TodayScreen() {
 
   function planTomorrow() {
     closeEvening();
-    setTimeout(() => setTomorrowOpen(true), MODAL_SWAP_DELAY_MS);
+    setTimeout(() => setTomorrowFor(tomorrowDate), MODAL_SWAP_DELAY_MS);
+  }
+
+  /** Odustajem od svega → zatvori dan, pa odmah plan za sutra (17d). */
+  async function confirmGiveUp(note: string) {
+    await day.giveUp(note);
+    evening.reload();
+    setGiveUpOpen(false);
+    const next = tomorrowOf(now.date);
+    if (next !== null) setTimeout(() => setTomorrowFor(next), MODAL_SWAP_DELAY_MS);
+  }
+
+  function openPickedDiagnosis() {
+    if (pickup.pickUp()) setDiagnosisFor(now.date);
+    else setActionFailed(true);
   }
 
   // Živi sat (1 s) za "Trenutno" i faze blokova; dan i upiti idu po `now` (30 s).
@@ -140,6 +164,7 @@ export function TodayScreen() {
     showMorning ||
     tomorrowOpen ||
     diagnosisOpen ||
+    giveUpOpen ||
     activeEditing !== null ||
     sheetBlock !== null;
   const autoOpenPlan =
@@ -228,6 +253,10 @@ export function TodayScreen() {
             />
           ) : null}
 
+          {day.status === 'ready' && pickup.seen === false && shouldOfferDiagnosis(day.blocks, false) ? (
+            <DiagnosisReadyCard onOpen={openPickedDiagnosis} />
+          ) : null}
+
           <PermissionCard />
 
           {morning.status === 'ready' && morning.saved === null ? (
@@ -297,6 +326,10 @@ export function TodayScreen() {
             <Button variant="secondary" label={t('today.addBlock')} onPress={openAdd} />
           ) : null}
 
+          {day.status === 'ready' && !needsPlan && canGiveUp(day.blocks) ? (
+            <Button variant="ghost" label={t('giveUp.action')} onPress={() => setGiveUpOpen(true)} />
+          ) : null}
+
           <XpStreakBar today={now.date} checkinDay={now.eveningDate} />
 
           <DayScoreCard checkinDay={now.eveningDate} />
@@ -307,8 +340,11 @@ export function TodayScreen() {
               forYesterday={now.eveningDate !== now.date}
               disabled={!eveningReady}
               onOpen={() => setEveningOpen(true)}
-              onPlanTomorrow={() => setTomorrowOpen(true)}
-              onOpenDiagnosis={() => setDiagnosisOpen(true)}
+              onPlanTomorrow={() => setTomorrowFor(tomorrowDate)}
+              onOpenDiagnosis={() => {
+                if (now.eveningDate === now.date) pickup.markSeen();
+                setDiagnosisFor(now.eveningDate);
+              }}
             />
           ) : null}
         </ScrollView>
@@ -361,6 +397,8 @@ export function TodayScreen() {
           onSave={(draft) => {
             const result = evening.save(draft);
             day.reload(); // statusi blokova (i premješteni blokovi) su se promijenili
+            // Dijagnoza se prikaže na kraju upita — time je pokupljena (17d).
+            if (result.diagnosis !== null && draft.date === now.date) pickup.markSeen();
             return result;
           }}
           onClose={closeEvening}
@@ -368,11 +406,19 @@ export function TodayScreen() {
         />
       ) : null}
 
-      {diagnosisOpen ? (
+      {diagnosisFor !== null ? (
         <DiagnosisModal
-          date={now.eveningDate}
-          dayLabel={formatDay(now.eveningDate, i18n.language)}
-          onClose={() => setDiagnosisOpen(false)}
+          date={diagnosisFor}
+          dayLabel={formatDay(diagnosisFor, i18n.language)}
+          onClose={() => setDiagnosisFor(null)}
+        />
+      ) : null}
+
+      {giveUpOpen ? (
+        <GiveUp
+          remaining={giveUpBlocks(day.blocks).length}
+          onConfirm={confirmGiveUp}
+          onClose={() => setGiveUpOpen(false)}
         />
       ) : null}
 
@@ -386,13 +432,9 @@ export function TodayScreen() {
         />
       ) : null}
 
-      {tomorrowOpen && tomorrowDate !== null ? (
+      {tomorrowFor !== null ? (
         // Prije 04:00 "sutra" je današnji timeline, pa se dan nakon spremanja osvježava.
-        <TomorrowPlan
-          date={tomorrowDate}
-          onSaved={day.reload}
-          onClose={() => setTomorrowOpen(false)}
-        />
+        <TomorrowPlan date={tomorrowFor} onSaved={day.reload} onClose={() => setTomorrowFor(null)} />
       ) : null}
     </GradientBackground>
   );
