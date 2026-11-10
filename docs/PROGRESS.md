@@ -2,6 +2,10 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 · Greška s uređaja (zapisano iz druge sesije)
+- Na Bornovom iPhoneu (dev build) Metro javlja: `Registering background notification task failed — Background remote notifications have not been configured`. Znači da "Gotovo / Odgodi na podsjetniku bez otvaranja appa" (16d) na iOS-u vjerojatno ne radi. Popravak: `enableBackgroundRemoteNotifications: true` u pluginu `expo-notifications` (ili `remote-notification` u `UIBackgroundModes`) + novi native build na iPhoneu. Provjeriti prije 17c.
+- Napomena: 17b je u isto vrijeme rađen u dvije sesije; druga verzija (grana samo lokalno) je odbačena, vrijedi ova na `main`.
+
 ## 2026-11-10 21:25 · Korak 17b (dorada) — po Bornovim ispravkama od 20:48
 Dok sam radio 17b (ispod), Borna je na `main` ispravio kriterije 17b (P61): **glavni unos je da sam napišeš aktivnost i od–do ili samo trajanje**; upisane ideje (naziv, trajanje, doba dana) se pamte i nude; **samo 2–3 primjera, jasno označena kao "primjer kako se piše"**, ne gotov popis i ne zauzimaju mjesto; generičke kategorije ("Škola") se uklanjaju. Moj katalog od 12 ideja kao čipova to krši — dorađujem prije spajanja na `main`.
 
