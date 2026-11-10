@@ -2,6 +2,41 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 06:43 · Korak 14 — Jutarnji brief
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-14`; bez novih ovisnosti i bez migracije (`checkins` već ima `kind: morning`, `sleepStart`, `wakeTime`; jedinstveni indeks jedan jutarnji po danu).
+2. Čisto u `src/core/checkin/morning.ts`: `createMorningDraft(settings, date, saved)` (prijava sna unaprijed popunjena: zaspao = ciljani krevet prethodne večeri, probudio = buđenje tog dana — "dva taba": po potrebi pomakni, pa Spremi); `sleepDurationMinutes` (preko ponoći); `isMorningDraftValid`; `morningXpAwards` (krevet ±30 min od cilja → 20 XP, postojeći `xpForBedtime`; buđenje bez snooze se ne može znati → ne dodjeljuje se); `greetingFor(minutes)` (jutro / dan / večer); `briefSummary(blocks, nowMinutes)` (broj blokova bez sna, broj zadataka, prvi sljedeći blok). Testovi.
+3. Repo `getMorningCheckin` / `saveMorningCheckin` (jedna sinkrona transakcija: upsert jutarnjeg checkina, XP sna zamijeni se pri ponovnom spremanju, `mood` ostaje `null` — raspoloženje se ne prati). Testovi nad Node SQLite-om.
+4. Otvaranje: dodir jutarnje obavijesti → `requestMorningBrief()` (isti mehanizam kao večernji upit); na Danas i kartica "Jutarnji brief" dok jutarnja prijava nije spremljena (da se brief može otvoriti i bez obavijesti).
+5. UI `src/features/morning/`: modal — pozdrav + sat i datum; prijava sna (Zaspao / Probudio `ClockStepper`, trajanje sna, Spremi → +XP; spremljeno → prikaz + Uredi); raspored dana kao vodoravne kartice koje se listaju (vrijeme, naziv, vrsta, "2/5"; prazno → poruka); gumbi **Prilagodi** (zatvori brief → timeline Danas za uređivanje) i **Kreni** (kratki fade "Dan počinje", pa zatvori; prava animacija je korak 35).
+6. i18n HR/EN + pristupačnost (oznake steppera, kartica, live region za XP).
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = ekran iz notifikacije (4), pozdrav (2, 5), prijava sna u dva taba (2, 3, 5), kartice dana (5), Prilagodi / Kreni (5). Puni koncept prijave ima i "Kako se osjećaš 1–5?", ali Borna je 2026-11-09 odlučio da se **raspoloženje ne prati** → izostavljeno. Prilagodba rasporeda lošem snu je korak 29, izbor sadržaja jutarnje obavijesti (broj blokova, streak…) u postavkama nije ovaj korak — tekst obavijesti ostaje općenit (pitanje). XP za krevet na vrijeme je iz tablice koncepta (nije nova odluka). Kartica na Danas je ulaz za testiranje bez obavijesti — kad se skriva, pitanje za Bornu.
+
+**Napravljeno:**
+- Bez novih ovisnosti, bez migracije (jutarnji checkin već postoji u shemi, jedan po danu).
+- Čisto `src/core/checkin/morning.ts`: `targetBedtimeFor` (krevet prethodne večeri prema buđenju tog dana, vikendom vikend), `createMorningDraft` (prijava unaprijed popunjena iz ciljeva ili spremljene prijave), `sleepDurationMinutes` (preko ponoći), `isMorningDraftValid`, `morningXpAwards` (krevet ±30 min od cilja → 20 XP; bez kazne), `greetingFor` (04–12 jutro, 12–18 dan, inače večer), `briefBlocks` / `briefSummary` / `briefStartIndex` (blokovi bez sna, broj blokova i zadataka, prvi neriješeni trenutni/sljedeći blok).
+- Repo `getMorningCheckin` / `saveMorningCheckin` (jedna transakcija; ponovno spremanje ažurira isti red i zamjenjuje XP sna; `mood` ostaje `null`). Jutarnja prijava ne utječe na glavni streak.
+- Dodir jutarnje obavijesti → `requestMorningBrief()` → brief se otvori na Danas čim su podaci učitani.
+- `src/features/morning/`: **MorningBrief** (modal) — pozdrav prema dobu dana + vrijeme i datum, sažetak ("Blokova danas: 4 · zadataka: 2. Prvi: Posao u 09:00."), **prijava sna** (Zaspao / Probudio, trajanje, Spremi → +XP; spremljeno → sažetak + Uredi), **kartice dana** (vodoravno listanje sa snapom, od trenutnog/sljedećeg bloka, "2/5", točkice, prazno stanje), **Prilagodi** (zatvori → timeline Danas) i **Kreni** (kratki fade "Dan počinje", poštuje "smanji pokrete", pa zatvori). **MorningCard** na Danas dok san nije prijavljen.
+- i18n HR/EN (`morning.*`), pristupačnost (oznake kartica "1 od 5…", live region za XP, hint za Prilagodi).
+- 25 novih testova (ukupno 391). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (391/391), `expo export --platform android` ✅ (4.5 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox): listanje kartica i početna pozicija, fade "Dan počinje", otvaranje iz obavijesti.
+- Raspoloženje se ne pita (odluka 2026-11-09), iako ga puni koncept spominje u jutarnjoj prijavi.
+- "Buđenje bez snooze" (+10 XP iz tablice) app ne može znati → ne dodjeljuje se.
+- Tekst jutarnje obavijesti je i dalje općenit; izbor sadržaja (broj blokova, prvi blok, streak) u postavkama nije bio dio koraka.
+- Prilagodba rasporeda lošem snu je korak 29; prava animacija "Dan počinje" korak 35.
+
+**Pitanja za Bornu:**
+32. Kartica "Jutarnji brief" na Danas vidi se cijeli dan dok san nije prijavljen. Želiš li da nestane nakon podneva (ili nakon nekog sata), ili da ostane?
+33. Treba li jutarnja obavijest već sada nositi sadržaj dana ("Danas 4 bloka i 2 zadatka. Prvi: posao u 9:00.") — to je dio "biraš što sadrži" iz koncepta; mogu to dodati kao mali korak (bez postavki, fiksan sadržaj)?
+34. XP za krevet na vrijeme (20) se dodjeljuje kroz jutarnju prijavu (zaspao unutar ±30 min od cilja). Odgovara li?
+
+**Sljedeće:** korak 15 — XP traka + streak u UI-ju (Danas i Profil).
+
 ## 2026-11-10 00:43 · Korak 13c — Postavke i onboarding: dorade
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-13c`. Migracija `0002_settings_refinements`: `settings` + `weekend_wake_time` (NULL = isto kao radni dan), `morning_notif_enabled` / `evening_notif_enabled` / `wind_down_notif_enabled` (default 1); `language` smije biti `system`. Zod shema i Drizzle prate; test migracije nad Node SQLite-om.

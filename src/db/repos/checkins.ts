@@ -5,10 +5,14 @@ import {
   cleanText,
   eveningXpAwards,
   isEveningDraftComplete,
+  isMorningDraftValid,
+  morningXpAwards,
   movedBlockFields,
   resolveLaterDate,
   sumAwards,
   type EveningDraft,
+  type MorningDraft,
+  type MorningSleepSettings,
   type SavedEveningCheckin,
 } from '@/core/checkin';
 import {
@@ -252,4 +256,93 @@ export function saveEveningCheckin(
 export async function listXpEvents(db: RitamDb, userId: string) {
   const rows = await db.select().from(xpEvents).where(eq(xpEvents.userId, userId)).all();
   return rows.map((row) => xpEventSchema.parse(row));
+}
+
+export class InvalidMorningCheckinError extends Error {
+  constructor() {
+    super('Morning check-in draft is invalid');
+    this.name = 'InvalidMorningCheckinError';
+  }
+}
+
+const morningOf = (userId: string, date: LocalDate) =>
+  and(eq(checkins.userId, userId), eq(checkins.date, date), eq(checkins.kind, 'morning'));
+
+/** Jutarnja prijava sna zadanog dana, ili `null` ako još nije spremljena. */
+export async function getMorningCheckin(
+  db: RitamDb,
+  userId: string,
+  date: LocalDate,
+): Promise<Checkin | null> {
+  const row = await db.select().from(checkins).where(morningOf(userId, date)).get();
+  return row ? checkinSchema.parse(row) : null;
+}
+
+export type SavedMorningResult = { checkin: Checkin; xpEarned: number };
+
+/**
+ * Sprema jutarnju prijavu sna dana `draft.date` u jednoj transakciji: jutarnji checkin (jedan po
+ * danu; ponovno spremanje ga ažurira) i XP sna (krevet na vrijeme) koji zamjenjuje XP prethodnog
+ * spremanja istog checkina. Raspoloženje se ne prati — `mood` ostaje kakav je (`null`).
+ */
+export function saveMorningCheckin(
+  db: RitamDb,
+  userId: string,
+  settings: MorningSleepSettings,
+  draft: MorningDraft,
+  deps: RepoDeps = defaultRepoDeps,
+): SavedMorningResult {
+  if (!isMorningDraftValid(draft)) throw new InvalidMorningCheckinError();
+  const { date } = draft;
+  const now = deps.now().toISOString();
+
+  return db.transaction((tx) => {
+    const existing = tx.select().from(checkins).where(morningOf(userId, date)).get();
+    const checkin = checkinSchema.parse({
+      id: existing?.id ?? deps.newId(),
+      userId,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      date,
+      kind: 'morning',
+      sleepStart: draft.sleepStart,
+      wakeTime: draft.wakeTime,
+      mood: existing?.mood ?? null,
+      dayRating: null,
+      note: existing?.note ?? null,
+    });
+
+    if (existing) {
+      tx.delete(xpEvents)
+        .where(
+          and(
+            eq(xpEvents.userId, userId),
+            eq(xpEvents.source, 'sleep'),
+            eq(xpEvents.sourceId, existing.id),
+          ),
+        )
+        .run();
+      const { id, userId: _owner, createdAt: _created, ...changes } = checkin;
+      tx.update(checkins).set(changes).where(eq(checkins.id, id)).run();
+    } else {
+      tx.insert(checkins).values(checkin).run();
+    }
+
+    const awards = morningXpAwards(settings, draft);
+    for (const award of awards) {
+      const event = xpEventSchema.parse({
+        id: deps.newId(),
+        userId,
+        createdAt: now,
+        updatedAt: now,
+        date,
+        source: award.source,
+        sourceId: checkin.id,
+        amount: award.amount,
+      });
+      tx.insert(xpEvents).values(event).run();
+    }
+
+    return { checkin, xpEarned: sumAwards(awards) };
+  });
 }

@@ -243,5 +243,54 @@
       "doneBody": "New blocks: {{count}}. See you in the morning.",
       "close": "Done"
     }
+  },
+  "morning": {
+    "overline": "Morning brief",
+    "close": "Close",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "now": "{{time}} · {{day}}",
+    "summary": "Blocks today: {{blocks}} · tasks: {{tasks}}.",
+    "first": "First: {{title}} at {{time}}.",
+    "sleep": {
+      "title": "How did you sleep?",
+      "subtitle": "Filled in from your goals — adjust if needed, then save.",
+      "fellAsleep": "Fell asleep",
+      "wokeUp": "Woke up",
+      "duration": "{{hours}} h {{minutes}} min",
+      "total": "Sleep: {{duration}}",
+      "invalid": "Wake-up time must be after the time you fell asleep.",
+      "save": "Save sleep",
+      "saveError": "Sleep wasn't saved. Try again.",
+      "summary": "{{start}} → {{end}}",
+      "xp": "+{{xp}} XP — bedtime on target!",
+      "saved": "Saved.",
+      "edit": "Edit"
+    },
+    "cards": {
+      "title": "Your day",
+      "emptyTitle": "No plan for today yet",
+      "emptyBody": "Add blocks on the Today tab — tap Adjust.",
+      "position": "{{position}}/{{total}}",
+      "label": "{{position}} of {{total}}: {{title}}, {{time}}, {{kind}}",
+      "until": "until {{end}}",
+      "done": "Done"
+    },
+    "adjust": "Adjust",
+    "adjustHint": "Closes the brief and opens today's schedule for editing",
+    "go": "Let's go",
+    "start": {
+      "title": "The day begins",
+      "body": "Little by little."
+    },
+    "card": {
+      "title": "Morning brief",
+      "heading": "How did you sleep?",
+      "body": "Log your sleep and see today's plan.",
+      "open": "Open brief"
+    }
   }
 }

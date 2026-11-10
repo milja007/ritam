@@ -29,6 +29,7 @@ import {
 import {
   notifyBlocksChanged,
   requestEveningCheckin,
+  requestMorningBrief,
   requestOpenBlock,
   setPermissionDecision,
 } from './open-requests';
@@ -137,6 +138,7 @@ function handleResponse(response: Notifications.NotificationResponse): void {
   );
   if (intent === null) return;
   if (__DEV__) console.info('Notification intent', intent);
+  if (intent.type === 'open' && intent.kind === 'morning') requestMorningBrief();
   if (intent.type === 'open' && intent.kind === 'evening') requestEveningCheckin();
   if (intent.type === 'blockAction') {
     handleBlockAction(intent.action, intent.blockId, response.notification.request.identifier).catch(

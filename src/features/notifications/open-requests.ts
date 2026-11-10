@@ -8,6 +8,7 @@ import type { PermissionDecision } from '@/core/notifications';
  * Obavijest stiže izvan React stabla, pa se zahtjev pamti dok ga ekran ne preuzme.
  */
 type State = {
+  morning: boolean;
   evening: boolean;
   blockId: string | null;
   blocksVersion: number;
@@ -15,7 +16,7 @@ type State = {
   permission: PermissionDecision | null;
 };
 
-let state: State = { evening: false, blockId: null, blocksVersion: 0, permission: null };
+let state: State = { morning: false, evening: false, blockId: null, blocksVersion: 0, permission: null };
 const listeners = new Set<() => void>();
 
 function set(next: Partial<State>) {
@@ -28,6 +29,21 @@ function subscribe(listener: () => void) {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/** Dodir jutarnje obavijesti → jutarnji brief. */
+export function requestMorningBrief(): void {
+  set({ morning: true });
+}
+
+/** Ekran je otvorio brief — zahtjev se briše. */
+export function consumeMorningRequest(): void {
+  if (state.morning) set({ morning: false });
+}
+
+/** Je li zatražen jutarnji brief (dok ga ekran ne preuzme s `consumeMorningRequest`). */
+export function useMorningRequested(): boolean {
+  return useSyncExternalStore(subscribe, () => state.morning, () => false);
 }
 
 export function requestEveningCheckin(): void {
