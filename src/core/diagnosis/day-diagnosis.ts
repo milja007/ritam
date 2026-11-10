@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 
-import { dayScore, scoreTrend } from '../progress';
+import { dayScore, SCORE_PARTS, scoreTrend, type ScorePart } from '../progress';
 import { parseClock } from '../time/clock';
 import type { DayStats } from './day-stats';
 
@@ -61,6 +61,10 @@ export const DIAGNOSIS_LINE_KEYS = [
   'ideas.earlierBed',
   'ideas.fewerMoves',
   'ideas.keepRhythm',
+  'ideas.ruleSmallStep',
+  'ideas.planBuffer',
+  'ideas.eveningPrep',
+  'ideas.screensOff',
 ] as const;
 export type DiagnosisLineKey = (typeof DIAGNOSIS_LINE_KEYS)[number];
 
@@ -108,9 +112,13 @@ const line = (key: DiagnosisLineKey, params?: DiagnosisLine['params']): Diagnosi
  * Trend dana naspram jučer prema dnevnom rezultatu 0–100 (korak 16b, prag 5 bodova); `first` kad
  * jučer nema s čime usporediti.
  */
-export function dayTrend(today: DayStats, yesterday: DayStats | null): Trend {
-  const now = dayScore(today).score;
-  const before = yesterday ? dayScore(yesterday).score : null;
+export function dayTrend(
+  today: DayStats,
+  yesterday: DayStats | null,
+  areas: readonly ScorePart[] = SCORE_PARTS,
+): Trend {
+  const now = dayScore(today, areas).score;
+  const before = yesterday ? dayScore(yesterday, areas).score : null;
   if (now === null || before === null) return 'first';
   return scoreTrend(now - before);
 }
@@ -129,11 +137,11 @@ function goodFor(direction: ProgressRow['change']): boolean | null {
 /** Omjer za usporedbu plana/zabrana (različiti ukupni brojevi dana). */
 const ratio = (value: number, total: number) => (total > 0 ? value / total : 0);
 
-function progressRows(today: DayStats, yesterday: DayStats | null): ProgressRow[] {
+function progressRows(today: DayStats, yesterday: DayStats | null, areas: readonly ScorePart[]): ProgressRow[] {
   const rows: ProgressRow[] = [];
-  const score = dayScore(today).score;
+  const score = dayScore(today, areas).score;
   if (score !== null) {
-    const previous = yesterday ? dayScore(yesterday).score : null;
+    const previous = yesterday ? dayScore(yesterday, areas).score : null;
     const dir = previous === null ? null : scoreTrend(score - previous);
     const direction = dir === null ? null : dir === 'better' ? 'up' : dir === 'worse' ? 'down' : 'same';
     rows.push({ metric: 'score', value: score, previous, change: direction, good: goodFor(direction) });
@@ -262,38 +270,93 @@ function problemLines(today: DayStats): DiagnosisLine[] {
 }
 
 /**
- * Jedna mala ideja (koncept: malo po malo — nikad više promjena odjednom). Prednost ima
- * najveći problem dana; bez problema → zadrži ritam.
+ * Kandidati za ideju redom važnosti (najveći problem dana prvi); uvijek završava sa "zadrži ritam".
+ * Koncept: malo po malo — nikad više promjena odjednom.
  */
-function ideaLine(today: DayStats): DiagnosisLine {
+function ideaCandidates(today: DayStats): DiagnosisLine[] {
+  const candidates: DiagnosisLine[] = [];
   const rule = today.rules.brokenRules[0];
   if (rule) {
-    return rule.trigger !== null
-      ? line('ideas.ruleTrigger', { rule: rule.title, trigger: rule.trigger })
-      : line('ideas.ruleNote', { rule: rule.title });
+    candidates.push(
+      rule.trigger !== null
+        ? line('ideas.ruleTrigger', { rule: rule.title, trigger: rule.trigger })
+        : line('ideas.ruleNote', { rule: rule.title }),
+    );
   }
   if (today.plan.total >= 2 && today.plan.rate !== null && today.plan.rate < 0.5) {
-    return missPattern(today) === 'evening' ? line('ideas.eveningEarlier') : line('ideas.smallerPlan');
+    candidates.push(missPattern(today) === 'evening' ? line('ideas.eveningEarlier') : line('ideas.smallerPlan'));
   }
-  if (today.sleep && today.sleep.minutes < SHORT_SLEEP_MINUTES) return line('ideas.earlierBed');
-  if (missPattern(today) === 'evening') return line('ideas.eveningEarlier');
-  if (today.plan.moved >= 2) return line('ideas.fewerMoves');
-  return line('ideas.keepRhythm');
+  if (today.sleep && today.sleep.minutes < SHORT_SLEEP_MINUTES) candidates.push(line('ideas.earlierBed'));
+  if (missPattern(today) === 'evening') candidates.push(line('ideas.eveningEarlier'));
+  if (today.plan.moved >= 2) candidates.push(line('ideas.fewerMoves'));
+  candidates.push(line('ideas.keepRhythm'));
+  const seen = new Set<string>();
+  return candidates.filter((candidate) => (seen.has(candidate.key) ? false : (seen.add(candidate.key), true)));
 }
 
+/** Druga ideja za isti problem kad se ponavlja, a dan nema drugog problema. */
+const ALTERNATIVE_IDEA: Partial<Record<DiagnosisLineKey, DiagnosisLineKey>> = {
+  'ideas.ruleTrigger': 'ideas.ruleSmallStep',
+  'ideas.ruleNote': 'ideas.ruleSmallStep',
+  'ideas.smallerPlan': 'ideas.planBuffer',
+  'ideas.fewerMoves': 'ideas.planBuffer',
+  'ideas.eveningEarlier': 'ideas.eveningPrep',
+  'ideas.earlierBed': 'ideas.screensOff',
+};
+
+/** Koliko je dana zaredom ideja ponuđena (spremljeno u parametrima ponovljene ideje). */
+function repeatedDaysOf(idea: DiagnosisLine): number {
+  const value = idea.params?.repeatedDays;
+  return typeof value === 'number' && value >= 1 ? value : 1;
+}
+
+/**
+ * Ideje za napredak (odluka P38): jedna mala ideja za najveći problem dana. Ako je ista kao jučer
+ * (problem se ponavlja), ostaje — s brojem dana zaredom, da se vidi da nije riješeno — i dodaje se
+ * nova ideja uz nju: sljedeći problem dana, ili drugi pristup istom problemu.
+ * "Zadrži ritam" se ne broji kao ponavljanje.
+ */
+export function ideaLines(today: DayStats, previous: DayDiagnosis | null = null): DiagnosisLine[] {
+  const candidates = ideaCandidates(today);
+  const primary = candidates[0] ?? line('ideas.keepRhythm');
+  const previousIdea = previous?.ideas[0];
+  if (previousIdea === undefined || previousIdea.key !== primary.key || primary.key === 'ideas.keepRhythm') {
+    return [primary];
+  }
+  const repeated: DiagnosisLine = {
+    key: primary.key,
+    params: { ...primary.params, repeatedDays: repeatedDaysOf(previousIdea) + 1 },
+  };
+  const next = candidates.find((candidate) => candidate.key !== primary.key && candidate.key !== 'ideas.keepRhythm');
+  const alternative = ALTERNATIVE_IDEA[primary.key];
+  const fresh = next ?? (alternative ? line(alternative, primary.params) : null);
+  return fresh ? [repeated, fresh] : [repeated];
+}
+
+export type DayDiagnosisOptions = {
+  /** Jučerašnja spremljena dijagnoza (za ponovljene ideje); bez nje nema ponavljanja. */
+  previous?: DayDiagnosis | null;
+  /** Područja dnevnog rezultata iz postavki (korak 16c); zadano sva tri. */
+  areas?: readonly ScorePart[];
+};
+
 /** Dijagnoza dana iz statistike dana i jučer (jučer `null` = prvi dan / nema podataka). */
-export function buildDayDiagnosis(today: DayStats, yesterday: DayStats | null): DayDiagnosis {
-  const trend = dayTrend(today, yesterday);
+export function buildDayDiagnosis(
+  today: DayStats,
+  yesterday: DayStats | null,
+  { previous = null, areas = SCORE_PARTS }: DayDiagnosisOptions = {},
+): DayDiagnosis {
+  const trend = dayTrend(today, yesterday, areas);
   return {
     version: LOCAL_DAY_DIAGNOSIS_VERSION,
     date: today.date,
     trend,
     summary: summaryLine(today, trend),
-    progress: progressRows(today, yesterday),
+    progress: progressRows(today, yesterday, areas),
     praise: praiseLines(today, yesterday),
     noticed: noticedLines(today),
     problems: problemLines(today),
-    ideas: [ideaLine(today)],
+    ideas: ideaLines(today, previous),
   };
 }
 

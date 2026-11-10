@@ -115,6 +115,23 @@ describe('reports repo — dnevna dijagnoza', () => {
     expect(diagnosis.progress.find((row) => row.metric === 'streak')?.value).toBe(2);
   });
 
+  it('isti problem dva dana zaredom: jučerašnja ideja ostaje + nova ideja', async () => {
+    const { db, deps, block, rule } = await setup();
+    const y1 = await block(YESTERDAY, 'Učenje', '09:00', '10:00');
+    const t1 = await block(DATE, 'Učenje', '09:00', '10:00');
+    saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok')], rule.id, false, 3), deps);
+    saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok')], rule.id, false, 3), deps);
+    const trigger = { key: 'ideas.ruleTrigger', params: { rule: 'Bez slatkiša', trigger: 'stres' } };
+
+    expect(generateDayReport(db, USER, YESTERDAY, deps).diagnosis.ideas).toEqual([trigger]);
+    const { report, diagnosis } = generateDayReport(db, USER, DATE, deps);
+    expect(diagnosis.ideas).toEqual([
+      { ...trigger, params: { ...trigger.params, repeatedDays: 2 } },
+      { key: 'ideas.ruleSmallStep', params: trigger.params },
+    ]);
+    expect(report.suggestion).toBe('ideas.ruleTrigger');
+  });
+
   it('ponovno generiranje ažurira isti red i čuva povratnu informaciju', async () => {
     const { db, raw, deps, block, rule } = await setup();
     const a = await block(DATE, 'Učenje', '09:00', '10:00');

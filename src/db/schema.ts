@@ -42,6 +42,10 @@ export const settings = sqliteTable(
     windDownNotifEnabled: integer('wind_down_notif_enabled', { mode: 'boolean' }).notNull().default(true),
     theme: text('theme').$type<ThemePreference>().notNull(),
     googleCalendarConnected: integer('google_calendar_connected', { mode: 'boolean' }).notNull(),
+    // Područja dnevnog rezultata (korak 16c); zadano samo plan.
+    scorePlan: integer('score_plan', { mode: 'boolean' }).notNull().default(true),
+    scoreRules: integer('score_rules', { mode: 'boolean' }).notNull().default(false),
+    scoreSleep: integer('score_sleep', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [uniqueIndex('settings_user_id_unique').on(table.userId)],
 );

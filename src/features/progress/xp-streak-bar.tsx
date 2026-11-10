@@ -16,18 +16,15 @@ export function XpStreakBar({ today, checkinDay }: { today: string; checkinDay: 
   const progress = useProgress(today, checkinDay);
   if (progress.status !== 'ready') return null;
 
-  const { level, todayXp, streak } = progress.summary;
-  const levelLabel = t('progress.level', { level: level.level });
-  const valueText = t('progress.toNext', {
-    xp: level.xpIntoLevel,
-    total: level.xpForNext,
-    next: level.level + 1,
-  });
+  // Bez broja razine dok ne dođu otključavanja (odluka P35, korak 32): samo XP.
+  const { totalXp, level, todayXp, streak } = progress.summary;
+  const xpLabel = t('progress.totalXp', { xp: totalXp });
+  const valueText = t('progress.toNextXp', { xp: level.xpIntoLevel, total: level.xpForNext });
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.row}>
-        <Text variant="bodyStrong">{levelLabel}</Text>
+        <Text variant="bodyStrong">{xpLabel}</Text>
         <Text
           variant="bodyStrong"
           tone={streak.current > 0 ? 'accent' : 'textMuted'}
@@ -35,7 +32,7 @@ export function XpStreakBar({ today, checkinDay }: { today: string; checkinDay: 
           {t('progress.streak.short', { count: streak.current })}
         </Text>
       </View>
-      <ProgressBar fraction={level.fraction} accessibilityLabel={levelLabel} valueText={valueText} />
+      <ProgressBar fraction={level.fraction} accessibilityLabel={xpLabel} valueText={valueText} />
       <View style={styles.row}>
         <Text variant="caption" tone={todayXp > 0 ? 'accent' : 'textMuted'}>
           {t('progress.todayXp', { xp: todayXp })}

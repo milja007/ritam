@@ -41,6 +41,9 @@ const settingsInput: SettingsInput = {
   windDownNotifEnabled: true,
   theme: 'system',
   googleCalendarConnected: false,
+      scorePlan: true,
+      scoreRules: false,
+      scoreSleep: false,
 };
 
 const block = (overrides: Partial<ScheduleBlockInput> = {}): ScheduleBlockInput => ({

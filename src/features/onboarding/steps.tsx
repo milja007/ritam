@@ -24,6 +24,7 @@ import { Stepper } from '@/ui/stepper';
 import { Text } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
 import { useAppTheme } from '@/ui/theme';
+import { ScoreAreasPicker } from '@/features/progress/score-areas-picker';
 
 type StepProps = {
   draft: OnboardingDraft;
@@ -218,3 +219,12 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });
+
+export function ScoreStep({ draft, update }: StepProps) {
+  return (
+    <ScoreAreasPicker
+      value={{ scorePlan: draft.scorePlan, scoreRules: draft.scoreRules, scoreSleep: draft.scoreSleep }}
+      onChange={update}
+    />
+  );
+}

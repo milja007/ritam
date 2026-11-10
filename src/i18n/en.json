@@ -28,7 +28,10 @@
       "weekendTime": "at {{time}}, weekends {{weekend}}"
     },
     "saveError": "The change wasn't saved. Please try again.",
-    "progress": "Progress"
+    "progress": "Progress",
+    "score": {
+      "title": "Day score"
+    }
   },
   "database": {
     "preparing": "Preparing your data…",
@@ -81,6 +84,10 @@
       "add": "+ Add rule",
       "remove": "Remove",
       "hint": "For now they apply every day, all day — you can fine-tune them later."
+    },
+    "score": {
+      "title": "What should your score track?",
+      "subtitle": "Your 0–100 day score measures progress in what you choose. Start with one area — you can add the others later in Profile."
     }
   },
   "notifications": {
@@ -297,8 +304,6 @@
     }
   },
   "progress": {
-    "level": "Level {{level}}",
-    "toNext": "{{xp}} / {{total}} XP to level {{next}}",
     "todayXp": "+{{xp}} XP today",
     "totalXp": "{{xp}} XP total",
     "loadError": "Progress couldn't be loaded.",
@@ -313,7 +318,9 @@
       "hintDone": "Today's check-in counts toward your streak.",
       "hintKeep": "Fill in the evening check-in to grow your streak.",
       "hintStart": "Today's evening check-in starts a new streak."
-    }
+    },
+    "toNextXp": "{{xp}} / {{total}} XP to the next milestone",
+    "xpTitle": "Experience (XP)"
   },
   "diagnosis": {
     "title": "Daily diagnosis",
@@ -400,9 +407,14 @@
         "eveningEarlier": "Tomorrow, try moving your hardest evening block earlier in the day.",
         "earlierBed": "Tonight, try going to bed 15 minutes earlier.",
         "fewerMoves": "Tomorrow, plan only what you really have time for — fewer moves.",
-        "keepRhythm": "Keep the same rhythm tomorrow — no new changes."
+        "keepRhythm": "Keep the same rhythm tomorrow — no new changes.",
+        "ruleSmallStep": "For “{{rule}}”: make it harder — move the trigger out of reach at least for tomorrow (e.g. phone outside the room).",
+        "planBuffer": "Tomorrow leave 30 minutes of empty space between blocks — for whatever comes up.",
+        "eveningPrep": "Prepare your evening block in the morning (things, place, first step), so in the evening you just start.",
+        "screensOff": "Turn screens off 30 minutes before bed and charge your phone away from the bed."
       }
-    }
+    },
+    "repeated": "Repeating for day {{count}} in a row — this idea still stands."
   },
   "score": {
     "title": "Day score",
@@ -424,6 +436,28 @@
     "record": "Best day: {{score}}",
     "recordWeek": "Best week: {{avg}}",
     "loadError": "Day score didn't load.",
-    "a11y": "Day score {{score}} out of 100. {{trend}}."
+    "a11y": "Day score {{score}} out of 100. {{trend}}.",
+    "yesterdayFinal": "Yesterday · final",
+    "todayProgress": "Today so far: {{score}}",
+    "todayEmpty": "No score for today yet.",
+    "a11yYesterday": "Yesterday's score {{score}} out of 100. {{trend}}. Today so far: {{today}}.",
+    "dayBefore": "Day before: {{score}}",
+    "trendPrev": {
+      "better": "Better than the day before",
+      "same": "About the same as the day before",
+      "worse": "Lower than the day before",
+      "first": "First final score"
+    }
+  },
+  "scoreAreas": {
+    "plan": "Day plan",
+    "planHint": "How much of your plan you got done.",
+    "rules": "Rules",
+    "rulesHint": "How well you kept your rules.",
+    "sleep": "Sleep",
+    "sleepHint": "Whether you went to bed on time.",
+    "weight": "{{weight}}% of the score",
+    "lastOne": "At least one area stays on.",
+    "a11y": "{{area}}, {{weight}}% of the score"
   }
 }

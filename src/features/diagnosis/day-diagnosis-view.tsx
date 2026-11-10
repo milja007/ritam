@@ -68,7 +68,14 @@ export function DayDiagnosisView({ diagnosis }: { diagnosis: DayDiagnosis }) {
               <Text tone={section === 'ideas' ? 'accent' : 'textMuted'} importantForAccessibility="no">
                 •
               </Text>
-              <Text style={styles.flex}>{lineText(line)}</Text>
+              <View style={styles.flex}>
+                <Text>{lineText(line)}</Text>
+                {typeof line.params?.repeatedDays === 'number' ? (
+                  <Text variant="caption" tone="textMuted">
+                    {t('diagnosis.repeated', { count: line.params.repeatedDays })}
+                  </Text>
+                ) : null}
+              </View>
             </View>
           ))}
         </View>

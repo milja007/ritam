@@ -2,6 +2,45 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 17:29 · Korak 16c — Rezultat po odabranim područjima
+Borna je potvrdio (2026-11-10 ~17:20) da sesije nastave dok on testira 16-dev na svom Macu — `wip/korak-16-dev` ne diram, 16c ide s `main`.
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16c`. Postavke: tri stupca `score_plan` (zadano 1), `score_rules` (0), `score_sleep` (0) u lokalnoj Drizzle shemi + migracija `0004`; Zod: barem jedno područje uključeno. Ista tri stupca u novoj Supabase migraciji (CHECK barem jedno), lokalni `test:supabase` i test pariteta.
+2. Čisto `src/core/progress/score.ts`: `SCORE_WEIGHTS` plan 50 / zabrane 30 / san 20; `dayScore(input, areas)` boduje samo odabrana područja i težine razmjerno preraspodijeli (plan+san 71/29, plan+zabrane 62/38, zabrane+san 60/40, jedno = 100 %). Odabrano područje bez podataka tog dana ne ulazi (kao do sad). Testovi za sve kombinacije iz odluke.
+3. `compare.ts`: rekord tjedna/mjeseca bez uvjeta "barem pola dana" (svako razdoblje s barem jednim ocijenjenim danom). Testovi.
+4. Repo `listDayScores` čita odabrana područja iz postavki. Onboarding: novi korak "Što pratiš?" (plan / san / zabrane, zadano plan, ne može se sve isključiti); Profil: isti izbor u postavkama. Spremanje kroz postojeće repo funkcije. i18n HR/EN.
+5. Danas (`DayScoreCard`): prije upita jučerašnji konačni rezultat velik + današnji "u tijeku" manji ispod; nakon upita današnji konačni velik.
+6. Dijagnoza: ako je najvažnija ideja dana ista kao jučerašnja, ostaje (s oznakom "ponavlja se N. dan") i dodaje se nova, druga ideja. `generateDayReport` čita jučerašnju spremljenu dijagnozu. Testovi.
+7. XP traka (Danas + Profil): samo XP do sljedećeg praga, bez "Razina N" (krivulja ostaje interno za korak 32).
+8. Provjere `tsc`, `lint`, `test`, `test:supabase`, `expo export` (UI promjene); BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push. Supabase migraciju na remote pokušati preko MCP-a; ako čeka potvrdu — zapisati.
+
+*Recenzija plana:* kriteriji 16c iz BUILD_PLAN-a: settings + područja s migracijom (1), izbor u onboardingu i Profilu (4), težine 50/30/20 razmjerno (2), rekordi bez uvjeta (3), Danas jučer + danas u tijeku (5), ponovljena + nova ideja (6), XP traka bez razine (7), testovi (2, 3, 6). Odluke u izvedbi → pitanja: (a) promjena područja preračuna i prošle dane (rezultat se ne sprema, izveden je) — "od tada se boduje tako" bi tražilo povijest promjena; (b) odabrano područje bez podataka tog dana (npr. san nije prijavljen) ne ulazi umjesto 0; (c) dijagnoza i dalje spominje sve (san, zabrane) i kad nisu u rezultatu — područja utječu samo na rezultat.
+
+**Napravljeno:**
+- Postavke: `scorePlan` / `scoreRules` / `scoreSleep` (Zod: barem jedno; `SCORE_AREAS`, `DEFAULT_SCORE_AREAS`, `selectedScoreAreas`). Lokalna migracija `0004_score_areas` (zadano 1/0/0, postojeći korisnici dobivaju samo plan). Supabase migracija `20261110163500_score_areas.sql` (isti stupci + CHECK barem jedno) — lokalni `test:supabase` prošao (zadano + CHECK), paritet prolazi.
+- `src/core/progress/score.ts`: `SCORE_WEIGHTS` 50/30/20, `scoreWeights(areas)` (71/29, 62/38, 60/40, 100 — zbroj uvijek 100, za prikaz), `dayScore(input, areas)` — ponderirani prosjek odabranih područja s podacima.
+- `compare.ts`: rekord tjedna/mjeseca bez uvjeta; novo `scoreHeadline(days, date)` — do upita istaknut jučerašnji konačni + današnji "u tijeku", nakon upita današnji; bez jučerašnjeg konačnog istaknut današnji.
+- `listDayScores` i dijagnoza (`buildDayDiagnosis(today, yesterday, { previous, areas })`) boduju odabrana područja (prije onboardinga samo plan).
+- Onboarding: novi zadnji korak "Što prati tvoj rezultat?"; Profil: sekcija "Rezultat dana". Zajednička komponenta `ScoreAreasPicker` (prekidači s opisom, udio u rezultatu za uključena područja, zadnje uključeno se ne može isključiti).
+- `DayScoreCard`: "Jučer · konačan" velik, usporedbe naspram prekjučer ("Bolje nego prekjučer", "Prekjučer: N"), ispod "Danas u tijeku: N" (ili "Danas još nema rezultata").
+- Dijagnoza (P38): ista ideja kao jučer ostaje s `repeatedDays` ("Ponavlja se N. dan zaredom — ideja i dalje vrijedi.") + nova ideja: sljedeći problem dana, inače drugi pristup istom problemu (4 nove ideje: `ruleSmallStep`, `planBuffer`, `eveningPrep`, `screensOff`). "Zadrži ritam" se ne broji. `generateDayReport` čita jučerašnju spremljenu dijagnozu. `reports.suggestion` ostaje prva ideja.
+- XP traka (Danas) i kartica Napredak (Profil): bez "Razina N" — "N XP ukupno" / "Iskustvo (XP)" i "X / Y XP do sljedećeg praga" (krivulja ostaje interno, korak 32).
+- i18n HR + EN za sve nove tekstove.
+- 14 novih testova (ukupno 468). Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 468/468, `npm run test:supabase` ✅, `expo export --platform android` ✅.
+
+**Problemi/napomene:**
+- **Remote Supabase još bez `fk_indexes` i `score_areas`:** `apply_migration` je odbila provjera dopuštenja sesije ("Production Deploy") — nisam zaobilazio. Remote ima samo `init`. Ne blokira app (sync je korak 19), ali prije koraka 18/19 treba primijeniti obje migracije redom (`fk_indexes`, pa `score_areas`) i preimenovati datoteke na verzije iz `list_migrations`.
+- `wip/korak-16-dev` nije diran; 16c je spojen na `main` bez sukoba s njim (16-dev mijenja `app.json`, `package.json`, `eas.json`).
+
+**Pitanja za Bornu:**
+48. Promjena područja rezultata u Profilu preračuna i prošle dane (rezultat se ne sprema). Odgovara li, ili želiš da prošli dani zadrže stari način bodovanja ("od tada")?
+49. Odabrano područje bez podataka tog dana (npr. san nije prijavljen) ne ulazi u rezultat (umjesto 0 bodova). Odgovara li?
+50. Dijagnoza i dalje spominje san i zabrane i kad nisu odabrani za rezultat (područja utječu samo na broj 0–100). Odgovara li?
+51. Supabase: smijem li primijeniti `fk_indexes` i `score_areas` na remote `ritam` (samo dodavanje, bez DROP)? Sesija za to treba tvoje dopuštenje.
+
+**Sljedeće:** korak 16d — obavijesti i postavke: vikend pomak večernjeg upita i wind-downa, uređivanje vremena obavijesti i sati sna u Profilu, prekidač podsjetnika blokova, brzi odabiri iz povijesti, jutarnja obavijest s fiksnim sadržajem, Gotovo/Odgodi bez otvaranja appa. 16-dev (lokalni iOS build) ostaje Borni na Macu.
+
 ## 2026-11-10 14:43 · Korak 17 — Supabase shema
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-17`; bez novih npm ovisnosti (Supabase CLI kroz `npx supabase`). `supabase init` → `supabase/config.toml` (project_id `ritam`, auth samo email, ostalo zadano).

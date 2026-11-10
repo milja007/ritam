@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { progressOverview, scoreTrend, weekStart, type ScoredDay } from './compare';
-import { dayScore, sleepPart, type ScoreInput } from './score';
+import { progressOverview, scoreHeadline, scoreTrend, weekStart, type ScoredDay } from './compare';
+import { dayScore, scoreWeights, sleepPart, type ScoreInput } from './score';
 
 const input = (over: Partial<ScoreInput> = {}): ScoreInput => ({
   plan: { total: 0, done: 0, partial: 0 },
@@ -19,7 +19,7 @@ describe('dayScore', () => {
     expect(dayScore(input({ plan: { total: 4, done: 2, partial: 1 } })).score).toBe(63);
   });
 
-  it('prisutni dijelovi imaju jednaku težinu, nezabilježeni ne ulaze', () => {
+  it('težine plan 50 / zabrane 30 / san 20 na prisutnim dijelovima; nezabilježeni ne ulaze', () => {
     const result = dayScore(
       input({
         plan: { total: 4, done: 4, partial: 0 },
@@ -27,7 +27,37 @@ describe('dayScore', () => {
       }),
     );
     expect(result.parts).toEqual({ plan: 1, rules: 0.25, sleep: null });
-    expect(result.score).toBe(63);
+    // (1 × 50 + 0,25 × 30) / 80 = 0,71875
+    expect(result.score).toBe(72);
+  });
+
+  it('boduje samo odabrana područja (neodabrana su null)', () => {
+    const all = {
+      plan: { total: 2, done: 1, partial: 0 },
+      rules: { activeWeight: 3, keptWeight: 0 },
+      sleep: { deviationMinutes: 0 },
+    };
+    expect(dayScore(all, ['plan'])).toEqual({ score: 50, parts: { plan: 0.5, rules: null, sleep: null } });
+    expect(dayScore(all, ['rules']).score).toBe(0);
+    expect(dayScore(all, ['sleep']).score).toBe(100);
+    // plan+san 50/20: (0,5 × 50 + 1 × 20) / 70 = 0,643
+    expect(dayScore(all, ['plan', 'sleep']).score).toBe(64);
+    // plan+zabrane 50/30: 25 / 80
+    expect(dayScore(all, ['plan', 'rules']).score).toBe(31);
+    // zabrane+san 30/20: 20 / 50
+    expect(dayScore(all, ['rules', 'sleep']).score).toBe(40);
+    // sva tri: 45 / 100
+    expect(dayScore(all, ['plan', 'rules', 'sleep']).score).toBe(45);
+    expect(dayScore(all, []).score).toBeNull();
+  });
+
+  it('scoreWeights: razmjerna preraspodjela (odluka P39), zbroj 100', () => {
+    expect(scoreWeights(['plan', 'rules', 'sleep'])).toEqual({ plan: 50, rules: 30, sleep: 20 });
+    expect(scoreWeights(['plan', 'sleep'])).toEqual({ plan: 71, rules: 0, sleep: 29 });
+    expect(scoreWeights(['plan', 'rules'])).toEqual({ plan: 62, rules: 38, sleep: 0 });
+    expect(scoreWeights(['rules', 'sleep'])).toEqual({ plan: 0, rules: 60, sleep: 40 });
+    expect(scoreWeights(['sleep'])).toEqual({ plan: 0, rules: 0, sleep: 100 });
+    expect(scoreWeights([])).toEqual({ plan: 0, rules: 0, sleep: 0 });
   });
 
   it('zabrane po težini: prekršena teška zabrana više vuče dolje', () => {
@@ -134,7 +164,7 @@ describe('progressOverview', () => {
     expect(overview.records.day?.score).toBe(50);
   });
 
-  it('rekord tjedna i mjeseca tek uz barem pola ocijenjenih dana', () => {
+  it('rekord tjedna i mjeseca bez uvjeta o broju dana (odluka P42)', () => {
     const october = Array.from({ length: 16 }, (_, i) => day(`2026-10-${String(i + 1).padStart(2, '0')}`, 60));
     const days = [
       ...october,
@@ -143,13 +173,47 @@ describe('progressOverview', () => {
       day('2026-11-03', 80),
       day('2026-11-04', 80),
       day('2026-11-05', 80),
-      // tjedan 9.–15. 11.: 1 dan × 100 → ne vrijedi kao tjedan
+      // tjedan 9.–15. 11.: 1 dan × 100 → i on vrijedi
       day('2026-11-10', 100),
     ];
     const overview = progressOverview(days, '2026-11-10', 12);
-    expect(overview.records.week).toEqual({ start: '2026-11-02', average: 80, days: 4 });
-    // studeni ima samo 5 dana → ne vrijedi; listopad 16/31 → vrijedi
-    expect(overview.records.month).toEqual({ start: '2026-10-01', average: 60, days: 16 });
+    expect(overview.records.week).toEqual({ start: '2026-11-09', average: 100, days: 1 });
+    // studeni (5 dana, prosjek 84) bolji od listopada (60)
+    expect(overview.records.month).toEqual({ start: '2026-11-01', average: 84, days: 5 });
     expect(overview.records.longestStreak).toBe(12);
+  });
+});
+
+describe('scoreHeadline (odluka P43)', () => {
+  const at = (date: string, score: number, final = true): ScoredDay => ({ date, score, final });
+
+  it('prije upita: jučer konačan istaknut, danas "u tijeku" ispod', () => {
+    const days = [at('2026-11-08', 50), at('2026-11-09', 70), at('2026-11-10', 20, false)];
+    const headline = scoreHeadline(days, '2026-11-10', 3);
+    expect(headline.featuresYesterday).toBe(true);
+    expect(headline.featured.date).toBe('2026-11-09');
+    expect(headline.featured.today).toEqual(at('2026-11-09', 70));
+    expect(headline.featured.vsYesterday).toEqual({ previous: 50, diff: 20, trend: 'better' });
+    expect(headline.todayInProgress).toEqual(at('2026-11-10', 20, false));
+  });
+
+  it('prije upita bez današnjeg rezultata: jučer istaknut, danas null', () => {
+    const headline = scoreHeadline([at('2026-11-09', 70)], '2026-11-10');
+    expect(headline.featuresYesterday).toBe(true);
+    expect(headline.todayInProgress).toBeNull();
+  });
+
+  it('nakon upita: današnji konačni istaknut', () => {
+    const days = [at('2026-11-09', 70), at('2026-11-10', 80)];
+    const headline = scoreHeadline(days, '2026-11-10');
+    expect(headline.featuresYesterday).toBe(false);
+    expect(headline.featured.today).toEqual(at('2026-11-10', 80));
+    expect(headline.todayInProgress).toBeNull();
+  });
+
+  it('bez jučerašnjeg konačnog rezultata: istaknut današnji "u tijeku"', () => {
+    const headline = scoreHeadline([at('2026-11-08', 60), at('2026-11-10', 30, false)], '2026-11-10');
+    expect(headline.featuresYesterday).toBe(false);
+    expect(headline.featured.today).toEqual(at('2026-11-10', 30, false));
   });
 });

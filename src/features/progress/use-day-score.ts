@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
-import { progressOverview, type ProgressOverview } from '@/core/progress';
+import { scoreHeadline, type ScoreHeadline } from '@/core/progress';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { listDayScores } from '@/db/repos';
@@ -10,16 +10,17 @@ import { useBlocksVersion } from '@/features/notifications';
 import { useProgressVersion } from './use-progress';
 
 type Loaded =
-  | { key: string; status: 'ready'; overview: ProgressOverview }
-  | { key: string; status: 'error'; overview: null };
+  | { key: string; status: 'ready'; headline: ScoreHeadline }
+  | { key: string; status: 'error'; headline: null };
 
 export type DayScoreState =
-  | { status: 'loading'; overview: null }
-  | { status: 'error'; overview: null }
-  | { status: 'ready'; overview: ProgressOverview };
+  | { status: 'loading'; headline: null }
+  | { status: 'error'; headline: null }
+  | { status: 'ready'; headline: ScoreHeadline };
 
 /**
- * Dnevni rezultat i usporedbe za dan upita (`checkinDay`, prije 04:00 jučer). Osvježava se kao
+ * Dnevni rezultat i usporedbe za dan upita (`checkinDay`, prije 04:00 jučer): do upita istaknut
+ * jučerašnji konačni, uz današnji "u tijeku" (korak 16c). Osvježava se kao
  * `useProgress`: na `notifyProgressChanged()` (kvačica, upit, jutarnja prijava), na Gotovo iz
  * obavijesti i pri fokusu taba.
  */
@@ -41,11 +42,11 @@ export function useDayScore(checkinDay: string): DayScoreState {
     const handle = setTimeout(() => {
       try {
         const history = listDayScores(getDb(), LOCAL_USER_ID, checkinDay);
-        const overview = progressOverview(history.days, checkinDay, history.longestStreak);
-        if (active) setLoaded({ key: checkinDay, status: 'ready', overview });
+        const headline = scoreHeadline(history.days, checkinDay, history.longestStreak);
+        if (active) setLoaded({ key: checkinDay, status: 'ready', headline });
       } catch (error: unknown) {
         console.error('Loading day score failed', error);
-        if (active) setLoaded({ key: checkinDay, status: 'error', overview: null });
+        if (active) setLoaded({ key: checkinDay, status: 'error', headline: null });
       }
     }, 0);
     return () => {
@@ -54,8 +55,8 @@ export function useDayScore(checkinDay: string): DayScoreState {
     };
   }, [checkinDay, progressVersion, blocksVersion, focusVersion]);
 
-  if (loaded === null || loaded.key !== checkinDay) return { status: 'loading', overview: null };
+  if (loaded === null || loaded.key !== checkinDay) return { status: 'loading', headline: null };
   return loaded.status === 'ready'
-    ? { status: 'ready', overview: loaded.overview }
-    : { status: 'error', overview: null };
+    ? { status: 'ready', headline: loaded.headline }
+    : { status: 'error', headline: null };
 }

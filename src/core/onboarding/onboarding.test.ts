@@ -95,6 +95,7 @@ describe('createDefaultDraft', () => {
     expect(isStepValid('sleep', draft)).toBe(true);
     expect(isStepValid('notifications', draft)).toBe(true);
     expect(isStepValid('rules', draft)).toBe(true);
+    expect(isStepValid('score', draft)).toBe(true);
   });
   it('jezik može pratiti uređaj', () => {
     const draft = createDefaultDraft('system');
@@ -140,6 +141,18 @@ describe('pretvorba', () => {
       morningNotifEnabled: true,
       eveningNotifEnabled: true,
       windDownNotifEnabled: true,
+      scorePlan: true,
+      scoreRules: false,
+      scoreSleep: false,
+    });
+  });
+  it('područja rezultata: zadano samo plan, bilo koja kombinacija, barem jedno', () => {
+    expect(isStepValid('score', filled({ scorePlan: false, scoreSleep: true }))).toBe(true);
+    expect(isStepValid('score', filled({ scorePlan: false }))).toBe(false);
+    expect(toSettingsInput(filled({ scoreRules: true, scoreSleep: true }))).toMatchObject({
+      scorePlan: true,
+      scoreRules: true,
+      scoreSleep: true,
     });
   });
   it('toSettingsInput: vikend buđenje se sprema samo kad se razlikuje', () => {

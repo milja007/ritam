@@ -10,7 +10,7 @@ import { weekendShiftMinutes, weekendWakeOf, weekendWakeWarning } from '@/core/s
 import { shiftClock } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { PermissionCard } from '@/features/notifications';
-import { ProgressCard } from '@/features/progress';
+import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
 import { updateSettings, useSettings } from '@/features/settings';
 import { useNow } from '@/features/today';
 import type { SettingsInput } from '@/db/repos';
@@ -96,6 +96,10 @@ export function ProfileScreen() {
 
               <Section title={t('profile.notifications.title')}>
                 <NotificationToggles settings={settings} save={save} />
+              </Section>
+
+              <Section title={t('profile.score.title')}>
+                <ScoreAreasPicker value={settings} onChange={save} />
               </Section>
             </>
           )}

@@ -3,7 +3,7 @@
  * zadnjih 7 dana naspram 7 prije, osobni rekordi. Mjeri se "bolje nego prije", ne savršenstvo.
  * Čista logika: bez React importa.
  */
-import { addDays, daysBetween } from '../time/local-date';
+import { addDays } from '../time/local-date';
 
 /** Razlika u bodovima potrebna da dan bude "bolji" ili "slabiji". */
 export const SCORE_TREND_THRESHOLD = 5;
@@ -71,21 +71,11 @@ export function weekStart(date: string): string | null {
 
 const monthStart = (date: string) => `${date.slice(0, 7)}-01`;
 
-function daysInMonth(start: string): number {
-  const next = addDays(start, 31);
-  const nextMonth = next === null ? null : monthStart(next);
-  return nextMonth === null ? 31 : (daysBetween(start, nextMonth) ?? 31);
-}
-
 /**
- * Najbolji tjedan/mjesec po prosjeku. Razdoblje ulazi tek kad je ocijenjeno barem pola njegovih
- * dana (inače bi jedan sjajan dan bio "rekord tjedna"). Kod izjednačenja vrijedi raniji.
+ * Najbolji tjedan/mjesec po prosjeku ocijenjenih dana. Bez uvjeta o broju dana (odluka P42): ulazi
+ * svako razdoblje s barem jednim ocijenjenim danom. Kod izjednačenja vrijedi raniji.
  */
-function bestPeriod(
-  days: readonly ScoredDay[],
-  startOf: (date: string) => string | null,
-  lengthOf: (start: string) => number,
-): PeriodRecord | null {
+function bestPeriod(days: readonly ScoredDay[], startOf: (date: string) => string | null): PeriodRecord | null {
   const groups = new Map<string, number[]>();
   for (const day of days) {
     const start = startOf(day.date);
@@ -96,7 +86,6 @@ function bestPeriod(
   }
   let best: PeriodRecord | null = null;
   for (const [start, scores] of [...groups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
-    if (scores.length * 2 < lengthOf(start)) continue;
     const avg = average(scores);
     if (avg !== null && (best === null || avg > best.average)) best = { start, average: avg, days: scores.length };
   }
@@ -139,10 +128,39 @@ export function progressOverview(
     last7Trend: last7 !== null && prev7 !== null ? scoreTrend(last7 - prev7) : null,
     records: {
       day: dayRecord,
-      week: bestPeriod(upTo, weekStart, () => 7),
-      month: bestPeriod(upTo, monthStart, daysInMonth),
+      week: bestPeriod(upTo, weekStart),
+      month: bestPeriod(upTo, monthStart),
       longestStreak,
     },
     isDayRecord: today !== null && bestEarlier !== null && today.score >= bestEarlier,
+  };
+}
+
+export type ScoreHeadline = {
+  /** Dan koji se prikazuje velik: jučer (konačan) dok današnji upit nije ispunjen, inače danas. */
+  featured: ProgressOverview;
+  /** `true` kad je istaknut jučerašnji konačni rezultat. */
+  featuresYesterday: boolean;
+  /** Današnji rezultat "u tijeku" (manji, ispod) kad je istaknut jučer; inače `null`. */
+  todayInProgress: ScoredDay | null;
+};
+
+/**
+ * Što Danas prikazuje (odluka P43): prije večernjeg upita jučerašnji konačni rezultat velik i
+ * današnji "u tijeku" manji ispod; nakon upita današnji konačni. Bez jučerašnjeg konačnog
+ * rezultata istaknut je današnji (i "u tijeku").
+ */
+export function scoreHeadline(days: readonly ScoredDay[], date: string, longestStreak = 0): ScoreHeadline {
+  const todayOverview = progressOverview(days, date, longestStreak);
+  const today = todayOverview.today;
+  const yesterday = addDays(date, -1);
+  const yesterdayFinal = yesterday === null ? undefined : days.find((day) => day.date === yesterday && day.final);
+  if ((today !== null && today.final) || yesterday === null || yesterdayFinal === undefined) {
+    return { featured: todayOverview, featuresYesterday: false, todayInProgress: null };
+  }
+  return {
+    featured: progressOverview(days, yesterday, longestStreak),
+    featuresYesterday: true,
+    todayInProgress: today,
   };
 }
