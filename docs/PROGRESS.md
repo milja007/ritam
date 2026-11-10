@@ -46,13 +46,17 @@ Borna je isprobao app na iPhoneu i dao smjer. Upisano u puni koncept (Claude Doc
 
 **Plan izrade:** novi koraci **17b–17e** (plan za danas pri ulasku, veliki raspored + trenutna aktivnost, Odustajem + zaključana dijagnoza, novi tabovi) idu **prije 18** (Supabase), jer je Danas ono što Borna sada koristi. 22b zamijenjen s 17c; 25 (tjedni plan kao kalendar), novi 25b (mjesec i godina), 28 (zabrane u planovima), 30 (glas za plan dana), 34 (bez questova) prilagođeni.
 
-**Pitanja za Bornu:**
-56. Redoslijed: Danas (17b–17e) prije Supabasea (18–19)? Pretpostavio sam da da.
-57. Dijagnoza se otvara **odmah** kad je sve riješeno (može i u 15 h), ili tek u vrijeme večernjeg upita? Ostaje li večernji upit kao takav (ocjena dana, zabrane), samo kraći jer su blokovi već riješeni tijekom dana?
-58. "Odustajem od svega": ruši li streak? Pretpostavka: ne — dan se zaključi kao loš (neodrađeni blokovi bez XP-a), ali se streak drži jer si se javio.
-59. Tabovi: **Danas · Tjedan · Mjesec i godina · Profil** (4 taba; navike i san u Profilu). Odgovara li, ili Mjesec i Godina kao zasebni tabovi?
-60. Zabrane u planovima: ostaje li **streak po zabrani** i večernja provjera "Držao sam se / Prekršio"? Pretpostavio sam da da.
-61. Ponuđene ideje: odakle dolaze dok nema LLM-a — moji početni primjeri + ono što ti jednom upišeš (spremi kao ideju s trajanjem i dobom dana)? Kasnije ih LLM predlaže iz tvojih ciljeva.
+**Ispravke i odgovori (Borna, anketa 2026-11-10) — pitanja 56–61 zatvorena:**
+- Komentar i bilješka su ista stvar, samo na trenutnoj i prošlim aktivnostima; Otkaži na trenutnoj i budućim.
+- Odustajem od svega: može se napisati ili glasom reći što se dogodilo (kontekst da se ne ponovi); **ne ruši streak** (P58).
+- Questovi nisu ukinuti nego idu u **Profil**, i to **samo epski** (dugoročni).
+- **P56:** Dan (17b–17e) prije Supabasea.
+- **P57:** dijagnoza se pokupi čim je sve riješeno; večernji upit postaje **ležeran podsjetnik** samo kad nešto fali (neprijavljeni zadaci, nema plana za sutra, nepokupljena dijagnoza — ponudi da je pogledaš).
+- **P59:** tabovi **Dan · Tjedan · Mjesec · Godina · Profil**.
+- **P60:** zabrane zadržavaju streak i dnevno "Držao sam se / Prekršio".
+- **P61:** primjeri + vlastite spremljene ideje, ali samo **par primjera** označenih kao "kako se piše", ne gotov popis i ne zauzimaju mjesto; glavni unos je da korisnik sam napiše ili kaže aktivnost i od–do ili trajanje.
+
+Sve upisano u Claude Docs koncept, `docs/CONCEPT.md` i koraci 17b–17e, 25b, 34 u `BUILD_PLAN.md`.
 
 **Sljedeće:** korak 17b — plan za danas pri ulasku (od sada prema naprijed, konkretne ideje). Prije toga: provjeriti GitHub issue s uređaja.
 
