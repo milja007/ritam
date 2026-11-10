@@ -13,6 +13,7 @@ import type {
   CheckinItemKind,
   CheckinKind,
   CheckinOutcome,
+  ReportPeriod,
   ThemePreference,
   XpSource,
 } from '@/core/domain';
@@ -137,4 +138,24 @@ export const xpEvents = sqliteTable(
     amount: integer('amount').notNull(),
   },
   (table) => [index('xp_events_user_date_idx').on(table.userId, table.date)],
+);
+
+export const reports = sqliteTable(
+  'reports',
+  {
+    ...baseColumns(),
+    period: text('period').$type<ReportPeriod>().notNull(),
+    periodStart: text('period_start').notNull(),
+    /** JSON po dijelovima dijagnoze (Ukratko, Napredak, Pohvale…). */
+    sections: text('sections', { mode: 'json' }).$type<unknown>().notNull(),
+    /** JSON statistike razdoblja iz koje je dijagnoza nastala. */
+    stats: text('stats', { mode: 'json' }).$type<unknown>().notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    suggestion: text('suggestion'),
+    suggestionAccepted: integer('suggestion_accepted', { mode: 'boolean' }),
+    helpful: integer('helpful', { mode: 'boolean' }),
+    feedbackComment: text('feedback_comment'),
+  },
+  // Jedna dijagnoza po razdoblju.
+  (table) => [uniqueIndex('reports_user_period_start_unique').on(table.userId, table.period, table.periodStart)],
 );
