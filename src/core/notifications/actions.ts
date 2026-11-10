@@ -19,6 +19,17 @@ export function blockActionOpensApp(action: BlockAction): boolean {
   return action === 'cameUp';
 }
 
+/**
+ * Treba li registrirati pozadinski zadatak expo-notifications za gumbe podsjetnika. Samo Android:
+ * na iOS-u taj zadatak služi isključivo za push obavijesti s poslužitelja (traži `remote-notification`
+ * i APNs, dakle plaćeni Apple račun) i nikad se ne pokreće za lokalne podsjetnike — tamo odgovor
+ * stiže u listener / `getLastNotificationResponseAsync`. Registracija na iOS-u je samo bacala grešku
+ * (prijavljeno s iPhonea, 2026-11-10).
+ */
+export function usesBackgroundNotificationTask(platform: string): boolean {
+  return platform === 'android';
+}
+
 /** Oznaka izvora u `data` da razlikujemo naše obavijesti od tuđih. */
 export const NOTIFICATION_SOURCE = 'ritam';
 

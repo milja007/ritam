@@ -8,6 +8,7 @@ import {
   dailyNotificationData,
   parseNotificationData,
   parseNotificationResponse,
+  usesBackgroundNotificationTask,
 } from './actions';
 
 const TAP = 'expo.modules.notifications.actions.DEFAULT';
@@ -90,5 +91,13 @@ describe('blockActionOpensApp', () => {
     expect(blockActionOpensApp('done')).toBe(false);
     expect(blockActionOpensApp('snooze')).toBe(false);
     expect(blockActionOpensApp('cameUp')).toBe(true);
+  });
+});
+
+describe('usesBackgroundNotificationTask', () => {
+  it('samo Android registrira pozadinski zadatak; iOS (lokalni podsjetnici) i web ne', () => {
+    expect(usesBackgroundNotificationTask('android')).toBe(true);
+    expect(usesBackgroundNotificationTask('ios')).toBe(false);
+    expect(usesBackgroundNotificationTask('web')).toBe(false);
   });
 });
