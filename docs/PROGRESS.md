@@ -2,6 +2,20 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 17:46 · Korak 16d — Obavijesti i postavke: dorade
+Nema otvorenih GitHub issuea. 16-dev ostaje Borni (lokalni iOS build na Macu), `wip/korak-16-dev` ne diram.
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16d`. Večernji upit vikendom (subota, nedjelja) pomaknut za razliku vikend − radni dan buđenja, kao jutarnja (`dayNotificationTimes`). Wind-down već prati buđenje sljedećeg dana (petak i subota navečer) — ostaje. Testovi.
+2. Postavka `blockRemindersEnabled` (zadano uključeno): Zod, lokalna migracija `0005`, Supabase migracija (paritet), lokalni `test:supabase`. Kad je isključeno, sync otkaže podsjetnike i odgode. Testovi.
+3. Profil, sekcija Obavijesti: uređivanje vremena jutarnje i večernje obavijesti, sati sna (koraci 15 min, 4–12 h) i prekidač podsjetnika blokova; spremanje kroz postojeći `saveSettings`, pa `syncNotificationsNow`. i18n HR/EN.
+4. Jutarnja obavijest s fiksnim sadržajem dana (čisto `morningSummary(blocks)` → broj blokova, zadataka i prvi blok s vremenom; bez blokova opći tekst). Id okidača ostaje isti; sadržaj se osvježava tako da se jutarnje obavijesti s promijenjenim tekstom ponovo zakažu (adapter vraća i sadržaj zakazanih). Testovi.
+5. Brzi odabiri iz povijesti: čisto `learnedQuickPicks(blocks, date)` — naziv koji se ponavlja (≥ 2 puta u zadnjih 28 dana, isti dan u tjednu ili svaki dan) s najčešćim početkom i trajanjem; prvi u popisu, uz fiksne. "Što imaš sutra?" ih koristi. Testovi.
+6. Gotovo/Odgodi bez otvaranja appa: `opensAppToForeground: false` za Gotovo i Odgodi (Iskrslo otvara), obrada odgovora u pozadini prema SDK 58 docs (pozadinski zadatak ako ga paket traži). Na uređaju neprovjereno — zapisati Borni za test u dev buildu.
+7. Provjere `tsc`, `lint`, `test`, `test:supabase`, `expo export`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 16d: vikend večer + wind-down (1), Profil vremena i sati sna (3), prekidač podsjetnika, zadano uključeni (2, 3), brzi odabiri iz povijesti (5), jutarnja s fiksnim sadržajem (4), Gotovo/Odgodi bez appa (6). Ne mijenjam koncept: tumačenja (prag ponavljanja u 5, "vikendom" = subota i nedjelja za večer) idu u pitanja. Redoslijed od najsigurnijeg; nakon svake točke commit + push na WIP.
+
 ## 2026-11-10 17:29 · Korak 16c — Rezultat po odabranim područjima
 Borna je potvrdio (2026-11-10 ~17:20) da sesije nastave dok on testira 16-dev na svom Macu — `wip/korak-16-dev` ne diram, 16c ide s `main`.
 
