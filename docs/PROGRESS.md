@@ -4,6 +4,7 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 ## 2026-11-10 · Greška s uređaja (zapisano iz druge sesije)
 - Na Bornovom iPhoneu (dev build) Metro javlja: `Registering background notification task failed — Background remote notifications have not been configured`. Znači da "Gotovo / Odgodi na podsjetniku bez otvaranja appa" (16d) na iOS-u vjerojatno ne radi. Popravak: `enableBackgroundRemoteNotifications: true` u pluginu `expo-notifications` (ili `remote-notification` u `UIBackgroundModes`) + novi native build na iPhoneu. Provjeriti prije 17c.
+- **Popravljeno (2026-11-10):** uzrok nije postavka nego pogrešna platforma — na iOS-u expo-notifications pozadinski zadatak služi samo za push s poslužitelja (`remote-notification` + APNs, traži plaćeni Apple račun) i nikad se ne pokreće za lokalne podsjetnike; tamo Gotovo/Odgodi stižu u listener i `getLastNotificationResponseAsync` (notifications-sync). Zadatak se sada registrira **samo na Androidu** (`usesBackgroundNotificationTask` u `src/core/notifications/actions.ts`, s testom). Bez native promjene. Na iPhoneu: bundle prošao, greška se više ne javlja. Još provjeriti na uređaju: Gotovo/Odgodi na podsjetniku dok je app **potpuno ugašen**.
 - Napomena: 17b je u isto vrijeme rađen u dvije sesije; druga verzija (grana samo lokalno) je odbačena, vrijedi ova na `main`.
 
 ## 2026-11-10 21:25 · Korak 17b (dorada) — po Bornovim ispravkama od 20:48
