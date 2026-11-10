@@ -6,3 +6,4 @@ export * from './rules';
 export * from './schedule-blocks';
 export * from './settings';
 export * from './reports';
+export * from './day-scores';

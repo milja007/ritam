@@ -339,14 +339,16 @@
       "sleep": "Sleep",
       "xp": "XP",
       "rating": "Day rating",
-      "streak": "Streak"
+      "streak": "Streak",
+      "score": "Day score"
     },
     "value": {
       "ofTotal": "{{value}}/{{total}}",
       "duration": "{{hours}} h {{minutes}} min",
       "xp": "+{{xp}} XP",
       "rating": "{{rating}}/5",
-      "days": "{{days}} d"
+      "days": "{{days}} d",
+      "score": "{{score}}/100"
     },
     "yesterday": "yesterday {{value}}",
     "lines": {
@@ -401,5 +403,27 @@
         "keepRhythm": "Keep the same rhythm tomorrow — no new changes."
       }
     }
+  },
+  "score": {
+    "title": "Day score",
+    "inProgress": "In progress · final after the evening check-in",
+    "final": "Final",
+    "empty": "Your day score appears as soon as you log something: plan, rules or sleep.",
+    "outOf": "/100",
+    "trend": {
+      "better": "Better than yesterday",
+      "same": "About the same as yesterday",
+      "worse": "Lower than yesterday",
+      "first": "First score — we'll compare tomorrow"
+    },
+    "yesterday": "Yesterday: {{score}}",
+    "lastWeek": "Same day last week: {{score}}",
+    "last7": "7-day average: {{avg}}",
+    "last7vs": "7-day average: {{avg}} (previous 7: {{prev}})",
+    "newRecord": "New personal best day!",
+    "record": "Best day: {{score}}",
+    "recordWeek": "Best week: {{avg}}",
+    "loadError": "Day score didn't load.",
+    "a11y": "Day score {{score}} out of 100. {{trend}}."
   }
 }

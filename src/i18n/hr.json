@@ -339,14 +339,16 @@
       "sleep": "San",
       "xp": "XP",
       "rating": "Ocjena dana",
-      "streak": "Niz"
+      "streak": "Niz",
+      "score": "Rezultat dana"
     },
     "value": {
       "ofTotal": "{{value}}/{{total}}",
       "duration": "{{hours}} h {{minutes}} min",
       "xp": "+{{xp}} XP",
       "rating": "{{rating}}/5",
-      "days": "{{days}} d."
+      "days": "{{days}} d.",
+      "score": "{{score}}/100"
     },
     "yesterday": "jučer {{value}}",
     "lines": {
@@ -401,5 +403,27 @@
         "keepRhythm": "Zadrži isti ritam i sutra — bez novih promjena."
       }
     }
+  },
+  "score": {
+    "title": "Rezultat dana",
+    "inProgress": "U tijeku · konačan nakon večernjeg upita",
+    "final": "Konačan",
+    "empty": "Rezultat dana pojavi se čim nešto zabilježiš: plan, zabrane ili san.",
+    "outOf": "/100",
+    "trend": {
+      "better": "Bolje nego jučer",
+      "same": "Slično kao jučer",
+      "worse": "Slabije nego jučer",
+      "first": "Prvi rezultat — sutra ga usporedimo"
+    },
+    "yesterday": "Jučer: {{score}}",
+    "lastWeek": "Isti dan prošli tjedan: {{score}}",
+    "last7": "Prosjek 7 dana: {{avg}}",
+    "last7vs": "Prosjek 7 dana: {{avg}} (7 prije: {{prev}})",
+    "newRecord": "Novi osobni rekord dana!",
+    "record": "Rekord dana: {{score}}",
+    "recordWeek": "Najbolji tjedan: {{avg}}",
+    "loadError": "Rezultat dana se nije učitao.",
+    "a11y": "Rezultat dana {{score}} od 100. {{trend}}."
   }
 }

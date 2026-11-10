@@ -39,9 +39,22 @@ export type PlanStats = {
 
 export type BrokenRule = { title: string; weight: number; trigger: string | null };
 
-export type RuleStats = { active: number; kept: number; broken: number; brokenRules: BrokenRule[] };
+export type RuleStats = {
+  active: number;
+  kept: number;
+  broken: number;
+  brokenRules: BrokenRule[];
+  /** Zbroj težina (1–3) zabrana koje su vrijedile / poštovane — za dnevni rezultat. */
+  activeWeight: number;
+  keptWeight: number;
+};
 
-export type SleepStats = { minutes: number; onTarget: boolean | null };
+export type SleepStats = {
+  minutes: number;
+  onTarget: boolean | null;
+  /** Odstupanje kreveta od cilja u minutama, `null` bez cilja. */
+  deviationMinutes: number | null;
+};
 
 export type ItemComment = { title: string; outcome: 'partial' | 'not'; comment: string };
 
@@ -90,11 +103,14 @@ function ruleStats(rules: DayStatsInput['rules'], logs: DayStatsInput['ruleLogs'
       return { title: rule?.title ?? '', weight: rule?.weight ?? 1, trigger: trigger.length > 0 ? trigger : null };
     })
     .sort((a, b) => b.weight - a.weight);
+  const weightOf = (ruleId: string) => byId.get(ruleId)?.weight ?? 1;
   return {
     active: known.length,
     kept: known.filter((log) => log.kept).length,
     broken: brokenRules.length,
     brokenRules,
+    activeWeight: known.reduce((sum, log) => sum + weightOf(log.ruleId), 0),
+    keptWeight: known.filter((log) => log.kept).reduce((sum, log) => sum + weightOf(log.ruleId), 0),
   };
 }
 
@@ -105,7 +121,11 @@ function sleepStats(input: DayStatsInput): SleepStats | null {
   if (minutes === null || minutes <= 0) return null;
   const target = sleepSettings ? targetBedtimeFor(sleepSettings, date) : null;
   const deviation = target === null ? null : bedtimeDeviationMinutes(target, morning.sleepStart);
-  return { minutes, onTarget: deviation === null ? null : deviation <= BEDTIME_TOLERANCE_MINUTES };
+  return {
+    minutes,
+    onTarget: deviation === null ? null : deviation <= BEDTIME_TOLERANCE_MINUTES,
+    deviationMinutes: deviation,
+  };
 }
 
 export function dayStats(input: DayStatsInput): DayStats {
@@ -136,15 +156,4 @@ export function dayStats(input: DayStatsInput): DayStats {
     comments,
     misses,
   };
-}
-
-/**
- * Jednostavna mjera dana za trend naspram jučer: odrađeni plan (djelomično = pola) i poštovane
- * zabrane kroz sve stavke. `null` kad nema ni plana ni zabrana. Korak 16b ju zamjenjuje
- * pravim dnevnim rezultatom 0–100.
- */
-export function dayBalance(stats: Pick<DayStats, 'plan' | 'rules'>): number | null {
-  const total = stats.plan.total + stats.rules.active;
-  if (total === 0) return null;
-  return (stats.plan.done + stats.plan.partial / 2 + stats.rules.kept) / total;
 }

@@ -83,6 +83,8 @@ function ProgressRowView({ row }: { row: ProgressRow }) {
 
   const format = (value: number, total?: number): string => {
     switch (row.metric) {
+      case 'score':
+        return t('diagnosis.value.score', { score: number(value) });
       case 'plan':
       case 'rules':
         return t('diagnosis.value.ofTotal', { value: number(value), total: number(total ?? 0) });

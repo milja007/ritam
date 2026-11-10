@@ -27,7 +27,7 @@ export function notifyProgressChanged(): void {
   for (const listener of listeners) listener();
 }
 
-function useProgressVersion(): number {
+export function useProgressVersion(): number {
   return useSyncExternalStore(subscribe, () => version, () => 0);
 }
 

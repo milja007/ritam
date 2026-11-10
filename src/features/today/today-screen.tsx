@@ -25,7 +25,7 @@ import {
   useEveningRequested,
   useMorningRequested,
 } from '@/features/notifications';
-import { XpStreakBar } from '@/features/progress';
+import { DayScoreCard, XpStreakBar } from '@/features/progress';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -144,6 +144,8 @@ export function TodayScreen() {
           </View>
 
           <XpStreakBar today={now.date} checkinDay={now.eveningDate} />
+
+          <DayScoreCard checkinDay={now.eveningDate} />
 
           <PermissionCard />
 

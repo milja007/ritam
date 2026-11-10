@@ -2,6 +2,44 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 12:43 · Korak 16b — Napredak: dnevni rezultat
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16b`; bez novih ovisnosti i bez migracije (rezultat se izvodi iz postojećih tablica, ne sprema se).
+2. Čisto `src/core/progress/score.ts`: `dayScore(stats)` → 0–100 i dijelovi — **plan** (udio odrađenog, djelomično = pola), **zabrane** (poštovane po težini 1–3), **san** (krevet unutar ±30 min od cilja = puno, linearno do 0 na 2 h odstupanja). Dio bez podataka ne ulazi (koncept: "što se ne bilježi, ne ulazi"); prisutni dijelovi jednake težine; ništa → `null`. `DayStats` dobiva odstupanje kreveta i težine zabrana. Testovi.
+3. Čisto `src/core/progress/compare.ts`: `progressOverview(scores, day)` → danas (rezultat, konačan ili "u tijeku"), naspram jučer i istog dana prošli tjedan (razlika + trend bolje/slično/slabije, prag 5 bodova), prosjek zadnjih 7 dana vs 7 prije, osobni rekordi (dan; tjedan pon–ned i kalendarski mjesec kao prosjek, samo kad je ocijenjeno barem pola razdoblja; najduži streak), je li danas novi rekord dana. Testovi.
+4. Dijagnoza (16) prelazi na rezultat: `dayTrend` koristi `dayScore` umjesto privremenog `dayBalance` (koji se briše), a Napredak dobiva redak "Rezultat dana" danas vs jučer. Postojeći testovi prilagođeni.
+5. Repo `listDayScores(db, user, through)` — jednim čitanjem svih blokova, upita, zabrana i postavki: rezultat za svaki dan s ispunjenim večernjim upitom + trenutni dan upita (privremeno, dok upit nije ispunjen). Test nad Node SQLite-om.
+6. UI `src/features/progress/`: `useDayScore(checkinDay)` (osvježava se kao `useProgress`) i **DayScoreCard** na Danas ispod XP trake — veliki broj, strelica trenda (bez crvenog), "+N nego jučer", isti dan prošli tjedan, 7 dana vs 7 prije, rekord; prazno stanje kad još nema rezultata.
+7. i18n HR/EN (`score.*`, redak dijagnoze) + pristupačnost (jedna oznaka kartice).
+8. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = rezultat 0–100 iz plana, zabrana i sna (2), usporedbe jučer / isti dan prošli tjedan / 7 vs 7 / rekordi (3), prikaz sa strelicom na Danas (6); `src/core/progress/` čisto s testovima (2, 3). Trackeri (31b), graf 30 dana i toplinska karta (37c), mjesec/godina vs prošli i streak boljih tjedana (36/37) nisu ovaj korak. Rezultat se ne sprema u bazu (izvedeno, kao XP razina) — `reports.stats` već nosi statistiku dana. Odluke u izvedbi (jednake težine dijelova, linearni pad za san, prag 5 bodova, "barem pola razdoblja" za rekord tjedna/mjeseca, prikaz današnjeg rezultata "u tijeku") → pitanja za Bornu. Zamjena privremenog trenda u dijagnozi je bila najavljena u koraku 16.
+
+**Napravljeno:**
+- Bez novih ovisnosti, bez migracije; rezultat se ne sprema (izveden iz blokova, upita, zabrana i jutarnje prijave).
+- Čisto `src/core/progress/score.ts`: `dayScore` → 0–100 + dijelovi **plan** (djelomično = pola), **zabrane** (poštovane po težini 1–3), **san** (krevet ±30 min od cilja = puno, linearno do 0 na 2 h odstupanja). Nezabilježen dio ne ulazi; prisutni dijelovi jednake težine; ništa → bez rezultata. `DayStats` dobio `rules.activeWeight/keptWeight` i `sleep.deviationMinutes`.
+- Čisto `src/core/progress/compare.ts`: `progressOverview(dani, dan, najduži niz)` → danas (konačan / u tijeku), naspram jučer i istog dana prošli tjedan (razlika + trend, prag **5 bodova**), prosjek zadnjih 7 dana vs 7 prije (samo ocijenjeni dani), rekordi (dan; tjedan pon–ned i kalendarski mjesec kao prosjek, tek s barem pola ocijenjenih dana; najduži niz), `isDayRecord`.
+- Dijagnoza (16): trend "bolje / slično / slabije" sada prema dnevnom rezultatu (privremeni `dayBalance` obrisan), Napredak ima prvi redak **Rezultat dana** (danas vs jučer). Verzija pravila `local-day-v2`.
+- Repo `listDayScores(db, user, dan)` — jedno čitanje u transakciji: rezultat za svaki dan s ispunjenim večernjim upitom + današnji dan upita "u tijeku"; dani bez upita ne ulaze (statusi nisu potvrđeni).
+- UI: `useDayScore` (osvježava se kao `useProgress`) i **DayScoreCard** na Danas ispod XP trake — veliki broj /100, strelica i "+N" naspram jučer (bez crvenog), oznaka "U tijeku · konačan nakon večernjeg upita", jučer, isti dan prošli tjedan, prosjek 7 dana (7 prije, sa strelicom), "Novi osobni rekord dana!" ili "Rekord dana: N"; prazno stanje s objašnjenjem; jedna a11y oznaka cijele kartice.
+- i18n HR/EN (`score.*`, `diagnosis.metric.score`, `diagnosis.value.score`).
+- 18 novih testova (ukupno 444). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (444/444), `expo export --platform android` ✅ (4.4 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox): izgled kartice, osvježavanje nakon kvačice i upita.
+- Današnji rezultat je "u tijeku" dok upit nije ispunjen — neodrađeni (još planirani) blokovi se broje kao neodrađeni, pa je ujutro nizak i raste kvačicama.
+- Rekord tjedna/mjeseca i najduži niz se računaju, ali se na Danas prikazuje samo rekord dana; prikaz ostalih (Profil, graf 30 dana, toplinska karta) je korak 37c. Mjesec vs prošli mjesec, godina i streak boljih tjedana su koraci 36/37.
+- Supabase (17): rezultat se ne sprema, nema nove tablice.
+
+**Pitanja za Bornu:**
+39. Dnevni rezultat = prosjek prisutnih dijelova (plan, zabrane, san) s **jednakim težinama**; zabrane se važu težinom 1–3. Želiš li drukčije omjere (npr. plan 50 %, zabrane 30 %, san 20 %)?
+40. San: krevet unutar ±30 min = puni bodovi, zatim **linearno do 0 na 2 h** kašnjenja/ranijeg odlaska. Odgovara li, ili radije "sve ili ništa" kao kod XP-a?
+41. Prag trenda je **5 bodova** (i na Danas i u dijagnozi; dijagnoza je prije koristila 10 postotnih bodova privremene mjere). Odgovara li?
+42. Rekord tjedna/mjeseca vrijedi tek kad je ocijenjeno barem pola dana razdoblja (4/7, 15–16/30–31). Odgovara li?
+43. Na Danas se prikazuje današnji rezultat "u tijeku" od jutra. Želiš li umjesto toga do večernjeg upita vidjeti jučerašnji konačni rezultat?
+
+**Sljedeće:** korak 17 — Supabase shema (`supabase/migrations/` za sve tablice uključujući `reports` i nove stupce `settings`, RLS vlasnik, `config.toml`; na remote tek kad prođe lokalno).
+
 ## 2026-11-10 10:43 · Korak 16 — Dnevna dijagnoza (lokalna)
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-16`; bez novih ovisnosti. Migracija `0003_reports`: tablica `reports` po modelu iz punog koncepta — `period` (day/week/month/year), `period_start`, `sections` (JSON po dijelovima dijagnoze), `stats` (JSON), `prompt_version`, `suggestion`, `suggestion_accepted`, `helpful`, `feedback_comment`; jedinstveni indeks (korisnik, period, početak). Zod shema u `src/core/domain/report.ts` + test migracije.
