@@ -15,6 +15,30 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = SQL za sve tablice (2), RLS vlasnik (4), `config.toml` (1), na remote tek kad prođe lokalno (5 → 7). "Sve tablice" tumačim kao tablice koje app koristi + `llm_calls` (koraci 20–22 ga trebaju odmah); `tasks`, `disruptions`, `quests`, `trackers`, `tracker_entries`, `badges` dobivaju vlastite migracije sa svojim značajkama (faze 2–3) — da shema ne nagađa polja prije odluka. Klijent, auth i sync su koraci 18–19 (ovdje ništa u appu). Tombstoni za brisanje (sync) — odluka koraka 19. Lokalno `supabase start` traži Docker koji sandbox nema, pa koristim pravi Postgres sa stubom `auth`; razlika zapisana u napomenama.
 
+**Napravljeno:**
+- Bez novih npm ovisnosti. `npx supabase init` → `supabase/config.toml` (project_id `ritam`, zadane postavke; auth redirecti za magic link su korak 18) + `supabase/README.md`.
+- Migracija `supabase/migrations/20261110135048_init.sql` (ime = verzija na remoteu): `settings`, `schedule_blocks`, `checkins`, `checkin_items`, `rules`, `rule_logs`, `xp_events`, `reports`, `llm_calls`. `id`/`user_id` uuid (`user_id` → `auth.users`, zadano `auth.uid()`, brisanje korisnika briše sve), `timestamptz`, `date`, sati `text` uz `public.is_clock()` CHECK, JSON → `jsonb`, sve domenske vrijednosti i granice iz Zod shema kao CHECK (status, vrsta, 15-min koraci sna, ocjena 1–5, težina 1–3, XP > 0, `ok` = `outcome`, "U redu" se ne premješta, kraj bloka nakon početka osim sna). Isti jedinstveni indeksi kao lokalno.
+- Složeni strani ključevi `(checkin_id, user_id)` / `(rule_id, user_id)` — redak ne može pokazivati na tuđi checkin ili zabranu. `rule_logs.checkin_id` → `set null` samo tog stupca.
+- RLS na svim tablicama: vlasnik (`(select auth.uid()) = user_id`) za select/insert/update/delete, uloga `authenticated`; `anon` bez prava. `llm_calls`: korisnik samo čita svoje, piše service role (Edge Function).
+- `npm run test:supabase` (`scripts/supabase-local-test.sh`): privremeni Postgres (initdb, bez Dockera) + stub `auth` (`supabase/tests/auth-stub.sql`), sve migracije redom, `supabase/tests/schema.sql` — 40-ak provjera: izolacija dva korisnika (čitanje, izmjena, brisanje), pisanje u tuđe ime, anon, CHECK-ovi, jedinstvenost, složeni FK, cascade, RLS na svakoj tablici. Provjereno da neuspjela provjera daje izlazni kod ≠ 0.
+- Jest `src/db/supabase-parity.test.ts`: svaki stupac lokalne Drizzle sheme mora postojati u Supabase migracijama (provjereno da pada kad stupac nedostaje).
+- **Remote `ritam`:** `init` primijenjen (verzija `20261110135048`), 9 tablica, RLS uključen svugdje; sigurnosni savjetnik bez nalaza. Performance savjetnik: 3 složena FK bez indeksa → nova migracija `20261110140500_fk_indexes.sql` (samo `create index`), lokalno prošla.
+- `.env.example` (`EXPO_PUBLIC_SUPABASE_URL` s URL-om projekta, `EXPO_PUBLIC_SUPABASE_KEY` prazan), `.env` u `.gitignore`.
+- 10 novih testova (ukupno 454). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (454/454), `npm run test:supabase` ✅. (`expo export` nije potreban — app kod nije mijenjan.)
+
+**Problemi/napomene:**
+- **`fk_indexes` još NIJE na remoteu:** prvi pokušaj (tada s `drop index`) je Supabase MCP zadržao na potvrdi korisnika koja nije stigla (nitko ne gleda). Migracija je sada samo dodavanje (bez DROP). Sljedeća sesija: primijeniti je (`apply_migration`, ime `fk_indexes`) i **preimenovati datoteku na verziju koju vrati `list_migrations`** (MCP dodjeljuje vlastiti timestamp). Stari indeksi `checkin_items_checkin_idx` i `rule_logs_checkin_idx` postaju suvišni — ukloniti kad netko može potvrditi.
+- Lokalni test koristi pravi Postgres (16) sa stubom `auth`, ne pravi Supabase stack (sandbox nema Docker); remote je Postgres 17. Razlike koje stub ne pokriva: pravi JWT/GoTrue, `storage`, realtime.
+- `tasks`, `disruptions`, `quests`, `trackers`, `tracker_entries`, `badges` iz modela koncepta dobivaju migracije sa svojim značajkama (`schedule_blocks.task_id` zasad bez FK).
+- `updated_at` postavlja klijent (nema triggera) — sync (19) uspoređuje zadnji `updatedAt`. Brisanje kod synca (tombstoni) je odluka koraka 19.
+- Lokalni `user_id` je `local-user` (nije uuid) — sync (19) ga mora preslikati na `auth.uid()` pri prvoj prijavi.
+
+**Pitanja za Bornu:**
+44. Supabase MCP traži tvoju potvrdu za `drop index` na remoteu. Smijem li u budućim sesijama ostavljati samo nedestruktivne migracije (bez DROP), a čišćenje suvišnih indeksa raditi kad si prisutan?
+45. Tablice iz koncepta koje app još ne koristi (`tasks`, `quests`, `trackers`, `badges`, `disruptions`) dodajem tek s njihovim koracima, ne unaprijed. Odgovara li?
+
+**Sljedeće:** korak 18 — Supabase klijent + auth (`@supabase/supabase-js`, `EXPO_PUBLIC_SUPABASE_URL/KEY`, email magic link iza feature flaga). Prije toga: primijeniti `fk_indexes` na remote i preimenovati datoteku (vidi napomene).
+
 ## 2026-11-10 12:43 · Korak 16b — Napredak: dnevni rezultat
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-16b`; bez novih ovisnosti i bez migracije (rezultat se izvodi iz postojećih tablica, ne sprema se).
