@@ -24,10 +24,12 @@ import {
   xpEventSchema,
   type Checkin,
   type LocalDate,
+  selectedScoreAreas,
+  settingsSchema,
 } from '@/core/domain';
 
 import type { RitamDb } from '../db';
-import { checkinItems, checkins, ruleLogs, rules, scheduleBlocks, xpEvents } from '../schema';
+import { checkinItems, checkins, ruleLogs, rules, scheduleBlocks, settings, xpEvents } from '../schema';
 import { syncBlockTaskXp } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
@@ -110,6 +112,11 @@ export function saveEveningCheckin(
 
     // Checkin: novi ili ažuriranje postojećeg (isti id, stavke/zapisi/XP se zamjenjuju).
     const existing = tx.select().from(checkins).where(eveningOf(userId, date)).get();
+    // Snimka područja rezultata (P48): prvo spremanje upita zaključuje dan s trenutnim odabirom;
+    // kasnije uređivanje upita zadržava snimku tog dana.
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const scoreAreas =
+      existing?.scoreAreas ?? (settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : ['plan']);
     const checkin = checkinSchema.parse({
       id: existing?.id ?? deps.newId(),
       userId,
@@ -122,6 +129,7 @@ export function saveEveningCheckin(
       mood: existing?.mood ?? null,
       dayRating: draft.rating,
       note: cleanText(draft.note),
+      scoreAreas,
     });
 
     const oldItems = existing

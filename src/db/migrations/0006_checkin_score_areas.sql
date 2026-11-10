@@ -1,0 +1,1 @@
+ALTER TABLE `checkins` ADD `score_areas` text;

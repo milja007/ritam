@@ -7,6 +7,7 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-or
 
 import type {
   ActiveHours,
+  ScoreArea,
   BlockKind,
   BlockSource,
   BlockStatus,
@@ -78,6 +79,8 @@ export const checkins = sqliteTable(
     mood: integer('mood'),
     dayRating: integer('day_rating'),
     note: text('note'),
+    // Snimka područja rezultata pri zaključivanju dana (korak 16c, P48); JSON niz.
+    scoreAreas: text('score_areas', { mode: 'json' }).$type<ScoreArea[]>(),
   },
   // Jedan jutarnji i jedan večernji checkin po danu.
   (table) => [uniqueIndex('checkins_user_date_kind_unique').on(table.userId, table.date, table.kind)],

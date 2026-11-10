@@ -50,8 +50,8 @@ export type OnboardingDraft = {
   morningNotifTime: string;
   eveningNotifTime: string;
   rules: RuleDraft[];
-  /** Područja dnevnog rezultata (zadano samo plan). */
-  scorePlan: boolean;
+  /** Područja dnevnog rezultata: plan uvijek, zabrane i san opcionalni (zadano isključeni). */
+  scorePlan: true;
   scoreRules: boolean;
   scoreSleep: boolean;
 };
@@ -186,7 +186,8 @@ export function isStepValid(step: OnboardingStep, draft: OnboardingDraft): boole
         draft.rules.every(isRuleDraftValid)
       );
     case 'score':
-      return draft.scorePlan || draft.scoreRules || draft.scoreSleep;
+      // Plan je uvijek uključen; zabrane i san su slobodan izbor.
+      return true;
   }
 }
 

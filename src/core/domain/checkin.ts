@@ -8,6 +8,7 @@ import {
   noteSchema,
   rating1to5Schema,
 } from './common';
+import { scoreAreasSchema } from './settings';
 
 export const CHECKIN_KINDS = ['morning', 'evening'] as const;
 export type CheckinKind = (typeof CHECKIN_KINDS)[number];
@@ -22,6 +23,11 @@ export const checkinSchema = z.object({
   mood: rating1to5Schema.nullable(),
   dayRating: rating1to5Schema.nullable(),
   note: noteSchema.nullable(),
+  /**
+   * Večernji upit: područja rezultata koja su vrijedila kad je dan zaključen (odluka P48 — prošli
+   * dani zadrže staro bodovanje). `null` = jutarnja prijava ili upit prije koraka 16c.
+   */
+  scoreAreas: scoreAreasSchema.nullable().default(null),
 });
 
 export type Checkin = z.infer<typeof checkinSchema>;

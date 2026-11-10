@@ -102,7 +102,11 @@ select test.expect_error($q$insert into public.settings (language, wake_time, sl
 select test.expect_error($q$update public.settings set sleep_hours = 7.1$q$, '23514', 'san u koracima od 15 min');
 select test.expect_count($q$select 1 from public.settings where score_plan and not score_rules and not score_sleep$q$,
   1, 'zadano područje rezultata: samo plan');
-select test.expect_error($q$update public.settings set score_plan = false$q$, '23514', 'barem jedno područje rezultata');
+select test.expect_error($q$update public.settings set score_plan = false$q$, '23514', 'plan je uvijek u rezultatu');
+select test.expect_error($q$insert into public.checkins (date, kind, score_areas) values ('2026-11-01', 'evening', '["sleep"]')$q$,
+  '23514', 'snimka područja mora imati plan');
+select test.expect_error($q$insert into public.checkins (date, kind, score_areas) values ('2026-11-01', 'evening', '["plan", "mood"]')$q$,
+  '23514', 'snimka samo s poznatim područjima');
 select test.expect_error($q$insert into public.checkins (date, kind) values ('2026-11-10', 'evening')$q$,
   '23505', 'jedan večernji checkin po danu');
 select test.expect_error($q$insert into public.checkins (date, kind, mood) values ('2026-11-09', 'morning', 6)$q$,

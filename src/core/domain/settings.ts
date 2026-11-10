@@ -10,50 +10,52 @@ export const THEME_PREFERENCES = ['system', 'dark', 'light'] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
 /**
- * Područja dnevnog rezultata koja korisnik prati (odluka P39, 2026-11-10): bilo koja kombinacija,
- * barem jedno; zadano samo plan.
+ * Područja dnevnog rezultata (odluka P39, dorađena 2026-11-10): plan je uvijek uključen i nosi
+ * najviše, zabrane i san su opcionalni (zadano isključeni).
  */
 export const SCORE_AREAS = ['plan', 'rules', 'sleep'] as const;
 export type ScoreArea = (typeof SCORE_AREAS)[number];
 
-/** Korisničke postavke (jedan red po korisniku). */
-export const settingsSchema = z
-  .object({
-    ...baseEntityShape,
-    language: z.enum(LANGUAGE_PREFERENCES),
-    /** Ciljano vrijeme buđenja (radni dan). */
-    wakeTime: clockTimeSchema,
-    /** Vrijeme buđenja vikendom (subota i nedjelja); `null` = isto kao radnim danom. */
-    weekendWakeTime: clockTimeSchema.nullable(),
-    /** Ciljani sati sna (koraci od 15 min). */
-    sleepHours: z
-      .number()
-      .min(4)
-      .max(12)
-      .refine((hours) => Number.isInteger(hours * 4), {
-        message: 'Expected 15-minute steps',
-      }),
-    morningNotifTime: clockTimeSchema,
-    eveningNotifTime: clockTimeSchema,
-    /** Koliko minuta prije kreveta stiže wind-down obavijest. */
-    windDownMinutes: z.number().int().min(0).max(180),
-    /** Prekidači dnevnih obavijesti (svaka se može isključiti u Profilu). */
-    morningNotifEnabled: z.boolean(),
-    eveningNotifEnabled: z.boolean(),
-    windDownNotifEnabled: z.boolean(),
-    /** Podsjetnici na početku blokova (odluka P28: zadano uključeni, mogu se isključiti u Profilu). */
-    blockRemindersEnabled: z.boolean(),
-    theme: z.enum(THEME_PREFERENCES),
-    googleCalendarConnected: z.boolean(),
-    /** Područja dnevnog rezultata (barem jedno uključeno). */
-    scorePlan: z.boolean(),
-    scoreRules: z.boolean(),
-    scoreSleep: z.boolean(),
-  })
-  .refine((value) => value.scorePlan || value.scoreRules || value.scoreSleep, {
-    message: 'At least one score area',
-    path: ['scorePlan'],
+/** Popis područja (npr. snimka uz večernji upit): bez ponavljanja, plan uvijek uključen. */
+export const scoreAreasSchema = z
+  .array(z.enum(SCORE_AREAS))
+  .refine((areas) => areas.includes('plan') && new Set(areas).size === areas.length, {
+    message: 'Score areas must include plan, without duplicates',
   });
+
+/** Korisničke postavke (jedan red po korisniku). */
+export const settingsSchema = z.object({
+  ...baseEntityShape,
+  language: z.enum(LANGUAGE_PREFERENCES),
+  /** Ciljano vrijeme buđenja (radni dan). */
+  wakeTime: clockTimeSchema,
+  /** Vrijeme buđenja vikendom (subota i nedjelja); `null` = isto kao radnim danom. */
+  weekendWakeTime: clockTimeSchema.nullable(),
+  /** Ciljani sati sna (koraci od 15 min). */
+  sleepHours: z
+    .number()
+    .min(4)
+    .max(12)
+    .refine((hours) => Number.isInteger(hours * 4), {
+      message: 'Expected 15-minute steps',
+    }),
+  morningNotifTime: clockTimeSchema,
+  eveningNotifTime: clockTimeSchema,
+  /** Koliko minuta prije kreveta stiže wind-down obavijest. */
+  windDownMinutes: z.number().int().min(0).max(180),
+  /** Prekidači dnevnih obavijesti (svaka se može isključiti u Profilu). */
+  morningNotifEnabled: z.boolean(),
+  eveningNotifEnabled: z.boolean(),
+  windDownNotifEnabled: z.boolean(),
+  /** Podsjetnici na početku blokova (odluka P28: zadano uključeni, mogu se isključiti u Profilu). */
+  blockRemindersEnabled: z.boolean(),
+  theme: z.enum(THEME_PREFERENCES),
+  googleCalendarConnected: z.boolean(),
+  /** Područja dnevnog rezultata: plan uvijek (`true`), zabrane i san opcionalni. */
+  scorePlan: z.literal(true),
+  scoreRules: z.boolean(),
+  scoreSleep: z.boolean(),
+});
 
 export type Settings = z.infer<typeof settingsSchema>;
 

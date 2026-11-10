@@ -163,10 +163,20 @@ describe('settings', () => {
     ['negative wind-down', { windDownMinutes: -5 }],
     ['unknown theme', { theme: 'blue' }],
     ['missing calendar flag', { googleCalendarConnected: undefined }],
-    ['no score area', { scorePlan: false, scoreRules: false, scoreSleep: false }],
+    ['plan switched off', { scorePlan: false }],
     ['missing score area flag', { scoreRules: undefined }],
   ])('rejects %s', (_name, patch) => {
     expect(settingsSchema.safeParse({ ...valid.settings, ...patch }).success).toBe(false);
+  });
+});
+
+describe('checkin scoreAreas (snimka područja)', () => {
+  it('prihvaća null i popis s planom; odbija bez plana i s ponavljanjem', () => {
+    const evening = { ...valid.checkin, kind: 'evening' };
+    expect(checkinSchema.parse({ ...evening, scoreAreas: undefined }).scoreAreas).toBeNull();
+    expect(checkinSchema.safeParse({ ...evening, scoreAreas: ['plan', 'sleep'] }).success).toBe(true);
+    expect(checkinSchema.safeParse({ ...evening, scoreAreas: ['sleep'] }).success).toBe(false);
+    expect(checkinSchema.safeParse({ ...evening, scoreAreas: ['plan', 'plan'] }).success).toBe(false);
   });
 });
 

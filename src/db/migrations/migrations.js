@@ -7,6 +7,7 @@ import m0002 from './0002_settings_refinements.sql';
 import m0003 from './0003_reports.sql';
 import m0004 from './0004_score_areas.sql';
 import m0005 from './0005_block_reminders.sql';
+import m0006 from './0006_checkin_score_areas.sql';
 
   export default {
     journal,
@@ -16,7 +17,8 @@ m0001,
 m0002,
 m0003,
 m0004,
-m0005
+m0005,
+m0006
     }
   }
   
