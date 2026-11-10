@@ -28,7 +28,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **14. Jutarnji brief** — ekran iz notifikacije: pozdrav, prijava sna (2 taba), kartice dana, Prilagodi / Kreni.
 - [x] **15. XP traka + streak u UI-ju** — na tabu Danas i Profil.
 - [x] **16. Dnevna dijagnoza (lokalna)** — na kraju upita prikaz u strukturi dijagnoze iz CONCEPT.md (Ukratko, Napredak, Pohvale, …) koliko se može bez LLM-a: statistika dana i usporedba s jučer. Sprema u `reports` (period `day`).
-- [ ] **16b. Napredak — dnevni rezultat** — `src/core/progress/` (čisto + testovi): dnevni rezultat 0–100 (plan, zabrane, san; trackeri kasnije), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi. Prikaz rezultata sa strelicom trenda na tabu Danas.
+- [~] **16b. Napredak — dnevni rezultat** — `src/core/progress/` (čisto + testovi): dnevni rezultat 0–100 (plan, zabrane, san; trackeri kasnije), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi. Prikaz rezultata sa strelicom trenda na tabu Danas.
 - [ ] **17. Supabase shema** — `supabase/migrations/` SQL za sve tablice + RLS (vlasnik); remote projekt `ritam` postoji (vidi Odluke u PROGRESS.md), primijeniti tek kad migracije prođu lokalno. `supabase/config.toml`.
 - [ ] **18. Supabase klijent + auth** — `@supabase/supabase-js`, env varijable (`EXPO_PUBLIC_SUPABASE_URL/KEY`), auth ekran (email magic link) iza feature flaga dok nema accounta.
 - [ ] **19. Sync** — red promjena lokalno → Supabase, pull pri pokretanju; konflikti: zadnji updatedAt pobjeđuje.
