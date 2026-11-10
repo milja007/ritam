@@ -27,6 +27,14 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 47. Build: ažurirati Xcode na ≥ 26.4, ili privremeno patchati `expo-modules-jsi` (lokalno / `patch-package` u repou)?
     - **Odluka Borna (2026-11-10): ažurira Xcode.** Nakon ažuriranja: `cd ios && LANG=en_US.UTF-8 pod install`, pa ponovni build za iPhone (vidi gore).
 
+**Završeno (nakon ažuriranja Xcodea):**
+- Xcode 27.2 (Swift 6.4.2): `expo-modules-jsi` se prevodi bez izmjena, nikakav patch nije potreban. `BUILD SUCCEEDED` (Debug, osobni tim `88A7273T6Y`).
+- App instaliran na Bornov iPhone 12 (iOS 26.6), Borna potvrdio developera u Postavkama, app pokrenut i učitao JS s Metra (`npx expo start --dev-client`). Izgled i rad na uređaju Borna još provjerava → greške kao GitHub issue.
+- Upute za Bornu u `README.md` (lokalni put prvi, 7 dana valjanosti, "Vjeruj developeru", EAS kasnije).
+- Napomene: prije prvog builda treba prihvatiti Xcode licencu (`sudo xcodebuild -license accept` u pravom Terminalu ili "Agree" u Xcodeu — u terminalu aplikacije sudo ne prima lozinku). `gh` nije prijavljen, pa GitHub issue nisu provjereni ovu sesiju.
+
+**Sljedeće:** korak 16c — rezultat po odabranim područjima. Prije toga: provjeriti GitHub issue s uređaja; `fk_indexes` na remote (vidi korak 17).
+
 ## 2026-11-10 14:43 · Korak 17 — Supabase shema
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-17`; bez novih npm ovisnosti (Supabase CLI kroz `npx supabase`). `supabase init` → `supabase/config.toml` (project_id `ritam`, auth samo email, ostalo zadano).
