@@ -16,6 +16,24 @@ Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 mi
 
 *Recenzija plana:* kriteriji 17c — "Trenutno" + živi sat u sekundama + odbrojavanje do kraja i do sljedeće (1, 4); ostatak dana od sada (5); Komentar = bilješka samo trenutna/prošle, Otkaži trenutna/buduće, prošle se prijavljuju izravno (2, 3, 5); dizajn s tokenima i gradijentom (4, 5). Odustajem / dijagnoza su 17d, tabovi 17e — ne radim. Dodatni stupac `note` je nužan za bilješku (nije nova značajka koncepta).
 
+**Napravljeno:**
+- `src/core/schedule/now-view.ts` (+15 testova): `daySchedule` (trenutna bez sna i otkazanih, kod preklapanja kasniji početak; sljedeća; prošle; ostatak dana; `secondsLeft`, `secondsUntilNext`, `progress`), `formatClockSeconds`, `formatCountdown`, `blockActions` (Komentar trenutna/prošle, Otkaži trenutna/buduće, prijava prošle — trenutna samo Gotovo), `reportedStatus` (ponovni dodir vraća na planirano), `normalizeNote`, `isCancelled` (Otkaži = `skipped`, bez novog statusa; podsjetnik se ne šalje jer `needsReminder` traži `planned`).
+- Bilješka: `schedule_blocks.note` (Zod `noteSchema`, Drizzle, lokalna migracija `0007_block_notes`, Supabase `20261110224500_block_notes.sql` s CHECK ≤ 2000), repo `setBlockNote` (ne dira status/XP; uređivanje bloka je ne briše) + test.
+- UI: `NowCard` na vrhu Danas — "Trenutno", živi sat HH:MM:SS (`useLiveClock`: tik na punu sekundu samo dok je ekran u fokusu i app aktivan), naziv velikim slovima, veliko odbrojavanje do kraja u akcentu + traka napretka, Gotovo i "Komentar · Otkaži", ispod "Sljedeće … počinje za m:ss". Kad ništa ne traje: "Slobodno" s velikim odbrojavanjem do sljedeće; kad nema ničeg: "Za danas je to sve".
+- Raspored kao vremenska linija (vrijeme lijevo, točka u boji statusa, linija): "Ostatak dana" od sada; "Ranije danas · N" sklopljeno, otvoreno samo dok ima neprijavljenih, s prijavom U redu / Djelomično / Nije izravno na kartici; otkazane prekrižene s oznakom "Otkazano"; komentar se vidi na kartici.
+- List akcija bloka (`BlockSheet`): prijava (prošle), Komentar (trenutna/prošle; za buduće objašnjenje), Otkaži / Vrati u plan (trenutna/buduće), Uredi (otvara postojeći uređivač).
+- XP traka i rezultat dana premješteni ispod rasporeda (raspored je glavni sadržaj ekrana). Uklonjen nekorišteni `today.markDone` i `toggleDone`.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 547/547, `expo export --platform android` ✅.
+
+**Na uređaju neprovjereno (Borna):** izgled "Trenutno" i vremenske linije na iPhoneu (tamna/svijetla tema, gradijent), tikanje sata, list akcija s tipkovnicom, prijava pilulama u kartici.
+
+**Pitanja za Bornu:**
+65. Supabase migracija `block_notes` (stupac `note` u `schedule_blocks`) je u repou, ali **nije primijenjena na remote `ritam`** — smijem li je primijeniti?
+66. XP traka i rezultat dana su sada **ispod** rasporeda (na vrhu je "Trenutno"). Odgovara li, ili ih želiš iznad?
+67. Otkazana aktivnost se sprema kao `skipped` (isto kao "Nije") — u večernjem upitu i rezultatu računa se kao neodrađena. U redu, ili otkazano treba biti neutralno (ne smanjuje rezultat)?
+
+**Sljedeće:** korak 17d — Odustajem od svega + dijagnoza čim je sve riješeno + ležeran večernji podsjetnik.
+
 ## 2026-11-10 · Greška s uređaja (zapisano iz druge sesije)
 - Na Bornovom iPhoneu (dev build) Metro javlja: `Registering background notification task failed — Background remote notifications have not been configured`. Znači da "Gotovo / Odgodi na podsjetniku bez otvaranja appa" (16d) na iOS-u vjerojatno ne radi. Popravak: `enableBackgroundRemoteNotifications: true` u pluginu `expo-notifications` (ili `remote-notification` u `UIBackgroundModes`) + novi native build na iPhoneu. Provjeriti prije 17c.
 - **Popravljeno (2026-11-10):** uzrok nije postavka nego pogrešna platforma — na iOS-u expo-notifications pozadinski zadatak služi samo za push s poslužitelja (`remote-notification` + APNs, traži plaćeni Apple račun) i nikad se ne pokreće za lokalne podsjetnike; tamo Gotovo/Odgodi stižu u listener i `getLastNotificationResponseAsync` (notifications-sync). Zadatak se sada registrira **samo na Androidu** (`usesBackgroundNotificationTask` u `src/core/notifications/actions.ts`, s testom). Bez native promjene. Na iPhoneu: bundle prošao, greška se više ne javlja. Još provjeriti na uređaju: Gotovo/Odgodi na podsjetniku dok je app **potpuno ugašen**.
