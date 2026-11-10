@@ -14,6 +14,7 @@ import {
   getEveningCheckin,
   IncompleteEveningCheckinError,
   listBlocksForDate,
+  listEveningCheckins,
   listXpEvents,
   saveEveningCheckin,
   type RuleInput,
@@ -447,5 +448,40 @@ describe('setBlockStatus / deleteBlock', () => {
     expect(deleteBlock(db, USER, work.id)).toBe(true);
     expect(await listXpEvents(db, USER)).toEqual([]);
     expect(setBlockStatus(db, USER, work.id, 'done', deps)).toBeNull();
+  });
+});
+
+describe('listEveningCheckins', () => {
+  it('samo večernji upiti korisnika, uzlazno, s ocjenom (za streak)', async () => {
+    const { db, deps } = await setup();
+    const iso = deps.now().toISOString();
+    const stamp = { createdAt: iso, updatedAt: iso };
+    const row = (id: string, userId: string, date: string, kind: 'evening' | 'morning', dayRating: number | null) => ({
+      ...stamp,
+      id,
+      userId,
+      date,
+      kind,
+      dayRating,
+      note: null,
+      mood: null,
+      sleepStart: null,
+      wakeTime: null,
+    });
+    db.insert(checkins)
+      .values([
+        row('c2', USER, '2026-11-09', 'evening', 4),
+        row('c1', USER, '2026-11-08', 'evening', 3),
+        row('m1', USER, '2026-11-09', 'morning', null),
+        row('o1', 'drugi', '2026-11-07', 'evening', 5),
+      ])
+      .run();
+
+    const list = await listEveningCheckins(db, USER);
+    expect(list).toEqual([
+      { date: '2026-11-08', kind: 'evening', dayRating: 3 },
+      { date: '2026-11-09', kind: 'evening', dayRating: 4 },
+    ]);
+    expect(mainStreak(list, '2026-11-10')).toMatchObject({ current: 2, doneToday: false });
   });
 });
