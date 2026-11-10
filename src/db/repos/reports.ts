@@ -1,0 +1,186 @@
+import { and, eq, inArray } from 'drizzle-orm';
+
+import { isEveningCheckinComplete, mainStreak } from '@/core/gamification';
+import {
+  buildDayDiagnosis,
+  dayStats,
+  diagnosisSuggestion,
+  LOCAL_DAY_DIAGNOSIS_VERSION,
+  type DayDiagnosis,
+  type DayStats,
+} from '@/core/diagnosis';
+import {
+  checkinItemSchema,
+  checkinSchema,
+  reportSchema,
+  ruleLogSchema,
+  ruleSchema,
+  scheduleBlockSchema,
+  settingsSchema,
+  xpEventSchema,
+  type LocalDate,
+  type Report,
+  type ReportPeriod,
+} from '@/core/domain';
+import { addDays } from '@/core/time/local-date';
+
+import type { RitamDb } from '../db';
+import {
+  checkinItems,
+  checkins,
+  reports,
+  ruleLogs,
+  rules,
+  scheduleBlocks,
+  settings,
+  xpEvents,
+} from '../schema';
+import type { RitamTx } from './block-xp';
+import { defaultRepoDeps, type RepoDeps } from './deps';
+
+const reportOf = (userId: string, period: ReportPeriod, periodStart: LocalDate) =>
+  and(eq(reports.userId, userId), eq(reports.period, period), eq(reports.periodStart, periodStart));
+
+/** Dijagnoza razdoblja, ili `null` ako još nije napravljena. */
+export async function getReport(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+): Promise<Report | null> {
+  const row = await db.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+  return row ? reportSchema.parse(row) : null;
+}
+
+/** Statistika jednog dana unutar transakcije (`eveningRows` = svi večernji upiti korisnika, za streak). */
+function readDayStats(
+  tx: RitamTx,
+  userId: string,
+  date: LocalDate,
+  eveningRows: ReturnType<typeof checkinSchema.parse>[],
+): DayStats {
+  const blocks = tx
+    .select()
+    .from(scheduleBlocks)
+    .where(and(eq(scheduleBlocks.userId, userId), eq(scheduleBlocks.date, date)))
+    .all()
+    .map((row) => scheduleBlockSchema.parse(row));
+  const dayCheckins = tx
+    .select()
+    .from(checkins)
+    .where(and(eq(checkins.userId, userId), eq(checkins.date, date)))
+    .all()
+    .map((row) => checkinSchema.parse(row));
+  const evening = dayCheckins.find((checkin) => checkin.kind === 'evening') ?? null;
+  const morning = dayCheckins.find((checkin) => checkin.kind === 'morning') ?? null;
+  const items = evening
+    ? tx
+        .select()
+        .from(checkinItems)
+        .where(and(eq(checkinItems.userId, userId), eq(checkinItems.checkinId, evening.id)))
+        .all()
+        .map((row) => checkinItemSchema.parse(row))
+    : [];
+  const userRules = tx
+    .select()
+    .from(rules)
+    .where(eq(rules.userId, userId))
+    .all()
+    .map((row) => ruleSchema.parse(row));
+  const logs =
+    userRules.length > 0
+      ? tx
+          .select()
+          .from(ruleLogs)
+          .where(
+            and(
+              eq(ruleLogs.date, date),
+              inArray(
+                ruleLogs.ruleId,
+                userRules.map((rule) => rule.id),
+              ),
+            ),
+          )
+          .all()
+          .map((row) => ruleLogSchema.parse(row))
+      : [];
+  const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+  const sleepSettings = settingsRow ? settingsSchema.parse(settingsRow) : null;
+  const xp = tx
+    .select()
+    .from(xpEvents)
+    .where(and(eq(xpEvents.userId, userId), eq(xpEvents.date, date)))
+    .all()
+    .map((row) => xpEventSchema.parse(row));
+
+  return dayStats({
+    date,
+    blocks,
+    items,
+    rules: userRules,
+    ruleLogs: logs,
+    evening,
+    morning,
+    sleepSettings,
+    xpEvents: xp,
+    streak: mainStreak(eveningRows, date).current,
+  });
+}
+
+export type DayReportResult = { report: Report; diagnosis: DayDiagnosis };
+
+/**
+ * Lokalna dijagnoza dana `date` (korak 16): statistika dana i jučer → sekcije → upsert u
+ * `reports` (period `day`). Jučer se uspoređuje samo ako je jučerašnji upit ispunjen (inače
+ * statusi blokova nisu potvrđeni). Ponovno generiranje (npr. nakon uređivanja upita) osvježi
+ * sekcije i statistiku, a povratna informacija (`helpful`, komentar) ostaje.
+ */
+export function generateDayReport(
+  db: RitamDb,
+  userId: string,
+  date: LocalDate,
+  deps: RepoDeps = defaultRepoDeps,
+): DayReportResult {
+  const now = deps.now().toISOString();
+  return db.transaction((tx) => {
+    const eveningRows = tx
+      .select()
+      .from(checkins)
+      .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+      .all()
+      .map((row) => checkinSchema.parse(row));
+    const today = readDayStats(tx, userId, date, eveningRows);
+    const yesterdayDate = addDays(date, -1);
+    const yesterdayDone =
+      yesterdayDate !== null &&
+      eveningRows.some((row) => row.date === yesterdayDate && isEveningCheckinComplete(row));
+    const yesterday = yesterdayDone ? readDayStats(tx, userId, yesterdayDate, eveningRows) : null;
+
+    const diagnosis = buildDayDiagnosis(today, yesterday);
+    const suggestion = diagnosisSuggestion(diagnosis);
+    const existing = tx.select().from(reports).where(reportOf(userId, 'day', date)).get();
+    const report = reportSchema.parse({
+      id: existing?.id ?? deps.newId(),
+      userId,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      period: 'day',
+      periodStart: date,
+      sections: diagnosis,
+      stats: { today, yesterday },
+      promptVersion: LOCAL_DAY_DIAGNOSIS_VERSION,
+      suggestion,
+      // Nova ideja → odgovor na staru više ne vrijedi.
+      suggestionAccepted: existing && existing.suggestion === suggestion ? existing.suggestionAccepted : null,
+      helpful: existing?.helpful ?? null,
+      feedbackComment: existing?.feedbackComment ?? null,
+    });
+    const values = { ...report, sections: diagnosis, stats: { today, yesterday } };
+    if (existing) {
+      tx.update(reports).set(values).where(eq(reports.id, existing.id)).run();
+    } else {
+      tx.insert(reports).values(values).run();
+    }
+    return { report, diagnosis };
+  });
+}
