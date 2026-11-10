@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { ScheduleBlock } from '@/core/domain';
-import type { NotificationSettings } from '@/core/notifications';
+import { reminderBlocks, type NotificationSettings } from '@/core/notifications';
 
 import {
   BLOCKS_CHANNEL_ID,
@@ -180,6 +180,22 @@ function block(id: string, start: string, overrides: Partial<ScheduleBlock> = {}
 }
 
 describe('syncBlockReminders', () => {
+  it('isključeni podsjetnici (Profil) → zakazani podsjetnici i odgode se otkažu, dnevne ostaju', async () => {
+    const scheduler = new FakeScheduler(['morning:2026-11-09@07:00', 'snooze:a']);
+    const blocks = [block('a', '09:00'), block('b', '10:00')];
+    await syncBlockReminders(scheduler, reminderBlocks({ blockRemindersEnabled: true }, blocks), NOW, 10, BLOCK_TEXTS);
+    expect(scheduler.scheduled.size).toBe(4);
+    const result = await syncBlockReminders(
+      scheduler,
+      reminderBlocks({ blockRemindersEnabled: false }, blocks),
+      NOW,
+      10,
+      BLOCK_TEXTS,
+    );
+    expect(result).toEqual({ cancelled: 3, scheduled: 0 });
+    expect([...scheduler.scheduled.keys()]).toEqual(['morning:2026-11-09@07:00']);
+  });
+
   it('zakaže podsjetnike s kategorijom akcija, kanalom blokova i payloadom bloka', async () => {
     const scheduler = new FakeScheduler(['morning:2026-11-09@07:00']);
     const blocks = [block('a', '09:00'), block('san', '22:00', { kind: 'sleep', end: '06:00' })];

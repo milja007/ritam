@@ -39,6 +39,7 @@ const settingsInput: SettingsInput = {
   morningNotifEnabled: true,
   eveningNotifEnabled: false,
   windDownNotifEnabled: true,
+  blockRemindersEnabled: true,
   theme: 'system',
   googleCalendarConnected: false,
       scorePlan: true,
@@ -101,6 +102,7 @@ describe('migracije', () => {
       morningNotifEnabled: true,
       eveningNotifEnabled: true,
       windDownNotifEnabled: true,
+      blockRemindersEnabled: true,
     });
   });
 

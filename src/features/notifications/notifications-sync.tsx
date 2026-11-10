@@ -7,6 +7,7 @@ import {
   blockReminderBudget,
   DEFAULT_SCHEDULE_DAYS,
   parseNotificationResponse,
+  reminderBlocks,
   upcomingTriggers,
   type BlockAction,
 } from '@/core/notifications';
@@ -65,7 +66,8 @@ async function syncOnce(): Promise<void> {
   // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
   const today = localDateOf(now);
   const last = addDays(today, DEFAULT_SCHEDULE_DAYS - 1) ?? today;
-  const blocks = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
+  // Isključeni podsjetnici (Profil) → prazan popis, pa se zakazani podsjetnici i odgode otkažu.
+  const blocks = reminderBlocks(settings, await listBlocksBetween(db, LOCAL_USER_ID, today, last));
   const dailyCount = upcomingTriggers(settings, now)?.length ?? 0;
   await syncBlockReminders(expoScheduler, blocks, now, blockReminderBudget(dailyCount), blockTexts(t));
 }
