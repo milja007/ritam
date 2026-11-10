@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 08:43 · Korak 15 — XP traka + streak u UI-ju
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-15`; bez novih ovisnosti i bez migracije (sve izvedeno iz `xp_events` i `checkins`).
+2. Čisto `src/core/gamification/level.ts`: krivulja iz punog koncepta (level 2 = 100 XP, svaki sljedeći korak ~15 % više, zaokruženo na 5) → `xpForLevelStep(level)`, `levelProgress(totalXp)` = { level, xpIntoLevel, xpForNext, fraction }. Samo računanje za traku — otključavanja, level-up animacija i nagrade ostaju korak 32. Testovi.
+3. Čisto `progressSummary(events, checkins, today)` → { totalXp, todayXp, level…, streak } (koristi postojeće `totalXp`, `xpForDate`, `mainStreak`). Testovi.
+4. Repo `listEveningCheckins(db, user)` (datum, vrsta, ocjena) — test nad Node SQLite-om.
+5. `src/features/progress/`: mali store `notifyProgressChanged()` + `useProgress(today)` (učitava XP eventove i upite; osvježava se na promjenu, na vanjsku promjenu blokova i pri fokusu taba). Okidači: kvačica na timelineu, spremanje večernjeg upita i jutarnje prijave.
+6. UI: **XpStreakBar** (kompaktno) na vrhu Danas — razina, traka do sljedeće razine, "+N XP danas", streak s oznakom je li današnji upit već ubrojen; **ProgressCard** na Profilu — ukupni XP, razina + traka, XP danas, trenutni i najduži streak. Bez kazni i bez crvenog: streak 0 → poticajna poruka.
+7. i18n HR/EN (`progress.*`) + pristupačnost (`progressbar` s `accessibilityValue`, oznake brojeva).
+8. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = XP traka i streak na Danas (6) i Profilu (6). Traci treba cilj — koncept definira krivulju razina (level 2 = 100 XP, +15 %) i "izvedeno, ne spremljeno", pa ju koristim samo za prikaz; otključavanja i level-up su korak 32 (faza 3) i ne diram ih. Prikaz broja razine već u fazi 1 je moja odluka u izvedbi → pitanje za Bornu. Freeze tokeni (korak 34) i streakovi zabrana (28) nisu ovaj korak. Avatar/orb (33) nije ovaj korak.
+
 ## 2026-11-10 06:43 · Korak 14 — Jutarnji brief
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-14`; bez novih ovisnosti i bez migracije (`checkins` već ima `kind: morning`, `sleepStart`, `wakeTime`; jedinstveni indeks jedan jutarnji po danu).
