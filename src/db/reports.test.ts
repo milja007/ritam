@@ -76,7 +76,7 @@ describe('reports repo — dnevna dijagnoza', () => {
     expect(report).toMatchObject({
       period: 'day',
       periodStart: DATE,
-      promptVersion: 'local-day-v1',
+      promptVersion: 'local-day-v2',
       suggestion: 'ideas.ruleTrigger',
       helpful: null,
     });

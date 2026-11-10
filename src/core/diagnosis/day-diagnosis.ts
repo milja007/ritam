@@ -7,13 +7,14 @@
  */
 import { z } from 'zod';
 
+import { dayScore, scoreTrend } from '../progress';
 import { parseClock } from '../time/clock';
-import { dayBalance, type DayStats } from './day-stats';
+import type { DayStats } from './day-stats';
 
 /** Verzija pravila (sprema se kao `reports.prompt_version`; LLM dijagnoza ima svoju). */
-export const LOCAL_DAY_DIAGNOSIS_VERSION = 'local-day-v1';
+export const LOCAL_DAY_DIAGNOSIS_VERSION = 'local-day-v2';
 
-/** Promjena omjera dana (0–1) potrebna da dan bude "bolji" ili "lošiji" od jučer. */
+/** Promjena udjela odrađenog plana (0–1) potrebna za pohvalu "bolje nego jučer". */
 export const TREND_THRESHOLD = 0.1;
 /** Manje sna od ovoga je veliki problem (6 h). */
 export const SHORT_SLEEP_MINUTES = 6 * 60;
@@ -26,7 +27,7 @@ const MAX_PRAISE = 3;
 export const TRENDS = ['better', 'same', 'worse', 'first'] as const;
 export type Trend = (typeof TRENDS)[number];
 
-export const METRICS = ['plan', 'rules', 'sleep', 'xp', 'rating', 'streak'] as const;
+export const METRICS = ['score', 'plan', 'rules', 'sleep', 'xp', 'rating', 'streak'] as const;
 export type Metric = (typeof METRICS)[number];
 
 /** Svi retci lokalne dijagnoze (i18n `diagnosis.lines.<ključ>`). */
@@ -103,15 +104,15 @@ export type DayDiagnosis = z.infer<typeof dayDiagnosisSchema>;
 const line = (key: DiagnosisLineKey, params?: DiagnosisLine['params']): DiagnosisLine =>
   params ? { key, params } : { key };
 
-/** Trend dana naspram jučer; `first` kad jučer nema s čime usporediti. */
+/**
+ * Trend dana naspram jučer prema dnevnom rezultatu 0–100 (korak 16b, prag 5 bodova); `first` kad
+ * jučer nema s čime usporediti.
+ */
 export function dayTrend(today: DayStats, yesterday: DayStats | null): Trend {
-  const now = dayBalance(today);
-  const before = yesterday ? dayBalance(yesterday) : null;
+  const now = dayScore(today).score;
+  const before = yesterday ? dayScore(yesterday).score : null;
   if (now === null || before === null) return 'first';
-  const diff = now - before;
-  if (diff >= TREND_THRESHOLD - 1e-9) return 'better';
-  if (diff <= -TREND_THRESHOLD + 1e-9) return 'worse';
-  return 'same';
+  return scoreTrend(now - before);
 }
 
 function change(value: number, previous: number | null): ProgressRow['change'] {
@@ -130,6 +131,13 @@ const ratio = (value: number, total: number) => (total > 0 ? value / total : 0);
 
 function progressRows(today: DayStats, yesterday: DayStats | null): ProgressRow[] {
   const rows: ProgressRow[] = [];
+  const score = dayScore(today).score;
+  if (score !== null) {
+    const previous = yesterday ? dayScore(yesterday).score : null;
+    const dir = previous === null ? null : scoreTrend(score - previous);
+    const direction = dir === null ? null : dir === 'better' ? 'up' : dir === 'worse' ? 'down' : 'same';
+    rows.push({ metric: 'score', value: score, previous, change: direction, good: goodFor(direction) });
+  }
   const yPlan = yesterday && yesterday.plan.total > 0 ? yesterday.plan : null;
   if (today.plan.total > 0) {
     const doneToday = today.plan.done + today.plan.partial / 2;

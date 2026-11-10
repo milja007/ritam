@@ -2,7 +2,6 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   buildDayDiagnosis,
-  dayBalance,
   dayStats,
   dayTrend,
   diagnosisSuggestion,
@@ -75,6 +74,8 @@ describe('dayStats', () => {
     expect(s.rules.active).toBe(3);
     expect(s.rules.kept).toBe(1);
     expect(s.rules.broken).toBe(2);
+    expect(s.rules.activeWeight).toBe(6);
+    expect(s.rules.keptWeight).toBe(2);
     expect(s.rules.brokenRules).toEqual([
       { title: 'Bez slatkiša', weight: 3, trigger: 'stres' },
       { title: 'Bez mobitela u krevetu', weight: 1, trigger: null },
@@ -85,15 +86,18 @@ describe('dayStats', () => {
     expect(stats({ morning: { sleepStart: '23:10', wakeTime: '07:00' } }).sleep).toEqual({
       minutes: 470,
       onTarget: true,
+      deviationMinutes: 10,
     });
     expect(stats({ morning: { sleepStart: '01:00', wakeTime: '07:00' } }).sleep).toEqual({
       minutes: 360,
       onTarget: false,
+      deviationMinutes: 120,
     });
     expect(stats({ morning: { sleepStart: null, wakeTime: '07:00' } }).sleep).toBeNull();
     expect(stats({ morning: { sleepStart: '23:00', wakeTime: '07:00' }, sleepSettings: null }).sleep).toEqual({
       minutes: 480,
       onTarget: null,
+      deviationMinutes: null,
     });
   });
 
@@ -119,30 +123,33 @@ describe('dayStats', () => {
   });
 });
 
-describe('dayBalance i dayTrend', () => {
-  it('omjer plana i zabrana zajedno', () => {
-    const s = stats({
-      blocks: [block('a', 'done'), block('b', 'partial')],
-      rules: [{ id: 'r', title: 'R', weight: 1 }],
-      ruleLogs: [{ ruleId: 'r', kept: true, trigger: null }],
-    });
-    expect(dayBalance(s)).toBeCloseTo(2.5 / 3);
-    expect(dayBalance(stats())).toBeNull();
-  });
-
-  it('bolje / isto / lošije / prvi dan', () => {
-    const good = stats({ blocks: [block('a', 'done'), block('b', 'done')] });
-    const half = stats({ blocks: [block('a', 'done'), block('b', 'skipped')] });
+describe('dayTrend (dnevni rezultat, prag 5 bodova)', () => {
+  it('bolje / slično / slabije / prvi dan', () => {
+    const good = stats({ blocks: [block('a', 'done'), block('b', 'done')] }); // 100
+    const half = stats({ blocks: [block('a', 'done'), block('b', 'skipped')] }); // 50
     const almost = stats({
-      blocks: [block('p', 'partial'), ...['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'].map((id) => block(id, 'done'))],
-    });
-    const atThreshold = stats({ blocks: [block('a', 'done'), block('b', 'partial'), block('c', 'done'), block('d', 'done'), block('e', 'done')] });
+      blocks: [block('p', 'partial'), ...Array.from({ length: 24 }, (_, i) => block(`b${i}`, 'done'))],
+    }); // 98
+    const atThreshold = stats({
+      blocks: [block('p', 'partial'), ...Array.from({ length: 9 }, (_, i) => block(`b${i}`, 'done'))],
+    }); // 95
     expect(dayTrend(good, half)).toBe('better');
     expect(dayTrend(half, good)).toBe('worse');
     expect(dayTrend(good, almost)).toBe('same');
     expect(dayTrend(good, atThreshold)).toBe('better');
     expect(dayTrend(good, null)).toBe('first');
     expect(dayTrend(good, stats())).toBe('first');
+  });
+
+  it('san i zabrane ulaze u trend', () => {
+    const plan = [block('a', 'done')];
+    const rules = [{ id: 'r', title: 'R', weight: 2 }];
+    const kept = stats({ blocks: plan, rules, ruleLogs: [{ ruleId: 'r', kept: true, trigger: null }] });
+    const broken = stats({ blocks: plan, rules, ruleLogs: [{ ruleId: 'r', kept: false, trigger: null }] });
+    expect(dayTrend(kept, broken)).toBe('better');
+    const lateBed = stats({ blocks: plan, morning: { sleepStart: '02:00', wakeTime: '07:00' } });
+    const onTime = stats({ blocks: plan, morning: { sleepStart: '23:00', wakeTime: '07:00' } });
+    expect(dayTrend(onTime, lateBed)).toBe('better');
   });
 });
 
@@ -192,6 +199,8 @@ describe('buildDayDiagnosis', () => {
     });
     const rows = buildDayDiagnosis(today, yesterday).progress;
     expect(rows).toEqual([
+      // rezultat: plan 50 % i san 60 min kasnije (2/3) → 58; jučer sve → 100
+      { metric: 'score', value: 58, previous: 100, change: 'down', good: false },
       { metric: 'plan', value: 1, total: 2, previous: 3, previousTotal: 3, change: 'down', good: false },
       { metric: 'sleep', value: 420, previous: 480, change: 'down', good: null },
       { metric: 'xp', value: 30, previous: 30, change: 'same', good: null },
@@ -202,7 +211,8 @@ describe('buildDayDiagnosis', () => {
 
   it('bez jučer: nema usporedbe', () => {
     const rows = buildDayDiagnosis(stats({ blocks: [block('a', 'done')] }), null).progress;
-    expect(rows[0]).toEqual({ metric: 'plan', value: 1, total: 1, previous: null, change: null, good: null });
+    expect(rows[0]).toEqual({ metric: 'score', value: 100, previous: null, change: null, good: null });
+    expect(rows[1]).toEqual({ metric: 'plan', value: 1, total: 1, previous: null, change: null, good: null });
   });
 
   it('težak dan: problemi iskreno, primjećeni komentari i okidači, jedna ideja za zabranu', () => {
