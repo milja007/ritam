@@ -139,7 +139,6 @@
     "timeRange": "{{start}}–{{end}}",
     "editBlockLabel": "{{title}}, {{time}}",
     "editBlockHint": "Opens the block for editing",
-    "markDone": "Done: {{title}}",
     "addBlock": "+ Add block",
     "loadError": "Today's blocks could not be loaded.",
     "retry": "Try again",
@@ -167,6 +166,60 @@
       "deleteTitle": "Delete block?",
       "deleteMessage": "\"{{title}}\" will be removed from today.",
       "error": "Saving failed. Please try again."
+    },
+    "blockHint": "Opens actions: report, comment, cancel, edit",
+    "restOfDay": "Rest of the day",
+    "restOfDayEmpty": "Nothing else is planned from now on.",
+    "earlier_one": "Earlier today · {{count}}",
+    "earlier_other": "Earlier today · {{count}}",
+    "show": "Show",
+    "hide": "Hide",
+    "toReport": "Report",
+    "phase": {
+      "past": "past",
+      "current": "happening now",
+      "upcoming": "coming up"
+    },
+    "status": {
+      "cancelled": "Cancelled"
+    },
+    "report": {
+      "done": "Done",
+      "partial": "Partly",
+      "skipped": "Not done"
+    },
+    "note": {
+      "label": "Comment",
+      "placeholder": "How did it go, what got in the way…",
+      "save": "Save comment",
+      "preview": "“{{note}}”",
+      "onlyNowOrPast": "You can comment once the activity starts."
+    },
+    "sheet": {
+      "howWent": "How did it go?",
+      "cancelActivity": "Cancel",
+      "restore": "Back to plan",
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "nowCard": {
+      "label": "Current activity",
+      "current": "Now",
+      "clockLabel": "It's {{time}}",
+      "untilEnd": "left",
+      "leftLabel": "{{minutes}} min left",
+      "progressLabel": "Progress: {{title}}",
+      "progressValue": "{{percent}}%",
+      "done": "Done",
+      "doneAlready": "Done ✓",
+      "more": "Comment · Cancel",
+      "moreHint": "Opens comment, cancel and edit",
+      "next": "Next",
+      "startsIn": "starts in",
+      "free": "Free time",
+      "freeBody": "Nothing is on right now — the next activity is below.",
+      "allDone": "That's it for today",
+      "allDoneBody": "Nothing else is planned. Add something or take a rest."
     }
   },
   "evening": {

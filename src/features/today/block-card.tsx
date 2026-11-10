@@ -1,117 +1,126 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { ScheduleBlock } from '@/core/domain';
-import { isDone, type BlockPhase } from '@/core/schedule';
+import type { BlockStatus, ScheduleBlock } from '@/core/domain';
+import { blockActions, isCancelled, type BlockPhase } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { ReportPills } from './report-pills';
+
 type BlockCardProps = {
   block: ScheduleBlock;
   phase: BlockPhase;
-  /** Trenutni blok (istaknut). */
-  isCurrent: boolean;
+  /** Zadnji redak rasporeda (bez linije prema dolje). */
+  last?: boolean;
   onPress: () => void;
-  onToggleDone: () => void;
+  /** Prijava prošle aktivnosti izravno na rasporedu. */
+  onReport: (status: BlockStatus) => void;
 };
 
-/** Jedan blok na timelineu: vrijeme, naziv, tip; kvačica za Gotovo; trenutni blok istaknut. */
-export function BlockCard({ block, phase, isCurrent, onPress, onToggleDone }: BlockCardProps) {
+/**
+ * Redak velikog rasporeda (17c): vrijeme lijevo, točka i linija vremena, naziv i tip;
+ * prošle se prijavljuju U redu / Djelomično / Nije izravno; otkazane su prekrižene.
+ */
+export function BlockCard({ block, phase, last = false, onPress, onReport }: BlockCardProps) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const done = isDone(block);
-  const dimmed = !isCurrent && (done || phase === 'past');
+  const cancelled = isCancelled(block) && phase !== 'past';
+  const reportable = blockActions(block, phase).report.length > 1;
+  const settled = block.status !== 'planned';
+  const dimmed = cancelled || (phase === 'past' && settled) || block.kind === 'sleep';
   const time = t('today.timeRange', { start: block.start, end: block.end });
+  const dotColor =
+    block.status === 'done'
+      ? colors.success
+      : block.status === 'partial'
+        ? colors.accent
+        : block.status === 'skipped'
+          ? colors.danger
+          : colors.textMuted;
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: isCurrent ? colors.surfaceRaised : colors.surface,
-          borderColor: isCurrent ? colors.accent : colors.border,
-          borderWidth: isCurrent ? 2 : StyleSheet.hairlineWidth,
-          opacity: dimmed ? 0.6 : 1,
-        },
-      ]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('today.editBlockLabel', { title: block.title, time })}
-        accessibilityHint={t('today.editBlockHint')}
-        onPress={onPress}
-        style={({ pressed }) => [styles.main, { opacity: pressed ? 0.7 : 1 }]}>
-        <View style={styles.meta}>
-          <Text variant="caption" tone={isCurrent ? 'accent' : 'textMuted'} style={styles.time}>
-            {time}
-          </Text>
-          {isCurrent ? (
-            <View style={[styles.badge, { backgroundColor: colors.accent }]}>
-              <Text variant="overline" tone="onAccent">
-                {t('today.now')}
+    <View style={styles.row}>
+      <View style={styles.timeCol}>
+        <Text variant="bodyStrong" style={styles.tabular} tone={dimmed ? 'textMuted' : 'text'}>
+          {block.start}
+        </Text>
+        <Text variant="caption" tone="textMuted" style={styles.tabular}>
+          {block.end}
+        </Text>
+      </View>
+
+      <View style={styles.rail}>
+        <View
+          style={[
+            styles.dot,
+            { borderColor: dotColor, backgroundColor: settled ? dotColor : 'transparent' },
+          ]}
+        />
+        {last ? null : <View style={[styles.line, { backgroundColor: colors.border }]} />}
+      </View>
+
+      <View style={[styles.body, { opacity: dimmed ? 0.65 : 1 }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('today.editBlockLabel', { title: block.title, time })}
+          accessibilityHint={t('today.blockHint')}
+          onPress={onPress}
+          style={({ pressed }) => [
+            styles.card,
+            { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.75 : 1 },
+          ]}>
+          <View style={styles.titleRow}>
+            <Text
+              variant="bodyStrong"
+              numberOfLines={2}
+              style={[styles.title, cancelled || block.status === 'done' ? styles.struck : null]}>
+              {block.title}
+            </Text>
+            {cancelled ? (
+              <Text variant="caption" tone="danger">
+                {t('today.status.cancelled')}
               </Text>
+            ) : null}
+          </View>
+          <Text variant="caption" tone="textMuted">
+            {t(`today.kind.${block.kind}`)}
+          </Text>
+          {block.note ? (
+            <Text variant="caption" tone="textMuted" numberOfLines={2} style={styles.note}>
+              {t('today.note.preview', { note: block.note })}
+            </Text>
+          ) : null}
+          {reportable ? (
+            <View style={styles.report}>
+              <ReportPills compact status={block.status} onReport={onReport} />
             </View>
           ) : null}
-        </View>
-        <Text
-          variant="bodyStrong"
-          numberOfLines={2}
-          style={done ? styles.doneTitle : undefined}>
-          {block.title}
-        </Text>
-        <Text variant="caption" tone="textMuted">
-          {t(`today.kind.${block.kind}`)}
-        </Text>
-      </Pressable>
-
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityLabel={t('today.markDone', { title: block.title })}
-        accessibilityState={{ checked: done }}
-        hitSlop={spacing.sm}
-        onPress={onToggleDone}
-        style={({ pressed }) => [
-          styles.check,
-          {
-            borderColor: done ? colors.success : colors.textMuted,
-            backgroundColor: done ? colors.success : 'transparent',
-            opacity: pressed ? 0.7 : 1,
-          },
-        ]}>
-        {done ? (
-          <Text variant="bodyStrong" tone="onAccent">
-            ✓
-          </Text>
-        ) : null}
-      </Pressable>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: spacing.md, alignItems: 'stretch' },
+  timeCol: { width: 48, alignItems: 'flex-end', paddingTop: spacing.md },
+  tabular: { fontVariant: ['tabular-nums'] },
+  rail: { width: 12, alignItems: 'center', paddingTop: spacing.md + 5 },
+  dot: { width: 12, height: 12, borderRadius: radius.pill, borderWidth: 2 },
+  line: { flex: 1, width: 2, marginTop: spacing.xs, borderRadius: 1 },
+  body: { flex: 1, paddingBottom: spacing.sm },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingRight: spacing.lg,
-    borderRadius: radius.md,
-  },
-  main: {
-    flex: 1,
     gap: spacing.xxs,
     paddingVertical: spacing.md,
-    paddingLeft: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  time: { fontVariant: ['tabular-nums'] },
-  badge: { paddingHorizontal: spacing.sm, borderRadius: radius.pill },
-  doneTitle: { textDecorationLine: 'line-through' },
-  check: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  title: { flex: 1 },
+  struck: { textDecorationLine: 'line-through' },
+  note: { fontStyle: 'italic' },
+  report: { marginTop: spacing.sm },
 });

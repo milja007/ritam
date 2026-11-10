@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { ScheduleBlock } from '@/core/domain';
+import type { BlockStatus, ScheduleBlock } from '@/core/domain';
 import {
   blockPhase,
-  currentBlockId,
+  daySchedule,
   draftFromBlock,
+  isCancelled,
   needsTodayPlan,
   newBlockDraft,
+  reportedStatus,
+  secondsOfDay,
   shouldAutoOpenTodayPlan,
   tomorrowOf,
   type BlockDraft,
@@ -35,8 +38,11 @@ import { useAppTheme } from '@/ui/theme';
 
 import { BlockCard } from './block-card';
 import { BlockEditor } from './block-editor';
+import { BlockSheet } from './block-sheet';
 import { formatDay } from './format-day';
+import { NowCard } from './now-card';
 import { TodayPlan } from './today-plan';
+import { useLiveClock } from './use-live-clock';
 import { useDayBlocks, useNow } from './use-today';
 
 /** Pauza između zatvaranja upita i otvaranja "Što imaš sutra?" (iOS ne prikaže novi modal dok se stari zatvara). */
@@ -46,7 +52,10 @@ type Editing =
   | { mode: 'add'; draft: BlockDraft }
   | { mode: 'edit'; draft: BlockDraft; id: string };
 
-/** Tab Danas: timeline današnjih blokova, trenutni istaknut, kvačica Gotovo, dodavanje/uređivanje. */
+/**
+ * Tab Danas (17c): "Trenutno" sa živim satom i odbrojavanjem, ispod ostatak dana od sada,
+ * prošle aktivnosti sklopljene s prijavom izravno na rasporedu; akcije bloka po fazi.
+ */
 export function TodayScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useAppTheme();
@@ -90,7 +99,19 @@ export function TodayScreen() {
     setTimeout(() => setTomorrowOpen(true), MODAL_SWAP_DELAY_MS);
   }
 
-  const currentId = currentBlockId(day.blocks, now.minutes);
+  // Živi sat (1 s) za "Trenutno" i faze blokova; dan i upiti idu po `now` (30 s).
+  const live = useLiveClock();
+  const nowSeconds = secondsOfDay(live);
+  const liveMinutes = Math.floor(nowSeconds / 60);
+  const view = daySchedule(day.blocks, nowSeconds);
+  const [pastOpen, setPastOpen] = useState<boolean | null>(null);
+  // Ranije danas: otvoreno samo dok ima neprijavljenih (osim ako je korisnik sam odlučio).
+  const pastUnreported = view.past.some((block) => block.status === 'planned' && !isCancelled(block));
+  const showPast = pastOpen ?? pastUnreported;
+
+  // Akcije jedne aktivnosti (list): blok se čita iz svježih podataka dana.
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const sheetBlock = sheetId !== null ? (day.blocks.find((block) => block.id === sheetId) ?? null) : null;
 
   // Plan za danas (17b): bez plana se izrada otvara sama — jednom po danu, ne preko drugih modala.
   const [planOpen, setPlanOpen] = useState(false);
@@ -115,7 +136,12 @@ export function TodayScreen() {
       : null);
 
   const otherModalOpen =
-    showEvening || showMorning || tomorrowOpen || diagnosisOpen || activeEditing !== null;
+    showEvening ||
+    showMorning ||
+    tomorrowOpen ||
+    diagnosisOpen ||
+    activeEditing !== null ||
+    sheetBlock !== null;
   const autoOpenPlan =
     day.status === 'ready' &&
     !planOpen &&
@@ -147,16 +173,38 @@ export function TodayScreen() {
     setEditing({ mode: 'edit', draft: draftFromBlock(block), id: block.id });
   }
 
-  async function toggle(block: ScheduleBlock) {
+  /** Uređivanje iz lista akcija: list se zatvori, editor se otvori nakon pauze (iOS). */
+  function editFromSheet(block: ScheduleBlock) {
+    setSheetId(null);
+    setTimeout(() => openEdit(block), MODAL_SWAP_DELAY_MS);
+  }
+
+  async function changeStatus(block: ScheduleBlock, next: BlockStatus) {
+    await day.setStatus(block, next);
+    evening.reload(); // nacrt upita kreće od svježih statusa
+  }
+
+  /** Prijava izravno na rasporedu; greška se prikaže ispod rasporeda. */
+  async function report(block: ScheduleBlock, chosen: BlockStatus) {
     setActionFailed(false);
     try {
-      await day.toggleDone(block);
-      evening.reload(); // nacrt upita kreće od svježih statusa
+      await changeStatus(block, reportedStatus(block.status, chosen));
     } catch (error: unknown) {
-      console.error('Toggling block failed', error);
+      console.error('Reporting block failed', error);
       setActionFailed(true);
     }
   }
+
+  const renderRow = (block: ScheduleBlock, index: number, list: readonly ScheduleBlock[]) => (
+    <BlockCard
+      key={block.id}
+      block={block}
+      phase={blockPhase(block, liveMinutes)}
+      last={index === list.length - 1}
+      onPress={() => setSheetId(block.id)}
+      onReport={(status) => void report(block, status)}
+    />
+  );
 
   return (
     <GradientBackground>
@@ -171,9 +219,14 @@ export function TodayScreen() {
             </Text>
           </View>
 
-          <XpStreakBar today={now.date} checkinDay={now.eveningDate} />
-
-          <DayScoreCard checkinDay={now.eveningDate} />
+          {day.status === 'ready' && !needsPlan ? (
+            <NowCard
+              view={view}
+              nowSeconds={nowSeconds}
+              onDone={(block) => void report(block, 'done')}
+              onOpen={(block) => setSheetId(block.id)}
+            />
+          ) : null}
 
           <PermissionCard />
 
@@ -188,27 +241,50 @@ export function TodayScreen() {
               <Text tone="danger">{t('today.loadError')}</Text>
               <Button variant="secondary" label={t('today.retry')} onPress={day.reload} />
             </View>
+          ) : needsPlan ? (
+            <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
+              <Text variant="heading">{t('todayPlan.cardTitle')}</Text>
+              <Text tone="textMuted">{t('todayPlan.cardBody')}</Text>
+              <Button label={t('todayPlan.cardAction')} onPress={() => setPlanOpen(true)} />
+              {day.blocks.map(renderRow)}
+            </View>
           ) : (
-            <View style={styles.list}>
-              {needsPlan ? (
-                <View
-                  style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
-                  <Text variant="heading">{t('todayPlan.cardTitle')}</Text>
-                  <Text tone="textMuted">{t('todayPlan.cardBody')}</Text>
-                  <Button label={t('todayPlan.cardAction')} onPress={() => setPlanOpen(true)} />
+            <>
+              <View style={styles.section}>
+                <Text variant="overline" tone="textMuted" accessibilityRole="header" style={styles.sectionTitle}>
+                  {t('today.restOfDay')}
+                </Text>
+                {view.upcoming.length > 0 ? (
+                  <View>{view.upcoming.map(renderRow)}</View>
+                ) : (
+                  <Text tone="textMuted" style={styles.sectionTitle}>
+                    {t('today.restOfDayEmpty')}
+                  </Text>
+                )}
+              </View>
+
+              {view.past.length > 0 ? (
+                <View style={styles.section}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: showPast }}
+                    onPress={() => setPastOpen(!showPast)}
+                    style={({ pressed }) => [styles.pastHeader, { opacity: pressed ? 0.7 : 1 }]}>
+                    <Text variant="overline" tone="textMuted">
+                      {t('today.earlier', { count: view.past.length })}
+                    </Text>
+                    <Text variant="caption" tone={pastUnreported ? 'accent' : 'textMuted'}>
+                      {showPast
+                        ? t('today.hide')
+                        : pastUnreported
+                          ? t('today.toReport')
+                          : t('today.show')}
+                    </Text>
+                  </Pressable>
+                  {showPast ? <View>{view.past.map(renderRow)}</View> : null}
                 </View>
               ) : null}
-              {day.blocks.map((block) => (
-                <BlockCard
-                  key={block.id}
-                  block={block}
-                  phase={blockPhase(block, now.minutes)}
-                  isCurrent={block.id === currentId}
-                  onPress={() => openEdit(block)}
-                  onToggleDone={() => void toggle(block)}
-                />
-              ))}
-            </View>
+            </>
           )}
 
           {actionFailed ? (
@@ -220,6 +296,10 @@ export function TodayScreen() {
           {day.status === 'ready' ? (
             <Button variant="secondary" label={t('today.addBlock')} onPress={openAdd} />
           ) : null}
+
+          <XpStreakBar today={now.date} checkinDay={now.eveningDate} />
+
+          <DayScoreCard checkinDay={now.eveningDate} />
 
           {day.status === 'ready' && evening.status !== 'error' ? (
             <EveningCard
@@ -233,6 +313,18 @@ export function TodayScreen() {
           ) : null}
         </ScrollView>
       </SafeAreaView>
+
+      {sheetBlock ? (
+        <BlockSheet
+          block={sheetBlock}
+          phase={blockPhase(sheetBlock, liveMinutes)}
+          onReport={(status) => changeStatus(sheetBlock, reportedStatus(sheetBlock.status, status))}
+          onSaveNote={(note) => day.setNote(sheetBlock.id, note)}
+          onToggleCancel={() => changeStatus(sheetBlock, isCancelled(sheetBlock) ? 'planned' : 'skipped')}
+          onEdit={() => editFromSheet(sheetBlock)}
+          onClose={() => setSheetId(null)}
+        />
+      ) : null}
 
       {activeEditing ? (
         // Editor se montira pri svakom otvaranju, pa uvijek kreće od svježeg nacrta.
@@ -317,7 +409,15 @@ const styles = StyleSheet.create({
   header: { gap: spacing.xs, paddingHorizontal: spacing.xs },
   loading: { marginTop: spacing.xxl },
   message: { gap: spacing.md },
-  list: { gap: spacing.sm },
+  section: { gap: spacing.sm },
+  sectionTitle: { paddingHorizontal: spacing.xs },
+  pastHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
   empty: {
     gap: spacing.sm,
     padding: spacing.xl,
