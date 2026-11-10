@@ -233,7 +233,7 @@ Ovo su Bornove odluke iz ankete; vrijede za sve sljedeće korake. Pitanja 25–4
 - **Rekord tjedna/mjeseca (P42):** **bez uvjeta** — ulazi svaki tjedan/mjesec s barem jednim ocijenjenim danom (ukloniti pravilo "barem pola dana").
 - **Danas prije upita (P43):** prikazati **oba** — jučerašnji konačni rezultat velik, današnji "u tijeku" manji ispod; nakon upita današnji konačni.
 - **Ideje u dijagnozi (P38):** ako se problem ponavlja, **ponovljena ideja ostaje** (da se zna da nije riješeno — važna je baš zato što se ponavlja) i **dodaje se nova ideja** uz nju.
-- **XP traka (P35):** Borna nije odgovorio → zasad ostaje broj razine (pretpostavka, može se promijeniti).
+- **XP traka (P35):** **samo XP, bez broja razine** dok ne dođu otključavanja (korak 32) — traka pokazuje XP bez "Razina N".
 - **Naziv streaka (P36):** "Niz" ostaje.
 - **XP sna (P34):** 20 XP kroz jutarnju prijavu ostaje.
 - **Kartica Jutarnji brief (P32):** ostaje na Danas cijeli dan dok san nije prijavljen.
@@ -243,8 +243,8 @@ Ovo su Bornove odluke iz ankete; vrijede za sve sljedeće korake. Pitanja 25–4
 - **Profil (P31):** dodati uređivanje vremena jutarnje/večernje obavijesti i sati sna.
 - **Akcije podsjetnika (P27):** Gotovo i Odgodi rade **bez otvaranja appa** (provjeriti na uređaju / dev buildu); Iskrslo otvara app.
 - **Podsjetnici blokova (P28):** zadano **uvijek uključeni**; u postavkama se mogu isključiti.
-- **Brzi odabiri (P25):** Borna nije odgovorio → zasad fiksni popis od 8 ostaje (pretpostavka).
-- **Tipkani blok s vremenom (P26):** Borna nije odgovorio → zasad ostaje Zadatak (pretpostavka).
+- **Planiranje sutra i Danas (P25, smjer proizvoda):** plan se radi **zajedno s appom** — korisnik da info što mora i kada te kakve su mogućnosti; ako nešto ne može (i zašto), napiše to i plan se slaže prema tome. **Korisnik mora odobriti plan za sutra**; tek tada je spreman i vidi se **već iste noći** i sutra. Plan je glavna značajka appa: Danas kao **dashboard / raspored sati** (kao u školi) dok vrijeme ide — trenutni blok otvoren/istaknut, ispod što je sljedeće, sa strane status "trenutno: na poslu". **Brzi odabiri uče iz povijesti**: što se ponavlja (npr. trening svako jutro ili večer) nudi se u tom terminu, a korisnik uvijek prilagodi kako mu odgovara.
+- **Tipkani blok s vremenom (P26):** ostaje Zadatak (daje XP).
 
 ## Odluke (Borna, 2026-11-09) — odgovori na pitanja 1–24
 Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–24 su zatvorena.
