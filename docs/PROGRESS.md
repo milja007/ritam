@@ -25,6 +25,7 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 **Pitanja za Bornu:**
 46. Bundle id `com.milja007.ritam` — ostaje ili želiš drugi prije prvog store builda?
 47. Build: ažurirati Xcode na ≥ 26.4, ili privremeno patchati `expo-modules-jsi` (lokalno / `patch-package` u repou)?
+    - **Odluka Borna (2026-11-10): ažurira Xcode.** Nakon ažuriranja: `cd ios && LANG=en_US.UTF-8 pod install`, pa ponovni build za iPhone (vidi gore).
 
 ## 2026-11-10 14:43 · Korak 17 — Supabase shema
 **Plan (recenziran prije koda):**
