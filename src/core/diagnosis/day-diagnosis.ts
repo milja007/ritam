@@ -29,10 +29,44 @@ export type Trend = (typeof TRENDS)[number];
 export const METRICS = ['plan', 'rules', 'sleep', 'xp', 'rating', 'streak'] as const;
 export type Metric = (typeof METRICS)[number];
 
+/** Svi retci lokalne dijagnoze (i18n `diagnosis.lines.<ključ>`). */
+export const DIAGNOSIS_LINE_KEYS = [
+  ...TRENDS.flatMap((trend) => [`summary.${trend}`, `summary.${trend}NoPlan`] as const),
+  'praise.allDone',
+  'praise.planBetter',
+  'praise.rulesKept',
+  'praise.bedtime',
+  'praise.streak',
+  'praise.goodRating',
+  'praise.showedUp',
+  'noticed.comment.partial',
+  'noticed.comment.not',
+  'noticed.trigger',
+  'noticed.misses.evening',
+  'noticed.misses.morning',
+  'noticed.moved',
+  'noticed.lowRatingDespitePlan',
+  'noticed.goodRatingDespitePlan',
+  'noticed.none',
+  'problems.lowPlan',
+  'problems.heavyRule',
+  'problems.ruleBroken',
+  'problems.shortSleep',
+  'problems.none',
+  'ideas.ruleTrigger',
+  'ideas.ruleNote',
+  'ideas.smallerPlan',
+  'ideas.eveningEarlier',
+  'ideas.earlierBed',
+  'ideas.fewerMoves',
+  'ideas.keepRhythm',
+] as const;
+export type DiagnosisLineKey = (typeof DIAGNOSIS_LINE_KEYS)[number];
+
 const paramsSchema = z.record(z.string(), z.union([z.string(), z.number()]));
 
 export const diagnosisLineSchema = z.object({
-  key: z.string().min(1),
+  key: z.enum(DIAGNOSIS_LINE_KEYS),
   params: paramsSchema.optional(),
 });
 export type DiagnosisLine = z.infer<typeof diagnosisLineSchema>;
@@ -66,7 +100,7 @@ export const dayDiagnosisSchema = z.object({
 });
 export type DayDiagnosis = z.infer<typeof dayDiagnosisSchema>;
 
-const line = (key: string, params?: DiagnosisLine['params']): DiagnosisLine =>
+const line = (key: DiagnosisLineKey, params?: DiagnosisLine['params']): DiagnosisLine =>
   params ? { key, params } : { key };
 
 /** Trend dana naspram jučer; `first` kad jučer nema s čime usporediti. */

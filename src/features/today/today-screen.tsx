@@ -13,6 +13,7 @@ import {
   type BlockDraft,
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
+import { DiagnosisModal } from '@/features/diagnosis';
 import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
 import { MorningBrief, MorningCard, useMorningCheckin } from '@/features/morning';
 import {
@@ -74,6 +75,7 @@ export function TodayScreen() {
   // "Što imaš sutra?" = dan nakon dana upita (prije 04:00 je to današnji dan).
   const tomorrowDate = tomorrowOf(now.eveningDate);
   const [tomorrowOpen, setTomorrowOpen] = useState(false);
+  const [diagnosisOpen, setDiagnosisOpen] = useState(false);
 
   function closeEvening() {
     setEveningOpen(false);
@@ -194,6 +196,7 @@ export function TodayScreen() {
               disabled={!eveningReady}
               onOpen={() => setEveningOpen(true)}
               onPlanTomorrow={() => setTomorrowOpen(true)}
+              onOpenDiagnosis={() => setDiagnosisOpen(true)}
             />
           ) : null}
         </ScrollView>
@@ -232,12 +235,20 @@ export function TodayScreen() {
           activeRules={evening.activeRules}
           saved={evening.saved}
           onSave={(draft) => {
-            const xp = evening.save(draft);
+            const result = evening.save(draft);
             day.reload(); // statusi blokova (i premješteni blokovi) su se promijenili
-            return xp;
+            return result;
           }}
           onClose={closeEvening}
           onPlanTomorrow={planTomorrow}
+        />
+      ) : null}
+
+      {diagnosisOpen ? (
+        <DiagnosisModal
+          date={now.eveningDate}
+          dayLabel={formatDay(now.eveningDate, i18n.language)}
+          onClose={() => setDiagnosisOpen(false)}
         />
       ) : null}
 

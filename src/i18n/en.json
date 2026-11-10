@@ -168,7 +168,8 @@
       "doneBody": "Day rating: {{rating}}/5. You can still edit it.",
       "edit": "Edit",
       "titleYesterday": "Evening check-in · yesterday",
-      "planTomorrow": "Plan tomorrow"
+      "planTomorrow": "Plan tomorrow",
+      "diagnosis": "Daily diagnosis"
     },
     "checklist": {
       "title": "Today's checklist",
@@ -210,7 +211,8 @@
       "title": "Day logged",
       "body": "Nice job taking a minute for yourself. See you tomorrow.",
       "close": "Done",
-      "planTomorrow": "What's on tomorrow?"
+      "planTomorrow": "What's on tomorrow?",
+      "diagnosisTitle": "Daily diagnosis"
     },
     "tomorrow": {
       "overline": "Tomorrow · {{day}}",
@@ -311,6 +313,93 @@
       "hintDone": "Today's check-in counts toward your streak.",
       "hintKeep": "Fill in the evening check-in to grow your streak.",
       "hintStart": "Today's evening check-in starts a new streak."
+    }
+  },
+  "diagnosis": {
+    "title": "Daily diagnosis",
+    "close": "Close",
+    "loadError": "The diagnosis couldn't be loaded. Try again later.",
+    "sections": {
+      "summary": "In short",
+      "progress": "Progress",
+      "praise": "Praise",
+      "noticed": "What we noticed",
+      "problems": "Big problems",
+      "ideas": "Ideas to improve"
+    },
+    "trend": {
+      "better": "Better than yesterday",
+      "same": "About the same as yesterday",
+      "worse": "Weaker than yesterday",
+      "first": "First day to compare"
+    },
+    "metric": {
+      "plan": "Plan",
+      "rules": "Rules kept",
+      "sleep": "Sleep",
+      "xp": "XP",
+      "rating": "Day rating",
+      "streak": "Streak"
+    },
+    "value": {
+      "ofTotal": "{{value}}/{{total}}",
+      "duration": "{{hours}} h {{minutes}} min",
+      "xp": "+{{xp}} XP",
+      "rating": "{{rating}}/5",
+      "days": "{{days}} d"
+    },
+    "yesterday": "yesterday {{value}}",
+    "lines": {
+      "summary": {
+        "better": "Done {{done}} of {{total}} planned — a step forward from yesterday.",
+        "same": "Done {{done}} of {{total}} planned — the rhythm is holding.",
+        "worse": "Done {{done}} of {{total}} planned. Yesterday went better, and that's okay — tomorrow is a new chance.",
+        "first": "Done {{done}} of {{total}} planned. From tomorrow we'll compare each day with the one before.",
+        "betterNoPlan": "Better than yesterday, even without a plan today.",
+        "sameNoPlan": "No plan today; otherwise about the same as yesterday.",
+        "worseNoPlan": "No plan today, and your rules went better yesterday.",
+        "firstNoPlan": "Day logged. We need a few days with a plan to compare."
+      },
+      "praise": {
+        "allDone": "Everything planned got done ({{total}}/{{total}}). Keep it up.",
+        "planBetter": "You did more of your plan than yesterday ({{done}}/{{total}}).",
+        "rulesKept": "All rules kept ({{count}}). That's willpower in action.",
+        "bedtime": "You went to bed at your planned time.",
+        "streak": "{{days}} days in a row of check-ins. The habit is forming.",
+        "goodRating": "You rated the day {{rating}}/5 — remember what helped.",
+        "showedUp": "You took a minute to log your day. That's exactly how habits are built."
+      },
+      "noticed": {
+        "comment": {
+          "partial": "{{title}} — partly: “{{comment}}”",
+          "not": "{{title}} — didn't happen: “{{comment}}”"
+        },
+        "trigger": "The rule “{{rule}}” was broken by a trigger: {{trigger}}.",
+        "misses": {
+          "evening": "Most misses were in the evening ({{count}}). Your energy may drop late in the day.",
+          "morning": "Most misses were in the morning ({{count}}). The morning may need a gentler start."
+        },
+        "moved": "Moved to later: {{count}}.",
+        "lowRatingDespitePlan": "The plan got done, yet the day didn't feel good — maybe something outside the plan is weighing on you.",
+        "goodRatingDespitePlan": "The plan didn't get done, yet the day felt good — maybe the plan didn't fit the day.",
+        "none": "No particular patterns today."
+      },
+      "problems": {
+        "lowPlan": "Less than half of the plan got done ({{done}}/{{total}}).",
+        "heavyRule": "An important rule was broken: “{{rule}}”.",
+        "ruleBroken": "The rule “{{rule}}” was broken.",
+        "shortSleep": "You slept only {{hours}} h — that shows all day.",
+        "none": "No big problems. Well done."
+      },
+      "ideas": {
+        "ruleTrigger": "For “{{rule}}”: decide in advance what you'll do when “{{trigger}}” shows up again.",
+        "ruleNote": "For “{{rule}}”: next time note what set it off — that's how we find the pattern.",
+        "smallerPlan": "Tomorrow, plan one block less and put the most important one first.",
+        "eveningEarlier": "Tomorrow, try moving your hardest evening block earlier in the day.",
+        "earlierBed": "Tonight, try going to bed 15 minutes earlier.",
+        "fewerMoves": "Tomorrow, plan only what you really have time for — fewer moves.",
+        "keepRhythm": "Keep the same rhythm tomorrow — no new changes."
+      }
     }
   }
 }
