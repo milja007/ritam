@@ -118,7 +118,14 @@
     },
     "evening": {
       "title": "Evening check-in",
-      "body": "Two minutes: how did today go, and what's on tomorrow?"
+      "body": "If anything is missing — reporting the day or planning tomorrow — I'm here.",
+      "casualTitle": "Quick one for tonight",
+      "needs": {
+        "report_one": "Let me know how {{count}} activity went — a couple of taps.",
+        "report_other": "Let me know how {{count}} activities went — a couple of taps.",
+        "tomorrow": "Tomorrow has no plan yet.",
+        "diagnosis": "Your day diagnosis is waiting."
+      }
     },
     "windDown": {
       "title": "Time to wind down",

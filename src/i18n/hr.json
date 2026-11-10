@@ -120,7 +120,15 @@
     },
     "evening": {
       "title": "Večernji upit",
-      "body": "Dvije minute: kako je prošao dan i što imaš sutra?"
+      "body": "Ako nešto fali — prijava dana ili plan za sutra — tu sam.",
+      "casualTitle": "Kratko za večeras",
+      "needs": {
+        "report_one": "Javi kako je prošla {{count}} aktivnost — par dodira.",
+        "report_few": "Javi kako su prošle {{count}} aktivnosti — par dodira.",
+        "report_other": "Javi kako je prošlo {{count}} aktivnosti — par dodira.",
+        "tomorrow": "Sutra još nema plan.",
+        "diagnosis": "Dijagnoza dana te čeka."
+      }
     },
     "windDown": {
       "title": "Vrijeme za smirivanje",

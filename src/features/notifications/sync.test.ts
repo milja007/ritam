@@ -79,6 +79,33 @@ describe('syncDailyNotifications', () => {
     expect(scheduler.scheduled.get('windDown:2026-11-11@22:15')?.title).toBe('Wind-down');
   });
 
+  it('večernja (17d): dan kad ništa ne fali se ne zakazuje, inače tekst po danu; promjena se uskladi', async () => {
+    const scheduler = new FakeScheduler();
+    let today: { title: string; body: string } | 'skip' = 'skip';
+    const evening = (date: string) => (date === '2026-11-09' ? today : null);
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, undefined, evening)).toEqual({
+      cancelled: 0,
+      scheduled: 20,
+    });
+    const todayIds = () => [...scheduler.scheduled.keys()].filter((id) => id.startsWith('evening:2026-11-09@'));
+    expect(todayIds()).toEqual([]);
+    expect(scheduler.scheduled.get('evening:2026-11-10@21:15')?.body).toBe('Upit');
+
+    today = { title: 'Kratko', body: 'Sutra još nema plan.' };
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, undefined, evening)).toEqual({
+      cancelled: 0,
+      scheduled: 1,
+    });
+    expect(todayIds()).toHaveLength(1);
+
+    today = 'skip';
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, undefined, evening)).toEqual({
+      cancelled: 1,
+      scheduled: 0,
+    });
+    expect(todayIds()).toEqual([]);
+  });
+
   it('jutarnja s tekstom po danu: ključ sadržaja u id-ju, promjena plana je ponovo zakaže', async () => {
     const scheduler = new FakeScheduler();
     let body = 'Danas 2 bloka';
