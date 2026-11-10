@@ -7,6 +7,14 @@ Pročitaj i poštuj `AGENTS.md` (Expo pravila: provjeri verziju SDK-a i čitaj v
 - Plan: `docs/BUILD_PLAN.md` — redoslijed koraka i kriteriji gotovosti.
 - Dnevnik: `docs/PROGRESS.md` — što je zadnje napravljeno i što je sljedeće.
 
+## Git autor (odluka Borna, 2026-11-10)
+Prije prvog commita u sesiji postavi autora na Bornu, da se commitovi vide u njegovom GitHub grafu aktivnosti:
+```bash
+git config user.name "Borna Miljković"
+git config user.email "162634695+milja007@users.noreply.github.com"
+```
+Claude ostaje koautor kroz `Co-Authored-By` redak u poruci commita. Stare commitove ne prepisuj.
+
 ## Kako radiš (svaka sesija)
 1. Pročitaj `docs/PROGRESS.md` (vrh) i `docs/BUILD_PLAN.md`; nađi prvi korak koji nije `[x]`.
 2. **Prije koda** napiši kratki plan tog koraka (3–8 točaka) na vrh `PROGRESS.md` pod novim datumom i provjeri ga protiv koncepta i kriterija gotovosti.
