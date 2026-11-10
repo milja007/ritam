@@ -3,24 +3,24 @@
 Puni koncept: https://claude.ai/artifact/WHksM4MdhHutFW9Siw7umX (Claude Docs). Ovo je sažetak da repo bude samodostatan.
 
 ## Ukratko
-Osobni planer (iOS + Android, React Native / Expo, HR + EN). Svaku večer pita što imaš sutra, LLM složi raspored, ujutro stiže obavijest s gotovim danom. Gamificirano (XP, streakovi, bedževi, orb-plamen avatar, lagani Solo Leveling štih). Princip: **malo po malo** — nikad nagle promjene. Napredak se mjeri **naspram vlastite prošlosti**, ne savršenstva, i mora se vidjeti na prvi pogled.
+Osobni planer (iOS + Android, React Native / Expo, HR + EN). Svaku večer pita što imaš sutra, LLM složi raspored, ujutro stiže obavijest s gotovim danom. Gamificirano (XP, streakovi, epski questovi, bedževi, orb-plamen avatar, lagani Solo Leveling štih). Princip: **malo po malo** — nikad nagle promjene. Napredak se mjeri **naspram vlastite prošlosti**, ne savršenstva, i mora se vidjeti na prvi pogled.
 
-## Danas — glavni ekran (Borna, 2026-11-10)
+## Dan — glavni ekran (Borna, 2026-11-10)
 - Nema plana za danas (prvo korištenje, tek aktiviran, app nije otvaran) → odmah izrada današnjeg plana, **od sadašnjeg trenutka prema naprijed**, vremena točna prema satu.
+- Planiranje: aktivnost napišeš ili kažeš (glas → LLM): što, i od–do ili samo trajanje. Upisane ideje (naziv, trajanje, doba dana) app pamti. Samo **par primjera**, jasno označenih kao primjer kako se piše — ne gotov popis i ne zauzimaju mjesto.
 - Čim plan postoji → veliki raspored dana: na vrhu **"Trenutno: …"** sa živim satom u sekundama i odbrojavanjem do kraja aktivnosti; ispod ostatak dana.
-- Na trenutnoj aktivnosti i na svakom bloku do večernjeg upita: komentar, otkaži, bilješka.
-- **Odustajem od svega** — uvijek dostupno, bez osude: preostalo postaje neodrađeno, odmah plan za sutra.
-- **Dijagnoza dana** tek kad je svaki blok riješen (odrađen, ili prijavljen da nije / neće biti).
-- Ponuđene ideje nisu generičke ("Škola"): svaka ima konkretan naziv, trajanje i najbolje doba dana; primjeri su dopušteni.
+- **Komentar** (= bilješka) samo na trenutnoj i prošlim aktivnostima; **Otkaži** na trenutnoj i budućim.
+- **Odustajem od svega** — uvijek dostupno, bez osude, **ne ruši streak**: preostalo postaje neodrađeno (bez XP-a); napišeš ili kažeš što se dogodilo (kontekst za dijagnoze i planiranje, da se ne ponovi); odmah plan za sutra.
+- **Dijagnoza dana** se otključa čim je svaki blok riješen (odrađen / prijavljen da nije ili neće biti / Odustajem) — "pokupiš" je.
+- **Večernji upit → ležeran podsjetnik** samo ako si zaboravio na app: javi kako su prošli zadaci, isplaniraj sutra ako nisi, i ako je dijagnoza spremna a nepokupljena — ponudi da je pogledaš.
 - Ovo je najvažniji ekran — mora biti vizualno, umjetnički i dizajnerski vrhunski.
-- Glasovni unos plana ("danas moram ovo i ono, ovo ujutro, traje sat…") — kasnije.
 
 ## Planovi: godina, mjesec, tjedan (Borna, 2026-11-10)
-- Ciljevi žive u **godišnjem, mjesečnom i tjednom** planu (kalendarski prikaz + ciljevi kao kontekst); **dan je samo akcija**.
+- Ciljevi žive u **godišnjem, mjesečnom i tjednom** planu (svaki kalendar + ciljevi kao kontekst); **dan je samo akcija**.
 - Tjedan: kalendar po danima, fiksan ali uvijek promjenjiv; upišeš što znaš, ne mora sve odmah.
-- **Zabrane** se postavljaju unutar tih planova, ne kao zaseban popis.
-- **Questovi se ukidaju** (zamjenjuju ih mjesečni i godišnji planovi); **navike** ostaju samo u Profilu.
-- Tabovi: Danas · Tjedan · Mjesec i godina · Profil.
+- **Zabrane** se postavljaju unutar tih planova; svaka ima streak i lagano dnevno "Držao sam se / Prekršio".
+- **Navike** i **questovi** su u Profilu; questovi su samo **epski** (dugoročni, sam ih postaviš).
+- Tabovi: **Dan · Tjedan · Mjesec · Godina · Profil**.
 
 ## Dnevni ciklus
 Večernji upit → LLM raspoređivač slaže sutra → wind-down podsjetnik → san → jutarnja obavijest (raspored + prijava sna) → dan (podsjetnici, "Nešto je iskrslo") → večernji upit.
@@ -72,5 +72,5 @@ Expo (SDK iz package.json) + TypeScript, Expo Router, Zustand + TanStack Query, 
 ## Faze
 1. **Jezgra (MVP)**: jutarnja obavijest, večernji upit + checklist s komentarom, dnevna dijagnoza, timeline + uređivanje, Supabase + HR/EN, osnovni XP + streak + dnevni rezultat i usporedba s prošlošću. Gotovo kad: 7 dana zaredom ispunjen upit.
 2. **Pametni planer**: LLM raspoređivač, Google Calendar, tjedni zadaci, "Nešto je iskrslo", zabrane + san, glasovni unos, LLM dnevna dijagnoza, trackeri kalorija i novca.
-3. **Igra i animacije**: leveli, orb-plamen, freeze tokeni, animacije i haptika, bedževi + rang E–S i statovi, tjedna/mjesečna/godišnja dijagnoza, grafovi napretka.
+3. **Igra i animacije**: leveli, orb-plamen, epski questovi + freeze, animacije i haptika, bedževi + rang E–S i statovi, tjedna/mjesečna/godišnja dijagnoza, grafovi napretka.
 4. **Nadogradnje**: Health sync, prelazak na DeepSeek, home-screen widget.
