@@ -211,6 +211,20 @@ describe('createEveningDraft', () => {
     });
   });
 
+  it('novi upit: prijavljeno na rasporedu (djelomično, nije, otkazano) dolazi popunjeno s "preskoči"', () => {
+    const draft = createEveningDraft(
+      '2026-11-09',
+      [block('p', 'task', 'partial'), block('n', 'task', 'skipped'), block('m', 'task', 'moved')],
+      [],
+    );
+    expect(draft.items).toEqual([
+      answer('p', { outcome: 'partial', later: 'skip' }),
+      answer('n', { outcome: 'not', later: 'skip' }),
+      answer('m', { outcome: null }),
+    ]);
+    expect(isEveningStepValid('checklist', { ...draft, items: draft.items.slice(0, 2) })).toBe(true);
+  });
+
   it('postojeći upit: preuzima odgovore i "kad kasnije?", novi blokovi su bez odgovora', () => {
     const draft = createEveningDraft(
       '2026-11-09',
