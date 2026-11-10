@@ -2,6 +2,30 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 · Korak 16-dev — Development build za iPhone (lokalno, besplatni Apple ID)
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16-dev`. `npx expo install expo-dev-client`.
+2. `app.json`: `ios.bundleIdentifier` i `android.package` = `com.milja007.ritam`.
+3. `eas.json` s profilima `development` (`developmentClient: true`, `distribution: internal`), `preview` i `production` (za kasnije; build se ne pokreće).
+4. `npx expo-doctor` mora proći; `tsc`, `lint`, `test`.
+5. Lokalni build na Bornovom Macu: `npx expo prebuild -p ios` (ios/ je u `.gitignore`, CNG), potpis osobnim timom (besplatni Apple ID), build Debug za spojeni iPhone i instalacija.
+6. Upute za Bornu (README + ovdje): lokalni put prvi (7 dana valjanosti, "Vjeruj developeru" u Postavkama), EAS/TestFlight kasnije.
+7. BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = dev-client, `eas.json`, bundle id, expo-doctor, upute; lokalni build je prvi put (Borna ima Mac). Bundle id se može promijeniti prije store builda → pitanje za Bornu.
+
+**Napravljeno (WIP, grana `wip/korak-16-dev`):**
+- `expo-dev-client` (~58.0.18), `app.json` bundle id / package `com.milja007.ritam`, `eas.json` (development / preview / production). `npx expo-doctor` 20/20 ✅, `tsc` ✅, `lint` ✅, `npm test` 454/454 ✅. Prebuild mijenja skripte `ios`/`android` u `expo run:*`.
+- Lokalni build: `npx expo prebuild -p ios`, `pod install` (treba `LANG=en_US.UTF-8`, inače CocoaPods pada na Ruby 4 / UnicodeNormalize), potpis osobnim timom `88A7273T6Y`, uređaj iPhone 12 (Developer Mode uključen).
+
+**Gdje sam stao — build pada:**
+- `expo-modules-jsi` 58.0.22 se prevodi kroz SwiftPM u Swift 6 načinu (`Package.swift`, `swiftLanguageModes: [.v6]`) i na Xcodeu 26.3 (Swift 6.2.4) javlja `JavaScriptObject.swift:946: error: sending 'slot' risks causing data races` (i upozorenja o nepoznatim grupama upozorenja → paket očekuje noviji Swift). Postavka `SWIFT_VERSION` poda ne pomaže (gradi se zasebnom skriptom, ne pod targetom).
+- Rješenja: (a) Xcode ≥ 26.4 (čisto); (b) jednolinijski patch tog mjesta (adresu `slot` proslijediti kao `Int`) — lokalno ili kroz `patch-package`.
+
+**Pitanja za Bornu:**
+46. Bundle id `com.milja007.ritam` — ostaje ili želiš drugi prije prvog store builda?
+47. Build: ažurirati Xcode na ≥ 26.4, ili privremeno patchati `expo-modules-jsi` (lokalno / `patch-package` u repou)?
+
 ## 2026-11-10 14:43 · Korak 17 — Supabase shema
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-17`; bez novih npm ovisnosti (Supabase CLI kroz `npx supabase`). `supabase init` → `supabase/config.toml` (project_id `ritam`, auth samo email, ostalo zadano).
