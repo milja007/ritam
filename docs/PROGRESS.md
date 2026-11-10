@@ -15,6 +15,28 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 
 *Recenzija plana:* kriterij koraka = XP traka i streak na Danas (6) i Profilu (6). Traci treba cilj — koncept definira krivulju razina (level 2 = 100 XP, +15 %) i "izvedeno, ne spremljeno", pa ju koristim samo za prikaz; otključavanja i level-up su korak 32 (faza 3) i ne diram ih. Prikaz broja razine već u fazi 1 je moja odluka u izvedbi → pitanje za Bornu. Freeze tokeni (korak 34) i streakovi zabrana (28) nisu ovaj korak. Avatar/orb (33) nije ovaj korak.
 
+**Napravljeno:**
+- Bez novih ovisnosti, bez migracije.
+- Čisto `src/core/gamification/level.ts`: krivulja iz koncepta — koraci 100, 115, 130, 150, 175… XP (×1,15, zaokruženo na 5); `xpForLevelStep`, `levelProgress(totalXp)` → razina, XP unutar razine, XP do sljedeće, udio trake. Samo prikaz; otključavanja i level-up su korak 32.
+- Čisto `progressSummary(events, checkins, today, checkinDay)` → ukupni XP, XP danas, razina, glavni streak. Streak se računa prema **danu upita** (iza ponoći jučer), da upit ispunjen u 00:30 ne izgleda neubrojen.
+- Repo `listEveningCheckins` (datum, vrsta, ocjena; samo večernji, uzlazno).
+- `src/features/progress/`: `useProgress` (osvježava se na `notifyProgressChanged()`, na Gotovo iz obavijesti preko `useBlocksVersion` i pri fokusu taba — tabovi ostaju montirani); okidači u kvačici/uređivanju/brisanju bloka, spremanju večernjeg upita i jutarnje prijave.
+- **XpStreakBar** na vrhu Danas: "Razina N", "Niz: N", traka, "+N XP danas", "X / Y XP do razine N+1", poticajna poruka (ubrojeno / ispuni upit / upit pokreće novi niz — bez kazni i bez crvenog).
+- **ProgressCard** na Profilu (sekcija "Napredak"): razina + ukupni XP, veća traka, tri broja (XP danas, Dani zaredom, Najduži niz), ista poruka; brojevi formatirani po jeziku.
+- `src/ui/progress-bar.tsx` (statična traka, `accessibilityRole="progressbar"` s vrijednošću). i18n HR/EN (`progress.*`, `profile.progress`) bez plural oblika ("Niz: 5", "Dani zaredom").
+- 12 novih testova (ukupno 403). Provjere: `tsc --noEmit` ✅, `expo lint` ✅, `npm test` ✅ (403/403), `expo export --platform android` ✅ (4.5 MB).
+
+**Problemi/napomene:**
+- Nije isprobano na uređaju (sandbox): izgled trake, osvježavanje pri prelasku na Profil.
+- Traka je statična; animacija punjenja i level-up su koraci 32/35. Freeze tokeni (34) još ne utječu na streak.
+- Odluka u izvedbi: broj razine se prikazuje već sada (koncept stavlja levele u fazu 3) — traci treba cilj, a krivulja je iz koncepta.
+
+**Pitanja za Bornu:**
+35. XP traka pokazuje napredak do sljedeće razine ("Razina 3", krivulja iz koncepta: 100 XP, pa +15 % po razini). Odgovara li da se razina vidi već u fazi 1, ili želiš traku bez broja razine dok ne dođu otključavanja (korak 32)?
+36. Streak se zove "Niz" u HR UI-ju ("Niz: 5", "Dani zaredom"). Želiš li ostaviti engleski "streak" i u hrvatskom?
+
+**Sljedeće:** korak 16 — dnevna dijagnoza (lokalna): na kraju upita struktura dijagnoze (Ukratko, Napredak, Pohvale…) iz statistike dana i usporedbe s jučer, spremanje u `reports`.
+
 ## 2026-11-10 06:43 · Korak 14 — Jutarnji brief
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-14`; bez novih ovisnosti i bez migracije (`checkins` već ima `kind: morning`, `sleepStart`, `wakeTime`; jedinstveni indeks jedan jutarnji po danu).
