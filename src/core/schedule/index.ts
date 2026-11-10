@@ -5,3 +5,4 @@ export * from './wake';
 export * from './learned-picks';
 export * from './today-plan';
 export * from './plan-entry';
+export * from './now-view';
