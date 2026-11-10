@@ -46,7 +46,7 @@ export function streakFromDates(dates: Iterable<string>, today: string): Streak 
   return { current, longest, lastDate, doneToday: sinceLast === 0 };
 }
 
-type CheckinLike = Pick<Checkin, 'date' | 'kind' | 'dayRating'>;
+type CheckinLike = Pick<Checkin, 'date' | 'kind' | 'dayRating'> & Partial<Pick<Checkin, 'gaveUp'>>;
 
 /**
  * Je li večernja provjera ispunjena. Ocjena dana je zadnji obavezni korak provjere
@@ -56,10 +56,18 @@ export function isEveningCheckinComplete(checkin: CheckinLike): boolean {
   return checkin.kind === 'evening' && checkin.dayRating !== null;
 }
 
-/** Glavni streak: dani zaredom s ispunjenom večernjom provjerom. */
+/**
+ * Računa li se dan u glavni streak: ispunjena večernja provjera ili "Odustajem od svega"
+ * (korak 17d, odluka P58 — odustajanje ne ruši streak).
+ */
+export function countsForStreak(checkin: CheckinLike): boolean {
+  return isEveningCheckinComplete(checkin) || (checkin.kind === 'evening' && checkin.gaveUp === true);
+}
+
+/** Glavni streak: dani zaredom s ispunjenom večernjom provjerom (ili s Odustajem). */
 export function mainStreak(checkins: readonly CheckinLike[], today: string): Streak {
   return streakFromDates(
-    checkins.filter(isEveningCheckinComplete).map((checkin) => checkin.date),
+    checkins.filter(countsForStreak).map((checkin) => checkin.date),
     today,
   );
 }

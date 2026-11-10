@@ -160,9 +160,27 @@ const emptyAnswer = (blockId: string, outcome: CheckinOutcome | null): Checklist
 });
 
 /**
+ * Odgovor iz statusa prijavljenog na rasporedu (17c/17d), da večernji upit ostane kratak:
+ * Gotovo → U redu; Djelomično → Djelomično, Nije / Otkazano / Odustajem → Nije, oba s "preskoči"
+ * (premještanje se i dalje može odabrati). Neprijavljeni blokovi čekaju odgovor.
+ */
+export function prefilledAnswer(block: Pick<ScheduleBlock, 'id' | 'status'>): ChecklistAnswer {
+  switch (block.status) {
+    case 'done':
+      return emptyAnswer(block.id, 'ok');
+    case 'partial':
+      return { ...emptyAnswer(block.id, 'partial'), later: 'skip' };
+    case 'skipped':
+      return { ...emptyAnswer(block.id, 'not'), later: 'skip' };
+    default:
+      return emptyAnswer(block.id, null);
+  }
+}
+
+/**
  * Početni nacrt za dan `date`: stavka po bloku checkliste i po zabrani koja taj dan vrijedi.
  * Ako je upit tog dana već spremljen, preuzima njegove odgovore (i "kad kasnije?"); inače blok
- * označen kao gotov na timelineu dolazi unaprijed kao "U redu".
+ * prijavljen na rasporedu dolazi unaprijed popunjen (`prefilledAnswer`).
  */
 export function createEveningDraft(
   date: string,
@@ -179,7 +197,7 @@ export function createEveningDraft(
     date,
     items: checklistBlocks(blocks).map((block) => {
       const previous = savedItems.get(block.id);
-      if (!previous) return emptyAnswer(block.id, block.status === 'done' ? 'ok' : null);
+      if (!previous) return prefilledAnswer(block);
       return {
         blockId: block.id,
         outcome: previous.outcome,

@@ -15,7 +15,8 @@ import {
 import { addDays, localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { getBlock, getSettings, listBlocksBetween, setBlockStatus } from '@/db/repos';
+import { eveningReminderNeeds, isUnresolved, needsTodayPlan } from '@/core/schedule';
+import { getBlock, getReport, getSettings, listBlocksBetween, setBlockStatus } from '@/db/repos';
 import i18n, { languageFor } from '@/i18n';
 
 import {
@@ -29,6 +30,7 @@ import {
   registerChannelsAndCategories,
 } from './expo-notifications';
 import { registerBackgroundActions } from './background-task';
+import { eveningReminderText } from './evening-text';
 import { morningBody } from './morning-text';
 import {
   notifyBlocksChanged,
@@ -66,14 +68,31 @@ async function syncOnce(): Promise<void> {
   const now = new Date();
   const today = localDateOf(now);
   const last = addDays(today, DEFAULT_SCHEDULE_DAYS - 1) ?? today;
+  const tomorrow = addDays(today, 1) ?? today;
   const horizon = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
+  const todayReport = await getReport(db, LOCAL_USER_ID, 'day', today);
 
   // Jutarnja obavijest nosi pregled plana tog dana (mijenja se s blokovima).
   const texts = dailyTexts(t);
-  await syncDailyNotifications(expoScheduler, settings, now, texts, (date) => ({
-    title: texts.morning.title,
-    body: morningBody(t, morningSummary(horizon, date)),
-  }));
+  // Večernja (17d): za danas samo ako nešto fali, ležeran tekst prema tome; ostali dani opći tekst.
+  const eveningText = (date: string) => {
+    if (date !== today) return null;
+    const dayBlocks = horizon.filter((block) => block.date === today);
+    const needs = eveningReminderNeeds({
+      blocks: dayBlocks,
+      tomorrowHasPlan: !needsTodayPlan(horizon.filter((block) => block.date === tomorrow)),
+      diagnosisSeen: todayReport?.seenAt != null,
+    });
+    return eveningReminderText(t, needs, dayBlocks.filter(isUnresolved).length);
+  };
+  await syncDailyNotifications(
+    expoScheduler,
+    settings,
+    now,
+    texts,
+    (date) => ({ title: texts.morning.title, body: morningBody(t, morningSummary(horizon, date)) }),
+    eveningText,
+  );
 
   // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
   // Isključeni podsjetnici (Profil) → prazan popis, pa se zakazani podsjetnici i odgode otkažu.

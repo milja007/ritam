@@ -83,6 +83,9 @@ export const checkins = sqliteTable(
     note: text('note'),
     // Snimka područja rezultata pri zaključivanju dana (korak 16c, P48); JSON niz.
     scoreAreas: text('score_areas', { mode: 'json' }).$type<ScoreArea[]>(),
+    // Korak 17d: "Odustajem od svega" na večernjem checkinu dana + što se dogodilo.
+    gaveUp: integer('gave_up', { mode: 'boolean' }).notNull().default(false),
+    gaveUpNote: text('gave_up_note'),
   },
   // Jedan jutarnji i jedan večernji checkin po danu.
   (table) => [uniqueIndex('checkins_user_date_kind_unique').on(table.userId, table.date, table.kind)],
@@ -165,6 +168,8 @@ export const reports = sqliteTable(
     suggestionAccepted: integer('suggestion_accepted', { mode: 'boolean' }),
     helpful: integer('helpful', { mode: 'boolean' }),
     feedbackComment: text('feedback_comment'),
+    // Korak 17d: kad je dijagnoza pokupljena na Dan (ISO), `null` = još nije viđena.
+    seenAt: text('seen_at'),
   },
   // Jedna dijagnoza po razdoblju.
   (table) => [uniqueIndex('reports_user_period_start_unique').on(table.userId, table.period, table.periodStart)],

@@ -15,6 +15,7 @@ import {
   type MorningSleepSettings,
   type SavedEveningCheckin,
 } from '@/core/checkin';
+import { giveUpBlocks } from '@/core/schedule';
 import {
   checkinItemSchema,
   checkinSchema,
@@ -130,6 +131,9 @@ export function saveEveningCheckin(
       dayRating: draft.rating,
       note: cleanText(draft.note),
       scoreAreas,
+      // Odustajem (17d) ostaje i kad se upit kasnije ispuni.
+      gaveUp: existing?.gaveUp ?? false,
+      gaveUpNote: existing?.gaveUpNote ?? null,
     });
 
     const oldItems = existing
@@ -266,20 +270,85 @@ export async function listXpEvents(db: RitamDb, userId: string) {
   return rows.map((row) => xpEventSchema.parse(row));
 }
 
-/** Dani večernjih upita s ocjenom (za glavni streak), uzlazno po datumu. */
+/** Dani večernjih upita s ocjenom i odustajanjem (za glavni streak), uzlazno po datumu. */
 export async function listEveningCheckins(
   db: RitamDb,
   userId: string,
-): Promise<Pick<Checkin, 'date' | 'kind' | 'dayRating'>[]> {
+): Promise<Pick<Checkin, 'date' | 'kind' | 'dayRating' | 'gaveUp'>[]> {
   const rows = await db
-    .select({ date: checkins.date, kind: checkins.kind, dayRating: checkins.dayRating })
+    .select({ date: checkins.date, kind: checkins.kind, dayRating: checkins.dayRating, gaveUp: checkins.gaveUp })
     .from(checkins)
     .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
     .orderBy(asc(checkins.date))
     .all();
   return rows.map((row) =>
-    checkinSchema.pick({ date: true, kind: true, dayRating: true }).parse(row),
+    checkinSchema.pick({ date: true, kind: true, dayRating: true, gaveUp: true }).parse(row),
   );
+}
+
+export type GiveUpResult = { checkin: Checkin; closedBlocks: number };
+
+/**
+ * "Odustajem od svega" (korak 17d) za dan `date`, u jednoj transakciji: svi neriješeni blokovi
+ * osim sna → `skipped` (neodrađeni, bez XP-a), a večernji checkin dana (novi ili postojeći) dobiva
+ * `gaveUp` i "što se dogodilo" (prazno → `null`). Ocjena dana i zabrane ostaju kakve jesu — mogu se
+ * ispuniti kasnije. Dan s odustajanjem se računa u streak (P58). Ponovni poziv samo osvježi tekst.
+ */
+export function giveUpDay(
+  db: RitamDb,
+  userId: string,
+  date: LocalDate,
+  note: string,
+  deps: RepoDeps = defaultRepoDeps,
+): GiveUpResult {
+  const now = deps.now().toISOString();
+  const gaveUpNote = cleanText(note);
+  return db.transaction((tx) => {
+    const dayBlocks = tx
+      .select()
+      .from(scheduleBlocks)
+      .where(and(eq(scheduleBlocks.userId, userId), eq(scheduleBlocks.date, date)))
+      .all()
+      .map((row) => scheduleBlockSchema.parse(row));
+    const toClose = giveUpBlocks(dayBlocks);
+    for (const block of toClose) {
+      const next = scheduleBlockSchema.parse({ ...block, status: 'skipped', updatedAt: now });
+      tx.update(scheduleBlocks)
+        .set({ status: next.status, updatedAt: next.updatedAt })
+        .where(and(eq(scheduleBlocks.userId, userId), eq(scheduleBlocks.id, block.id)))
+        .run();
+      syncBlockTaskXp(tx, next, deps);
+    }
+
+    const existing = tx.select().from(checkins).where(eveningOf(userId, date)).get();
+    if (existing) {
+      const checkin = checkinSchema.parse({ ...existing, gaveUp: true, gaveUpNote, updatedAt: now });
+      tx.update(checkins)
+        .set({ gaveUp: true, gaveUpNote: checkin.gaveUpNote, updatedAt: now })
+        .where(eq(checkins.id, existing.id))
+        .run();
+      return { checkin, closedBlocks: toClose.length };
+    }
+    const checkin = checkinSchema.parse({
+      id: deps.newId(),
+      userId,
+      createdAt: now,
+      updatedAt: now,
+      date,
+      kind: 'evening',
+      sleepStart: null,
+      wakeTime: null,
+      mood: null,
+      dayRating: null,
+      note: null,
+      // Područja se snime tek kad se upit ispuni (P48).
+      scoreAreas: null,
+      gaveUp: true,
+      gaveUpNote,
+    });
+    tx.insert(checkins).values(checkin).run();
+    return { checkin, closedBlocks: toClose.length };
+  });
 }
 
 export class InvalidMorningCheckinError extends Error {

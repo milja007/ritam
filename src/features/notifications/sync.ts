@@ -54,7 +54,14 @@ export type SyncResult = { cancelled: number; scheduled: number };
 export type MorningText = (date: string) => NotificationText | null;
 
 /**
+ * Večernji podsjetnik za dan (17d): tekst prema onome što fali, `'skip'` = ništa ne fali pa se
+ * taj dan ne šalje, `null` → opći tekst.
+ */
+export type EveningText = (date: string) => NotificationText | 'skip' | null;
+
+/**
  * Uskladi zakazane dnevne obavijesti s postavkama: otkaži zastarjele, zakaži nedostajuće.
+ * Večernja (`eveningText`) se za dan kad ništa ne fali ne zakazuje (otkaže se ako je bila).
  * Jutarnja s tekstom po danu (`morningText`) dobiva ključ sadržaja u id-ju, pa se nakon promjene plana
  * ponovo zakaže s novim tekstom. Tuđe obavijesti i podsjetnici blokova se ne diraju.
  * Neispravne postavke → ništa se ne mijenja.
@@ -65,15 +72,22 @@ export async function syncDailyNotifications(
   now: Date,
   texts: DailyNotificationTexts,
   morningText?: MorningText,
+  eveningText?: EveningText,
 ): Promise<SyncResult> {
   const triggers = upcomingTriggers(settings, now);
   if (triggers === null) return { cancelled: 0, scheduled: 0 };
 
-  const desired = triggers.map((trigger) => {
-    const custom = trigger.kind === 'morning' && morningText ? morningText(trigger.date) : null;
-    if (custom === null) return { ...trigger, text: texts[trigger.kind] };
+  const customText = (kind: NotificationKind, date: string): NotificationText | 'skip' | null => {
+    if (kind === 'morning' && morningText) return morningText(date);
+    if (kind === 'evening' && eveningText) return eveningText(date);
+    return null;
+  };
+  const desired = triggers.flatMap((trigger) => {
+    const custom = customText(trigger.kind, trigger.date);
+    if (custom === 'skip') return [];
+    if (custom === null) return [{ ...trigger, text: texts[trigger.kind] }];
     const id = triggerIdWithContent(trigger.id, contentKey(`${custom.title}\n${custom.body}`));
-    return { ...trigger, id, text: custom };
+    return [{ ...trigger, id, text: custom }];
   });
 
   const plan = planReschedule(await scheduler.scheduledIds(), desired);

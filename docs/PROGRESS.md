@@ -2,6 +2,40 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 23:50 · Korak 17d — Odustajem od svega + dijagnoza čim je sve riješeno + ležeran večernji podsjetnik
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17c` u 21:52 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17d`. Čisto `src/core/schedule/day-close.ts` (+ testovi): `giveUpBlocks(blocks)` (svi neriješeni `planned` blokovi osim sna — prošli, trenutni i budući), `isDayResolved(blocks)` (barem jedan blok osim sna i nijedan `planned`; otkazani su `skipped`), `eveningReminderNeeds({…})` → što fali (neprijavljeni blokovi, nema plana za sutra, spremna a nepokupljena dijagnoza); prazno = bez podsjetnika.
+2. Podaci: `checkins.gave_up` (bool, zadano false) + `checkins.gave_up_note` (≤ 2000) na večernjem checkinu dana; `reports.seen_at` (kad je dijagnoza pokupljena). Zod, Drizzle, lokalna migracija `0008`, Supabase migracija u repou (remote se ne primjenjuje bez Borne → pitanje). Streak: dan s Odustajem se računa kao ispunjen (**ne ruši streak**); spremanje upita ne briše odustajanje.
+3. Repo `giveUpDay(date, note)` u jednoj transakciji: neriješeni blokovi → `skipped` (bez XP-a), večernji checkin dobiva `gaveUp` + bilješku; ocjena i zabrane ostaju neispunjene (mogu se dodati kasnije). Repo `markReportSeen`. Testovi.
+4. Dijagnoza: `DayStats` dobiva odustajanje i bilješku; "Što smo primijetili" ga navodi bez osude, s napisanim kontekstom. Testovi.
+5. UI Dan: "Odustajem od svega" (dok ima neriješenih blokova) → ekran s potvrdom bez osude i poljem "Što se dogodilo?" → spremi → odmah "Što imaš sutra?". Kad je dan riješen i dijagnoza nije pokupljena: kartica "Dijagnoza dana je spremna" → otvara svježu dijagnozu i označi je pokupljenom.
+6. Večernji upit lakši: stavke checkliste već prijavljene na rasporedu dolaze unaprijed popunjene (Djelomično/Nije s "preskoči"), pa ostaju samo ocjena i zabrane.
+7. Večernja obavijest za danas zakazuje se samo ako nešto fali, s ležernim tekstom prema onome što fali; inače se otkaže. Ostali dani: opći ležeran tekst. i18n HR/EN.
+8. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 17d — Odustajem s potvrdom, bez osude, ne ruši streak (2, 3, 5), preostalo neodrađeno bez XP-a (3), "što se dogodilo" kao kontekst za dijagnozu (3, 4), odmah plan za sutra (5); dijagnoza se otključa kad je sve riješeno i pokupi se na Dan (1, 2, 5); ležeran podsjetnik samo kad fali nešto od tri stvari (1, 7); ocjena i zabrane kratke (6); čista logika + testovi (1, 3, 4). Glas je korak 30, tabovi 17e — ne radim.
+
+**Napravljeno:**
+- `src/core/schedule/day-close.ts` (+9 testova): `isUnresolved`, `giveUpBlocks` / `canGiveUp` (svi `planned` osim sna — prošli, trenutni, budući), `isDayResolved` (barem jedan blok osim sna, nijedan `planned`; otkazani se računaju), `eveningReminderNeeds` (report / tomorrow / diagnosis), `shouldOfferDiagnosis`.
+- Podaci: `checkins.gave_up` + `checkins.gave_up_note`, `reports.seen_at` — Zod (zadane vrijednosti, pa stari retci prolaze), Drizzle, lokalna migracija `0008_day_close`, Supabase `20261110235500_day_close.sql` (paritet test prolazi; **remote nije primijenjen**).
+- Repo `giveUpDay` (jedna transakcija: neriješeno → `skipped`, XP se ne dodjeljuje; večernji checkin dobiva `gaveUp` + "što se dogodilo", ocjena/zabrane netaknute), `markReportSeen` (prvo otvaranje zapiše vrijeme), `saveEveningCheckin` i `generateDayReport` čuvaju odustajanje / `seenAt`. Streak: `countsForStreak` = ispunjen upit **ili** Odustajem (`mainStreak`, `listEveningCheckins`); dnevni rezultat i dalje postaje "konačan" tek s ocjenom.
+- Dijagnoza: `DayStats.gaveUp` / `gaveUpNote`; "Što smo primijetili" prvi redak "Danas si odustao od ostatka plana. Što se dogodilo: „…”", pohvala bez osude "Zatvorio si dan iskreno…". Verzija dijagnoze ista (novi ključevi samo proširuju shemu).
+- Večernji upit lakši: stavke prijavljene na rasporedu dolaze popunjene (`prefilledAnswer`: Gotovo → U redu, Djelomično / Nije / Otkazano / Odustajem → s "preskoči"), pa nakon dana prijavljenog na rasporedu ostaju samo zabrane i ocjena.
+- Večernja obavijest: za **danas** se zakazuje samo ako nešto fali, s ležernim tekstom ("Kratko za večeras" — "Javi kako su prošle 3 aktivnosti — par dodira. Sutra još nema plan. Dijagnoza dana te čeka."); kad ništa ne fali, otkaže se. Ostali dani: opći ležeran tekst. Usklađuje se pri svakoj promjeni blokova, planu za sutra i pokupljanju dijagnoze. Testovi (`sync.test.ts`, `evening-text.test.ts`).
+- UI: "Odustajem od svega" (ghost gumb ispod rasporeda dok ima neriješenog) → full-screen "U redu je stati." s činjenicama (koliko se zatvara, streak ostaje, slijedi plan za sutra), poljem "Što se dogodilo? (neobavezno)" → "Zatvori dan i planiraj sutra" odmah otvara "Što imaš sutra?". Kartica "Dijagnoza dana je spremna" na vrhu Dana kad je sve riješeno i nije pokupljena → svježa dijagnoza + označena viđenom. Dijagnoza na kraju upita i s večernje kartice također se računa kao pokupljena.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 566/566, `expo export --platform android` ✅.
+
+**Na uređaju neprovjereno (Borna):** ekran Odustajem (tipkovnica, prijelaz na plan za sutra), kartica dijagnoze, večernja obavijest koja izostaje kad je sve riješeno.
+
+**Pitanja za Bornu:**
+68. Supabase migracija `day_close` (`checkins.gave_up`, `gave_up_note`, `reports.seen_at`) je u repou, ali **nije primijenjena na remote `ritam`** (zajedno s P65) — smijem li ih primijeniti?
+69. Dan s Odustajem ulazi u streak, ali dnevni rezultat postaje "konačan" tek kad ispuniš ocjenu u večernjem upitu (zabrane i ocjena ostaju neobavezne). Odgovara li, ili Odustajem treba odmah zaključiti dan?
+70. Dodir večernje obavijesti i dalje otvara večernji upit (iz njega su dijagnoza i plan za sutra). Ako fali samo plan za sutra ili dijagnoza, želiš li da obavijest vodi ravno tamo?
+
+**Sljedeće:** korak 17e — tabovi Dan · Tjedan · Mjesec · Godina · Profil.
+
 ## 2026-11-10 22:45 · Korak 17c — Danas: veliki raspored + trenutna aktivnost
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17b` u 19:57 UTC).
 

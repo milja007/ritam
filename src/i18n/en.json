@@ -118,7 +118,14 @@
     },
     "evening": {
       "title": "Evening check-in",
-      "body": "Two minutes: how did today go, and what's on tomorrow?"
+      "body": "If anything is missing — reporting the day or planning tomorrow — I'm here.",
+      "casualTitle": "Quick one for tonight",
+      "needs": {
+        "report_one": "Let me know how {{count}} activity went — a couple of taps.",
+        "report_other": "Let me know how {{count}} activities went — a couple of taps.",
+        "tomorrow": "Tomorrow has no plan yet.",
+        "diagnosis": "Your day diagnosis is waiting."
+      }
     },
     "windDown": {
       "title": "Time to wind down",
@@ -430,7 +437,8 @@
         "bedtime": "You went to bed at your planned time.",
         "streak": "{{days}} days in a row of check-ins. The habit is forming.",
         "goodRating": "You rated the day {{rating}}/5 — remember what helped.",
-        "showedUp": "You took a minute to log your day. That's exactly how habits are built."
+        "showedUp": "You took a minute to log your day. That's exactly how habits are built.",
+        "gaveUpHonest": "You closed the day honestly instead of letting it slip. That is part of the rhythm too — tomorrow starts fresh."
       },
       "noticed": {
         "comment": {
@@ -445,7 +453,9 @@
         "moved": "Moved to later: {{count}}.",
         "lowRatingDespitePlan": "The plan got done, yet the day didn't feel good — maybe something outside the plan is weighing on you.",
         "goodRatingDespitePlan": "The plan didn't get done, yet the day felt good — maybe the plan didn't fit the day.",
-        "none": "No particular patterns today."
+        "none": "No particular patterns today.",
+        "gaveUp": "You gave up on the rest of today's plan. What happened: “{{note}}”",
+        "gaveUpNoNote": "You gave up on the rest of today's plan (no note on what happened)."
       },
       "problems": {
         "lowPlan": "Less than half of the plan got done ({{done}}/{{total}}).",
@@ -468,7 +478,13 @@
         "screensOff": "Turn screens off 30 minutes before bed and charge your phone away from the bed."
       }
     },
-    "repeated": "Repeating for day {{count}} in a row — this idea still stands."
+    "repeated": "Repeating for day {{count}} in a row — this idea still stands.",
+    "ready": {
+      "overline": "Day wrapped up",
+      "title": "Your day diagnosis is ready",
+      "body": "Every activity has an outcome. See what worked, what didn't and one idea for tomorrow.",
+      "open": "Open diagnosis"
+    }
   },
   "score": {
     "title": "Day score",
@@ -547,5 +563,21 @@
     "cardAction": "Plan today",
     "examplesHint": "How to write it, e.g.: “Chemistry review 45 min afternoon” · “Dentist at 16” · “Workout 18–19”",
     "ownIdeas": "Your ideas"
+  },
+  "giveUp": {
+    "action": "I give up on today",
+    "overline": "Closing the day",
+    "title": "It's okay to stop.",
+    "body": "Some days just don't work out. We'll close the rest of today and go straight to tomorrow — no judgement.",
+    "factRemaining_one": "· {{count}} remaining activity will be marked not done, no XP.",
+    "factRemaining_other": "· {{count}} remaining activities will be marked not done, no XP.",
+    "factStreak": "· Your streak stays — you don't lose it.",
+    "factTomorrow": "· Then you plan tomorrow right away.",
+    "noteLabel": "What happened? (optional)",
+    "notePlaceholder": "E.g. I got sick, something came up, I had no energy…",
+    "noteHint": "This goes into the day diagnosis, so tomorrow's plan can take it into account.",
+    "confirm": "Close the day and plan tomorrow",
+    "cancel": "Keep going",
+    "saveError": "Saving failed. Please try again."
   }
 }

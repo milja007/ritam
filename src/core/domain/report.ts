@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { baseEntityShape, localDateSchema, noteSchema } from './common';
+import { baseEntityShape, localDateSchema, noteSchema, timestampSchema } from './common';
 
 export const REPORT_PERIODS = ['day', 'week', 'month', 'year'] as const;
 /** Razdoblje dijagnoze: svaki dan dan; nedjeljom i tjedan; kraj mjeseca i mjesec; 31. 12. i godina. */
@@ -23,6 +23,8 @@ export const reportSchema = z.object({
   suggestionAccepted: z.boolean().nullable(),
   helpful: z.boolean().nullable(),
   feedbackComment: noteSchema.nullable(),
+  /** Kad je dijagnoza pokupljena (otvorena na Dan); `null` = još nije viđena (korak 17d). */
+  seenAt: timestampSchema.nullable().default(null),
 });
 
 export type Report = z.infer<typeof reportSchema>;

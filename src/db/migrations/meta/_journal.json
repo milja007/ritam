@@ -57,6 +57,13 @@
       "when": 1794347218733,
       "tag": "0007_block_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1794354676155,
+      "tag": "0008_day_close",
+      "breakpoints": true
     }
   ]
 }

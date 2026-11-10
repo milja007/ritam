@@ -189,6 +189,7 @@ export function generateDayReport(
       suggestionAccepted: existing && existing.suggestion === suggestion ? existing.suggestionAccepted : null,
       helpful: existing?.helpful ?? null,
       feedbackComment: existing?.feedbackComment ?? null,
+      seenAt: existing?.seenAt ?? null,
     });
     const values = { ...report, sections: diagnosis, stats: { today, yesterday } };
     if (existing) {
@@ -197,5 +198,26 @@ export function generateDayReport(
       tx.insert(reports).values(values).run();
     }
     return { report, diagnosis };
+  });
+}
+
+/**
+ * Označi dijagnozu dana pokupljenom (otvorena na Dan, korak 17d). Prvo otvaranje zapiše vrijeme,
+ * kasnija ga ne mijenjaju. Vraća je li dijagnoza postojala.
+ */
+export function markReportSeen(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+  deps: RepoDeps = defaultRepoDeps,
+): boolean {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+    if (!row) return false;
+    if (row.seenAt === null) {
+      tx.update(reports).set({ seenAt: deps.now().toISOString() }).where(eq(reports.id, row.id)).run();
+    }
+    return true;
   });
 }

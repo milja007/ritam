@@ -28,6 +28,10 @@ export const checkinSchema = z.object({
    * dani zadrže staro bodovanje). `null` = jutarnja prijava ili upit prije koraka 16c.
    */
   scoreAreas: scoreAreasSchema.nullable().default(null),
+  /** Večernji upit: "Odustajem od svega" (korak 17d) — preostalo je zatvoreno kao neodrađeno. */
+  gaveUp: z.boolean().default(false),
+  /** Što se dogodilo (kontekst za dijagnozu i planiranje); `null` bez odustajanja ili bez teksta. */
+  gaveUpNote: noteSchema.nullable().default(null),
 });
 
 export type Checkin = z.infer<typeof checkinSchema>;
