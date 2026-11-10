@@ -225,6 +225,27 @@ Borna je proširio koncept; detalji u `docs/CONCEPT.md` (sekcije Dijagnoze, Napr
 - **Gamifikacija**: streakovi, questovi, bedževi; lagani Solo Leveling štih (rang E–S, statovi). Ne mora biti "igrica".
 - **Opcionalni trackeri** (isključeni po defaultu): kalorije (cilj vs pojedeno), novac (limit potrošnje vs potrošeno, po želji stanje). **Raspoloženje se ne prati** (Borna odlučio 2026-11-09 22:02).
 
+## Odluke (Borna, 2026-11-10) — odgovori na pitanja 25–43
+Ovo su Bornove odluke iz ankete; vrijede za sve sljedeće korake. Pitanja 25–43 su zatvorena (37 je zamijenio korak 16b). Provedba: koraci **16c** i **16d** u BUILD_PLAN.md.
+- **Dnevni rezultat — područja (P39, promjena koncepta):** korisnik sam bira što prati: **plan**, **san**, **zabrane** (bilo koja kombinacija). Bira u **onboardingu** (prvi ulazak), uvijek može promijeniti u postavkama, i od tada se boduje tako. **Zadano je samo plan.** San i zabrane ulaze u rezultat samo ako su odabrani. Cilj: napredak u bilo kojem ili svim područjima života. Težine **plan 50 / zabrane 30 / san 20**; s manje odabranih područja omjeri se **razmjerno preraspodijele** (plan+san = 71/29, plan+zabrane = 62/38, zabrane+san = 60/40; jedno područje = 100 %).
+- **San u rezultatu (P40):** postupno — ±30 min od cilja = puni bodovi, linearno do 0 na 2 h (ostaje).
+- **Prag trenda (P41):** 5 bodova (ostaje).
+- **Rekord tjedna/mjeseca (P42):** **bez uvjeta** — ulazi svaki tjedan/mjesec s barem jednim ocijenjenim danom (ukloniti pravilo "barem pola dana").
+- **Danas prije upita (P43):** prikazati **oba** — jučerašnji konačni rezultat velik, današnji "u tijeku" manji ispod; nakon upita današnji konačni.
+- **Ideje u dijagnozi (P38):** ako se problem ponavlja, **ponovljena ideja ostaje** (da se zna da nije riješeno — važna je baš zato što se ponavlja) i **dodaje se nova ideja** uz nju.
+- **XP traka (P35):** Borna nije odgovorio → zasad ostaje broj razine (pretpostavka, može se promijeniti).
+- **Naziv streaka (P36):** "Niz" ostaje.
+- **XP sna (P34):** 20 XP kroz jutarnju prijavu ostaje.
+- **Kartica Jutarnji brief (P32):** ostaje na Danas cijeli dan dok san nije prijavljen.
+- **Jutarnja obavijest (P33):** da, mali korak — fiksan sadržaj dana ("Danas 4 bloka i 2 zadatka. Prvi: posao u 9:00."); biranje sadržaja u postavkama kasnije.
+- **Vikend (P29):** i **večernji upit** (i wind-down) vikendom se pomiču za istu razliku kao buđenje.
+- **Večer u temi (P30):** 5 h prije kreveta ostaje.
+- **Profil (P31):** dodati uređivanje vremena jutarnje/večernje obavijesti i sati sna.
+- **Akcije podsjetnika (P27):** Gotovo i Odgodi rade **bez otvaranja appa** (provjeriti na uređaju / dev buildu); Iskrslo otvara app.
+- **Podsjetnici blokova (P28):** zadano **uvijek uključeni**; u postavkama se mogu isključiti.
+- **Brzi odabiri (P25):** Borna nije odgovorio → zasad fiksni popis od 8 ostaje (pretpostavka).
+- **Tipkani blok s vremenom (P26):** Borna nije odgovorio → zasad ostaje Zadatak (pretpostavka).
+
 ## Odluke (Borna, 2026-11-09) — odgovori na pitanja 1–24
 Ovo su Bornove odluke; vrijede za sve sljedeće korake. Pitanja 1–24 su zatvorena.
 - **Večernji upit (12b):** checklist ima tri opcije **U redu / Djelomično / Nije** (`partial`); za Djelomično i Nije odmah u checklisti pitanje **"kad kasnije?"** (sutra / drugi dan / preskoči). Upit ispunjen **prije 04:00 pripada prethodnom danu**. Glavni streak = postoji ocjena dana (ostaje); dan samo s "Nešto je iskrslo" bez upita **ne** čuva streak. (P8, 9, 21, 22, 23)
