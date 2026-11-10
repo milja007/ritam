@@ -168,7 +168,8 @@
       "doneBody": "Ocjena dana: {{rating}}/5. Možeš ga još urediti.",
       "edit": "Uredi",
       "titleYesterday": "Večernji upit · jučer",
-      "planTomorrow": "Planiraj sutra"
+      "planTomorrow": "Planiraj sutra",
+      "diagnosis": "Dijagnoza dana"
     },
     "checklist": {
       "title": "Checklist dana",
@@ -210,7 +211,8 @@
       "title": "Dan je zapisan",
       "body": "Bravo što si odvojio minutu za sebe. Vidimo se sutra.",
       "close": "Gotovo",
-      "planTomorrow": "Što imaš sutra?"
+      "planTomorrow": "Što imaš sutra?",
+      "diagnosisTitle": "Dijagnoza dana"
     },
     "tomorrow": {
       "overline": "Sutra · {{day}}",
@@ -311,6 +313,93 @@
       "hintDone": "Današnji upit je ubrojen u niz.",
       "hintKeep": "Ispuni večernji upit i niz raste.",
       "hintStart": "Večernji upit danas pokreće novi niz."
+    }
+  },
+  "diagnosis": {
+    "title": "Dijagnoza dana",
+    "close": "Zatvori",
+    "loadError": "Dijagnozu nije moguće učitati. Pokušaj ponovo kasnije.",
+    "sections": {
+      "summary": "Ukratko",
+      "progress": "Napredak",
+      "praise": "Pohvale",
+      "noticed": "Što smo primijetili",
+      "problems": "Veliki problemi",
+      "ideas": "Ideje za napredak"
+    },
+    "trend": {
+      "better": "Bolje nego jučer",
+      "same": "Slično kao jučer",
+      "worse": "Slabije nego jučer",
+      "first": "Prvi dan za usporedbu"
+    },
+    "metric": {
+      "plan": "Plan",
+      "rules": "Zabrane poštovane",
+      "sleep": "San",
+      "xp": "XP",
+      "rating": "Ocjena dana",
+      "streak": "Niz"
+    },
+    "value": {
+      "ofTotal": "{{value}}/{{total}}",
+      "duration": "{{hours}} h {{minutes}} min",
+      "xp": "+{{xp}} XP",
+      "rating": "{{rating}}/5",
+      "days": "{{days}} d."
+    },
+    "yesterday": "jučer {{value}}",
+    "lines": {
+      "summary": {
+        "better": "Odrađeno {{done}} od {{total}} iz plana — korak naprijed u odnosu na jučer.",
+        "same": "Odrađeno {{done}} od {{total}} iz plana — ritam se drži.",
+        "worse": "Odrađeno {{done}} od {{total}} iz plana. Jučer je išlo bolje, a to je u redu — sutra je nova prilika.",
+        "first": "Odrađeno {{done}} od {{total}} iz plana. Od sutra uspoređujemo dan s jučerašnjim.",
+        "betterNoPlan": "Bolje nego jučer, iako danas nije bilo plana.",
+        "sameNoPlan": "Danas nije bilo plana; ostalo je slično kao jučer.",
+        "worseNoPlan": "Danas nije bilo plana, a zabrane su jučer išle bolje.",
+        "firstNoPlan": "Dan je zapisan. Za usporedbu treba još koji dan s planom."
+      },
+      "praise": {
+        "allDone": "Sve iz plana je odrađeno ({{total}}/{{total}}). Tako i dalje.",
+        "planBetter": "Odradio si više plana nego jučer ({{done}}/{{total}}).",
+        "rulesKept": "Sve zabrane poštovane ({{count}}). To je volja na djelu.",
+        "bedtime": "Na spavanje si otišao u planirano vrijeme.",
+        "streak": "{{days}} dana zaredom ispunjavaš upit. Navika se gradi.",
+        "goodRating": "Dan si ocijenio s {{rating}}/5 — zapamti što je pomoglo.",
+        "showedUp": "Odvojio si minutu da zapišeš dan. Upravo tako se gradi navika."
+      },
+      "noticed": {
+        "comment": {
+          "partial": "{{title}} — djelomično: „{{comment}}”",
+          "not": "{{title}} — nije išlo: „{{comment}}”"
+        },
+        "trigger": "Zabranu „{{rule}}” je prekinuo okidač: {{trigger}}.",
+        "misses": {
+          "evening": "Propušteno je uglavnom navečer ({{count}}). Energija pred kraj dana možda pada.",
+          "morning": "Propušteno je uglavnom ujutro ({{count}}). Možda jutro treba blaži početak."
+        },
+        "moved": "Premješteno na kasnije: {{count}}.",
+        "lowRatingDespitePlan": "Plan je odrađen, a dan ipak nije bio dobar — možda te muči nešto izvan plana.",
+        "goodRatingDespitePlan": "Plan nije odrađen, a dan je bio dobar — možda plan nije odgovarao danu.",
+        "none": "Danas nema posebnih uzoraka."
+      },
+      "problems": {
+        "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}).",
+        "heavyRule": "Prekršena je važna zabrana: „{{rule}}”.",
+        "ruleBroken": "Prekršena je zabrana „{{rule}}”.",
+        "shortSleep": "Spavao si samo {{hours}} h — to se osjeti cijeli dan.",
+        "none": "Nema velikih problema. Bravo."
+      },
+      "ideas": {
+        "ruleTrigger": "Za „{{rule}}”: unaprijed odluči što ćeš napraviti kad se opet javi „{{trigger}}”.",
+        "ruleNote": "Za „{{rule}}”: sljedeći put zapiši što je pokrenulo prekršaj — tako ćemo naći uzorak.",
+        "smallerPlan": "Sutra planiraj jedan blok manje i najvažnije stavi na početak dana.",
+        "eveningEarlier": "Najzahtjevniji večernji blok sutra probaj pomaknuti ranije u dan.",
+        "earlierBed": "Večeras probaj otići u krevet 15 minuta ranije.",
+        "fewerMoves": "Sutra planiraj samo ono za što stvarno imaš vremena — manje premještanja.",
+        "keepRhythm": "Zadrži isti ritam i sutra — bez novih promjena."
+      }
     }
   }
 }

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { rulesActiveOn, type EveningDraft, type SavedEveningCheckin } from '@/core/checkin';
+import type { DayDiagnosis } from '@/core/diagnosis';
 import type { Rule, ScheduleBlock } from '@/core/domain';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { getEveningCheckin, listBlocksForDate, listRules, saveEveningCheckin } from '@/db/repos';
+import { generateDayDiagnosis } from '@/features/diagnosis';
 import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
 import { notifyProgressChanged } from '@/features/progress';
+
+export type EveningSaveResult = { xp: number; diagnosis: DayDiagnosis | null };
 
 type Loaded = {
   date: string;
@@ -49,15 +53,19 @@ export function useEveningCheckin(date: string) {
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
 
-  /** Sprema upit (sinkrona transakcija) i vraća zarađeni XP. Greška ide pozivatelju. */
+  /**
+   * Sprema upit (sinkrona transakcija) i vraća zarađeni XP i dijagnozu dana (`null` ako ju nije
+   * bilo moguće napraviti — upit je svejedno spremljen). Greška spremanja ide pozivatelju.
+   */
   const save = useCallback(
-    (draft: EveningDraft) => {
+    (draft: EveningDraft): EveningSaveResult => {
       const result = saveEveningCheckin(getDb(), LOCAL_USER_ID, draft);
+      const diagnosis = generateDayDiagnosis(draft.date);
       reload();
       notifyProgressChanged(); // XP i glavni streak
       // Statusi i premješteni blokovi su se promijenili → podsjetnici.
       void syncNotificationsNow();
-      return result.xpEarned;
+      return { xp: result.xpEarned, diagnosis };
     },
     [reload],
   );

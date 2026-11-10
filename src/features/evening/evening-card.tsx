@@ -15,6 +15,7 @@ export function EveningCard({
   disabled,
   onOpen,
   onPlanTomorrow,
+  onOpenDiagnosis,
 }: {
   saved: SavedEveningCheckin | null;
   /** Prije 04:00 upit se odnosi na jučerašnji dan. */
@@ -23,6 +24,8 @@ export function EveningCard({
   onOpen: () => void;
   /** Kad je upit ispunjen: otvori "Što imaš sutra?". */
   onPlanTomorrow: () => void;
+  /** Kad je upit ispunjen: prikaži dijagnozu dana. */
+  onOpenDiagnosis: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -51,6 +54,14 @@ export function EveningCard({
         onPress={onOpen}
         disabled={disabled}
       />
+      {done ? (
+        <Button
+          variant="secondary"
+          label={t('evening.card.diagnosis')}
+          onPress={onOpenDiagnosis}
+          disabled={disabled}
+        />
+      ) : null}
       {done ? (
         <Button
           label={t('evening.card.planTomorrow')}

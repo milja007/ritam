@@ -14,11 +14,13 @@ import {
 } from '@/core/checkin';
 import type { Rule, ScheduleBlock } from '@/core/domain';
 import { spacing } from '@/core/theme';
+import { DayDiagnosisView } from '@/features/diagnosis';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 
 import { ChecklistStep, RatingStep, RulesStep } from './steps';
+import type { EveningSaveResult } from './use-evening';
 
 type EveningCheckinFlowProps = {
   /** Dan na koji se upit odnosi (prije 04:00 jučerašnji). */
@@ -26,8 +28,8 @@ type EveningCheckinFlowProps = {
   blocks: readonly ScheduleBlock[];
   activeRules: readonly Rule[];
   saved: SavedEveningCheckin | null;
-  /** Sprema upit i vraća zarađeni XP; baca grešku ako spremanje ne uspije. */
-  onSave: (draft: EveningDraft) => number;
+  /** Sprema upit i vraća zarađeni XP i dijagnozu dana; baca grešku ako spremanje ne uspije. */
+  onSave: (draft: EveningDraft) => EveningSaveResult;
   onClose: () => void;
   /** Nakon spremanja: prijeđi na "Što imaš sutra?". */
   onPlanTomorrow: () => void;
@@ -35,7 +37,8 @@ type EveningCheckinFlowProps = {
 
 /**
  * Večernji upit, korak po korak: checklist dana → zabrane (ako danas vrijede) → ocjena dana.
- * Nakon spremanja kratka potvrda sa zarađenim XP-om. Montira se pri svakom otvaranju (svjež nacrt).
+ * Nakon spremanja: zarađeni XP i dijagnoza dana, pa "Što imaš sutra?" (koncept). Montira se pri
+ * svakom otvaranju (svjež nacrt).
  */
 export function EveningCheckinFlow({
   date,
@@ -53,7 +56,7 @@ export function EveningCheckinFlow({
   const [index, setIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
-  const [earned, setEarned] = useState<number | null>(null);
+  const [result, setResult] = useState<EveningSaveResult | null>(null);
 
   const steps = eveningSteps(draft);
   const step = steps[index] ?? 'checklist';
@@ -77,7 +80,7 @@ export function EveningCheckinFlow({
     setSaving(true);
     setSaveError(false);
     try {
-      setEarned(onSave(draft));
+      setResult(onSave(draft));
     } catch (error: unknown) {
       console.error('Saving evening check-in failed', error);
       setSaveError(true);
@@ -93,22 +96,28 @@ export function EveningCheckinFlow({
           <KeyboardAvoidingView
             style={styles.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            {earned !== null ? (
-              <View style={styles.done}>
-                <Text variant="display" tone="accent" accessibilityLiveRegion="polite">
-                  {t('evening.done.xp', { xp: earned })}
-                </Text>
-                <Text variant="title" accessibilityRole="header">
-                  {t('evening.done.title')}
-                </Text>
-                <Text tone="textMuted">{t('evening.done.body')}</Text>
-                <Button
-                  label={t('evening.done.planTomorrow')}
-                  onPress={onPlanTomorrow}
-                  style={styles.primary}
-                />
-                <Button variant="ghost" label={t('evening.done.close')} onPress={onClose} />
-              </View>
+            {result !== null ? (
+              <>
+                <ScrollView contentContainerStyle={styles.content}>
+                  <Text variant="display" tone="accent" accessibilityLiveRegion="polite">
+                    {t('evening.done.xp', { xp: result.xp })}
+                  </Text>
+                  <Text variant="title" accessibilityRole="header">
+                    {result.diagnosis ? t('evening.done.diagnosisTitle') : t('evening.done.title')}
+                  </Text>
+                  {result.diagnosis ? (
+                    <View style={styles.body}>
+                      <DayDiagnosisView diagnosis={result.diagnosis} />
+                    </View>
+                  ) : (
+                    <Text tone="textMuted">{t('evening.done.body')}</Text>
+                  )}
+                </ScrollView>
+                <View style={styles.footer}>
+                  <Button label={t('evening.done.planTomorrow')} onPress={onPlanTomorrow} />
+                  <Button variant="ghost" label={t('evening.done.close')} onPress={onClose} />
+                </View>
+              </>
             ) : (
               <>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -186,10 +195,4 @@ const styles = StyleSheet.create({
   },
   buttons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   primary: { minWidth: 140 },
-  done: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-  },
 });
