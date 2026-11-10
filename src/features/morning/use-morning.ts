@@ -5,6 +5,7 @@ import type { Checkin } from '@/core/domain';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { getMorningCheckin, saveMorningCheckin } from '@/db/repos';
+import { notifyProgressChanged } from '@/features/progress';
 import { useSettings } from '@/features/settings';
 
 type Loaded = { date: string; status: 'ready' | 'error'; saved: Checkin | null };
@@ -38,6 +39,7 @@ export function useMorningCheckin(date: string) {
       if (settings === null) throw new Error('Settings are not loaded');
       const result = saveMorningCheckin(getDb(), LOCAL_USER_ID, settings, draft);
       reload();
+      notifyProgressChanged(); // XP za krevet na vrijeme
       return result.xpEarned;
     },
     [settings, reload],

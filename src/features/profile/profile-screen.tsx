@@ -10,7 +10,9 @@ import { weekendShiftMinutes, weekendWakeOf, weekendWakeWarning } from '@/core/s
 import { shiftClock } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { PermissionCard } from '@/features/notifications';
+import { ProgressCard } from '@/features/progress';
 import { updateSettings, useSettings } from '@/features/settings';
+import { useNow } from '@/features/today';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
 import { Text } from '@/ui/text';
@@ -27,11 +29,12 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
   { kind: 'windDown', field: 'windDownNotifEnabled' },
 ];
 
-/** Profil: jezik, buđenje (radni dan / vikend) i prekidači dnevnih obavijesti. Sve se sprema odmah. */
+/** Profil: napredak (XP, razina, streak), jezik, buđenje (radni dan / vikend) i prekidači dnevnih obavijesti. Sve se sprema odmah. */
 export function ProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const state = useSettings();
+  const now = useNow();
   const [saveError, setSaveError] = useState(false);
 
   function save(patch: Partial<SettingsInput>) {
@@ -51,6 +54,10 @@ export function ProfileScreen() {
           <Text variant="title" accessibilityRole="header" style={styles.title}>
             {t('tabs.profile')}
           </Text>
+
+          <Section title={t('profile.progress')}>
+            <ProgressCard today={now.date} checkinDay={now.eveningDate} />
+          </Section>
 
           <PermissionCard />
 

@@ -27,7 +27,8 @@
       "time": "at {{time}}",
       "weekendTime": "at {{time}}, weekends {{weekend}}"
     },
-    "saveError": "The change wasn't saved. Please try again."
+    "saveError": "The change wasn't saved. Please try again.",
+    "progress": "Progress"
   },
   "database": {
     "preparing": "Preparing your data…",
@@ -291,6 +292,25 @@
       "heading": "How did you sleep?",
       "body": "Log your sleep and see today's plan.",
       "open": "Open brief"
+    }
+  },
+  "progress": {
+    "level": "Level {{level}}",
+    "toNext": "{{xp}} / {{total}} XP to level {{next}}",
+    "todayXp": "+{{xp}} XP today",
+    "totalXp": "{{xp}} XP total",
+    "loadError": "Progress couldn't be loaded.",
+    "stat": {
+      "today": "XP today",
+      "streak": "Days in a row",
+      "longest": "Longest streak"
+    },
+    "streak": {
+      "short": "Streak: {{count}}",
+      "a11y": "Days in a row with the evening check-in: {{count}}",
+      "hintDone": "Today's check-in counts toward your streak.",
+      "hintKeep": "Fill in the evening check-in to grow your streak.",
+      "hintStart": "Today's evening check-in starts a new streak."
     }
   }
 }

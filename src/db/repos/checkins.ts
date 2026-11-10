@@ -1,4 +1,4 @@
-import { and, eq, inArray, or } from 'drizzle-orm';
+import { and, asc, eq, inArray, or } from 'drizzle-orm';
 
 import {
   blockStatusAfterCheckin,
@@ -256,6 +256,22 @@ export function saveEveningCheckin(
 export async function listXpEvents(db: RitamDb, userId: string) {
   const rows = await db.select().from(xpEvents).where(eq(xpEvents.userId, userId)).all();
   return rows.map((row) => xpEventSchema.parse(row));
+}
+
+/** Dani večernjih upita s ocjenom (za glavni streak), uzlazno po datumu. */
+export async function listEveningCheckins(
+  db: RitamDb,
+  userId: string,
+): Promise<Pick<Checkin, 'date' | 'kind' | 'dayRating'>[]> {
+  const rows = await db
+    .select({ date: checkins.date, kind: checkins.kind, dayRating: checkins.dayRating })
+    .from(checkins)
+    .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+    .orderBy(asc(checkins.date))
+    .all();
+  return rows.map((row) =>
+    checkinSchema.pick({ date: true, kind: true, dayRating: true }).parse(row),
+  );
 }
 
 export class InvalidMorningCheckinError extends Error {
