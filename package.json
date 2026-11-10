@@ -55,7 +55,8 @@
     "lint": "expo lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "test:supabase": "bash scripts/supabase-local-test.sh"
   },
   "private": true,
   "jest": {
