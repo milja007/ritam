@@ -33,6 +33,7 @@ function block(id: string, start: string, end: string, kind: BlockKind = 'task')
     updatedAt: '2026-11-09T08:00:00.000Z',
     date: '2026-11-09',
     title: id,
+    note: null,
     start,
     end,
     taskId: null,
@@ -189,6 +190,7 @@ describe('validacija i pretvorba', () => {
       taskId: null,
       source: 'user',
       status: 'planned',
+      note: null,
     });
   });
   it('draftFromBlock i draftToPatch mijenjaju samo naziv, vrijeme i tip', () => {

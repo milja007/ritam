@@ -2,6 +2,38 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 22:45 · Korak 17c — Danas: veliki raspored + trenutna aktivnost
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17b` u 19:57 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17c`. Čisto `src/core/schedule/now-view.ts` (bez Reacta, s testovima): `daySchedule(blocks, nowSeconds)` → trenutna aktivnost (bez sna), sljedeća, prošle i buduće; `secondsLeft` do kraja trenutne i `secondsUntilNext`; `progress` 0–1; `formatClock` (HH:MM:SS) i `formatCountdown` (`1:05:09` / `4:07`); preklapanja kao u `currentBlockId`.
+2. Pravila akcija po fazi (`blockActions(phase)`): **Komentar** samo trenutna + prošle; **Otkaži** samo trenutna + buduće; **U redu / Djelomično / Nije** samo prošle (i trenutna smije U redu). Otkaži = status `skipped` (bez novog statusa, bez XP-a). Testovi.
+3. Bilješka na bloku: stupac `note` (nullable, ≤ 2000) u `schedule_blocks` — Zod, Drizzle, lokalna migracija `0007`, Supabase migracija (paritet test), repo `setBlockNote`. Remote Supabase se **ne** primjenjuje bez Bornova odobrenja → pitanje.
+4. UI `NowCard` na vrhu Danas: "Trenutno: …", živi sat u sekundama (1 s tik samo dok je ekran fokusiran), odbrojavanje do kraja i traka napretka, "Sljedeće: … za mm:ss"; kad ništa ne traje — "Slobodno" + odbrojavanje do sljedeće. Gradijent doba dana, veliki tabularni brojevi, tokeni.
+5. Raspored ispod: "Ostatak dana" (od sada prema naprijed), prošle sklopljene pod "Ranije danas" s prijavom U redu / Djelomično / Nije izravno na kartici. Akcije bloka u listu akcija (Komentar / Otkaži / Uredi) prema pravilima iz 2.
+6. i18n HR/EN za sve nove tekstove.
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push. Provjera na iPhoneu ostaje Borni.
+
+*Recenzija plana:* kriteriji 17c — "Trenutno" + živi sat u sekundama + odbrojavanje do kraja i do sljedeće (1, 4); ostatak dana od sada (5); Komentar = bilješka samo trenutna/prošle, Otkaži trenutna/buduće, prošle se prijavljuju izravno (2, 3, 5); dizajn s tokenima i gradijentom (4, 5). Odustajem / dijagnoza su 17d, tabovi 17e — ne radim. Dodatni stupac `note` je nužan za bilješku (nije nova značajka koncepta).
+
+**Napravljeno:**
+- `src/core/schedule/now-view.ts` (+15 testova): `daySchedule` (trenutna bez sna i otkazanih, kod preklapanja kasniji početak; sljedeća; prošle; ostatak dana; `secondsLeft`, `secondsUntilNext`, `progress`), `formatClockSeconds`, `formatCountdown`, `blockActions` (Komentar trenutna/prošle, Otkaži trenutna/buduće, prijava prošle — trenutna samo Gotovo), `reportedStatus` (ponovni dodir vraća na planirano), `normalizeNote`, `isCancelled` (Otkaži = `skipped`, bez novog statusa; podsjetnik se ne šalje jer `needsReminder` traži `planned`).
+- Bilješka: `schedule_blocks.note` (Zod `noteSchema`, Drizzle, lokalna migracija `0007_block_notes`, Supabase `20261110224500_block_notes.sql` s CHECK ≤ 2000), repo `setBlockNote` (ne dira status/XP; uređivanje bloka je ne briše) + test.
+- UI: `NowCard` na vrhu Danas — "Trenutno", živi sat HH:MM:SS (`useLiveClock`: tik na punu sekundu samo dok je ekran u fokusu i app aktivan), naziv velikim slovima, veliko odbrojavanje do kraja u akcentu + traka napretka, Gotovo i "Komentar · Otkaži", ispod "Sljedeće … počinje za m:ss". Kad ništa ne traje: "Slobodno" s velikim odbrojavanjem do sljedeće; kad nema ničeg: "Za danas je to sve".
+- Raspored kao vremenska linija (vrijeme lijevo, točka u boji statusa, linija): "Ostatak dana" od sada; "Ranije danas · N" sklopljeno, otvoreno samo dok ima neprijavljenih, s prijavom U redu / Djelomično / Nije izravno na kartici; otkazane prekrižene s oznakom "Otkazano"; komentar se vidi na kartici.
+- List akcija bloka (`BlockSheet`): prijava (prošle), Komentar (trenutna/prošle; za buduće objašnjenje), Otkaži / Vrati u plan (trenutna/buduće), Uredi (otvara postojeći uređivač).
+- XP traka i rezultat dana premješteni ispod rasporeda (raspored je glavni sadržaj ekrana). Uklonjen nekorišteni `today.markDone` i `toggleDone`.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 547/547, `expo export --platform android` ✅.
+
+**Na uređaju neprovjereno (Borna):** izgled "Trenutno" i vremenske linije na iPhoneu (tamna/svijetla tema, gradijent), tikanje sata, list akcija s tipkovnicom, prijava pilulama u kartici.
+
+**Pitanja za Bornu:**
+65. Supabase migracija `block_notes` (stupac `note` u `schedule_blocks`) je u repou, ali **nije primijenjena na remote `ritam`** — smijem li je primijeniti?
+66. XP traka i rezultat dana su sada **ispod** rasporeda (na vrhu je "Trenutno"). Odgovara li, ili ih želiš iznad?
+67. Otkazana aktivnost se sprema kao `skipped` (isto kao "Nije") — u večernjem upitu i rezultatu računa se kao neodrađena. U redu, ili otkazano treba biti neutralno (ne smanjuje rezultat)?
+
+**Sljedeće:** korak 17d — Odustajem od svega + dijagnoza čim je sve riješeno + ležeran večernji podsjetnik.
+
 ## 2026-11-10 · Greška s uređaja (zapisano iz druge sesije)
 - Na Bornovom iPhoneu (dev build) Metro javlja: `Registering background notification task failed — Background remote notifications have not been configured`. Znači da "Gotovo / Odgodi na podsjetniku bez otvaranja appa" (16d) na iOS-u vjerojatno ne radi. Popravak: `enableBackgroundRemoteNotifications: true` u pluginu `expo-notifications` (ili `remote-notification` u `UIBackgroundModes`) + novi native build na iPhoneu. Provjeriti prije 17c.
 - **Popravljeno (2026-11-10):** uzrok nije postavka nego pogrešna platforma — na iOS-u expo-notifications pozadinski zadatak služi samo za push s poslužitelja (`remote-notification` + APNs, traži plaćeni Apple račun) i nikad se ne pokreće za lokalne podsjetnike; tamo Gotovo/Odgodi stižu u listener i `getLastNotificationResponseAsync` (notifications-sync). Zadatak se sada registrira **samo na Androidu** (`usesBackgroundNotificationTask` u `src/core/notifications/actions.ts`, s testom). Bez native promjene. Na iPhoneu: bundle prošao, greška se više ne javlja. Još provjeriti na uređaju: Gotovo/Odgodi na podsjetniku dok je app **potpuno ugašen**.

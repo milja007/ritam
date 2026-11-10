@@ -141,7 +141,6 @@
     "timeRange": "{{start}}–{{end}}",
     "editBlockLabel": "{{title}}, {{time}}",
     "editBlockHint": "Otvara blok za uređivanje",
-    "markDone": "Gotovo: {{title}}",
     "addBlock": "+ Dodaj blok",
     "loadError": "Današnji blokovi se nisu mogli učitati.",
     "retry": "Pokušaj ponovo",
@@ -169,6 +168,61 @@
       "deleteTitle": "Obrisati blok?",
       "deleteMessage": "\"{{title}}\" bit će uklonjen s današnjeg dana.",
       "error": "Spremanje nije uspjelo. Pokušaj ponovo."
+    },
+    "blockHint": "Otvara akcije: prijava, komentar, otkaži, uredi",
+    "restOfDay": "Ostatak dana",
+    "restOfDayEmpty": "Od sada nema više aktivnosti u planu.",
+    "earlier_one": "Ranije danas · {{count}}",
+    "earlier_few": "Ranije danas · {{count}}",
+    "earlier_other": "Ranije danas · {{count}}",
+    "show": "Prikaži",
+    "hide": "Sakrij",
+    "toReport": "Prijavi",
+    "phase": {
+      "past": "prošlo",
+      "current": "traje sada",
+      "upcoming": "slijedi"
+    },
+    "status": {
+      "cancelled": "Otkazano"
+    },
+    "report": {
+      "done": "U redu",
+      "partial": "Djelomično",
+      "skipped": "Nije"
+    },
+    "note": {
+      "label": "Komentar",
+      "placeholder": "Kako je prošlo, što je zapelo…",
+      "save": "Spremi komentar",
+      "preview": "„{{note}}“",
+      "onlyNowOrPast": "Komentar se može dodati kad aktivnost počne."
+    },
+    "sheet": {
+      "howWent": "Kako je prošlo?",
+      "cancelActivity": "Otkaži",
+      "restore": "Vrati u plan",
+      "edit": "Uredi",
+      "close": "Zatvori"
+    },
+    "nowCard": {
+      "label": "Trenutna aktivnost",
+      "current": "Trenutno",
+      "clockLabel": "Sada je {{time}}",
+      "untilEnd": "do kraja",
+      "leftLabel": "Još {{minutes}} min do kraja",
+      "progressLabel": "Napredak: {{title}}",
+      "progressValue": "{{percent}} %",
+      "done": "Gotovo",
+      "doneAlready": "Gotovo ✓",
+      "more": "Komentar · Otkaži",
+      "moreHint": "Otvara komentar, otkazivanje i uređivanje",
+      "next": "Sljedeće",
+      "startsIn": "počinje za",
+      "free": "Slobodno",
+      "freeBody": "Ništa ne traje — sljedeća aktivnost je ispod.",
+      "allDone": "Za danas je to sve",
+      "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori."
     }
   },
   "evening": {

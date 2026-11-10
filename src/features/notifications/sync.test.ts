@@ -198,6 +198,7 @@ function block(id: string, start: string, overrides: Partial<ScheduleBlock> = {}
     updatedAt: '2026-11-09T04:00:00.000Z',
     date: '2026-11-09',
     title: `Blok ${id}`,
+    note: null,
     start,
     end: '20:00',
     taskId: null,

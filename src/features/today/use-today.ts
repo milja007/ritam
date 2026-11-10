@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { eveningCheckinDate } from '@/core/checkin';
-import type { ScheduleBlock } from '@/core/domain';
+import type { BlockStatus, ScheduleBlock } from '@/core/domain';
 import {
   draftToInput,
   draftToPatch,
   minutesOfDay,
-  toggledStatus,
   type BlockDraft,
 } from '@/core/schedule';
 import { localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { createBlock, deleteBlock, listBlocksForDate, setBlockStatus, updateBlock } from '@/db/repos';
+import {
+  createBlock,
+  deleteBlock,
+  listBlocksForDate,
+  setBlockNote,
+  setBlockStatus,
+  updateBlock,
+} from '@/db/repos';
 import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
 import { notifyProgressChanged } from '@/features/progress';
 
@@ -97,14 +103,23 @@ export function useDayBlocks(date: string) {
     [changed],
   );
 
-  const toggleDone = useCallback(
-    async (block: ScheduleBlock) => {
-      // Status + XP zadatka u jednoj transakciji: kvačica daje XP odmah, vraćanje ga uklanja.
-      setBlockStatus(getDb(), LOCAL_USER_ID, block.id, toggledStatus(block.status));
+  /** Prijava / Otkaži s rasporeda (17c): status + XP u jednoj transakciji. */
+  const setStatus = useCallback(
+    async (block: ScheduleBlock, next: BlockStatus) => {
+      setBlockStatus(getDb(), LOCAL_USER_ID, block.id, next);
       changed();
     },
     [changed],
   );
 
-  return { status, blocks, reload, add, edit, remove, toggleDone };
+  /** Komentar (= bilješka) na aktivnosti; `null` briše. */
+  const setNote = useCallback(
+    async (id: string, note: string | null) => {
+      setBlockNote(getDb(), LOCAL_USER_ID, id, note);
+      reload();
+    },
+    [reload],
+  );
+
+  return { status, blocks, reload, add, edit, remove, setStatus, setNote };
 }
