@@ -263,7 +263,10 @@
       "saveError": "The plan wasn't saved. Try again.",
       "doneTitle": "Tomorrow is ready",
       "doneBody": "New blocks: {{count}}. See you in the morning.",
-      "close": "Done"
+      "close": "Done",
+      "learned": "Your usual",
+      "learnedPick": "{{title}} · {{start}}",
+      "learnedHint": "Adds the block at its usual time {{start}}–{{end}}. You can change it."
     }
   },
   "morning": {

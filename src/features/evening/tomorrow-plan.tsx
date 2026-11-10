@@ -16,10 +16,12 @@ import type { ScheduleBlock } from '@/core/domain';
 import {
   isTomorrowPlanValid,
   occupiedSlots,
+  pickKey,
   QUICK_PICKS,
   quickPickDraft,
   typedDraft,
   type BlockDraft,
+  type LearnedPick,
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { BlockEditor } from '@/features/today/block-editor';
@@ -69,6 +71,15 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   function addPick(pick: (typeof QUICK_PICKS)[number]) {
     add(quickPickDraft(pick, t(`evening.tomorrow.pick.${pick.id}`), occupied, plan.wakeTime));
   }
+
+  /** Naučeni odabir dolazi u svom uobičajenom terminu (korisnik ga mijenja u editoru). */
+  function addLearned(pick: LearnedPick) {
+    add({ title: pick.title, kind: pick.kind, start: pick.start, end: pick.end });
+  }
+
+  // Naučeni odabir koji je već dodan se skriva.
+  const added = new Set(drafts.map((draft) => pickKey(draft.title)));
+  const learned = plan.learned.filter((pick) => !added.has(pick.key));
 
   function addTyped() {
     const draft = typedDraft(typed, occupied, plan.wakeTime);
@@ -147,6 +158,27 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                           {plan.existing.map((block) => (
                             <ExistingRow key={block.id} block={block} />
                           ))}
+                        </View>
+                      ) : null}
+
+                      {learned.length > 0 ? (
+                        <View style={styles.section}>
+                          <Text variant="caption" tone="textMuted">
+                            {t('evening.tomorrow.learned')}
+                          </Text>
+                          <View style={styles.chips}>
+                            {learned.map((pick) => (
+                              <Chip
+                                key={pick.key}
+                                label={t('evening.tomorrow.learnedPick', {
+                                  title: pick.title,
+                                  start: pick.start,
+                                })}
+                                hint={t('evening.tomorrow.learnedHint', { start: pick.start, end: pick.end })}
+                                onPress={() => addLearned(pick)}
+                              />
+                            ))}
+                          </View>
                         </View>
                       ) : null}
 
