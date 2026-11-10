@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import {
+  blockActionOpensApp,
   BLOCK_ACTIONS,
   BLOCK_CATEGORY_ID,
   blockNotificationData,
@@ -81,5 +82,13 @@ describe('parseNotificationResponse', () => {
   it('nepoznata akcija ili tuđa obavijest → null', () => {
     expect(parseNotificationResponse('delete', block, TAP)).toBeNull();
     expect(parseNotificationResponse(TAP, { foo: 1 }, TAP)).toBeNull();
+  });
+});
+
+describe('blockActionOpensApp', () => {
+  it('Gotovo i Odgodi bez otvaranja appa, Iskrslo otvara (P27)', () => {
+    expect(blockActionOpensApp('done')).toBe(false);
+    expect(blockActionOpensApp('snooze')).toBe(false);
+    expect(blockActionOpensApp('cameUp')).toBe(true);
   });
 });
