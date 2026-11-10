@@ -14,6 +14,7 @@ import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { createBlock, deleteBlock, listBlocksForDate, setBlockStatus, updateBlock } from '@/db/repos';
 import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
+import { notifyProgressChanged } from '@/features/progress';
 
 const CLOCK_REFRESH_MS = 30_000;
 
@@ -63,6 +64,7 @@ export function useDayBlocks(date: string) {
   /** Nakon zapisa: ponovo učitaj dan i uskladi podsjetnike blokova. */
   const changed = useCallback(() => {
     reload();
+    notifyProgressChanged(); // kvačica / brisanje bloka mijenja XP
     void syncNotificationsNow();
   }, [reload]);
 

@@ -27,7 +27,8 @@
       "time": "u {{time}}",
       "weekendTime": "u {{time}}, vikendom {{weekend}}"
     },
-    "saveError": "Promjena se nije spremila. Pokušaj ponovo."
+    "saveError": "Promjena se nije spremila. Pokušaj ponovo.",
+    "progress": "Napredak"
   },
   "database": {
     "preparing": "Pripremam podatke…",
@@ -291,6 +292,25 @@
       "heading": "Kako si spavao?",
       "body": "Prijavi san i pogledaj današnji plan.",
       "open": "Otvori brief"
+    }
+  },
+  "progress": {
+    "level": "Razina {{level}}",
+    "toNext": "{{xp}} / {{total}} XP do razine {{next}}",
+    "todayXp": "+{{xp}} XP danas",
+    "totalXp": "{{xp}} XP ukupno",
+    "loadError": "Napredak se nije učitao.",
+    "stat": {
+      "today": "XP danas",
+      "streak": "Dani zaredom",
+      "longest": "Najduži niz"
+    },
+    "streak": {
+      "short": "Niz: {{count}}",
+      "a11y": "Dani zaredom s večernjim upitom: {{count}}",
+      "hintDone": "Današnji upit je ubrojen u niz.",
+      "hintKeep": "Ispuni večernji upit i niz raste.",
+      "hintStart": "Večernji upit danas pokreće novi niz."
     }
   }
 }

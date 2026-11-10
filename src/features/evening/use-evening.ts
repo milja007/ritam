@@ -6,6 +6,7 @@ import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { getEveningCheckin, listBlocksForDate, listRules, saveEveningCheckin } from '@/db/repos';
 import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
+import { notifyProgressChanged } from '@/features/progress';
 
 type Loaded = {
   date: string;
@@ -53,6 +54,7 @@ export function useEveningCheckin(date: string) {
     (draft: EveningDraft) => {
       const result = saveEveningCheckin(getDb(), LOCAL_USER_ID, draft);
       reload();
+      notifyProgressChanged(); // XP i glavni streak
       // Statusi i premješteni blokovi su se promijenili → podsjetnici.
       void syncNotificationsNow();
       return result.xpEarned;
