@@ -14,12 +14,15 @@ import {
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
+import { MorningBrief, MorningCard, useMorningCheckin } from '@/features/morning';
 import {
   consumeBlockRequest,
   consumeEveningRequest,
+  consumeMorningRequest,
   PermissionCard,
   useBlockRequested,
   useEveningRequested,
+  useMorningRequested,
 } from '@/features/notifications';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
@@ -54,6 +57,19 @@ export function TodayScreen() {
   // Dodir večernje obavijesti otvara upit čim su podaci dana učitani; zahtjev se briše pri zatvaranju.
   const showEvening = eveningReady && (eveningOpen || eveningRequested);
 
+  // Jutarnji brief: dodir jutarnje obavijesti ili kartica na Danas (dok san nije prijavljen).
+  const morning = useMorningCheckin(now.date);
+  const [morningOpen, setMorningOpen] = useState(false);
+  const morningRequested = useMorningRequested();
+  const morningReady = day.status === 'ready' && morning.status === 'ready';
+  const showMorning =
+    morningReady && morning.settings !== null && !showEvening && (morningOpen || morningRequested);
+
+  function closeMorning() {
+    setMorningOpen(false);
+    consumeMorningRequest();
+  }
+
   // "Što imaš sutra?" = dan nakon dana upita (prije 04:00 je to današnji dan).
   const tomorrowDate = tomorrowOf(now.eveningDate);
   const [tomorrowOpen, setTomorrowOpen] = useState(false);
@@ -83,7 +99,7 @@ export function TodayScreen() {
   }, [blockRequestMissing]);
   const activeEditing: Editing | null =
     editing ??
-    (requestedBlock !== null && !showEvening && !tomorrowOpen
+    (requestedBlock !== null && !showEvening && !showMorning && !tomorrowOpen
       ? { mode: 'edit', draft: draftFromBlock(requestedBlock), id: requestedBlock.id }
       : null);
 
@@ -125,6 +141,10 @@ export function TodayScreen() {
           </View>
 
           <PermissionCard />
+
+          {morning.status === 'ready' && morning.saved === null ? (
+            <MorningCard disabled={!morningReady} onOpen={() => setMorningOpen(true)} />
+          ) : null}
 
           {day.status === 'loading' ? (
             <ActivityIndicator color={colors.accent} style={styles.loading} />
@@ -186,6 +206,19 @@ export function TodayScreen() {
             activeEditing.mode === 'add' ? day.add(draft) : day.edit(activeEditing.id, draft)
           }
           onDelete={activeEditing.mode === 'edit' ? () => day.remove(activeEditing.id) : undefined}
+        />
+      ) : null}
+
+      {showMorning && morning.settings !== null ? (
+        <MorningBrief
+          date={now.date}
+          nowMinutes={now.minutes}
+          blocks={day.blocks}
+          settings={morning.settings}
+          saved={morning.saved}
+          onSave={morning.save}
+          onClose={closeMorning}
+          onAdjust={closeMorning}
         />
       ) : null}
 

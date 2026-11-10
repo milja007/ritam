@@ -243,5 +243,54 @@
       "doneBody": "Novih blokova: {{count}}. Vidimo se ujutro.",
       "close": "Gotovo"
     }
+  },
+  "morning": {
+    "overline": "Jutarnji brief",
+    "close": "Zatvori",
+    "greeting": {
+      "morning": "Dobro jutro",
+      "afternoon": "Dobar dan",
+      "evening": "Dobra večer"
+    },
+    "now": "{{time}} · {{day}}",
+    "summary": "Blokova danas: {{blocks}} · zadataka: {{tasks}}.",
+    "first": "Prvi: {{title}} u {{time}}.",
+    "sleep": {
+      "title": "Kako si spavao?",
+      "subtitle": "Popunjeno prema tvojim ciljevima — pomakni ako treba pa spremi.",
+      "fellAsleep": "Zaspao",
+      "wokeUp": "Probudio se",
+      "duration": "{{hours}} h {{minutes}} min",
+      "total": "Sna: {{duration}}",
+      "invalid": "Vrijeme buđenja mora biti nakon vremena kad si zaspao.",
+      "save": "Spremi san",
+      "saveError": "San se nije spremio. Pokušaj ponovo.",
+      "summary": "{{start}} → {{end}}",
+      "xp": "+{{xp}} XP — krevet na vrijeme!",
+      "saved": "Spremljeno.",
+      "edit": "Uredi"
+    },
+    "cards": {
+      "title": "Tvoj dan",
+      "emptyTitle": "Danas još nema plana",
+      "emptyBody": "Dodaj blokove na tabu Danas — gumb Prilagodi.",
+      "position": "{{position}}/{{total}}",
+      "label": "{{position}} od {{total}}: {{title}}, {{time}}, {{kind}}",
+      "until": "do {{end}}",
+      "done": "Gotovo"
+    },
+    "adjust": "Prilagodi",
+    "adjustHint": "Zatvara brief i otvara današnji raspored za uređivanje",
+    "go": "Kreni",
+    "start": {
+      "title": "Dan počinje",
+      "body": "Malo po malo."
+    },
+    "card": {
+      "title": "Jutarnji brief",
+      "heading": "Kako si spavao?",
+      "body": "Prijavi san i pogledaj današnji plan.",
+      "open": "Otvori brief"
+    }
   }
 }
