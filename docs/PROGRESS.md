@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 06:43 · Korak 14 — Jutarnji brief
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-14`; bez novih ovisnosti i bez migracije (`checkins` već ima `kind: morning`, `sleepStart`, `wakeTime`; jedinstveni indeks jedan jutarnji po danu).
+2. Čisto u `src/core/checkin/morning.ts`: `createMorningDraft(settings, date, saved)` (prijava sna unaprijed popunjena: zaspao = ciljani krevet prethodne večeri, probudio = buđenje tog dana — "dva taba": po potrebi pomakni, pa Spremi); `sleepDurationMinutes` (preko ponoći); `isMorningDraftValid`; `morningXpAwards` (krevet ±30 min od cilja → 20 XP, postojeći `xpForBedtime`; buđenje bez snooze se ne može znati → ne dodjeljuje se); `greetingFor(minutes)` (jutro / dan / večer); `briefSummary(blocks, nowMinutes)` (broj blokova bez sna, broj zadataka, prvi sljedeći blok). Testovi.
+3. Repo `getMorningCheckin` / `saveMorningCheckin` (jedna sinkrona transakcija: upsert jutarnjeg checkina, XP sna zamijeni se pri ponovnom spremanju, `mood` ostaje `null` — raspoloženje se ne prati). Testovi nad Node SQLite-om.
+4. Otvaranje: dodir jutarnje obavijesti → `requestMorningBrief()` (isti mehanizam kao večernji upit); na Danas i kartica "Jutarnji brief" dok jutarnja prijava nije spremljena (da se brief može otvoriti i bez obavijesti).
+5. UI `src/features/morning/`: modal — pozdrav + sat i datum; prijava sna (Zaspao / Probudio `ClockStepper`, trajanje sna, Spremi → +XP; spremljeno → prikaz + Uredi); raspored dana kao vodoravne kartice koje se listaju (vrijeme, naziv, vrsta, "2/5"; prazno → poruka); gumbi **Prilagodi** (zatvori brief → timeline Danas za uređivanje) i **Kreni** (kratki fade "Dan počinje", pa zatvori; prava animacija je korak 35).
+6. i18n HR/EN + pristupačnost (oznake steppera, kartica, live region za XP).
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = ekran iz notifikacije (4), pozdrav (2, 5), prijava sna u dva taba (2, 3, 5), kartice dana (5), Prilagodi / Kreni (5). Puni koncept prijave ima i "Kako se osjećaš 1–5?", ali Borna je 2026-11-09 odlučio da se **raspoloženje ne prati** → izostavljeno. Prilagodba rasporeda lošem snu je korak 29, izbor sadržaja jutarnje obavijesti (broj blokova, streak…) u postavkama nije ovaj korak — tekst obavijesti ostaje općenit (pitanje). XP za krevet na vrijeme je iz tablice koncepta (nije nova odluka). Kartica na Danas je ulaz za testiranje bez obavijesti — kad se skriva, pitanje za Bornu.
+
 ## 2026-11-10 00:43 · Korak 13c — Postavke i onboarding: dorade
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-13c`. Migracija `0002_settings_refinements`: `settings` + `weekend_wake_time` (NULL = isto kao radni dan), `morning_notif_enabled` / `evening_notif_enabled` / `wind_down_notif_enabled` (default 1); `language` smije biti `system`. Zod shema i Drizzle prate; test migracije nad Node SQLite-om.
