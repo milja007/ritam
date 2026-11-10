@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ScrollView,
@@ -7,6 +7,7 @@ import {
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 
 import type { ScheduleBlock } from '@/core/domain';
@@ -36,6 +37,8 @@ export function DayCards({
   const cardWidth = Math.max(200, width - SCREEN_PADDING * 2);
   const interval = cardWidth + CARD_GAP;
   const [index, setIndex] = useState(startIndex);
+  const scroller = useRef<ScrollViewInstance>(null);
+  const positioned = useRef(false);
 
   if (blocks.length === 0) {
     return (
@@ -59,6 +62,13 @@ export function DayCards({
         snapToInterval={interval}
         decelerationRate="fast"
         contentOffset={{ x: startIndex * interval, y: 0 }}
+        ref={scroller}
+        onContentSizeChange={() => {
+          // `contentOffset` nije pouzdan na svim platformama — jednom skoči na početnu karticu.
+          if (positioned.current) return;
+          positioned.current = true;
+          scroller.current?.scrollTo({ x: startIndex * interval, y: 0, animated: false });
+        }}
         onMomentumScrollEnd={onScrollEnd}
         style={styles.scroller}
         contentContainerStyle={[styles.row, { paddingHorizontal: SCREEN_PADDING }]}>

@@ -25,7 +25,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **13. Večernji upit — sutra** — "Što imaš sutra?" ručni unos blokova (brzi odabiri + tipkanje), pregled, potvrdi.
 - [x] **13b. Podsjetnici blokova** — obavijest na početku svakog bloka osim sna, akcije Gotovo (status + XP) / Odgodi (15 min) / Iskrslo (otvori app); zakazivanje uz dnevne obavijesti, unutar iOS limita.
 - [x] **13c. Postavke i onboarding — dorade (odluke 2026-11-09)** — vikend vrijeme buđenja + upozorenje > 1 h; `language: system`; 0–3 zabrane u onboardingu; prekidači za svaku dnevnu obavijest u Profilu; horizont 7 dana; kartica kad je dopuštenje odbijeno; doba dana prema buđenju; privremena ikona/splash.
-- [ ] **14. Jutarnji brief** — ekran iz notifikacije: pozdrav, prijava sna (2 taba), kartice dana, Prilagodi / Kreni.
+- [x] **14. Jutarnji brief** — ekran iz notifikacije: pozdrav, prijava sna (2 taba), kartice dana, Prilagodi / Kreni.
 - [ ] **15. XP traka + streak u UI-ju** — na tabu Danas i Profil.
 - [ ] **16. Dnevna dijagnoza (lokalna)** — na kraju upita prikaz u strukturi dijagnoze iz CONCEPT.md (Ukratko, Napredak, Pohvale, …) koliko se može bez LLM-a: statistika dana i usporedba s jučer. Sprema u `reports` (period `day`).
 - [ ] **16b. Napredak — dnevni rezultat** — `src/core/progress/` (čisto + testovi): dnevni rezultat 0–100 (plan, zabrane, san; trackeri kasnije), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi. Prikaz rezultata sa strelicom trenda na tabu Danas.
