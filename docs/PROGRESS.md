@@ -2,6 +2,21 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 23:50 · Korak 17d — Odustajem od svega + dijagnoza čim je sve riješeno + ležeran večernji podsjetnik
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17c` u 21:52 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17d`. Čisto `src/core/schedule/day-close.ts` (+ testovi): `giveUpBlocks(blocks)` (svi neriješeni `planned` blokovi osim sna — prošli, trenutni i budući), `isDayResolved(blocks)` (barem jedan blok osim sna i nijedan `planned`; otkazani su `skipped`), `eveningReminderNeeds({…})` → što fali (neprijavljeni blokovi, nema plana za sutra, spremna a nepokupljena dijagnoza); prazno = bez podsjetnika.
+2. Podaci: `checkins.gave_up` (bool, zadano false) + `checkins.gave_up_note` (≤ 2000) na večernjem checkinu dana; `reports.seen_at` (kad je dijagnoza pokupljena). Zod, Drizzle, lokalna migracija `0008`, Supabase migracija u repou (remote se ne primjenjuje bez Borne → pitanje). Streak: dan s Odustajem se računa kao ispunjen (**ne ruši streak**); spremanje upita ne briše odustajanje.
+3. Repo `giveUpDay(date, note)` u jednoj transakciji: neriješeni blokovi → `skipped` (bez XP-a), večernji checkin dobiva `gaveUp` + bilješku; ocjena i zabrane ostaju neispunjene (mogu se dodati kasnije). Repo `markReportSeen`. Testovi.
+4. Dijagnoza: `DayStats` dobiva odustajanje i bilješku; "Što smo primijetili" ga navodi bez osude, s napisanim kontekstom. Testovi.
+5. UI Dan: "Odustajem od svega" (dok ima neriješenih blokova) → ekran s potvrdom bez osude i poljem "Što se dogodilo?" → spremi → odmah "Što imaš sutra?". Kad je dan riješen i dijagnoza nije pokupljena: kartica "Dijagnoza dana je spremna" → otvara svježu dijagnozu i označi je pokupljenom.
+6. Večernji upit lakši: stavke checkliste već prijavljene na rasporedu dolaze unaprijed popunjene (Djelomično/Nije s "preskoči"), pa ostaju samo ocjena i zabrane.
+7. Večernja obavijest za danas zakazuje se samo ako nešto fali, s ležernim tekstom prema onome što fali; inače se otkaže. Ostali dani: opći ležeran tekst. i18n HR/EN.
+8. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 17d — Odustajem s potvrdom, bez osude, ne ruši streak (2, 3, 5), preostalo neodrađeno bez XP-a (3), "što se dogodilo" kao kontekst za dijagnozu (3, 4), odmah plan za sutra (5); dijagnoza se otključa kad je sve riješeno i pokupi se na Dan (1, 2, 5); ležeran podsjetnik samo kad fali nešto od tri stvari (1, 7); ocjena i zabrane kratke (6); čista logika + testovi (1, 3, 4). Glas je korak 30, tabovi 17e — ne radim.
+
 ## 2026-11-10 22:45 · Korak 17c — Danas: veliki raspored + trenutna aktivnost
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17b` u 19:57 UTC).
 
