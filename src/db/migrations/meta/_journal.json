@@ -40,8 +40,15 @@
     {
       "idx": 5,
       "version": "6",
-      "when": 1794334169484,
-      "tag": "0005_checkin_score_areas",
+      "when": 1794332866029,
+      "tag": "0005_block_reminders",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794334408599,
+      "tag": "0006_checkin_score_areas",
       "breakpoints": true
     }
   ]

@@ -1,5 +1,5 @@
 -- Korak 16c: područja dnevnog rezultata (odluka P39, dorađena 2026-11-10) — plan uvijek, zabrane i
--- san opcionalni (zadano isključeni). Isti stupci kao lokalne migracije 0004 i 0005.
+-- san opcionalni (zadano isključeni). Isti stupci kao lokalne migracije 0004 i 0006.
 
 alter table public.settings add column score_plan boolean not null default true;
 alter table public.settings add column score_rules boolean not null default false;

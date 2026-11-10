@@ -82,21 +82,23 @@ export function dailyNotificationTimes(settings: NotificationSettings): DailyNot
 }
 
 /**
- * Jutarnja obavijest i večernji upit za kalendarski dan. Jutarnja se vikendom pomiče za razliku
- * vikend − radni dan buđenja (zadana jutarnja = buđenje); večernji upit je isti svaki dan.
- * Neispravan ulaz → `null`.
+ * Jutarnja obavijest i večernji upit za kalendarski dan (odluka P29, 2026-11-10).
+ * Jutarnja se pomiče za razliku vikend − radni dan buđenja kad je *taj* dan vikend (subota, nedjelja).
+ * Večernji upit prati noć kao wind-down: pomiče se kad je *sljedeći* dan vikend (petak i subota
+ * navečer), da nedjeljni upit ne padne iza wind-downa prije ponedjeljka. Neispravan ulaz → `null`.
  */
 export function dayNotificationTimes(
   settings: NotificationSettings,
   date: string,
 ): Pick<DailyNotificationTimes, 'morning' | 'evening'> | null {
   const base = dailyNotificationTimes(settings);
-  if (base === null) return null;
-  const morning = isWeekend(date)
-    ? shiftClock(base.morning, weekendShiftMinutes(settings))
-    : base.morning;
-  if (morning === null) return null;
-  return { morning, evening: base.evening };
+  const next = addDays(date, 1);
+  if (base === null || next === null) return null;
+  const shift = weekendShiftMinutes(settings);
+  const morning = isWeekend(date) ? shiftClock(base.morning, shift) : base.morning;
+  const evening = isWeekend(next) ? shiftClock(base.evening, shift) : base.evening;
+  if (morning === null || evening === null) return null;
+  return { morning, evening };
 }
 
 /**
@@ -124,13 +126,18 @@ export function triggerId(kind: NotificationKind, date: string, time: string): s
   return `${kind}:${date}@${time}`;
 }
 
+/** Id okidača s ključem sadržaja (`kind:YYYY-MM-DD@HH:MM#ključ`) — za obavijesti s tekstom po danu. */
+export function triggerIdWithContent(id: string, key: string): string {
+  return `${id}#${key}`;
+}
+
 const TRIGGER_ID_PATTERN = new RegExp(
-  `^(?:${NOTIFICATION_KINDS.join('|')}):\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}$`,
+  `^(?:${NOTIFICATION_KINDS.join('|')}):\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}(?:#[0-9a-z]+)?$`,
 );
 
 /**
- * Je li id zakazane obavijesti naš dnevni okidač (`kind:YYYY-MM-DD@HH:MM`). Pri ponovnom
- * zakazivanju otkazujemo samo takve — podsjetnici blokova i tuđe obavijesti ostaju.
+ * Je li id zakazane obavijesti naš dnevni okidač (`kind:YYYY-MM-DD@HH:MM`, po želji `#ključ`
+ * sadržaja). Pri ponovnom zakazivanju otkazujemo samo takve — podsjetnici blokova i tuđe obavijesti ostaju.
  */
 export function isDailyTriggerId(id: string): boolean {
   return TRIGGER_ID_PATTERN.test(id);
@@ -206,21 +213,21 @@ export function upcomingTriggers(
   return triggers.slice(0, IOS_PENDING_NOTIFICATION_LIMIT);
 }
 
-export type ReschedulePlan = {
+export type ReschedulePlan<T extends NotificationTrigger = NotificationTrigger> = {
   /** Zakazani id-jevi kojih više nema u željenom popisu. */
   toCancel: string[];
   /** Željeni okidači koji još nisu zakazani. */
-  toSchedule: NotificationTrigger[];
+  toSchedule: T[];
 };
 
 /**
  * Razlika između već zakazanih obavijesti i željenih okidača, da se pri otvaranju appa
  * ne briše i ponovno zakazuje sve. Gledaju se samo naši dnevni okidači (`isDailyTriggerId`). Id sadrži vrijeme, pa promjena postavki otkazuje stare okidače.
  */
-export function planReschedule(
+export function planReschedule<T extends NotificationTrigger>(
   scheduledIds: readonly string[],
-  desired: readonly NotificationTrigger[],
-): ReschedulePlan {
+  desired: readonly T[],
+): ReschedulePlan<T> {
   const scheduled = new Set(scheduledIds.filter(isDailyTriggerId));
   const desiredIds = new Set(desired.map((trigger) => trigger.id));
   return {

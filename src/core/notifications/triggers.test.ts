@@ -176,15 +176,15 @@ describe('upcomingTriggers', () => {
     }
   });
 
-  it('vikend buđenje: jutarnja se pomiče, wind-down prati buđenje sljedećeg dana', () => {
+  it('vikend buđenje: jutarnja se pomiče vikendom, večernji upit i wind-down prate buđenje sljedećeg dana', () => {
     const weekend: NotificationSettings = { ...DEFAULTS, weekendWakeTime: '09:00' };
     // Petak 13. 11. → subota i nedjelja vikend, ponedjeljak radni dan.
     expect(summary(weekend, at(2026, 11, 13, 5), 4)).toEqual([
       'morning:2026-11-13@07:00',
-      'evening:2026-11-13@21:15',
+      'evening:2026-11-13@23:15',
       'morning:2026-11-14@09:00',
       'windDown:2026-11-14@00:15',
-      'evening:2026-11-14@21:15',
+      'evening:2026-11-14@23:15',
       'morning:2026-11-15@09:00',
       'windDown:2026-11-15@00:15',
       'evening:2026-11-15@21:15',
@@ -193,6 +193,13 @@ describe('upcomingTriggers', () => {
       'evening:2026-11-16@21:15',
       'windDown:2026-11-16@22:15',
     ].sort((a, b) => order(a) - order(b)));
+  });
+
+  it('vikend raniji od radnog dana: petak i subota navečer upit ranije, nedjelja normalno', () => {
+    const early: NotificationSettings = { ...DEFAULTS, weekendWakeTime: '06:00' };
+    expect(
+      summary({ ...early, morningNotifEnabled: false, windDownNotifEnabled: false }, at(2026, 11, 13, 5), 3),
+    ).toEqual(['evening:2026-11-13@20:15', 'evening:2026-11-14@20:15', 'evening:2026-11-15@21:15']);
   });
 
   it('isključene vrste se ne zakazuju', () => {

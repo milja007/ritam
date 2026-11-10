@@ -41,6 +41,7 @@ export const settings = sqliteTable(
     morningNotifEnabled: integer('morning_notif_enabled', { mode: 'boolean' }).notNull().default(true),
     eveningNotifEnabled: integer('evening_notif_enabled', { mode: 'boolean' }).notNull().default(true),
     windDownNotifEnabled: integer('wind_down_notif_enabled', { mode: 'boolean' }).notNull().default(true),
+    blockRemindersEnabled: integer('block_reminders_enabled', { mode: 'boolean' }).notNull().default(true),
     theme: text('theme').$type<ThemePreference>().notNull(),
     googleCalendarConnected: integer('google_calendar_connected', { mode: 'boolean' }).notNull(),
     // Područja dnevnog rezultata (korak 16c); zadano samo plan.

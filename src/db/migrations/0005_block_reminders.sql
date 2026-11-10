@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `block_reminders_enabled` integer DEFAULT true NOT NULL;

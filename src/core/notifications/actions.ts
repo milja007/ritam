@@ -14,6 +14,11 @@ export const BLOCK_CATEGORY_ID = 'block';
 export const BLOCK_ACTIONS = ['done', 'snooze', 'cameUp'] as const;
 export type BlockAction = (typeof BLOCK_ACTIONS)[number];
 
+/** Otvara li gumb app (odluka P27): samo Iskrslo — Gotovo i Odgodi se obrade u pozadini. */
+export function blockActionOpensApp(action: BlockAction): boolean {
+  return action === 'cameUp';
+}
+
 /** Oznaka izvora u `data` da razlikujemo naše obavijesti od tuđih. */
 export const NOTIFICATION_SOURCE = 'ritam';
 

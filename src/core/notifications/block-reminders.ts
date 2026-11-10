@@ -51,6 +51,14 @@ export function needsReminder(block: Pick<ScheduleBlock, 'kind' | 'status'>): bo
   return block.kind !== 'sleep' && block.status === 'planned';
 }
 
+/**
+ * Blokovi za koje se zakazuju podsjetnici: kad su podsjetnici isključeni u postavkama, nijedan —
+ * pa usklađivanje otkaže i već zakazane podsjetnike i odgode.
+ */
+export function reminderBlocks<T>(settings: { blockRemindersEnabled: boolean }, blocks: readonly T[]): readonly T[] {
+  return settings.blockRemindersEnabled ? blocks : [];
+}
+
 /** Koliko podsjetnika blokova stane uz `dailyCount` dnevnih obavijesti i rezervu za odgode. */
 export function blockReminderBudget(dailyCount: number): number {
   const daily = Number.isFinite(dailyCount) ? Math.max(0, Math.floor(dailyCount)) : 0;

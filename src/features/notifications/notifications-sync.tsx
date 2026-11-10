@@ -6,7 +6,9 @@ import {
   blockActionEffect,
   blockReminderBudget,
   DEFAULT_SCHEDULE_DAYS,
+  morningSummary,
   parseNotificationResponse,
+  reminderBlocks,
   upcomingTriggers,
   type BlockAction,
 } from '@/core/notifications';
@@ -26,6 +28,8 @@ import {
   notificationsSupported,
   registerChannelsAndCategories,
 } from './expo-notifications';
+import { registerBackgroundActions } from './background-task';
+import { morningBody } from './morning-text';
 import {
   notifyBlocksChanged,
   requestEveningCheckin,
@@ -60,12 +64,20 @@ async function syncOnce(): Promise<void> {
     return;
   }
   const now = new Date();
-  await syncDailyNotifications(expoScheduler, settings, now, dailyTexts(t));
-
-  // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
   const today = localDateOf(now);
   const last = addDays(today, DEFAULT_SCHEDULE_DAYS - 1) ?? today;
-  const blocks = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
+  const horizon = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
+
+  // Jutarnja obavijest nosi pregled plana tog dana (mijenja se s blokovima).
+  const texts = dailyTexts(t);
+  await syncDailyNotifications(expoScheduler, settings, now, texts, (date) => ({
+    title: texts.morning.title,
+    body: morningBody(t, morningSummary(horizon, date)),
+  }));
+
+  // Podsjetnici blokova u istom horizontu kao dnevne obavijesti, u ostatku limita iOS-a.
+  // Isključeni podsjetnici (Profil) → prazan popis, pa se zakazani podsjetnici i odgode otkažu.
+  const blocks = reminderBlocks(settings, horizon);
   const dailyCount = upcomingTriggers(settings, now)?.length ?? 0;
   await syncBlockReminders(expoScheduler, blocks, now, blockReminderBudget(dailyCount), blockTexts(t));
 }
@@ -126,25 +138,28 @@ async function handleBlockAction(action: BlockAction, blockId: string, notificat
 }
 
 /**
- * Što napraviti kad korisnik dotakne obavijest ili gumb na njoj. Večernja obavijest otvara večernji
- * upit (tab Danas preuzima zahtjev); dodir podsjetnika samo otvara app na Danas; akcije bloka
- * vidi `handleBlockAction`. Jutarnji brief (korak 14) još ne postoji — tada se app samo otvori.
+ * Što napraviti kad korisnik dotakne obavijest ili gumb na njoj. Jutarnja otvara jutarnji brief,
+ * večernja večernji upit (tab Danas preuzima zahtjev); dodir podsjetnika samo otvara app na Danas;
+ * akcije bloka vidi `handleBlockAction`. Gotovo i Odgodi ne otvaraju app (odluka P27): na iOS-u
+ * odgovor stiže ovdje dok app radi u pozadini, na Androidu kroz pozadinski zadatak
+ * (`background-task.ts`). Ponovljena obrada iste akcije ne mijenja ništa (`blockActionEffect`).
  */
-function handleResponse(response: Notifications.NotificationResponse): void {
+export function handleResponse(response: Notifications.NotificationResponse): Promise<void> {
   const intent = parseNotificationResponse(
     response.actionIdentifier,
     response.notification.request.content.data,
     Notifications.DEFAULT_ACTION_IDENTIFIER,
   );
-  if (intent === null) return;
+  if (intent === null) return Promise.resolve();
   if (__DEV__) console.info('Notification intent', intent);
   if (intent.type === 'open' && intent.kind === 'morning') requestMorningBrief();
   if (intent.type === 'open' && intent.kind === 'evening') requestEveningCheckin();
   if (intent.type === 'blockAction') {
-    handleBlockAction(intent.action, intent.blockId, response.notification.request.identifier).catch(
+    return handleBlockAction(intent.action, intent.blockId, response.notification.request.identifier).catch(
       (error: unknown) => console.error('Block notification action failed', error),
     );
   }
+  return Promise.resolve();
 }
 
 /**
@@ -163,10 +178,13 @@ export function NotificationsSync() {
     // Hladni start iz obavijesti: odgovor je stigao prije nego što je slušatelj postojao.
     void Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response === null) return;
-      handleResponse(response);
+      void handleResponse(response);
       void Notifications.clearLastNotificationResponseAsync();
     });
-    const responses = Notifications.addNotificationResponseReceivedListener(handleResponse);
+    const responses = Notifications.addNotificationResponseReceivedListener((response) => {
+      void handleResponse(response);
+    });
+    void registerBackgroundActions();
 
     return () => {
       appState.remove();

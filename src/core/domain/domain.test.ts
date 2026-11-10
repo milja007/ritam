@@ -37,6 +37,7 @@ const valid = {
     morningNotifEnabled: true,
     eveningNotifEnabled: true,
     windDownNotifEnabled: true,
+    blockRemindersEnabled: true,
     theme: 'system',
     googleCalendarConnected: false,
     scorePlan: true,

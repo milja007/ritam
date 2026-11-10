@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9d9783c4-3e15-4a61-b568-1128f4b20989",
+  "id": "7fe80526-90bf-4e67-8fba-39b15f40da1a",
   "prevId": "7b6546b4-d8b7-49df-89de-3041421391d3",
   "tables": {
     "checkin_items": {
@@ -196,13 +196,6 @@
         },
         "note": {
           "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "score_areas": {
-          "name": "score_areas",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -734,6 +727,14 @@
         },
         "wind_down_notif_enabled": {
           "name": "wind_down_notif_enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "block_reminders_enabled": {
+          "name": "block_reminders_enabled",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

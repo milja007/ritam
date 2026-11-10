@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { ScheduleBlock } from '@/core/domain';
-import type { NotificationSettings } from '@/core/notifications';
+import { reminderBlocks, type NotificationSettings } from '@/core/notifications';
 
 import {
   BLOCKS_CHANNEL_ID,
@@ -77,6 +77,35 @@ describe('syncDailyNotifications', () => {
       data: { source: 'ritam', type: 'daily', kind: 'morning', triggerId: 'morning:2026-11-09@07:00' },
     });
     expect(scheduler.scheduled.get('windDown:2026-11-11@22:15')?.title).toBe('Wind-down');
+  });
+
+  it('jutarnja s tekstom po danu: ključ sadržaja u id-ju, promjena plana je ponovo zakaže', async () => {
+    const scheduler = new FakeScheduler();
+    let body = 'Danas 2 bloka';
+    const morning = (date: string) => (date === '2026-11-09' ? { title: 'Jutro', body } : null);
+    await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning);
+    const first = [...scheduler.scheduled.values()].find((request) =>
+      request?.identifier.startsWith('morning:2026-11-09@07:00#'),
+    );
+    expect(first?.body).toBe('Danas 2 bloka');
+    expect(first?.data).toMatchObject({ type: 'daily', triggerId: first?.identifier });
+    expect(scheduler.scheduled.get('morning:2026-11-10@07:00')?.body).toBe('Tvoj dan');
+
+    scheduler.calls.length = 0;
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning)).toEqual({
+      cancelled: 0,
+      scheduled: 0,
+    });
+
+    body = 'Danas 3 bloka';
+    expect(await syncDailyNotifications(scheduler, SETTINGS, NOW, TEXTS, morning)).toEqual({
+      cancelled: 1,
+      scheduled: 1,
+    });
+    const updated = [...scheduler.scheduled.values()].filter((request) =>
+      request?.identifier.startsWith('morning:2026-11-09@07:00'),
+    );
+    expect(updated.map((request) => request?.body)).toEqual(['Danas 3 bloka']);
   });
 
   it('drugi poziv ne radi ništa (idempotentno)', async () => {
@@ -180,6 +209,22 @@ function block(id: string, start: string, overrides: Partial<ScheduleBlock> = {}
 }
 
 describe('syncBlockReminders', () => {
+  it('isključeni podsjetnici (Profil) → zakazani podsjetnici i odgode se otkažu, dnevne ostaju', async () => {
+    const scheduler = new FakeScheduler(['morning:2026-11-09@07:00', 'snooze:a']);
+    const blocks = [block('a', '09:00'), block('b', '10:00')];
+    await syncBlockReminders(scheduler, reminderBlocks({ blockRemindersEnabled: true }, blocks), NOW, 10, BLOCK_TEXTS);
+    expect(scheduler.scheduled.size).toBe(4);
+    const result = await syncBlockReminders(
+      scheduler,
+      reminderBlocks({ blockRemindersEnabled: false }, blocks),
+      NOW,
+      10,
+      BLOCK_TEXTS,
+    );
+    expect(result).toEqual({ cancelled: 3, scheduled: 0 });
+    expect([...scheduler.scheduled.keys()]).toEqual(['morning:2026-11-09@07:00']);
+  });
+
   it('zakaže podsjetnike s kategorijom akcija, kanalom blokova i payloadom bloka', async () => {
     const scheduler = new FakeScheduler(['morning:2026-11-09@07:00']);
     const blocks = [block('a', '09:00'), block('san', '22:00', { kind: 'sleep', end: '06:00' })];
