@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 import {
   BLOCK_ACTIONS,
   BLOCK_CATEGORY_ID,
+  blockActionOpensApp,
   decidePermission,
   type NotificationKind,
   type PermissionDecision,
@@ -60,9 +61,8 @@ export async function registerChannelsAndCategories(t: TFunction): Promise<void>
     BLOCK_ACTIONS.map((action) => ({
       identifier: action,
       buttonTitle: t(`notifications.actions.${action}`),
-      // Akcije otvaraju app: tako ih JS sigurno obradi i kad je app bio ugašen
-      // (obrada u pozadini nije provjerena na uređaju — vidi PROGRESS, korak 13b).
-      options: { opensAppToForeground: true },
+      // Gotovo i Odgodi rade bez otvaranja appa (odluka P27); Iskrslo otvara app.
+      options: { opensAppToForeground: blockActionOpensApp(action) },
     })),
   );
 }

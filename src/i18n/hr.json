@@ -17,7 +17,8 @@
       "en": "English"
     },
     "sleep": {
-      "title": "San i buđenje"
+      "title": "San i buđenje",
+      "bedtimeWeekend": "Vrijeme za krevet: {{time}}, petkom i subotom {{weekend}}"
     },
     "notifications": {
       "title": "Obavijesti",
@@ -25,7 +26,10 @@
       "evening": "Večernji upit",
       "windDown": "Wind-down prije spavanja",
       "time": "u {{time}}",
-      "weekendTime": "u {{time}}, vikendom {{weekend}}"
+      "weekendTime": "u {{time}}, vikendom {{weekend}}",
+      "weekendEveningTime": "u {{time}}, petkom i subotom {{weekend}}",
+      "blocks": "Podsjetnici blokova",
+      "blocksDetail": "Na početku svakog bloka, s gumbima Gotovo / Odgodi / Iskrslo"
     },
     "saveError": "Promjena se nije spremila. Pokušaj ponovo.",
     "progress": "Napredak",
@@ -102,7 +106,17 @@
     },
     "morning": {
       "title": "Dobro jutro",
-      "body": "Tvoj dan je spreman. Pogledaj plan i ocijeni san."
+      "body": "Tvoj dan je spreman. Pogledaj plan i ocijeni san.",
+      "day": {
+        "blocks_one": "Danas {{count}} blok",
+        "blocks_few": "Danas {{count}} bloka",
+        "blocks_other": "Danas {{count}} blokova",
+        "tasks_one": ", od toga {{count}} zadatak",
+        "tasks_few": ", od toga {{count}} zadatka",
+        "tasks_other": ", od toga {{count}} zadataka",
+        "first": "Prvi: {{title}} u {{start}}.",
+        "empty": "Za danas još nemaš plan. Otvori Ritam i složi dan."
+      }
     },
     "evening": {
       "title": "Večernji upit",
@@ -251,7 +265,10 @@
       "saveError": "Plan nije spremljen. Pokušaj ponovo.",
       "doneTitle": "Sutra je spremno",
       "doneBody": "Novih blokova: {{count}}. Vidimo se ujutro.",
-      "close": "Gotovo"
+      "close": "Gotovo",
+      "learned": "Ponavlja se",
+      "learnedPick": "{{title}} · {{start}}",
+      "learnedHint": "Dodaje blok u uobičajeni termin {{start}}–{{end}}. Možeš ga promijeniti."
     }
   },
   "morning": {

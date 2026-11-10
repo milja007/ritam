@@ -141,6 +141,7 @@ describe('pretvorba', () => {
       morningNotifEnabled: true,
       eveningNotifEnabled: true,
       windDownNotifEnabled: true,
+      blockRemindersEnabled: true,
       scorePlan: true,
       scoreRules: false,
       scoreSleep: false,

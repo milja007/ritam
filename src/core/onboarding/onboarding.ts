@@ -144,6 +144,7 @@ export function toSettingsInput(draft: OnboardingDraft): SettingsInput {
     morningNotifEnabled: true,
     eveningNotifEnabled: true,
     windDownNotifEnabled: true,
+    blockRemindersEnabled: true,
     theme: 'system',
     googleCalendarConnected: false,
     scorePlan: draft.scorePlan,

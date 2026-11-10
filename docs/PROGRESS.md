@@ -2,6 +2,41 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 17:46 · Korak 16d — Obavijesti i postavke: dorade
+Nema otvorenih GitHub issuea. 16-dev ostaje Borni (lokalni iOS build na Macu), `wip/korak-16-dev` ne diram.
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16d`. Večernji upit vikendom (subota, nedjelja) pomaknut za razliku vikend − radni dan buđenja, kao jutarnja (`dayNotificationTimes`). Wind-down već prati buđenje sljedećeg dana (petak i subota navečer) — ostaje. Testovi.
+2. Postavka `blockRemindersEnabled` (zadano uključeno): Zod, lokalna migracija `0005`, Supabase migracija (paritet), lokalni `test:supabase`. Kad je isključeno, sync otkaže podsjetnike i odgode. Testovi.
+3. Profil, sekcija Obavijesti: uređivanje vremena jutarnje i večernje obavijesti, sati sna (koraci 15 min, 4–12 h) i prekidač podsjetnika blokova; spremanje kroz postojeći `saveSettings`, pa `syncNotificationsNow`. i18n HR/EN.
+4. Jutarnja obavijest s fiksnim sadržajem dana (čisto `morningSummary(blocks)` → broj blokova, zadataka i prvi blok s vremenom; bez blokova opći tekst). Id okidača ostaje isti; sadržaj se osvježava tako da se jutarnje obavijesti s promijenjenim tekstom ponovo zakažu (adapter vraća i sadržaj zakazanih). Testovi.
+5. Brzi odabiri iz povijesti: čisto `learnedQuickPicks(blocks, date)` — naziv koji se ponavlja (≥ 2 puta u zadnjih 28 dana, isti dan u tjednu ili svaki dan) s najčešćim početkom i trajanjem; prvi u popisu, uz fiksne. "Što imaš sutra?" ih koristi. Testovi.
+6. Gotovo/Odgodi bez otvaranja appa: `opensAppToForeground: false` za Gotovo i Odgodi (Iskrslo otvara), obrada odgovora u pozadini prema SDK 58 docs (pozadinski zadatak ako ga paket traži). Na uređaju neprovjereno — zapisati Borni za test u dev buildu.
+7. Provjere `tsc`, `lint`, `test`, `test:supabase`, `expo export`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 16d: vikend večer + wind-down (1), Profil vremena i sati sna (3), prekidač podsjetnika, zadano uključeni (2, 3), brzi odabiri iz povijesti (5), jutarnja s fiksnim sadržajem (4), Gotovo/Odgodi bez appa (6). Ne mijenjam koncept: tumačenja (prag ponavljanja u 5, "vikendom" = subota i nedjelja za večer) idu u pitanja. Redoslijed od najsigurnijeg; nakon svake točke commit + push na WIP.
+
+**Napravljeno:**
+- **Vikend (P29):** večernji upit se pomiče za razliku vikend − radni dan buđenja **petkom i subotom navečer** (prati buđenje sljedećeg dana, kao wind-down i krevet). Nedjelja navečer ostaje radno vrijeme, inače bi upit pao iza wind-downa prije ponedjeljka. Wind-down je to već radio. Profil prikazuje "u 21:15, petkom i subotom 23:15".
+- **Podsjetnici blokova (P28):** postavka `blockRemindersEnabled` (zadano uključeno) — Zod, lokalna migracija `0005_block_reminders`, Supabase `20261110175500_block_reminders.sql` (paritet + `test:supabase` prošli). Isključeno → sync otkaže sve podsjetnike i odgode (`reminderBlocks`).
+- **Profil (P31):** uređivanje vremena jutarnje obavijesti i večernjeg upita, sati sna (4–12 h, koraci 15 min) s vremenom za krevet, prekidač "Podsjetnici blokova". Sve se sprema odmah i ponovo zakaže obavijesti.
+- **Jutarnja obavijest (P33):** tijelo "Danas 4 bloka, od toga 2 zadatka. Prvi: Posao u 09:00." (bez sna, premještenih i preskočenih; dan bez plana → "Za danas još nemaš plan…"). Id jutarnje dobiva ključ sadržaja (`…@07:00#ključ`), pa se nakon promjene blokova obavijest ponovo zakaže s novim tekstom. HR množine (`_one/_few/_other`); test prijevoda uspoređuje osnovne ključeve.
+- **Brzi odabiri iz povijesti (P25):** `learnedQuickPicks` — naziv koji se pojavio barem 2 različita dana u zadnjih 28 dana (Zadatak/Fiksno, bez premještenih) nudi se u najčešćem terminu, s prednošću istog dana u tjednu; najviše 6, bez onih već u planu. "Što imaš sutra?" ima novi red "Ponavlja se" (npr. "+ Trening · 18:00") iznad fiksnih odabira.
+- **Akcije podsjetnika (P27):** Gotovo i Odgodi imaju `opensAppToForeground: false`, Iskrslo otvara app. Nova ovisnost `expo-task-manager` (`npx expo install`); pozadinski zadatak `ritam-notification-actions` definiran u novom ulazu `index.ts` (`package.json` `main`), registriran pri pokretanju. Na iOS-u odgovor stiže u postojeći listener dok app radi u pozadini; ponovljena obrada je bezopasna.
+- 16 novih testova (ukupno 484). Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 484/484, `npm run test:supabase` ✅, `expo export --platform android` ✅.
+
+**Problemi/napomene:**
+- **Treba novi development build:** `expo-task-manager` je nativni modul i promijenjen je ulaz (`index.ts`). Ako 16-dev grana mijenja `package.json`, kod spajanja s `main` može biti mali sukob (redak `main` i ovisnosti) — riješiti zadržavanjem obje promjene.
+- **Na uređaju neprovjereno (Borna, u dev buildu):** (1) Gotovo/Odgodi s podsjetnika dok je app u pozadini i dok je ugašen — status bloka, XP i odgoda za 15 min; (2) jutarnja obavijest s tekstom dana i HR množinom ("4 bloka"); (3) Profil — promjena vremena obavijesti. Dokumentacija kaže da na iOS-u s ugašenim appom JS možda ne stigne obraditi akciju; ako se to dogodi, rješenje je vratiti otvaranje appa samo za iOS.
+- Remote Supabase i dalje bez `fk_indexes`, `score_areas` i sada `block_reminders` (pitanje 51).
+
+**Pitanja za Bornu:**
+52. Večernji upit vikendom pomičem **petkom i subotom navečer** (noći prije vikend buđenja), a nedjeljom ostaje radno vrijeme. Odgovara li, ili želiš doslovno subotu i nedjelju?
+53. Brzi odabir "uči" kad se isti naziv pojavi **barem 2 različita dana u zadnja 4 tjedna**; termin je najčešći, s prednošću istog dana u tjednu. Odgovara li prag (npr. ili tek nakon 3 puta)?
+54. Jutarnja obavijest broji blokove bez sna; "zadaci" su blokovi vrste Zadatak. Kad dođu tjedni zadaci (faza 2), da li ih brojati zasebno ("4 bloka i 2 zadatka") kao u tvom primjeru?
+
+**Sljedeće:** korak 18 — Supabase klijent + auth (`@supabase/supabase-js`, magic link iza feature flaga). 16-dev ostaje Borni (sada treba i novi dev build zbog `expo-task-manager`). Prije 18/19 primijeniti tri migracije na remote kad Borna dopusti (pitanje 51).
+
 ## 2026-11-10 17:29 · Korak 16c — Rezultat po odabranim područjima
 Borna je potvrdio (2026-11-10 ~17:20) da sesije nastave dok on testira 16-dev na svom Macu — `wip/korak-16-dev` ne diram, 16c ide s `main`.
 

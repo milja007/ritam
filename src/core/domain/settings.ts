@@ -41,6 +41,8 @@ export const settingsSchema = z
     morningNotifEnabled: z.boolean(),
     eveningNotifEnabled: z.boolean(),
     windDownNotifEnabled: z.boolean(),
+    /** Podsjetnici na početku blokova (odluka P28: zadano uključeni, mogu se isključiti u Profilu). */
+    blockRemindersEnabled: z.boolean(),
     theme: z.enum(THEME_PREFERENCES),
     googleCalendarConnected: z.boolean(),
     /** Područja dnevnog rezultata (barem jedno uključeno). */

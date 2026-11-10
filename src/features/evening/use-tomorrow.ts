@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { ScheduleBlock } from '@/core/domain';
-import { tomorrowInputs, wakeTimeFor, type BlockDraft } from '@/core/schedule';
+import {
+  learnedQuickPicks,
+  LEARNED_WINDOW_DAYS,
+  tomorrowInputs,
+  wakeTimeFor,
+  type BlockDraft,
+  type LearnedPick,
+} from '@/core/schedule';
+import { addDays } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { createBlocks, getSettings, listBlocksForDate } from '@/db/repos';
+import { createBlocks, getSettings, listBlocksBetween, listBlocksForDate } from '@/db/repos';
 import { syncNotificationsNow } from '@/features/notifications';
 
 /** Zadano buđenje ako postavke (još) nisu spremljene — isto kao u onboardingu. */
@@ -14,12 +22,14 @@ type Loaded = {
   date: string;
   status: 'ready' | 'error';
   existing: ScheduleBlock[];
+  /** Blokovi koji se ponavljaju u zadnja 4 tjedna, u svom uobičajenom terminu. */
+  learned: LearnedPick[];
   wakeTime: string;
 };
 
 /**
  * Podaci za "Što imaš sutra?": blokovi koji su za taj dan već u planu (npr. premješteni iz
- * "kad kasnije?") i vrijeme buđenja (od njega se slažu termini). `confirm` sprema sve nove
+ * "kad kasnije?"), naučeni brzi odabiri iz zadnja 4 tjedna i vrijeme buđenja (od njega se slažu termini). `confirm` sprema sve nove
  * blokove odjednom; greška ide pozivatelju.
  */
 export function useTomorrowPlan(date: string) {
@@ -29,13 +39,24 @@ export function useTomorrowPlan(date: string) {
   useEffect(() => {
     let active = true;
     const db = getDb();
-    Promise.all([listBlocksForDate(db, LOCAL_USER_ID, date), getSettings(db, LOCAL_USER_ID)])
-      .then(([existing, settings]) => {
+    const from = addDays(date, -LEARNED_WINDOW_DAYS) ?? date;
+    const until = addDays(date, -1) ?? date;
+    Promise.all([
+      listBlocksForDate(db, LOCAL_USER_ID, date),
+      getSettings(db, LOCAL_USER_ID),
+      listBlocksBetween(db, LOCAL_USER_ID, from, until),
+    ])
+      .then(([existing, settings, history]) => {
         if (active) {
           setLoaded({
             date,
             status: 'ready',
             existing,
+            learned: learnedQuickPicks(
+              history,
+              date,
+              existing.map((block) => block.title),
+            ),
             // Sutrašnje buđenje (vikendom vikend vrijeme).
             wakeTime: settings ? wakeTimeFor(settings, date) : FALLBACK_WAKE_TIME,
           });
@@ -48,6 +69,7 @@ export function useTomorrowPlan(date: string) {
             date,
             status: 'error',
             existing: [],
+            learned: [],
             wakeTime: FALLBACK_WAKE_TIME,
           });
       });
@@ -72,6 +94,7 @@ export function useTomorrowPlan(date: string) {
   return {
     status: current?.status ?? 'loading',
     existing: current?.existing ?? [],
+    learned: current?.learned ?? [],
     wakeTime: current?.wakeTime ?? FALLBACK_WAKE_TIME,
     reload,
     confirm,
