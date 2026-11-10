@@ -17,6 +17,7 @@ Claude ostaje koautor kroz `Co-Authored-By` redak u poruci commita. Stare commit
 
 ## Kako radiš (svaka sesija)
 1. Pročitaj `docs/PROGRESS.md` (vrh) i `docs/BUILD_PLAN.md`; nađi prvi korak koji nije `[x]`.
+1b. Pogledaj otvorene GitHub issue u `milja007/ritam` s greškama s uređaja (Borna ih prijavljuje). Ako postoje, prvo popravi njih (mali commitovi, test koji pokriva grešku, komentar na issue kad je popravljeno), pa tek onda nastavi s korakom.
 2. **Prije koda** napiši kratki plan tog koraka (3–8 točaka) na vrh `PROGRESS.md` pod novim datumom i provjeri ga protiv koncepta i kriterija gotovosti.
 3. Radi samo taj korak. Mali, sigurni commitovi. Nikad ne radi više koraka odjednom osim ako je korak gotov i ostalo je puno budžeta (tada najviše jedan sljedeći mali korak).
 4. **Jedan agent u isto vrijeme** — ne pokreći paralelne subagente. Ako trebaš pomoć, najviše jedan subagent, i čekaj ga.
