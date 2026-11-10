@@ -2,6 +2,18 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 10:43 · Korak 16 — Dnevna dijagnoza (lokalna)
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-16`; bez novih ovisnosti. Migracija `0003_reports`: tablica `reports` po modelu iz punog koncepta — `period` (day/week/month/year), `period_start`, `sections` (JSON po dijelovima dijagnoze), `stats` (JSON), `prompt_version`, `suggestion`, `suggestion_accepted`, `helpful`, `feedback_comment`; jedinstveni indeks (korisnik, period, početak). Zod shema u `src/core/domain/report.ts` + test migracije.
+2. Čisto `src/core/diagnosis/day-stats.ts`: `dayStats(input)` → plan (blokovi bez sna: ukupno, gotovo, djelomično, nije/premješteno, otvoreno, udio odrađenog), zabrane (vrijedile, poštovane, prekršene + okidači), san (iz jutarnje prijave: trajanje, krevet unutar ±30 min od cilja), XP dana, ocjena, streak, komentari stavki. Testovi.
+3. Čisto `src/core/diagnosis/day-diagnosis.ts`: `buildDayDiagnosis(today, yesterday)` → sekcije redom koncepta: **Ukratko** (rečenica + trend bolje/isto/lošije/prvi dan, naspram jučer), **Napredak** (redovi metrika danas vs jučer), **Pohvale**, **Što smo primijetili** (komentari, okidači, premješteno, doba dana propusta), **Veliki problemi** (iskreno, bez osude), **Ideje za napredak** (najviše jedna mala ideja). Retci su ključevi + parametri (prevode se pri prikazu, HR/EN), ne gotov tekst. Uvijek barem jedna pohvala. Testovi.
+4. Repo `src/db/repos/reports.ts`: `getReport`, `generateDayReport(db, user, date)` — čita podatke dana i jučer u jednoj transakciji, računa i upserta `reports` (period `day`; ponovno spremanje upita osvježi sekcije, a `helpful`/`feedback_comment` ostaju). Testovi nad Node SQLite-om.
+5. UI `src/features/diagnosis/`: `DayDiagnosisView` (šest sekcija, trend strelica + boja bez crvenog za "lošije", brojevi po jeziku). Ekran potvrde upita postaje: +XP → dijagnoza → "Što imaš sutra?" / Zatvori (koncept: dijagnoza, pa sutra). Kartica upita kad je ispunjen dobiva "Dijagnoza dana" (modal s pohranjenim izvještajem).
+6. i18n HR/EN (`diagnosis.*`) + pristupačnost (naslovi sekcija kao header, oznake trenda).
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriterij koraka = struktura dijagnoze iz koncepta (3, 5), samo statistika dana + usporedba s jučer, bez LLM-a (2, 3), spremanje u `reports` s `period = day` (1, 4). Dnevni rezultat 0–100, isti dan prošli tjedan, 7 vs 7 dana i rekordi su korak 16b — ovdje trend "bolje/isto/lošije" koristi jednostavan omjer (odrađeni plan + poštovane zabrane) naspram jučer, a 16b ga zamijeni pravim rezultatom. Gumbi Pomoglo / Nije pomoglo, prethodne dijagnoze u kontekstu i "odbijeni prijedlog 2 tjedna" su korak 31 (LLM) — stupci postoje, UI ne. Arhiva dijagnoza na Profilu je 37c. Ton: činjenice pa tumačenje, kritika uvijek s idejom, bez posramljivanja i bez crvenog.
+
 ## 2026-11-10 08:43 · Korak 15 — XP traka + streak u UI-ju
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-15`; bez novih ovisnosti i bez migracije (sve izvedeno iz `xp_events` i `checkins`).
