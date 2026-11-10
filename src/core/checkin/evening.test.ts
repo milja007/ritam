@@ -43,6 +43,8 @@ const checkin = (overrides: Partial<Checkin> = {}): Checkin => ({
   dayRating: 4,
   note: 'Dobar dan',
   scoreAreas: null,
+  gaveUp: false,
+  gaveUpNote: null,
   ...overrides,
 });
 

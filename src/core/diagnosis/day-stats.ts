@@ -16,7 +16,7 @@ export type DayStatsInput = {
   rules: readonly Pick<Rule, 'id' | 'title' | 'weight'>[];
   /** Zapisi zabrana tog dana. */
   ruleLogs: readonly Pick<RuleLog, 'ruleId' | 'kept' | 'trigger'>[];
-  evening: Pick<Checkin, 'dayRating' | 'note'> | null;
+  evening: (Pick<Checkin, 'dayRating' | 'note'> & Partial<Pick<Checkin, 'gaveUp' | 'gaveUpNote'>>) | null;
   morning: Pick<Checkin, 'sleepStart' | 'wakeTime'> | null;
   sleepSettings: MorningSleepSettings | null;
   xpEvents: readonly Pick<XpEvent, 'date' | 'amount'>[];
@@ -70,6 +70,10 @@ export type DayStats = {
   note: string | null;
   streak: number;
   comments: ItemComment[];
+  /** "Odustajem od svega" tog dana (korak 17d); stara statistika bez polja = `false`. */
+  gaveUp?: boolean;
+  /** Što se dogodilo (napisano pri odustajanju), `null` bez teksta. */
+  gaveUpNote?: string | null;
   /** Djelomično / nije odrađeni blokovi (za uzorke po dobu dana). */
   misses: MissedBlock[];
 };
@@ -143,6 +147,7 @@ export function dayStats(input: DayStatsInput): DayStats {
     .map((block) => ({ title: block.title, start: block.start }))
     .sort((a, b) => (parseClock(a.start) ?? 0) - (parseClock(b.start) ?? 0));
   const note = input.evening?.note?.trim() ?? '';
+  const gaveUpNote = input.evening?.gaveUpNote?.trim() ?? '';
 
   return {
     date: input.date,
@@ -154,6 +159,8 @@ export function dayStats(input: DayStatsInput): DayStats {
     note: note.length > 0 ? note : null,
     streak: input.streak,
     comments,
+    gaveUp: input.evening?.gaveUp === true,
+    gaveUpNote: gaveUpNote.length > 0 ? gaveUpNote : null,
     misses,
   };
 }

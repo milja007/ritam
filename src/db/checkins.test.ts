@@ -479,8 +479,8 @@ describe('listEveningCheckins', () => {
 
     const list = await listEveningCheckins(db, USER);
     expect(list).toEqual([
-      { date: '2026-11-08', kind: 'evening', dayRating: 3 },
-      { date: '2026-11-09', kind: 'evening', dayRating: 4 },
+      { date: '2026-11-08', kind: 'evening', dayRating: 3, gaveUp: false },
+      { date: '2026-11-09', kind: 'evening', dayRating: 4, gaveUp: false },
     ]);
     expect(mainStreak(list, '2026-11-10')).toMatchObject({ current: 2, doneToday: false });
   });

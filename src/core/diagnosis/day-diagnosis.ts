@@ -40,6 +40,9 @@ export const DIAGNOSIS_LINE_KEYS = [
   'praise.streak',
   'praise.goodRating',
   'praise.showedUp',
+  'praise.gaveUpHonest',
+  'noticed.gaveUp',
+  'noticed.gaveUpNoNote',
   'noticed.comment.partial',
   'noticed.comment.not',
   'noticed.trigger',
@@ -227,6 +230,8 @@ function praiseLines(today: DayStats, yesterday: DayStats | null): DiagnosisLine
   if (today.sleep?.onTarget === true) praise.push(line('praise.bedtime'));
   if (today.streak >= 3) praise.push(line('praise.streak', { days: today.streak }));
   if (today.rating !== null && today.rating >= 4) praise.push(line('praise.goodRating', { rating: today.rating }));
+  // Odustajem (17d): bez osude — iskreno zatvoren dan je informacija, ne neuspjeh.
+  if (today.gaveUp === true && praise.length < MAX_PRAISE) praise.push(line('praise.gaveUpHonest'));
   // Uvijek barem jedna pohvala: ispunjen upit je navika koju gradimo.
   if (praise.length === 0) praise.push(line('praise.showedUp'));
   return praise.slice(0, MAX_PRAISE);
@@ -243,6 +248,11 @@ function missPattern(today: DayStats): 'evening' | 'morning' | null {
 
 function noticedLines(today: DayStats): DiagnosisLine[] {
   const noticed: DiagnosisLine[] = [];
+  if (today.gaveUp === true) {
+    noticed.push(
+      today.gaveUpNote ? line('noticed.gaveUp', { note: today.gaveUpNote }) : line('noticed.gaveUpNoNote'),
+    );
+  }
   for (const item of today.comments.slice(0, MAX_COMMENTS)) {
     noticed.push(line(`noticed.comment.${item.outcome}`, { title: item.title, comment: item.comment }));
   }

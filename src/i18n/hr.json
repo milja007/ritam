@@ -433,7 +433,8 @@
         "bedtime": "Na spavanje si otišao u planirano vrijeme.",
         "streak": "{{days}} dana zaredom ispunjavaš upit. Navika se gradi.",
         "goodRating": "Dan si ocijenio s {{rating}}/5 — zapamti što je pomoglo.",
-        "showedUp": "Odvojio si minutu da zapišeš dan. Upravo tako se gradi navika."
+        "showedUp": "Odvojio si minutu da zapišeš dan. Upravo tako se gradi navika.",
+        "gaveUpHonest": "Zatvorio si dan iskreno umjesto da ga samo pustiš. I to je dio ritma — sutra kreće ispočetka."
       },
       "noticed": {
         "comment": {
@@ -448,7 +449,9 @@
         "moved": "Premješteno na kasnije: {{count}}.",
         "lowRatingDespitePlan": "Plan je odrađen, a dan ipak nije bio dobar — možda te muči nešto izvan plana.",
         "goodRatingDespitePlan": "Plan nije odrađen, a dan je bio dobar — možda plan nije odgovarao danu.",
-        "none": "Danas nema posebnih uzoraka."
+        "none": "Danas nema posebnih uzoraka.",
+        "gaveUp": "Danas si odustao od ostatka plana. Što se dogodilo: „{{note}}”",
+        "gaveUpNoNote": "Danas si odustao od ostatka plana (bez zapisa što se dogodilo)."
       },
       "problems": {
         "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}).",

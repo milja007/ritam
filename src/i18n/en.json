@@ -430,7 +430,8 @@
         "bedtime": "You went to bed at your planned time.",
         "streak": "{{days}} days in a row of check-ins. The habit is forming.",
         "goodRating": "You rated the day {{rating}}/5 — remember what helped.",
-        "showedUp": "You took a minute to log your day. That's exactly how habits are built."
+        "showedUp": "You took a minute to log your day. That's exactly how habits are built.",
+        "gaveUpHonest": "You closed the day honestly instead of letting it slip. That is part of the rhythm too — tomorrow starts fresh."
       },
       "noticed": {
         "comment": {
@@ -445,7 +446,9 @@
         "moved": "Moved to later: {{count}}.",
         "lowRatingDespitePlan": "The plan got done, yet the day didn't feel good — maybe something outside the plan is weighing on you.",
         "goodRatingDespitePlan": "The plan didn't get done, yet the day felt good — maybe the plan didn't fit the day.",
-        "none": "No particular patterns today."
+        "none": "No particular patterns today.",
+        "gaveUp": "You gave up on the rest of today's plan. What happened: “{{note}}”",
+        "gaveUpNoNote": "You gave up on the rest of today's plan (no note on what happened)."
       },
       "problems": {
         "lowPlan": "Less than half of the plan got done ({{done}}/{{total}}).",
