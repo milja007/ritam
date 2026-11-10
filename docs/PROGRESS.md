@@ -17,7 +17,11 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 - `listDayScores`: zaključen dan po snimci, dan u tijeku po postavkama. `generateDayReport`: `areas` (snimka dana) i `yesterdayAreas` (jučerašnja snimka) — jučerašnji rezultat u usporedbi je onaj kakav je bio.
 - Dijagnoza: `statsForAreas(stats, areas)` — bez zabrana/sna u napretku, pohvalama, primijećenom, problemima i idejama kad nisu odabrani.
 - Supabase `20261110163500_score_areas.sql`: `score_plan` CHECK uvijek, `checkins.score_areas jsonb` s CHECK (niz, sadrži plan, samo poznata područja). Lokalni `test:supabase` ✅.
-- Testovi: 471/471 ✅, `tsc` ✅, `lint` ✅, `expo export` ✅.
+- Testovi: 471/471 ✅, `tsc` ✅, `lint` ✅, `expo export` ✅ (nakon spajanja sa 16d: 487/487 ✅).
+- **Remote `ritam` (P51):** primijenjeni `fk_indexes` (verzija `20261110181502`) i `score_areas` (`20261110181521`); lokalne datoteke preimenovane na te verzije, `test:supabase` ✅. `block_reminders` (16d) **nije** primijenjen — provjera dopuštenja ga je odbila jer Borna nije odobrio tu migraciju.
+
+**Pitanja za Bornu:**
+55. Smijem li primijeniti i `block_reminders` (16d, samo dodaje stupac `settings.block_reminders_enabled`) na remote? Nakon toga datoteku `20261110175500_block_reminders.sql` preimenujem na verziju s remotea.
 - Paralelno je sesija 18:43 napravila korak 16d i spojila ga na `main` (migracija `0005_block_reminders`) — moja migracija snimke je zato `0006_checkin_score_areas`.
 
 ## 2026-11-10 17:46 · Korak 16d — Obavijesti i postavke: dorade
