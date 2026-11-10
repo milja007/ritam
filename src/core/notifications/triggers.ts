@@ -82,21 +82,23 @@ export function dailyNotificationTimes(settings: NotificationSettings): DailyNot
 }
 
 /**
- * Jutarnja obavijest i večernji upit za kalendarski dan. Jutarnja se vikendom pomiče za razliku
- * vikend − radni dan buđenja (zadana jutarnja = buđenje); večernji upit je isti svaki dan.
- * Neispravan ulaz → `null`.
+ * Jutarnja obavijest i večernji upit za kalendarski dan (odluka P29, 2026-11-10).
+ * Jutarnja se pomiče za razliku vikend − radni dan buđenja kad je *taj* dan vikend (subota, nedjelja).
+ * Večernji upit prati noć kao wind-down: pomiče se kad je *sljedeći* dan vikend (petak i subota
+ * navečer), da nedjeljni upit ne padne iza wind-downa prije ponedjeljka. Neispravan ulaz → `null`.
  */
 export function dayNotificationTimes(
   settings: NotificationSettings,
   date: string,
 ): Pick<DailyNotificationTimes, 'morning' | 'evening'> | null {
   const base = dailyNotificationTimes(settings);
-  if (base === null) return null;
-  const morning = isWeekend(date)
-    ? shiftClock(base.morning, weekendShiftMinutes(settings))
-    : base.morning;
-  if (morning === null) return null;
-  return { morning, evening: base.evening };
+  const next = addDays(date, 1);
+  if (base === null || next === null) return null;
+  const shift = weekendShiftMinutes(settings);
+  const morning = isWeekend(date) ? shiftClock(base.morning, shift) : base.morning;
+  const evening = isWeekend(next) ? shiftClock(base.evening, shift) : base.evening;
+  if (morning === null || evening === null) return null;
+  return { morning, evening };
 }
 
 /**
