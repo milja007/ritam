@@ -184,6 +184,7 @@ describe('kad kasnije?', () => {
       kind: 'task',
       source: 'user',
       status: 'planned',
+      note: null,
     });
     expect(
       movedBlockFields({ title: 'Kava', start: '10:00', end: '10:30', taskId: null, kind: 'calendar' }, '2026-11-10')

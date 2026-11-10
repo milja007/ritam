@@ -64,6 +64,8 @@ export const scheduleBlocks = sqliteTable(
     kind: text('kind').$type<BlockKind>().notNull(),
     source: text('source').$type<BlockSource>().notNull(),
     status: text('status').$type<BlockStatus>().notNull(),
+    // Komentar (= bilješka) na aktivnosti (korak 17c).
+    note: text('note'),
   },
   (table) => [index('schedule_blocks_user_date_idx').on(table.userId, table.date)],
 );

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { parseClock } from '../time/clock';
-import { baseEntityShape, clockTimeSchema, idSchema, localDateSchema } from './common';
+import { baseEntityShape, clockTimeSchema, idSchema, localDateSchema, noteSchema } from './common';
 
 export const BLOCK_KINDS = ['task', 'fixed', 'calendar', 'sleep', 'unexpected'] as const;
 export type BlockKind = (typeof BLOCK_KINDS)[number];
@@ -25,6 +25,8 @@ export const scheduleBlockSchema = z
     kind: z.enum(BLOCK_KINDS),
     source: z.enum(BLOCK_SOURCES),
     status: z.enum(BLOCK_STATUSES),
+    /** Komentar (= bilješka) na aktivnosti — samo trenutna i prošle (korak 17c). */
+    note: noteSchema.nullable().default(null),
   })
   .superRefine((block, ctx) => {
     const start = parseClock(block.start);

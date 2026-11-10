@@ -8,7 +8,10 @@ import { deleteBlockTaskXp, syncBlockTaskXp } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
 /** Polja bloka koja zadaje korisnik/planer (bez id-a, vlasnika i vremena). */
-export type ScheduleBlockInput = Omit<ScheduleBlock, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type ScheduleBlockInput = Omit<ScheduleBlock, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'note'> & {
+  /** Bilješka; izostavljeno = bez bilješke. */
+  note?: string | null;
+};
 export type ScheduleBlockPatch = Partial<ScheduleBlockInput>;
 
 const ownBlock = (userId: string, id: string) =>
@@ -164,5 +167,28 @@ export function deleteBlock(db: RitamDb, userId: string, id: string): boolean {
     deleteBlockTaskXp(tx, userId, id);
     const result = tx.delete(scheduleBlocks).where(ownBlock(userId, id)).run();
     return result.changes > 0;
+  });
+}
+
+/**
+ * Postavlja ili briše (`null`) bilješku bloka. Ne dira status ni XP.
+ * Vraća `null` ako blok ne postoji.
+ */
+export function setBlockNote(
+  db: RitamDb,
+  userId: string,
+  id: string,
+  note: string | null,
+  deps: RepoDeps = defaultRepoDeps,
+): ScheduleBlock | null {
+  return db.transaction((tx) => {
+    const row = tx.select().from(scheduleBlocks).where(ownBlock(userId, id)).get();
+    if (!row) return null;
+    const next = scheduleBlockSchema.parse({ ...row, note, updatedAt: deps.now().toISOString() });
+    tx.update(scheduleBlocks)
+      .set({ note: next.note, updatedAt: next.updatedAt })
+      .where(ownBlock(userId, id))
+      .run();
+    return next;
   });
 }

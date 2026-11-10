@@ -268,6 +268,7 @@ export function movedBlockFields(
     start: block.start,
     end: block.end,
     taskId: block.taskId,
+    note: null,
     // Kalendarski / iskrsli blok premješten rukom više nije iz kalendara — postaje fiksna obaveza.
     kind: block.kind === 'task' ? 'task' : 'fixed',
     source: 'user',

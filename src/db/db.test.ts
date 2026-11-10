@@ -18,6 +18,8 @@ import {
   listBlocksBetween,
   listBlocksForDate,
   saveSettings,
+  setBlockNote,
+  setBlockStatus,
   updateBlock,
   type ScheduleBlockInput,
   type SettingsInput,
@@ -314,5 +316,22 @@ describe('schedule_blocks repo', () => {
     const inputs = [block({ title: 'Dobar' }), block({ title: 'Loš', start: '10:00', end: '09:00' })];
     expect(() => createBlocks(db, USER, inputs, testDeps())).toThrow(ZodError);
     expect(await listBlocksForDate(db, USER, '2026-11-08')).toEqual([]);
+  });
+  it('bilješka (17c): bez bilješke je null, postavlja se i briše, ne dira status ni XP', async () => {
+    const { db } = await createTestDb();
+    const deps = testDeps();
+    const created = await createBlock(db, USER, block(), deps);
+    expect(created.note).toBeNull();
+    setBlockStatus(db, USER, created.id, 'done', deps);
+    const noted = setBlockNote(db, USER, created.id, 'Kasnio bus', deps);
+    expect(noted).toMatchObject({ note: 'Kasnio bus', status: 'done' });
+    expect((await getBlock(db, USER, created.id))?.note).toBe('Kasnio bus');
+    // Uređivanje naziva/vremena ne briše bilješku.
+    await updateBlock(db, USER, created.id, { title: 'Novi naziv' }, deps);
+    expect((await getBlock(db, USER, created.id))?.note).toBe('Kasnio bus');
+    setBlockNote(db, USER, created.id, null, deps);
+    expect((await getBlock(db, USER, created.id))?.note).toBeNull();
+    expect(setBlockNote(db, OTHER, created.id, 'tuđe', deps)).toBeNull();
+    expect(() => setBlockNote(db, USER, created.id, 'x'.repeat(2001), deps)).toThrow(ZodError);
   });
 });

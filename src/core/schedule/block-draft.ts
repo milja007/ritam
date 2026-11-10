@@ -110,6 +110,7 @@ export function draftToInput(draft: BlockDraft, date: LocalDate): BlockDraftInpu
   return {
     date,
     title: draft.title.trim(),
+    note: null,
     start: draft.start,
     end: draft.end,
     kind: draft.kind,
