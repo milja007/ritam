@@ -2,6 +2,19 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 21:25 · Korak 17b (dorada) — po Bornovim ispravkama od 20:48
+Dok sam radio 17b (ispod), Borna je na `main` ispravio kriterije 17b (P61): **glavni unos je da sam napišeš aktivnost i od–do ili samo trajanje**; upisane ideje (naziv, trajanje, doba dana) se pamte i nude; **samo 2–3 primjera, jasno označena kao "primjer kako se piše"**, ne gotov popis i ne zauzimaju mjesto; generičke kategorije ("Škola") se uklanjaju. Moj katalog od 12 ideja kao čipova to krši — dorađujem prije spajanja na `main`.
+
+**Plan dorade (recenziran):**
+1. `src/core/schedule/plan-entry.ts`: `parseTypedEntry` premješten iz `tomorrow.ts` (bez promjene ponašanja) + novi `parsePlanEntry`: uz od–do / početak prepoznaje **trajanje** ("45 min", "1h", "1,5 h", "90min", "2 sata") i **doba dana** ("ujutro", "poslijepodne", "navečer", EN "morning/afternoon/evening/tonight"); oboje se miče iz naziva.
+2. `typedTodayDraft`: trajanje iz unosa; doba dana → prvi slobodni termin od početka tog doba (jutro 08:00, poslijepodne 12:00, večer 17:00), nikad prije sada. Isto u "Što imaš sutra?" (`typedDraft`, od buđenja).
+3. Uklanjam katalog `PLAN_IDEAS` i čipove primjera; ostaju **"Tvoje ideje"** (iz onoga što si upisivao, s trajanjem i dobom dana). Primjeri samo kao jedan prigušeni redak ispod polja: "Primjer kako se piše: …" (3 primjera).
+4. Unos je na vrhu ekrana plana za danas (prvo polje), ideje ispod.
+5. "Što imaš sutra?": uklanjam generičke brze odabire (`QUICK_PICKS`: Posao, Škola…) i dodajem isti redak s primjerima; "Ponavlja se" ostaje.
+6. Testovi (trajanje, doba dana, unos za danas/sutra), provjere, BUILD_PLAN `[x]`, PROGRESS, merge, push.
+
+*Recenzija:* novi kriteriji — sam napišeš aktivnost + od–do ili trajanje (1, 2), ideje se pamte (3; iz povijesti, bez nove tablice), 2–3 primjera označena, ne zauzimaju mjesto (3), generičke kategorije uklonjene (3, 5), od sada / 5 min / ništa u prošlosti (postojeće). Glas je korak 30 — ne radim.
+
 ## 2026-11-10 20:44 · Korak 17b — Plan za danas pri ulasku
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min.
 
