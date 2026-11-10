@@ -2,6 +2,29 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-10 · Promjena koncepta (Borna) — Danas kao glavni ekran, planovi godina/mjesec/tjedan
+Borna je isprobao app na iPhoneu i dao smjer. Upisano u puni koncept (Claude Docs: nove sekcije "Danas — glavni ekran" i "Planovi: godina, mjesec, tjedan", tablica ekrana, questovi, zabrane, odluke), u `docs/CONCEPT.md` i u `BUILD_PLAN.md`. Kod nije mijenjan.
+
+**Odluke:**
+- Nema plana za danas (prvo korištenje / tek aktiviran / app nije otvaran) → odmah izrada današnjeg plana, od sada prema naprijed, vremena točna prema satu.
+- Čim plan postoji → veliki raspored + "Trenutno: …", živi sat u sekundama, odbrojavanje do kraja aktivnosti; komentar / otkaži / bilješka na trenutnoj aktivnosti i blokovima do večeri.
+- Dijagnoza dana tek kad je svaki blok riješen; "Odustajem od svega" → preostalo neodrađeno, odmah plan za sutra.
+- Ponuđene ideje: konkretan naziv + trajanje + najbolje doba dana, ne generičke kategorije.
+- Danas je najvažniji ekran — vrhunski dizajn. Glasovni unos plana kasnije (korak 30).
+- Ciljevi u godišnjem / mjesečnom / tjednom planu (kalendari), dan je samo akcija; zabrane unutar tih planova; questovi ukinuti; navike u Profilu.
+
+**Plan izrade:** novi koraci **17b–17e** (plan za danas pri ulasku, veliki raspored + trenutna aktivnost, Odustajem + zaključana dijagnoza, novi tabovi) idu **prije 18** (Supabase), jer je Danas ono što Borna sada koristi. 22b zamijenjen s 17c; 25 (tjedni plan kao kalendar), novi 25b (mjesec i godina), 28 (zabrane u planovima), 30 (glas za plan dana), 34 (bez questova) prilagođeni.
+
+**Pitanja za Bornu:**
+56. Redoslijed: Danas (17b–17e) prije Supabasea (18–19)? Pretpostavio sam da da.
+57. Dijagnoza se otvara **odmah** kad je sve riješeno (može i u 15 h), ili tek u vrijeme večernjeg upita? Ostaje li večernji upit kao takav (ocjena dana, zabrane), samo kraći jer su blokovi već riješeni tijekom dana?
+58. "Odustajem od svega": ruši li streak? Pretpostavka: ne — dan se zaključi kao loš (neodrađeni blokovi bez XP-a), ali se streak drži jer si se javio.
+59. Tabovi: **Danas · Tjedan · Mjesec i godina · Profil** (4 taba; navike i san u Profilu). Odgovara li, ili Mjesec i Godina kao zasebni tabovi?
+60. Zabrane u planovima: ostaje li **streak po zabrani** i večernja provjera "Držao sam se / Prekršio"? Pretpostavio sam da da.
+61. Ponuđene ideje: odakle dolaze dok nema LLM-a — moji početni primjeri + ono što ti jednom upišeš (spremi kao ideju s trajanjem i dobom dana)? Kasnije ih LLM predlaže iz tvojih ciljeva.
+
+**Sljedeće:** korak 17b — plan za danas pri ulasku (od sada prema naprijed, konkretne ideje). Prije toga: provjeriti GitHub issue s uređaja.
+
 ## 2026-11-10 · Korak 16-dev — Development build za iPhone (lokalno, besplatni Apple ID)
 **Plan (recenziran prije koda):**
 1. Grana `wip/korak-16-dev`. `npx expo install expo-dev-client`.
@@ -33,7 +56,7 @@ Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što j
 - Upute za Bornu u `README.md` (lokalni put prvi, 7 dana valjanosti, "Vjeruj developeru", EAS kasnije).
 - Napomene: prije prvog builda treba prihvatiti Xcode licencu (`sudo xcodebuild -license accept` u pravom Terminalu ili "Agree" u Xcodeu — u terminalu aplikacije sudo ne prima lozinku). `gh` nije prijavljen, pa GitHub issue nisu provjereni ovu sesiju.
 
-**Sljedeće:** korak 18 — Supabase klijent + auth. Prije toga: provjeriti GitHub issue s uređaja.
+**Sljedeće:** korak 18 — Supabase klijent + auth. Prije toga: provjeriti GitHub issue s uređaja. *(Zamijenjeno: vidi Promjena koncepta iznad — prvo 17b–17e.)*
 ## 2026-11-10 18:15 · Korak 16c (dorada) — Bornovi odgovori na pitanja 48–51
 **Odluke (Borna, anketa 2026-11-10):**
 - **P48:** prošli dani **zadrže staro bodovanje** — promjena područja vrijedi od danas.

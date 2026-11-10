@@ -33,29 +33,34 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **16d. Obavijesti i postavke — dorade (odluke 2026-11-10)** — večernji upit i wind-down vikendom pomaknuti kao buđenje; Profil: uređivanje vremena obavijesti i sati sna; prekidač za podsjetnike blokova (zadano uključeni); brzi odabiri uče iz povijesti (ponavljajući blokovi u svom terminu); jutarnja obavijest s fiksnim sadržajem dana; Gotovo/Odgodi na podsjetniku bez otvaranja appa (Iskrslo otvara app).
 - [x] **16b. Napredak — dnevni rezultat** — `src/core/progress/` (čisto + testovi): dnevni rezultat 0–100 (plan, zabrane, san; trackeri kasnije), usporedba s jučer i istim danom prošli tjedan, 7 dana vs 7 prije, osobni rekordi. Prikaz rezultata sa strelicom trenda na tabu Danas.
 - [x] **17. Supabase shema** — `supabase/migrations/` SQL za sve tablice + RLS (vlasnik); remote projekt `ritam` postoji (vidi Odluke u PROGRESS.md), primijeniti tek kad migracije prođu lokalno. `supabase/config.toml`.
+- [ ] **17b. Danas — plan za danas pri ulasku (Borna, 2026-11-10)** — radi se PRIJE 18. Ako za danas nema plana (prvo korištenje, tek aktiviran, app nije otvaran), Danas odmah vodi u izradu današnjeg plana. Plan počinje **od sada**: ništa u prošlosti, prvi slobodni termin zaokružen na sljedećih 5 min, vremena točna prema satu (čisto u `src/core/`, testovi). Ponuđene ideje bez generičkih ("Škola"): svaka ima konkretan naziv, trajanje i najbolje doba dana (npr. "Ponavljanje kemije · 45 min · poslijepodne"); početni primjeri + vlastite spremljene ideje.
+- [ ] **17c. Danas — veliki raspored + trenutna aktivnost (Borna, 2026-11-10; zamjenjuje 22b)** — čim plan postoji: na vrhu "Trenutno: …" sa živim satom u sekundama i odbrojavanjem do kraja aktivnosti (i do sljedeće), ispod ostatak dana od sada prema naprijed. Na trenutnoj aktivnosti i na svakom bloku do večernjeg upita: komentar, otkaži, bilješka (sprema se uz blok, večernji upit ih prikazuje). **Dizajn je najvažniji dio appa**: vizualno i umjetnički razrađen ekran (tokeni, gradijent doba dana, tipografija), provjera na iPhoneu.
+- [ ] **17d. Odustajem od svega + dijagnoza tek kad je sve riješeno (Borna, 2026-11-10)** — gumb "Odustajem od svega" (potvrda, bez osude): preostali blokovi → neodrađeni, odmah plan za sutra. Dijagnoza dana se otključava tek kad je svaki blok odrađen ili prijavljen da nije / neće biti. Čista logika + testovi.
+- [ ] **17e. Tabovi po novom konceptu (Borna, 2026-11-10)** — Danas · Tjedan · Mjesec i godina · Profil; tabovi Questovi i Navike se uklanjaju, navike (i san) idu u Profil. Placeholder za Mjesec i godina dok ne dođe 25b.
 - [ ] **18. Supabase klijent + auth** — `@supabase/supabase-js`, env varijable (`EXPO_PUBLIC_SUPABASE_URL/KEY`), auth ekran (email magic link) iza feature flaga dok nema accounta.
 - [ ] **19. Sync** — red promjena lokalno → Supabase, pull pri pokretanju; konflikti: zadnji updatedAt pobjeđuje.
 - [ ] **20. LLM provider** — Edge Function `llm-provider` modul (Claude sada, sučelje za DeepSeek), logiranje u `llm_calls`. Bez ključeva u repou.
 - [ ] **21. parse-input** — Edge Function: slobodan tekst → blokovi (JSON). Spojiti na korak 13.
 - [ ] **22. plan-day** — Edge Function: raspored sutrašnjeg dana + 0–3 pitanja, validacija u appu, fallback pravila. Plan se slaže zajedno s korisnikom (što mora, kada, mogućnosti, što ne može i zašto) i **korisnik ga odobrava** prije nego postane plan za sutra (vidljiv već iste noći).
-- [ ] **22b. Danas kao raspored sati (odluka 2026-11-10)** — dashboard dana kao školski raspored dok vrijeme ide: trenutni blok otvoren/istaknut, sljedeće ispod, status "trenutno: …" sa strane.
+- [x] ~~**22b. Danas kao raspored sati (odluka 2026-11-10)**~~ *(zamijenjeno korakom 17c)* — dashboard dana kao školski raspored dok vrijeme ide: trenutni blok otvoren/istaknut, sljedeće ispod, status "trenutno: …" sa strane.
 - [ ] **23. Provjera faze 1** — expo-doctor, pregled TODO-ova, README s uputama za pokretanje i testiranje.
 
 ## Faza 2 — Pametni planer
 - [ ] 24. Google Calendar OAuth + uvoz fiksnih obaveza
-- [ ] 25. Tjedni zadaci: unos s pitanjima + tab Tjedan *(P54: planiranje nedjeljom za sljedeći tjedan; mjesečno/godišnje na kraju razdoblja za novo; ulazak usred razdoblja → plan odmah, uz jasno "ostalo je manje dana/tjedana/mjeseci")*
-- [ ] 26. Tjedni zadaci u plan-day
+- [ ] 25. Tjedni plan kao kalendar (7 dana; fiksan, uvijek promjenjiv, ne mora se sve ispuniti) + ciljevi tjedna + tjedni zadaci s pitanjima *(P54: planiranje nedjeljom za sljedeći tjedan; mjesečno/godišnje na kraju razdoblja za novo; ulazak usred razdoblja → plan odmah, uz jasno "ostalo je manje dana/tjedana/mjeseci")*
+- [ ] 25b. Mjesečni i godišnji plan kao kalendar + ciljevi (kontekst za tjedan i dan; zamjenjuju questove)
+- [ ] 26. Tjedni zadaci i ciljevi (tjedan/mjesec/godina) u plan-day
 - [ ] 27. "Nešto je iskrslo" flow
-- [ ] 28. Zabrane: ekran upravljanja + streakovi po zabrani
+- [ ] 28. Zabrane unutar godišnjeg / mjesečnog / tjednog plana (ne zaseban popis) + streakovi po zabrani
 - [ ] 29. San: wind-down, prilagodba rasporeda lošem snu
-- [ ] 30. Glasovni unos (on-device speech-to-text, HR/EN)
+- [ ] 30. Glasovni unos (on-device speech-to-text, HR/EN) — i za plan dana: "danas moram ovo i ono, ovo ujutro, traje sat…" → parse-input → blokovi
 - [ ] 31. LLM dnevna dijagnoza (`write-report`) — struktura i ton iz CONCEPT.md (sekcija Dijagnoze), promptovi verzionirani u repou s testnim primjerima podataka, prethodne dijagnoze u kontekstu, gumbi Pomoglo / Nije pomoglo + komentar
 - [ ] 31b. Opcionalni trackeri: kalorije i novac — postavke (isključeni po defaultu), unos, večernja provjera, ulaze u dnevni rezultat i dijagnozu; upozorenje za neuobičajeno nizak cilj kalorija
 
 ## Faza 3 — Igra i animacije
 - [ ] 32. Leveli + otključavanja
 - [ ] 33. Orb-plamen avatar (Skia)
-- [ ] 34. Questovi (dnevni/tjedni/epski) + freeze tokeni + bedževi
+- [ ] 34. Freeze tokeni + bedževi *(questovi ukinuti 2026-11-10 — zamjenjuju ih mjesečni i godišnji planovi)*
 - [ ] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]"
 - [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika
 - [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
