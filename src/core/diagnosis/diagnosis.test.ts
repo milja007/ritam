@@ -143,7 +143,7 @@ describe('dayTrend (dnevni rezultat, prag 5 bodova)', () => {
 
   it('san i zabrane ulaze u trend', () => {
     const plan = [block('a', 'done')];
-    const rules = [{ id: 'r', title: 'R', weight: 2 }];
+    const rules = [{ id: 'r', title: 'R', weight: 2 as const }];
     const kept = stats({ blocks: plan, rules, ruleLogs: [{ ruleId: 'r', kept: true, trigger: null }] });
     const broken = stats({ blocks: plan, rules, ruleLogs: [{ ruleId: 'r', kept: false, trigger: null }] });
     expect(dayTrend(kept, broken)).toBe('better');

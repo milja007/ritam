@@ -1,3 +1,4 @@
+export { DayScoreCard } from './day-score-card';
 export { ProgressCard } from './progress-card';
 export { notifyProgressChanged, useProgress } from './use-progress';
 export { XpStreakBar } from './xp-streak-bar';
