@@ -237,7 +237,7 @@ export function TodayScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
             <Text variant="overline" tone="textMuted">
-              {t('tabs.today')}
+              {t('tabs.day')}
             </Text>
             <Text variant="title" accessibilityRole="header">
               {formatDay(now.date, i18n.language)}

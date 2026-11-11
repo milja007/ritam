@@ -31,7 +31,7 @@ prijave i na "Sinkroniziraj sada" (Profil → Račun). Prolaz = pull pa push.
 
 - Lokalno: okidači (`src/db/migrations/0009_sync.sql`) pune `sync_queue` pri svakom upisu u 8 tablica.
   Prva prijava (ili drugi račun) stavlja sve lokalne retke u red.
-- Poslužitelj (`20261111100000_sync.sql`): `synced_at` postavlja okidač (kursor pulla ne ovisi o satu
+- Poslužitelj (`20261111103947_sync.sql`): `synced_at` postavlja okidač (kursor pulla ne ovisi o satu
   uređaja), `sync_tombstones` bilježi brisanja (i kaskadna) za druge uređaje.
 - Konflikt: cijeli redak, zadnji `updated_at` pobjeđuje; isti dan/razdoblje/postavke s dva uređaja
   (drugi id) — noviji ostaje, stariji se briše.

@@ -1,6 +1,5 @@
 {
   "tabs": {
-    "today": "Today",
     "day": "Day",
     "week": "Week",
     "month": "Month",
@@ -361,7 +360,7 @@
     "cards": {
       "title": "Your day",
       "emptyTitle": "No plan for today yet",
-      "emptyBody": "Add blocks on the Today tab — tap Adjust.",
+      "emptyBody": "Add blocks on the Day tab — tap Adjust.",
       "position": "{{position}}/{{total}}",
       "label": "{{position}} of {{total}}: {{title}}, {{time}}, {{kind}}",
       "until": "until {{end}}",
@@ -615,12 +614,16 @@
     "sendError": "Couldn't send the link. Check your connection and try again.",
     "sentTitle": "Check your email",
     "sentBody": "We sent a link to {{email}}.",
-    "sentHint": "Open it on this device. If it isn't there in a minute, check your spam folder.",
+    "sentHint": "Tap the link on this device or enter the code from the email. If it isn't there in a minute, check your spam folder.",
     "done": "OK",
     "resend": "Send again",
     "changeEmail": "Use another email",
     "completing": "Finishing sign-in…",
-    "linkError": "The sign-in link is invalid or has expired. Request a new one."
+    "linkError": "The sign-in link is invalid or has expired. Request a new one.",
+    "codeLabel": "Or enter the code from the email",
+    "verifyCode": "Confirm code",
+    "invalidCode": "The code has 6 digits — check the email.",
+    "verifyError": "The code is wrong or expired. Ask for a new one."
   },
   "sync": {
     "syncing": "Syncing…",
