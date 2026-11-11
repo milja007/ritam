@@ -189,6 +189,21 @@ select test.expect_count('select 1 from public.rule_logs where checkin_id is nul
 -- Brisanje zabrane briše njene zapise.
 delete from public.rules;
 select test.expect_count('select 1 from public.rule_logs', 0, 'zapisi obrisani sa zabranom');
+
+-- Sync (korak 19): brisanja (i kaskadna) ostavljaju tombstone koji vidi samo vlasnik.
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'checkins'$q$, 1, 'tombstone checkina');
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'checkin_items'$q$, 2, 'tombstoni kaskadno obrisanih stavki');
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'rule_logs'$q$, 1, 'tombstone kaskadno obrisanog zapisa zabrane');
+select test.expect_error($q$insert into public.sync_tombstones (user_id, table_name, row_id)
+  values ((select auth.uid()), 'rules', gen_random_uuid())$q$, '42501', 'klijent ne piše tombstone');
+-- synced_at postavlja poslužitelj, i kad ga klijent pokuša zadati.
+update public.xp_events set synced_at = '2000-01-01', amount = amount;
+select test.expect_count($q$select 1 from public.xp_events where synced_at < now() - interval '1 minute'$q$, 0, 'synced_at od poslužitelja');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000b","role":"authenticated"}', false);
+select test.expect_count('select 1 from public.sync_tombstones', 0, 'B ne vidi A-ove tombstone');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}', false);
 reset role;
 
 -- Svaka tablica u public ima RLS --------------------------------------------------------------
