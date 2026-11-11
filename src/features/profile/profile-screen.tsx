@@ -39,7 +39,7 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
 ];
 
 /**
- * Profil: napredak (XP, streak), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
+ * Profil: napredak (XP, streak), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
  * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
  */
 export function ProfileScreen() {
@@ -69,6 +69,14 @@ export function ProfileScreen() {
 
           <Section title={t('profile.progress')}>
             <ProgressCard today={now.date} checkinDay={now.eveningDate} />
+          </Section>
+
+          <Section title={t('profile.habits.title')}>
+            <SoonCard text={t('profile.habits.soon')} />
+          </Section>
+
+          <Section title={t('profile.quests.title')}>
+            <SoonCard text={t('profile.quests.soon')} />
           </Section>
 
           <PermissionCard />
@@ -135,6 +143,16 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
         {title}
       </Text>
       {children}
+    </View>
+  );
+}
+
+/** Mjesto za značajku koja dolazi kasnije (navike — korak 28, epski questovi — korak 34). */
+function SoonCard({ text }: { text: string }) {
+  const { colors } = useAppTheme();
+  return (
+    <View style={[styles.group, styles.soon, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+      <Text tone="textMuted">{text}</Text>
     </View>
   );
 }
@@ -300,4 +318,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md + spacing.xxs,
   },
   rowText: { flex: 1, gap: spacing.xxs },
+  soon: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
 });

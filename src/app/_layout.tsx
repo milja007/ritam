@@ -4,11 +4,21 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocales } from 'expo-localization';
 
+import { TABS, type TabId } from '@/core/navigation';
 import { NotificationsSync } from '@/features/notifications';
 import { OnboardingGate } from '@/features/onboarding';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
 import { DatabaseGate } from '@/ui/database-gate';
 import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
+
+/** SF Symbol (iOS) i Material ikona (Android) po tabu. */
+const TAB_ICONS = {
+  day: { sf: 'sun.max', md: 'today' },
+  week: { sf: 'calendar', md: 'view_week' },
+  month: { sf: 'calendar.badge.clock', md: 'calendar_month' },
+  year: { sf: 'square.grid.3x3', md: 'grid_view' },
+  profile: { sf: 'person.crop.circle', md: 'person' },
+} as const satisfies Record<TabId, { sf: string; md: string }>;
 
 export default function RootLayout() {
   return (
@@ -39,30 +49,12 @@ function AppTabs() {
         tintColor={theme.colors.accent}
         iconColor={{ default: theme.colors.textMuted, selected: theme.colors.accent }}
         backgroundColor={theme.colors.surface}>
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Label>{t('tabs.today')}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="sun.max" md="today" />
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="week">
-          <NativeTabs.Trigger.Label>{t('tabs.week')}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="quests">
-          <NativeTabs.Trigger.Label>{t('tabs.quests')}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="flag" md="flag" />
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="habits">
-          <NativeTabs.Trigger.Label>{t('tabs.habits')}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="repeat" md="repeat" />
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="profile">
-          <NativeTabs.Trigger.Label>{t('tabs.profile')}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="person.crop.circle" md="person" />
-        </NativeTabs.Trigger>
+        {TABS.map((tab) => (
+          <NativeTabs.Trigger key={tab.id} name={tab.route}>
+            <NativeTabs.Trigger.Label>{t(tab.labelKey)}</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf={TAB_ICONS[tab.id].sf} md={TAB_ICONS[tab.id].md} />
+          </NativeTabs.Trigger>
+        ))}
       </NativeTabs>
     </ThemeProvider>
   );
