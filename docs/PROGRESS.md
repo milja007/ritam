@@ -2,6 +2,10 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-11 15:45 · Fix granica brzog puta (PR `fix/fast-path-granice`, puni review)
+- Codexov naknadni review PR #5 (2× P1, 1× P2): visokorizičnom popisu dodani `CLAUDE.md`, `AGENTS.md`, `docs/AUTOMATION.md`, `docs/CONCEPT.md`, `docs/BUILD_PLAN.md`, `src/app/_layout.tsx`, `src/app/+native-intent.tsx`, `app.config.*`, `.env*`, `.gitignore`; brzi put je sada eksplicitna iznimka uz osnovno pravilo spajanja, a završna sekcija razdvaja handoff i `CLAUDE_MERGED_FAST`.
+- Iznimka: samo `[ ]` → `[x]` u `BUILD_PLAN.md` ne čini PR visokorizičnim (inače nijedan korak ne bi mogao brzim putem).
+
 ## 2026-11-11 12:30 · CI + kratki PROGRESS (PR `ci/github-actions`)
 - Odluka (Borna proslijedio Codexovu preporuku): CI PR radi Claude, Codex ga samo pregledava. Korak 20 tek nakon `CODEX_APPROVED` za ovaj PR.
 - `.github/workflows/ci.yml`: TypeScript, `expo lint`, Jest (`--runInBand`) i Supabase migracije + `tests/schema.sql` na svakom PR-u i pushu na `main`.
