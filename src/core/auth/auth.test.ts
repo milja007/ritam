@@ -4,7 +4,9 @@ import {
   isAuthCallbackUrl,
   isFlagOn,
   isValidEmail,
+  isValidEmailCode,
   normalizeEmail,
+  normalizeEmailCode,
   parseAuthCallback,
   readCloudConfig,
 } from './index';
@@ -51,6 +53,17 @@ describe('email', () => {
     for (const bad of ['', 'borna', 'borna@', '@example.com', 'borna@example', 'a b@example.com']) {
       expect(isValidEmail(bad)).toBe(false);
     }
+  });
+});
+
+describe('kod s maila', () => {
+  it('prihvaća 6–10 znamenki, uz razmake i crtice', () => {
+    expect(normalizeEmailCode(' 123 456 ')).toBe('123456');
+    expect(isValidEmailCode('123-456')).toBe(true);
+    expect(isValidEmailCode('12345')).toBe(false);
+    expect(isValidEmailCode('12345a')).toBe(false);
+    expect(isValidEmailCode('1234567890')).toBe(true);
+    expect(isValidEmailCode('12345678901')).toBe(false);
   });
 });
 

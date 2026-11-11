@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 
-import { AUTH_CALLBACK_PATH, normalizeEmail, parseAuthCallback } from '@/core/auth';
+import { AUTH_CALLBACK_PATH, normalizeEmail, normalizeEmailCode, parseAuthCallback } from '@/core/auth';
 
 import { getSupabase } from './supabase';
 
@@ -45,6 +45,18 @@ export async function completeSignInFromUrl(url: string): Promise<AuthResult | n
           refresh_token: parsed.refreshToken,
         })
       : await supabase.auth.exchangeCodeForSession(parsed.code);
+  return error ? { ok: false, message: error.message } : { ok: true };
+}
+
+/** Prijava kodom s maila (radi i kad je mail otvoren na drugom uređaju). */
+export async function verifyEmailCode(email: string, code: string): Promise<AuthResult> {
+  const supabase = getSupabase();
+  if (!supabase) return disabled();
+  const { error } = await supabase.auth.verifyOtp({
+    email: normalizeEmail(email),
+    token: normalizeEmailCode(code),
+    type: 'email',
+  });
   return error ? { ok: false, message: error.message } : { ok: true };
 }
 

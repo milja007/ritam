@@ -9,3 +9,13 @@ export function isValidEmail(input: string): boolean {
   if (email.length > 254) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
+
+/** Kod s maila (Supabase OTP): samo znamenke, razmaci/crtice se uklanjaju. */
+export function normalizeEmailCode(input: string): string {
+  return input.replace(/[\s-]/g, '');
+}
+
+/** Supabase šalje 6–10 znamenki (zadano 6). */
+export function isValidEmailCode(input: string): boolean {
+  return /^\d{6,10}$/.test(normalizeEmailCode(input));
+}

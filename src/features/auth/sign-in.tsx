@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { isValidEmail, normalizeEmail } from '@/core/auth';
+import { isValidEmail, isValidEmailCode, normalizeEmail } from '@/core/auth';
 import { radius, spacing } from '@/core/theme';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
@@ -11,13 +11,14 @@ import { Text } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
 import { useAppTheme } from '@/ui/theme';
 
-import { sendMagicLink } from './auth-api';
+import { sendMagicLink, verifyEmailCode } from './auth-api';
 
 type Phase = { kind: 'form' } | { kind: 'sent'; email: string };
 
 /**
  * Prijava e-mailom (magic link, korak 18). Bez lozinke: upiši e-mail → link stiže na mail →
- * dodir otvara app (`ritam://auth/callback`) i `AuthLinkHandler` dovršava prijavu.
+ * dodir otvara app (`ritam://auth/callback`) i `AuthLinkHandler` dovršava prijavu. Ili se
+ * upiše kod s istog maila (P72) — radi i kad je mail otvoren na drugom uređaju.
  * Prijava je neobavezna — app i bez nje radi lokalno.
  */
 export function SignIn({ onClose }: { onClose: () => void }) {
@@ -26,7 +27,31 @@ export function SignIn({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [phase, setPhase] = useState<Phase>({ kind: 'form' });
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<'invalid' | 'send' | null>(null);
+  const [error, setError] = useState<'invalid' | 'send' | 'invalidCode' | 'verify' | null>(null);
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+
+  async function verify(address: string) {
+    if (!isValidEmailCode(code)) {
+      setError('invalidCode');
+      return;
+    }
+    setVerifying(true);
+    setError(null);
+    try {
+      const result = await verifyEmailCode(address, code);
+      if (result.ok) {
+        onClose();
+        return;
+      }
+      console.error('Verifying the email code failed', result.message);
+      setError('verify');
+    } catch (failure: unknown) {
+      console.error('Verifying the email code failed', failure);
+      setError('verify');
+    }
+    setVerifying(false);
+  }
 
   async function send(address: string) {
     if (!isValidEmail(address)) {
@@ -98,6 +123,29 @@ export function SignIn({ onClose }: { onClose: () => void }) {
                       {t('auth.sentHint')}
                     </Text>
                   </View>
+                  <TextField
+                    label={t('auth.codeLabel')}
+                    placeholder="123456"
+                    value={code}
+                    onChangeText={(value) => {
+                      setCode(value);
+                      if (error === 'invalidCode' || error === 'verify') setError(null);
+                    }}
+                    keyboardType="number-pad"
+                    textContentType="oneTimeCode"
+                    autoComplete="one-time-code"
+                    returnKeyType="done"
+                    onSubmitEditing={() => void verify(phase.email)}
+                    editable={!verifying}
+                    maxLength={12}
+                  />
+                  <Button
+                    variant="secondary"
+                    label={t('auth.verifyCode')}
+                    loading={verifying}
+                    disabled={code.trim() === ''}
+                    onPress={() => void verify(phase.email)}
+                  />
                 </>
               )}
             </ScrollView>
@@ -105,7 +153,15 @@ export function SignIn({ onClose }: { onClose: () => void }) {
             <View style={styles.footer}>
               {error ? (
                 <Text tone="danger" accessibilityLiveRegion="assertive">
-                  {t(error === 'invalid' ? 'auth.invalidEmail' : 'auth.sendError')}
+                  {t(
+                    error === 'invalid'
+                      ? 'auth.invalidEmail'
+                      : error === 'invalidCode'
+                        ? 'auth.invalidCode'
+                        : error === 'verify'
+                          ? 'auth.verifyError'
+                          : 'auth.sendError',
+                  )}
                 </Text>
               ) : null}
               {phase.kind === 'form' ? (

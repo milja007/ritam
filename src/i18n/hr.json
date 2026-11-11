@@ -1,6 +1,5 @@
 {
   "tabs": {
-    "today": "Danas",
     "day": "Dan",
     "week": "Tjedan",
     "month": "Mjesec",
@@ -365,7 +364,7 @@
     "cards": {
       "title": "Tvoj dan",
       "emptyTitle": "Danas još nema plana",
-      "emptyBody": "Dodaj blokove na tabu Danas — gumb Prilagodi.",
+      "emptyBody": "Dodaj blokove na tabu Dan — gumb Prilagodi.",
       "position": "{{position}}/{{total}}",
       "label": "{{position}} od {{total}}: {{title}}, {{time}}, {{kind}}",
       "until": "do {{end}}",
@@ -621,12 +620,16 @@
     "sendError": "Slanje linka nije uspjelo. Provjeri vezu i pokušaj ponovo.",
     "sentTitle": "Provjeri e-mail",
     "sentBody": "Poslali smo link na {{email}}.",
-    "sentHint": "Otvori ga na ovom uređaju. Ako ga ne vidiš za minutu, pogledaj neželjenu poštu.",
+    "sentHint": "Dodirni link na ovom uređaju ili upiši kod s maila. Ako ga ne vidiš za minutu, pogledaj neželjenu poštu.",
     "done": "U redu",
     "resend": "Pošalji ponovo",
     "changeEmail": "Drugi e-mail",
     "completing": "Dovršavam prijavu…",
-    "linkError": "Link za prijavu nije valjan ili je istekao. Zatraži novi."
+    "linkError": "Link za prijavu nije valjan ili je istekao. Zatraži novi.",
+    "codeLabel": "Ili upiši kod s maila",
+    "verifyCode": "Potvrdi kod",
+    "invalidCode": "Kod ima 6 znamenki — provjeri mail.",
+    "verifyError": "Kod nije ispravan ili je istekao. Zatraži novi."
   },
   "sync": {
     "syncing": "Sinkroniziram…",

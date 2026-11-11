@@ -2,6 +2,17 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 10:40 · Odgovori na pitanja 71–74 (Borna, anketa)
+**Odluke:**
+- **P71:** naslov ekrana Dan je sada "Dan" (kao tab), i u EN "Day"; tekst "Dodaj blokove na tabu Dan".
+- **P72 (Borna: "što je bolje za budućnost"):** uz magic link dodana prijava **kodom s maila** (`verifyOtp`, 6–10 znamenki) — radi i kad je mail otvoren na računalu, a trebat će i za web. Link ostaje glavni put.
+- **P73:** primijenjene migracije na remote `ritam` redom: `block_notes`, `day_close`, `sync` (verzije `20261111103927`, `…929`, `…947`; lokalne datoteke preimenovane na te verzije). Security advisor: bez upozorenja.
+- **P74 (Borna: "izaberi"):** automatski push — dok je app otvoren i prijavljen, provjera reda svakih 10 s (lokalni upit); ako ima promjena, pokrene se sync. Uz to i dalje pri pokretanju, povratku u prvi plan i na "Sinkroniziraj sada".
+
+**Provjere:** `tsc` ✅, `expo lint` ✅, `npm test` ✅ 610/610, `test:supabase` ✅.
+
+**Za Bornu (da kod radi):** Supabase → Authentication → Email Templates → **Magic Link**: dodaj red s kodom, npr. `Ili upiši kod: {{ .Token }}`. Bez toga mail ima samo link (link radi kao i prije).
+
 ## 2026-11-11 09:50 · Korak 19 — Sync (lokalno → Supabase, pull pri pokretanju, zadnji updatedAt pobjeđuje)
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-18` u 07:50 UTC).
 
@@ -20,7 +31,7 @@ Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 mi
 - **Red promjena** (lokalna ručna migracija `0009_sync`): `sync_queue` (jedan unos po `(tablica, id)`, zadnja operacija, `version`) i `sync_state`; 24 SQLite okidača na 8 tablica hvataju svaki upis/izmjenu/brisanje — repo funkcije nisu dirane. Okidači šute dok se primjenjuju retci s poslužitelja.
 - `src/core/sync/` (+15 testova): redoslijed tablica (upserti roditelj → dijete, brisanja obrnuto), prirodni ključevi, `isRemoteNewer` (zadnji `updatedAt`, jednako → lokalno), mapiranje redaka (snake/camel, `local-user` ↔ `auth.uid()`, ISO vremena, poslužiteljski stupci se ignoriraju), `planPush`, `chunk`.
 - `src/db/sync/` (+14 testova s lažnim Supabaseom): `syncOnce` = (prva prijava → svi lokalni retci u red) → **pull** po stranicama s kursorom (`synced_at`, `id`) → tombstoni → **push** (brisanja, upserti; unos se uklanja samo ako se nije mijenjao tijekom slanja; greška ostavlja red za sljedeći put). Pokriveno: novi retci s drugog uređaja, konflikti u oba smjera, stara offline izmjena, straničenje, brisanja u oba smjera (lokalna novija izmjena pobjeđuje tombstone), postavke i isti dan s dva uređaja.
-- Supabase migracija `20261111100000_sync.sql`: `synced_at` (okidač, poslužiteljsko vrijeme) + indeks `(user_id, synced_at, id)` na 8 tablica, `sync_tombstones` (puni ga `security definer` okidač pri brisanju, i kaskadnom; korisnik samo čita svoje). `npm run test:supabase` ✅ s novim provjerama (tombstoni, kaskade, klijent ne piše tombstone, `synced_at` od poslužitelja, B ne vidi A-ove).
+- Supabase migracija `20261111103947_sync.sql`: `synced_at` (okidač, poslužiteljsko vrijeme) + indeks `(user_id, synced_at, id)` na 8 tablica, `sync_tombstones` (puni ga `security definer` okidač pri brisanju, i kaskadnom; korisnik samo čita svoje). `npm run test:supabase` ✅ s novim provjerama (tombstoni, kaskade, klijent ne piše tombstone, `synced_at` od poslužitelja, B ne vidi A-ove).
 - `src/features/sync/`: Supabase `RemoteStore`, `runSync()` (jedan prolaz u isto vrijeme, poziv tijekom prolaza traži još jedan), `CloudSync` u root layoutu (pokretanje, prijava, povratak u prvi plan); nakon pulla s promjenama osvježi postavke, Dan, napredak i obavijesti.
 - Profil → Račun: "Zadnja sinkronizacija …" / "Sinkroniziram…" / greška + **Sinkroniziraj sada** (uklonjena napomena "sync stiže uskoro"). i18n HR/EN.
 - Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 609/609, `test:supabase` ✅, `expo export --platform android` ✅ (flag isključen i uključen).
@@ -31,7 +42,7 @@ Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 mi
 
 **Ograničenja (zapisano, ne mijenja koncept):** sync je samo dok je app otvoren (nema pozadinskog ni realtime); nakon pulla se osvježavaju Dan, napredak i postavke — otvoreni večernji upit/dijagnoza vide promjenu tek pri sljedećem otvaranju; prijava drugim računom na istom uređaju šalje lokalne podatke i u taj račun.
 
-**Pitanja za Bornu:**
+**Pitanja za Bornu:** *(73 i 74 odgovorena — vidi 10:40)*
 73. Smijem li na remote `ritam` primijeniti migracije `block_notes`, `day_close` i `sync` (redom)? Bez toga sync na uređaju javlja grešku.
 74. Sync se pokreće pri otvaranju appa, povratku u prvi plan i na "Sinkroniziraj sada". Želiš li i automatski push nekoliko sekundi nakon svake promjene (više mrežnih poziva, brže na drugom uređaju)?
 
