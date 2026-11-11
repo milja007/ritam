@@ -2,6 +2,20 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 07:45 · Korak 18 — Supabase klijent + auth (magic link iza feature flaga)
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17e` u 05:48 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-18`. `npx expo install @supabase/supabase-js` (sesija u `expo-sqlite/localStorage`, prema Expo vodiču za SDK 58; `expo-sqlite` već postoji).
+2. Čisto `src/core/auth/` (+ testovi): `readCloudConfig(env)` → uključeno samo kad je `EXPO_PUBLIC_FEATURE_AUTH=1` **i** postoje URL + ključ (inače app radi čisto lokalno kao do sada); `normalizeEmail` / `isValidEmail`; `parseAuthCallback(url)` → tokeni iz fragmenta (implicit), `code` (PKCE) ili `error_description`; `isAuthCallbackUrl`. Bez Reacta.
+3. `src/features/auth/`: `supabase.ts` (klijent se stvara lijeno samo kad je flag uključen; `detectSessionInUrl: false`, auto-refresh vezan uz AppState), `use-session.ts`, `AuthLinkHandler` u root layoutu (hvata `ritam://auth/callback…` i postavlja sesiju), `+native-intent.tsx` preusmjerava callback na Profil da router ne pokaže "nije pronađeno".
+4. UI: odjeljak **Račun** u Profilu, vidljiv samo kad je flag uključen — odjavljen: "Prijavi se e-mailom" → ekran (Modal, kao ostali flowovi) s poljem za e-mail → "Pošalji link" → "Provjeri e-mail" (+ ponovno slanje); prijavljen: e-mail + "Odjavi se". Bez prijave app radi kao i prije (lokalno), ništa se ne sinkronizira (sync je korak 19).
+5. `.env.example` + `EXPO_PUBLIC_FEATURE_AUTH=0`; `supabase/config.toml` dodaje `ritam://auth/callback` u dopuštene redirecte. Remote auth postavke (Redirect URLs) i ključ u `.env` → upute Borni.
+6. i18n HR/EN (`auth.*`, `profile.account.*`), paritet test.
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 18 — `@supabase/supabase-js` (1), env `EXPO_PUBLIC_SUPABASE_URL/KEY` (2, 5; imena varijabli ostaju prema odluci 2026-11-09, ne Expo-ovo `…_PUBLISHABLE_KEY`), auth ekran s email magic linkom (3, 4) iza feature flaga (2, 4). Sync (19), migracije na remote (P65/P68) i Edge Functions nisu ovaj korak. Čista logika u `src/core/` s testovima (2). Dodir remote auth postavki ne radim bez Borne.
+
 ## 2026-11-11 05:45 · Korak 17e — Tabovi Dan · Tjedan · Mjesec · Godina · Profil
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17d` u 23:58 UTC).
 
