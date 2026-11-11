@@ -44,6 +44,15 @@
     "quests": {
       "title": "Epski questovi",
       "soon": "Uskoro: dugoročni questovi koje sam postaviš — veliki ciljevi, ne dnevni zadaci."
+    },
+    "account": {
+      "title": "Račun",
+      "signedOut": "Nisi prijavljen. Podaci su samo na ovom uređaju.",
+      "signIn": "Prijavi se e-mailom",
+      "signedInAs": "Prijavljen kao {{email}}",
+      "syncSoon": "Sinkronizacija podataka s računom stiže uskoro.",
+      "signOut": "Odjavi se",
+      "signOutError": "Odjava nije uspjela. Pokušaj ponovo."
     }
   },
   "database": {
@@ -599,5 +608,25 @@
     "week": "Uskoro: tjedan kao kalendar po danima i ciljevi tjedna. Upišeš što znaš, ne mora sve odmah.",
     "month": "Uskoro: mjesec kao kalendar i ciljevi mjeseca — kontekst za tjedan i dan.",
     "year": "Uskoro: godina kao kalendar i ciljevi godine — velika slika iz koje rastu mjeseci i tjedni."
+  },
+  "auth": {
+    "overline": "Račun",
+    "title": "Prijava e-mailom",
+    "body": "Upiši e-mail i poslat ćemo ti link za prijavu — bez lozinke. Dodirni link na ovom uređaju i vraćaš se u Ritam prijavljen.",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "ime@primjer.hr",
+    "localNote": "Prijava je neobavezna — Ritam i bez nje radi na ovom uređaju.",
+    "send": "Pošalji link",
+    "cancel": "Odustani",
+    "invalidEmail": "To ne izgleda kao e-mail adresa.",
+    "sendError": "Slanje linka nije uspjelo. Provjeri vezu i pokušaj ponovo.",
+    "sentTitle": "Provjeri e-mail",
+    "sentBody": "Poslali smo link na {{email}}.",
+    "sentHint": "Otvori ga na ovom uređaju. Ako ga ne vidiš za minutu, pogledaj neželjenu poštu.",
+    "done": "U redu",
+    "resend": "Pošalji ponovo",
+    "changeEmail": "Drugi e-mail",
+    "completing": "Dovršavam prijavu…",
+    "linkError": "Link za prijavu nije valjan ili je istekao. Zatraži novi."
   }
 }

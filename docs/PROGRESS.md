@@ -2,6 +2,37 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 07:45 · Korak 18 — Supabase klijent + auth (magic link iza feature flaga)
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17e` u 05:48 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-18`. `npx expo install @supabase/supabase-js` (sesija u `expo-sqlite/localStorage`, prema Expo vodiču za SDK 58; `expo-sqlite` već postoji).
+2. Čisto `src/core/auth/` (+ testovi): `readCloudConfig(env)` → uključeno samo kad je `EXPO_PUBLIC_FEATURE_AUTH=1` **i** postoje URL + ključ (inače app radi čisto lokalno kao do sada); `normalizeEmail` / `isValidEmail`; `parseAuthCallback(url)` → tokeni iz fragmenta (implicit), `code` (PKCE) ili `error_description`; `isAuthCallbackUrl`. Bez Reacta.
+3. `src/features/auth/`: `supabase.ts` (klijent se stvara lijeno samo kad je flag uključen; `detectSessionInUrl: false`, auto-refresh vezan uz AppState), `use-session.ts`, `AuthLinkHandler` u root layoutu (hvata `ritam://auth/callback…` i postavlja sesiju), `+native-intent.tsx` preusmjerava callback na Profil da router ne pokaže "nije pronađeno".
+4. UI: odjeljak **Račun** u Profilu, vidljiv samo kad je flag uključen — odjavljen: "Prijavi se e-mailom" → ekran (Modal, kao ostali flowovi) s poljem za e-mail → "Pošalji link" → "Provjeri e-mail" (+ ponovno slanje); prijavljen: e-mail + "Odjavi se". Bez prijave app radi kao i prije (lokalno), ništa se ne sinkronizira (sync je korak 19).
+5. `.env.example` + `EXPO_PUBLIC_FEATURE_AUTH=0`; `supabase/config.toml` dodaje `ritam://auth/callback` u dopuštene redirecte. Remote auth postavke (Redirect URLs) i ključ u `.env` → upute Borni.
+6. i18n HR/EN (`auth.*`, `profile.account.*`), paritet test.
+7. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 18 — `@supabase/supabase-js` (1), env `EXPO_PUBLIC_SUPABASE_URL/KEY` (2, 5; imena varijabli ostaju prema odluci 2026-11-09, ne Expo-ovo `…_PUBLISHABLE_KEY`), auth ekran s email magic linkom (3, 4) iza feature flaga (2, 4). Sync (19), migracije na remote (P65/P68) i Edge Functions nisu ovaj korak. Čista logika u `src/core/` s testovima (2). Dodir remote auth postavki ne radim bez Borne.
+
+**Napravljeno:**
+- `@supabase/supabase-js` 2.119 (`EXPO_OFFLINE=1 npx expo install`). Sesija se čuva u `expo-sqlite/localStorage` (Expo vodič za SDK 58), `detectSessionInUrl: false`, `flowType: 'pkce'`, auto-refresh samo dok je app aktivan.
+- `src/core/auth/` (+10 testova): `readCloudConfig` (uključeno samo s `EXPO_PUBLIC_FEATURE_AUTH=1` + URL + ključ, inače razlog isključenja), `isValidEmail` / `normalizeEmail`, `parseAuthCallback` (PKCE `code`, implicit tokeni u fragmentu, greška s opisom), `isAuthCallbackUrl` (i `exp://…/--/auth/callback`).
+- `src/features/auth/`: lijeni `getSupabase()` (bez flaga `null`), `sendMagicLink` / `completeSignInFromUrl` / `signOut`, `useSession`, `AuthLinkHandler` u root layoutu (hladno pokretanje i dok app radi), `+native-intent.tsx` preusmjerava callback na Profil.
+- UI: odjeljak **Račun** u Profilu samo kad je flag uključen — odjavljen: "Prijavi se e-mailom" → ekran s e-mailom → "Provjeri e-mail" (ponovno slanje, drugi e-mail); prijavljen: e-mail, napomena da sync dolazi, "Odjavi se"; poruke "Dovršavam prijavu…" / link nevaljan ili istekao.
+- `.env.example` + `EXPO_PUBLIC_FEATURE_AUTH=0`; `supabase/config.toml` dopušta `ritam://auth/callback` i `exp://**`; upute u `supabase/README.md`. i18n HR/EN (`auth.*`, `profile.account.*`).
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 580/580, `expo export --platform android` ✅ s flagom isključenim i uključenim (provjereno da je ključ ugrađen samo s flagom).
+
+**Za Bornu (da prijava radi na uređaju):** u `.env` upiši publishable ključ i `EXPO_PUBLIC_FEATURE_AUTH=1`; u Supabase dashboardu → Authentication → URL Configuration → Redirect URLs dodaj `ritam://auth/callback`. Remote auth postavke nisam dirao. Link s maila treba otvoriti na istom iPhoneu.
+
+**Na uređaju neprovjereno (Borna):** cijeli tok magic linka (mail → dodir → povratak u app prijavljen), odjava, ponovno pokretanje appa (sesija ostaje).
+
+**Pitanja za Bornu:**
+72. Magic link koristi PKCE, pa se mora otvoriti **na istom uređaju** na kojem je zatražen (sigurnije). Odgovara li, ili želiš i unos 6-znamenkastog koda s maila (radi i s računala)?
+
+**Sljedeće:** korak 19 — Sync (red promjena lokalno → Supabase, pull pri pokretanju, zadnji `updatedAt` pobjeđuje). Za njega trebaju primijenjene migracije na remote (P65, P68) — bez odobrenja ću graditi i testirati sync lokalno.
+
 ## 2026-11-11 05:45 · Korak 17e — Tabovi Dan · Tjedan · Mjesec · Godina · Profil
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17d` u 23:58 UTC).
 

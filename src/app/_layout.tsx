@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocales } from 'expo-localization';
 
 import { TABS, type TabId } from '@/core/navigation';
+import { AuthLinkHandler } from '@/features/auth';
 import { NotificationsSync } from '@/features/notifications';
 import { OnboardingGate } from '@/features/onboarding';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
@@ -26,6 +27,7 @@ export default function RootLayout() {
       <DatabaseGate>
         <OnboardingGate>
           <NotificationsSync />
+          <AuthLinkHandler />
           <AppTabs />
         </OnboardingGate>
       </DatabaseGate>
