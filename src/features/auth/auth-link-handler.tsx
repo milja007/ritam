@@ -1,9 +1,9 @@
 import * as Linking from 'expo-linking';
 import { useEffect, useRef } from 'react';
 
-import { isAuthCallbackUrl } from '@/core/auth';
+import { matchesCallbackTarget } from '@/core/auth';
 
-import { completeSignInFromUrl } from './auth-api';
+import { authRedirectUrl, completeSignInFromUrl } from './auth-api';
 import { setAuthLinkStatus } from './auth-link-status';
 import { isAuthEnabled } from './cloud-config';
 
@@ -16,7 +16,7 @@ export function AuthLinkHandler() {
   const handled = useRef(new Set<string>());
 
   useEffect(() => {
-    if (!isAuthEnabled || !url || !isAuthCallbackUrl(url) || handled.current.has(url)) return;
+    if (!isAuthEnabled || !url || !matchesCallbackTarget(url, authRedirectUrl()) || handled.current.has(url)) return;
     handled.current.add(url);
     setAuthLinkStatus('working');
     completeSignInFromUrl(url)

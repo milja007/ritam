@@ -3,6 +3,7 @@ export { isValidEmail, isValidEmailCode, normalizeEmail, normalizeEmailCode } fr
 export {
   AUTH_CALLBACK_PATH,
   isAuthCallbackUrl,
+  matchesCallbackTarget,
   parseAuthCallback,
   type AuthCallback,
 } from './callback';

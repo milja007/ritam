@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   isAuthCallbackUrl,
+  matchesCallbackTarget,
   isFlagOn,
   isValidEmail,
   isValidEmailCode,
@@ -68,33 +69,62 @@ describe('kod s maila', () => {
 });
 
 describe('parseAuthCallback', () => {
-  it('čita tokene iz fragmenta (implicit)', () => {
-    expect(
-      parseAuthCallback('ritam://auth/callback#access_token=abc&refresh_token=def&expires_in=3600&type=magiclink'),
-    ).toEqual({ kind: 'tokens', accessToken: 'abc', refreshToken: 'def' });
-  });
+  const APP = 'ritam://auth/callback';
+  const EXPO_GO = 'exp://192.168.1.2:8081/--/auth/callback';
 
-  it('čita PKCE kod iz upita', () => {
-    expect(parseAuthCallback('ritam://auth/callback?code=xyz')).toEqual({ kind: 'code', code: 'xyz' });
-    expect(parseAuthCallback('exp://192.168.1.2:8081/--/auth/callback?code=xyz')).toEqual({
+  it('čita PKCE kod iz upita samo s točnog povratnog linka', () => {
+    expect(parseAuthCallback('ritam://auth/callback?code=xyz', APP)).toEqual({ kind: 'code', code: 'xyz' });
+    expect(parseAuthCallback('ritam:///auth/callback/?code=xyz', APP)).toEqual({ kind: 'code', code: 'xyz' });
+    expect(parseAuthCallback('exp://192.168.1.2:8081/--/auth/callback?code=xyz', EXPO_GO)).toEqual({
       kind: 'code',
       code: 'xyz',
     });
+  });
+
+  it('P0: odbija link s gotovim tokenima (napadačeva sesija), i uz kod', () => {
+    expect(
+      parseAuthCallback('ritam://auth/callback#access_token=abc&refresh_token=def&expires_in=3600&type=magiclink', APP),
+    ).toEqual({ kind: 'rejected', reason: 'tokens' });
+    expect(parseAuthCallback('ritam://auth/callback?access_token=abc&refresh_token=def', APP)).toEqual({
+      kind: 'rejected',
+      reason: 'tokens',
+    });
+    expect(parseAuthCallback('ritam://auth/callback?code=xyz#refresh_token=def', APP)).toEqual({
+      kind: 'rejected',
+      reason: 'tokens',
+    });
+    expect(parseAuthCallback('ritam://auth/callback#access_token=abc', APP)).toEqual({
+      kind: 'rejected',
+      reason: 'tokens',
+    });
+  });
+
+  it('P0: ignorira tuđe sheme, hostove i putanje koje samo završavaju na auth/callback', () => {
+    expect(parseAuthCallback('evil://auth/callback?code=xyz', APP)).toEqual({ kind: 'none' });
+    expect(parseAuthCallback('ritam://evil/auth/callback?code=xyz', APP)).toEqual({ kind: 'none' });
+    expect(parseAuthCallback('https://evil.example/auth/callback?code=xyz', APP)).toEqual({ kind: 'none' });
+    expect(parseAuthCallback('exp://10.0.0.9:8081/--/auth/callback?code=xyz', EXPO_GO)).toEqual({ kind: 'none' });
+    expect(matchesCallbackTarget('ritam://auth/callbackx', APP)).toBe(false);
+    expect(matchesCallbackTarget('RITAM://auth/callback#x', APP)).toBe(true);
+  });
+
+  it('kod u fragmentu nije PKCE povratak → odbijeno', () => {
+    expect(parseAuthCallback('ritam://auth/callback#code=xyz', APP)).toEqual({ kind: 'rejected', reason: 'no-code' });
+    expect(parseAuthCallback('ritam://auth/callback', APP)).toEqual({ kind: 'rejected', reason: 'no-code' });
   });
 
   it('vraća grešku s dekodiranim opisom', () => {
     expect(
       parseAuthCallback(
         'ritam://auth/callback#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired',
+        APP,
       ),
     ).toEqual({ kind: 'error', message: 'Email link is invalid or has expired' });
   });
 
-  it('ignorira druge linkove i prazne callbacke', () => {
-    expect(parseAuthCallback(null)).toEqual({ kind: 'none' });
-    expect(parseAuthCallback('ritam://profile?code=xyz')).toEqual({ kind: 'none' });
-    expect(parseAuthCallback('ritam://auth/callback')).toEqual({ kind: 'none' });
-    expect(parseAuthCallback('ritam://auth/callback#access_token=abc')).toEqual({ kind: 'none' });
+  it('ignorira druge linkove', () => {
+    expect(parseAuthCallback(null, APP)).toEqual({ kind: 'none' });
+    expect(parseAuthCallback('ritam://profile?code=xyz', APP)).toEqual({ kind: 'none' });
   });
 
   it('isAuthCallbackUrl', () => {
