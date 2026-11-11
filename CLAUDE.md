@@ -20,7 +20,7 @@ Claude je primarni implementator, **Codex** je neovisni reviewer/QA, Borna donos
 Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi su u tijelu issuea #1.
 
 - **Nikad ne spajaj na `main` i ne pushaj na `main` izravno.** Svaki korak/popravak ide na `wip/korak-N` (ili `fix/…`, `docs/…`) i kroz **draft PR prema `main`**.
-- PR se spaja tek kad zadnja relevantna poruka u #1 ima `STATUS: CODEX_APPROVED` za **točan HEAD SHA** tog PR-a. Spajanje: merge commit preko PR-a, bez force pusha, bez brisanja grana.
+- PR se spaja tek kad zadnja relevantna poruka u #1 ima `STATUS: CODEX_APPROVED` za **točan HEAD SHA** tog PR-a. **Jedina iznimka:** brzi put iz "Brži rad" (PR bez ijedne visokorizične datoteke + zeleni CI + lokalne kontrole → Claude spaja i objavljuje `CLAUDE_MERGED_FAST`). Spajanje: merge commit preko PR-a, bez force pusha, bez brisanja grana.
 - Najviše **jedan PR u reviewu** u isto vrijeme. Dok čeka review, ne mijenjaj kod (ni na toj ni na novoj grani).
 
 ### Brži rad (odluka Borna, 2026-11-11: "presporo", "treba jače raditi")
@@ -28,7 +28,7 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 - **Skupina koraka po PR-u:** jedan PR nosi 2–4 povezana koraka iz `BUILD_PLAN.md` (npr. 20–22), svaki korak kao zaseban commit s porukom `Korak N: …`, svaki zasebno označen `[x]` kad je gotov. Grana `wip/korak-N-M` (N = prvi, M = zadnji korak skupine).
 - **Predaja:** kad je skupina gotova, **ili** na kraju bilo koje sesije između 12:00 i 22:00 ako PR ima barem jedan gotov korak, a nije predan (da Codex uvijek ima posla). Nedovršeni korak ostaje na grani kao WIP i ne ulazi u predaju (ili se predaja jasno ograniči na gotove korake).
 - **Brzi put (fast path)** za PR koji **ne dira nijednu visokorizičnu datoteku**: kad je CI zelen i lokalne kontrole prolaze, Claude ga sam spoji (merge commit) i u #1 objavi `STATUS: CLAUDE_MERGED_FAST` s `BASE`, `HEAD`, merge SHA i popisom koraka. Codex ga pregleda **naknadno**; nalaze Claude popravlja u novom `fix/…` PR-u (koji ide normalnim putem ako dira visokorizično).
-- **Visokorizično (uvijek puni review prije mergea):** `src/features/auth/**`, `src/core/auth/**`, `src/features/sync/**`, `src/core/sync/**`, `src/db/**` (shema, migracije, repoi, sync), `supabase/**` (migracije, RLS, Edge Functions), sve s API ključevima/tajnama/LLM pozivima, obavijesti (`src/features/notifications/**`, `src/core/notifications/**`), `app.json`, `eas.json`, `package.json`/`package-lock.json`, `.github/**`, `scripts/**`. U sumnji → visokorizično.
+- **Visokorizično (uvijek puni review prije mergea):** `src/features/auth/**`, `src/core/auth/**`, `src/features/sync/**`, `src/core/sync/**`, `src/db/**` (shema, migracije, repoi, sync), `supabase/**` (migracije, RLS, Edge Functions), sve s API ključevima/tajnama/LLM pozivima, obavijesti (`src/features/notifications/**`, `src/core/notifications/**`), `app.json`, `eas.json`, `package.json`/`package-lock.json`, `.github/**`, `scripts/**`, `src/app/_layout.tsx` (spaja auth, sync i obavijesti), `src/app/+native-intent.tsx` (auth deep-link), `app.config.*`, `.env*`, `.gitignore`, te pravila, koncept i plan: `CLAUDE.md`, `AGENTS.md`, `docs/AUTOMATION.md`, `docs/CONCEPT.md`, `docs/BUILD_PLAN.md` (iznimka: samo označavanje gotovog koraka `[ ]` → `[x]` u `BUILD_PLAN.md`, bez ikakve druge izmjene te datoteke, ne čini PR visokorizičnim). U sumnji → visokorizično.
 - `CLAUDE_MERGED_FAST` ne blokira rad: sljedeća sesija smije nastaviti. Ako zadnja poruka u #1 traži popravak nakon fast-path mergea (`CODEX_CHANGES_REQUESTED` za taj merge), to ide prije novog koraka.
 - Claude i Codex ne uređuju istu granu istovremeno. Popravke review nalaza radi Claude (osim ako Borna kaže drukčije).
 - Komentare u #1 objavljuj stvarno (GitHub MCP alati; `gh` ako radi). Ako komentar nije objavljen, **ne tvrdi** da je posao predan — obavijesti Bornu (`BLOCKED`).
@@ -60,11 +60,14 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 - Ekran/navigacija/onboarding/obavijesti/native: za Codex napiši točan simulator smoke scenarij (početno stanje, koraci, očekivano, rubni slučajevi); dokaz ili `NOT RUN` + razlog.
 - Visokorizično (migracija, auth/sync, RLS, obavijesti, native konfiguracija): traži dodatni checkpoint review. **Remote Supabase migracije primjenjuj tek nakon `CODEX_APPROVED`** (i Bornove dozvole).
 
-### Završetak koraka = handoff, ne merge
+### Završetak koraka / skupine
 1. Označi korak u `BUILD_PLAN.md`, ažuriraj `PROGRESS.md` kratko (napravljeno, sljedeće, pitanja); kad prijeđe ~5 KB, starije unose premjesti na vrh `PROGRESS-ARCHIVE.md`.
-2. Push grane, otvori/ažuriraj **draft PR** prema `main`.
-3. Komentar u #1: `FROM: CLAUDE`, `STATUS: CLAUDE_READY_FOR_REVIEW`, `SCOPE`, `BASE` i `HEAD` (puni SHA), `PR`, `SUMMARY`, `CHECKS`, `DEVICE/EVIDENCE`, `RISKS/QUESTIONS`, `REQUEST`. Završi footerom koji traži sustav.
-4. Stani s izmjenama i obavijesti Bornu: „Spremno za Codex review. HEAD je <SHA>, PR je <URL>. U Codexu pošalji: Provjeri najnoviji Claude handoff u Ritam issueu #1.“
+2. Push grane, otvori/ažuriraj **draft PR** prema `main`. Pokreni obavezne kontrole i pričekaj zeleni CI na HEAD-u.
+3. Odaberi **jednu** granu prema diffu PR-a (`git diff --name-only <BASE>...HEAD` protiv popisa visokorizičnog u "Brži rad"):
+   - **Dira ijednu visokorizičnu datoteku (ili sumnja)** → handoff, ne merge (točke 4–5).
+   - **Ne dira nijednu visokorizičnu datoteku, CI zelen, lokalne kontrole prolaze** → brzi put: PR u ready, spoji ga (merge commit, `expectedHeadSha`), u #1 objavi `STATUS: CLAUDE_MERGED_FAST` s `BASE`, `HEAD`, merge SHA, popisom koraka, `CHECKS` i što Codex treba naknadno pregledati; obavijesti Bornu: „Spojeno brzim putem (<SHA>). Kad stigneš, u Codexu pošalji: Naknadno pregledaj zadnji CLAUDE_MERGED_FAST u Ritam issueu #1.“ Smiješ nastaviti sa sljedećom skupinom.
+4. Handoff: komentar u #1: `FROM: CLAUDE`, `STATUS: CLAUDE_READY_FOR_REVIEW`, `SCOPE`, `BASE` i `HEAD` (puni SHA), `PR`, `SUMMARY`, `CHECKS`, `DEVICE/EVIDENCE`, `RISKS/QUESTIONS`, `REQUEST`. Završi footerom koji traži sustav.
+5. Stani s izmjenama i obavijesti Bornu: „Spremno za Codex review. HEAD je <SHA>, PR je <URL>. U Codexu pošalji: Provjeri najnoviji Claude handoff u Ritam issueu #1.“
 
 ## Pravila koda
 - TypeScript strict, bez `any`. Čista logika (raspoređivanje, XP, streak, notifikacijski okidači) u `src/core/**` bez React importa i s testovima.
