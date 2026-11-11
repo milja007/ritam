@@ -14,6 +14,20 @@ PR #2 (PR-first docs) spojen nakon `CODEX_APPROVED` za `af83a5e` (merge `5d478d1
 
 *Recenzija plana:* pokriva točno 4 nalaza, bez novih značajki. P1 je "izričito blokirati" (jedna od dvije opcije koje Codex navodi) — najmanja sigurna promjena; particioniranje po računu je veća promjena koncepta → pitanje za Bornu. Nema novih remote migracija.
 
+**Napravljeno:**
+- **P0:** `parseAuthCallback(url, expected)` prihvaća samo točan povratni link (`authRedirectUrl()`; shema, host i putanja) i samo PKCE `?code=`. Linkovi s `access_token`/`refresh_token` (u queryju ili fragmentu, i uz kod) → `rejected`; `setSession` put uklonjen iz `completeSignInFromUrl`. `AuthLinkHandler` koristi isti točni test. `+native-intent` i dalje labavo preusmjerava na Profil (bez prijave). Testovi: 6 novih u `core/auth`, 3 u `features/auth/auth-api.test.ts` (tokenski link ne zove `setSession`, tuđi link ignoriran, kod se mijenja).
+- **P1:** lokalni podaci su vezani uz prvi račun s kojim su sinkronizirani (`remote_user`). `syncOnce` s drugim računom baca `AccountMismatchError` prije reda, pulla i pusha; odjava vezu ne briše. Račun prikazuje "Podaci na ovom uređaju pripadaju drugom računu…" (HR/EN), bez loga svakih 10 s. Test A → B (B netaknut, ništa iz B lokalno, red isti) → A (izmjena iz tog vremena ide u A).
+- **P2 seenAt:** `markReportSeen` postavlja i `updatedAt`; test s dva uređaja (pada bez popravka).
+- **P2 Bash 3.2:** `RUN_AS` niz zamijenjen funkcijom `as_pg`. `test:supabase` prolazi kao root i kao ne-root (Bash 5); na pravom Bashu 3.2 nije provjereno (sandbox nema Bash 3.2).
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 618/618 (44 suitea), `test:supabase` ✅, `expo export --platform android` ✅ (flag isključen i uključen). `expo install --check`: nije provjereno (mreža u sandboxu).
+
+**Ograničenje (zamjenjuje staro "prijava drugim računom šalje lokalne podatke i u taj račun"):** drugi račun na istom uređaju sada ne može sinkronizirati dok se ne vrati prvi račun.
+
+**Pitanja za Bornu:**
+75. Što kad se netko na istom uređaju želi prebaciti na drugi račun? Sada je sync blokiran (sigurno, ništa se ne miješa). Opcije: (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" (uz potvrdu); (c) zasebni lokalni podaci po računu (veća promjena). Ne radim bez odluke.
+
+**Sljedeće:** Codex review ovog PR-a; nakon `CODEX_APPROVED` merge, pa korak 20 — LLM provider.
+
 ## 2026-11-11 10:40 · Odgovori na pitanja 71–74 (Borna, anketa)
 **Odluke:**
 - **P71:** naslov ekrana Dan je sada "Dan" (kao tab), i u EN "Day"; tekst "Dodaj blokove na tabu Dan".
