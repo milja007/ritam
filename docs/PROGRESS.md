@@ -6,6 +6,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Odluka (Borna proslijedio Codexovu preporuku): CI PR radi Claude, Codex ga samo pregledava. Korak 20 tek nakon `CODEX_APPROVED` za ovaj PR.
 - `.github/workflows/ci.yml`: TypeScript, `expo lint`, Jest (`--runInBand`) i Supabase migracije + `tests/schema.sql` na svakom PR-u i pushu na `main`.
 - Stari dnevnik (175 KB) premješten u `docs/PROGRESS-ARCHIVE.md`; ovaj ostaje kratak.
+- Automatske sesije: s 10 na **2× dnevno** (06:43, 18:43), prvo samo zadnja 2 komentara u #1 (Borna, 2026-11-11). `docs/AUTOMATION.md` ažuriran.
 
 ## Stanje
 - `main`: koraci 0–19 gotovi + popravci retrospektivnog audita (PR #3: auth samo PKCE kod, sync vezan uz prvi račun, `seenAt` sinkroniziran, skripta radi na Bash 3.2).
