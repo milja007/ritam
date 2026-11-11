@@ -273,8 +273,29 @@ export async function push(db: RitamDb, remote: RemoteStore, remoteUserId: strin
 export type SyncResult = PullResult & PushResult & { seeded: boolean; finishedAt: string };
 
 /**
+ * Lokalni podaci već su vezani uz drugi račun (nalaz P1 audita). Sync se ne pokreće: ništa se ne
+ * stavlja u red, ne povlači ni ne šalje, da se podaci dvaju računa ne pomiješaju.
+ */
+export class AccountMismatchError extends Error {
+  constructor(
+    readonly boundRemoteUserId: string,
+    readonly signedInRemoteUserId: string,
+  ) {
+    super('Local data belongs to a different account');
+    this.name = 'AccountMismatchError';
+  }
+}
+
+/** Račun uz koji su lokalni podaci vezani (prvi račun s kojim su sinkronizirani), ili `null`. */
+export function boundRemoteUser(db: RitamDb): string | null {
+  return getState(db, REMOTE_USER);
+}
+
+/**
  * Jedan prolaz: (prva prijava → svi lokalni retci u red, kursori ispočetka) → pull → push.
  * Lokalni podaci ostaju pod `localUserId`; na poslužitelju su pod računom `remoteUserId`.
+ * Lokalni podaci se vežu uz prvi račun; prijava drugim računom baca `AccountMismatchError`
+ * prije ikakve promjene (odjava vezu ne briše).
  */
 export async function syncOnce(
   db: RitamDb,
@@ -283,7 +304,11 @@ export async function syncOnce(
   now: () => Date = () => new Date(),
 ): Promise<SyncResult> {
   let seeded = false;
-  if (getState(db, REMOTE_USER) !== ids.remoteUserId) {
+  const bound = getState(db, REMOTE_USER);
+  if (bound !== null && bound !== ids.remoteUserId) {
+    throw new AccountMismatchError(bound, ids.remoteUserId);
+  }
+  if (bound === null) {
     db.transaction((tx) => {
       enqueueAll(tx, ids.localUserId);
       for (const table of SYNC_TABLES) deleteState(tx, cursorKey(table));

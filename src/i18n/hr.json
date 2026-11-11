@@ -635,6 +635,7 @@
     "syncing": "Sinkroniziram…",
     "lastSync": "Zadnja sinkronizacija: {{when}}",
     "never": "Još nije sinkronizirano.",
+    "accountMismatch": "Podaci na ovom uređaju pripadaju drugom računu, pa se s ovim računom ne sinkroniziraju. Odjavi se i prijavi onim računom s kojim si prvi put sinkronizirao.",
     "error": "Sinkronizacija nije uspjela. Podaci su sigurni na uređaju — pokušat ću ponovo.",
     "now": "Sinkroniziraj sada"
   }
