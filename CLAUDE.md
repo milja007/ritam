@@ -22,6 +22,14 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 - **Nikad ne spajaj na `main` i ne pushaj na `main` izravno.** Svaki korak/popravak ide na `wip/korak-N` (ili `fix/…`, `docs/…`) i kroz **draft PR prema `main`**.
 - PR se spaja tek kad zadnja relevantna poruka u #1 ima `STATUS: CODEX_APPROVED` za **točan HEAD SHA** tog PR-a. Spajanje: merge commit preko PR-a, bez force pusha, bez brisanja grana.
 - Najviše **jedan PR u reviewu** u isto vrijeme. Dok čeka review, ne mijenjaj kod (ni na toj ni na novoj grani).
+
+### Brži rad (odluka Borna, 2026-11-11: "presporo", "treba jače raditi")
+- **7 sesija dnevno** (00:43, 06:43, 09:43, 12:43, 15:43, 18:43, 21:43). Svaka radi punim kapacitetom; prazna staje nakon jeftine provjere.
+- **Skupina koraka po PR-u:** jedan PR nosi 2–4 povezana koraka iz `BUILD_PLAN.md` (npr. 20–22), svaki korak kao zaseban commit s porukom `Korak N: …`, svaki zasebno označen `[x]` kad je gotov. Grana `wip/korak-N-M` (N = prvi, M = zadnji korak skupine).
+- **Predaja:** kad je skupina gotova, **ili** na kraju bilo koje sesije između 12:00 i 22:00 ako PR ima barem jedan gotov korak, a nije predan (da Codex uvijek ima posla). Nedovršeni korak ostaje na grani kao WIP i ne ulazi u predaju (ili se predaja jasno ograniči na gotove korake).
+- **Brzi put (fast path)** za PR koji **ne dira nijednu visokorizičnu datoteku**: kad je CI zelen i lokalne kontrole prolaze, Claude ga sam spoji (merge commit) i u #1 objavi `STATUS: CLAUDE_MERGED_FAST` s `BASE`, `HEAD`, merge SHA i popisom koraka. Codex ga pregleda **naknadno**; nalaze Claude popravlja u novom `fix/…` PR-u (koji ide normalnim putem ako dira visokorizično).
+- **Visokorizično (uvijek puni review prije mergea):** `src/features/auth/**`, `src/core/auth/**`, `src/features/sync/**`, `src/core/sync/**`, `src/db/**` (shema, migracije, repoi, sync), `supabase/**` (migracije, RLS, Edge Functions), sve s API ključevima/tajnama/LLM pozivima, obavijesti (`src/features/notifications/**`, `src/core/notifications/**`), `app.json`, `eas.json`, `package.json`/`package-lock.json`, `.github/**`, `scripts/**`. U sumnji → visokorizično.
+- `CLAUDE_MERGED_FAST` ne blokira rad: sljedeća sesija smije nastaviti. Ako zadnja poruka u #1 traži popravak nakon fast-path mergea (`CODEX_CHANGES_REQUESTED` za taj merge), to ide prije novog koraka.
 - Claude i Codex ne uređuju istu granu istovremeno. Popravke review nalaza radi Claude (osim ako Borna kaže drukčije).
 - Komentare u #1 objavljuj stvarno (GitHub MCP alati; `gh` ako radi). Ako komentar nije objavljen, **ne tvrdi** da je posao predan — obavijesti Bornu (`BLOCKED`).
 
@@ -37,9 +45,9 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 4. Otvoreni GitHub issueji s greškama s uređaja (osim #1) imaju prednost pred novim korakom — kroz isti PR-first tok.
 
 ### Rad na koraku
-1. Nađi prvi korak u `BUILD_PLAN.md` koji nije `[x]` (ili nastavi postojeću `wip/korak-N` granu).
+1. Nađi prvi korak u `BUILD_PLAN.md` koji nije `[x]` (ili nastavi postojeću `wip/korak-N…` granu). Odredi skupinu od 2–4 povezana koraka (vidi "Brži rad").
 2. **Prije koda** napiši plan (3–8 točaka) na vrh `PROGRESS.md` pod datumom i provjeri ga protiv koncepta i kriterija gotovosti.
-3. Radi samo taj korak. Mali, sigurni commitovi; push često. **Jedan agent u isto vrijeme** — bez paralelnih subagenata.
+3. Radi samo tu skupinu, korak po korak (svaki korak gotov s testovima prije sljedećeg). Mali, sigurni commitovi; push često. **Jedan agent u isto vrijeme** — bez paralelnih subagenata.
 4. Expo: SDK 58 — prije Expo/RN koda čitaj https://docs.expo.dev/versions/v58.0.0/ i https://docs.expo.dev/llms.txt; paketi samo `npx expo install`; npm/npx (nema `bun.lock`); CNG — ne diraj `ios/`/`android/`; navigacija u Expo Routeru (`src/app/`).
 5. Ako budžet/kontekst ponestaje: stani na čistom mjestu, commit + push WIP na granu, u `PROGRESS.md` zapiši gdje si stao.
 
