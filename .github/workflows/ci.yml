@@ -1,0 +1,50 @@
+# CI za Ritam: determinističke provjere na svakom PR-u i pushu na main,
+# da ih Claude i Codex ne moraju ponavljati modelom (štedi kvotu).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: TypeScript · lint · Jest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx expo lint
+      - name: Jest
+        run: npm test -- --runInBand
+
+  supabase:
+    name: Supabase migracije · RLS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL
+        run: |
+          if ! ls -d /usr/lib/postgresql/*/bin >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql
+          fi
+          ls -d /usr/lib/postgresql/*/bin
+      - name: Migracije + tests/schema.sql
+        run: bash scripts/supabase-local-test.sh
