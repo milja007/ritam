@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -14,9 +14,9 @@ import type { SessionState } from './use-session';
 
 /**
  * Odjeljak "Račun" u Profilu (korak 18). Prikazuje se samo kad je auth uključen (feature flag).
- * Sinkronizacija podataka dolazi s korakom 19 — do tada prijava samo poveže uređaj s računom.
+ * `syncStatus` (korak 19) prikazuje se ispod e-maila kad je korisnik prijavljen.
  */
-export function AccountCard({ session }: { session: SessionState }) {
+export function AccountCard({ session, syncStatus }: { session: SessionState; syncStatus?: ReactNode }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const [signingIn, setSigningIn] = useState(false);
@@ -44,9 +44,7 @@ export function AccountCard({ session }: { session: SessionState }) {
       ) : session.status === 'signedIn' ? (
         <>
           <Text variant="bodyStrong">{t('profile.account.signedInAs', { email: session.email ?? '—' })}</Text>
-          <Text variant="caption" tone="textMuted">
-            {t('profile.account.syncSoon')}
-          </Text>
+          {syncStatus}
           <Button variant="ghost" label={t('profile.account.signOut')} loading={busy} onPress={() => void doSignOut()} />
           {signOutFailed ? (
             <Text tone="danger" accessibilityLiveRegion="assertive">

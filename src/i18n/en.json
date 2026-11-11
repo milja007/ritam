@@ -50,7 +50,6 @@
       "signedOut": "You're not signed in. Your data stays on this device.",
       "signIn": "Sign in with email",
       "signedInAs": "Signed in as {{email}}",
-      "syncSoon": "Syncing your data with the account is coming soon.",
       "signOut": "Sign out",
       "signOutError": "Couldn't sign out. Try again."
     }
@@ -622,5 +621,12 @@
     "changeEmail": "Use another email",
     "completing": "Finishing sign-in…",
     "linkError": "The sign-in link is invalid or has expired. Request a new one."
+  },
+  "sync": {
+    "syncing": "Syncing…",
+    "lastSync": "Last synced: {{when}}",
+    "never": "Not synced yet.",
+    "error": "Sync failed. Your data is safe on this device — I'll try again.",
+    "now": "Sync now"
   }
 }
