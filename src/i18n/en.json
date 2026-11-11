@@ -1,9 +1,10 @@
 {
   "tabs": {
     "today": "Today",
+    "day": "Day",
     "week": "Week",
-    "quests": "Quests",
-    "habits": "Habits",
+    "month": "Month",
+    "year": "Year",
     "profile": "Profile"
   },
   "common": {
@@ -35,6 +36,14 @@
     "progress": "Progress",
     "score": {
       "title": "Day score"
+    },
+    "habits": {
+      "title": "Habits",
+      "soon": "Coming soon: habits you build little by little, each with its own streak."
+    },
+    "quests": {
+      "title": "Epic quests",
+      "soon": "Coming soon: long-term quests you set yourself — big goals, not daily chores."
     }
   },
   "database": {
@@ -579,5 +588,10 @@
     "confirm": "Close the day and plan tomorrow",
     "cancel": "Keep going",
     "saveError": "Saving failed. Please try again."
+  },
+  "plans": {
+    "week": "Coming soon: your week as a day-by-day calendar plus weekly goals. Add what you know — no need to fill it all at once.",
+    "month": "Coming soon: your month as a calendar plus monthly goals — context for your week and day.",
+    "year": "Coming soon: your year as a calendar plus yearly goals — the big picture your months and weeks grow from."
   }
 }

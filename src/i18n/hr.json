@@ -1,9 +1,10 @@
 {
   "tabs": {
     "today": "Danas",
+    "day": "Dan",
     "week": "Tjedan",
-    "quests": "Questovi",
-    "habits": "Navike",
+    "month": "Mjesec",
+    "year": "Godina",
     "profile": "Profil"
   },
   "common": {
@@ -35,6 +36,14 @@
     "progress": "Napredak",
     "score": {
       "title": "Rezultat dana"
+    },
+    "habits": {
+      "title": "Navike",
+      "soon": "Uskoro: navike koje gradiš malo po malo, svaka sa svojim streakom."
+    },
+    "quests": {
+      "title": "Epski questovi",
+      "soon": "Uskoro: dugoročni questovi koje sam postaviš — veliki ciljevi, ne dnevni zadaci."
     }
   },
   "database": {
@@ -585,5 +594,10 @@
     "confirm": "Zatvori dan i planiraj sutra",
     "cancel": "Ipak nastavljam",
     "saveError": "Spremanje nije uspjelo. Pokušaj ponovo."
+  },
+  "plans": {
+    "week": "Uskoro: tjedan kao kalendar po danima i ciljevi tjedna. Upišeš što znaš, ne mora sve odmah.",
+    "month": "Uskoro: mjesec kao kalendar i ciljevi mjeseca — kontekst za tjedan i dan.",
+    "year": "Uskoro: godina kao kalendar i ciljevi godine — velika slika iz koje rastu mjeseci i tjedni."
   }
 }

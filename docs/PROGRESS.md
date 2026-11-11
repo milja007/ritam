@@ -2,6 +2,34 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 05:45 · Korak 17e — Tabovi Dan · Tjedan · Mjesec · Godina · Profil
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17d` u 23:58 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-17e`. Čisto `src/core/navigation/tabs.ts` (+ test): jedini popis tabova redom Dan · Tjedan · Mjesec · Godina · Profil (ruta, ključ naziva, SF/Material ikona); test da redoslijed odgovara konceptu i da nema Questova ni Navika.
+2. `_layout.tsx` gradi `NativeTabs` iz tog popisa. Tab "Danas" postaje **Dan** (naslov ekrana ostaje "Danas" — to je ekran današnjeg dana).
+3. Rute: brišem `quests.tsx` i `habits.tsx`; nove `month.tsx` i `year.tsx` kao placeholderi s objašnjenjem što dolazi (kalendar + ciljevi, 25b); `week.tsx` placeholder s objašnjenjem (25).
+4. Profil: dodaje odjeljke **Navike** i **Epski questovi** kao kratke kartice "uskoro" (sadržaj dolazi s 28 / 34). San je već u Profilu (odjeljak "San i buđenje") — samo ostaje.
+5. i18n HR/EN: `tabs.day`, `tabs.month`, `tabs.year`, tekstovi placeholdera i Profila; uklanjam `tabs.quests` / `tabs.habits`. Paritet test prolazi.
+6. Provjere `tsc`, `lint`, `test`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 17e — pet tabova točno tim redom (1, 2), Questovi i Navike uklonjeni kao tabovi (1, 3), navike, san i epski questovi u Profilu (4), placeholderi za Mjesec i Godina do 25b (3). Ne gradim sadržaj tjedna/mjeseca/godine (25, 25b), navika ni questova (28, 34) — to su zasebni koraci. Nema promjene podataka ni migracija.
+
+**Napravljeno:**
+- `src/core/navigation/tabs.ts` (+4 testa): jedini popis tabova `TABS` redom Dan · Tjedan · Mjesec · Godina · Profil (ruta, ključ naziva); testovi za redoslijed, Dan = `index`, bez Questova/Navika, jedinstvenost.
+- `_layout.tsx` gradi `NativeTabs` iz `TABS`; ikone po tabu (SF / Material) ostaju u layoutu jer su tipovi platformski. Tab "Danas" se sada zove **Dan** (naslov ekrana ostaje "Danas").
+- Rute: obrisani `quests.tsx` i `habits.tsx`; novi `month.tsx` i `year.tsx`; Tjedan, Mjesec i Godina su placeholderi s kratkim opisom što dolazi (kalendar + ciljevi; 25 / 25b).
+- Profil: novi odjeljci **Navike** i **Epski questovi** (kartice "uskoro", sadržaj s 28 / 34) odmah ispod Napretka; "San i buđenje" već je u Profilu.
+- i18n HR/EN: `tabs.day/month/year`, `plans.*`, `profile.habits.*`, `profile.quests.*`; uklonjeni `tabs.quests` / `tabs.habits`.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 570/570, `expo export --platform android` ✅.
+
+**Na uređaju neprovjereno (Borna):** izgled pet tabova i ikona na iPhoneu (osobito `calendar.badge.clock` za Mjesec i `square.grid.3x3` za Godinu).
+
+**Pitanja za Bornu:**
+71. Tab se zove "Dan", ali naslov ekrana i dalje piše "Danas". Želiš li i naslov "Dan", ili ostaje "Danas"?
+
+**Sljedeće:** korak 18 — Supabase klijent + auth (magic link iza feature flaga). Otvorena pitanja 65/68 (primjena Supabase migracija na remote) i dalje čekaju odgovor.
+
 ## 2026-11-10 23:50 · Korak 17d — Odustajem od svega + dijagnoza čim je sve riješeno + ležeran večernji podsjetnik
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17c` u 21:52 UTC).
 
