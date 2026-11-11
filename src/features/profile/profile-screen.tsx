@@ -18,6 +18,7 @@ import {
 } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { AccountCard, useSession } from '@/features/auth';
+import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
 import { updateSettings, useSettings } from '@/features/settings';
@@ -83,7 +84,7 @@ export function ProfileScreen() {
 
           {session.status !== 'disabled' ? (
             <Section title={t('profile.account.title')}>
-              <AccountCard session={session} />
+              <AccountCard session={session} syncStatus={<SyncStatusRow />} />
             </Section>
           ) : null}
 

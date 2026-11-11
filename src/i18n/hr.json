@@ -50,7 +50,6 @@
       "signedOut": "Nisi prijavljen. Podaci su samo na ovom uređaju.",
       "signIn": "Prijavi se e-mailom",
       "signedInAs": "Prijavljen kao {{email}}",
-      "syncSoon": "Sinkronizacija podataka s računom stiže uskoro.",
       "signOut": "Odjavi se",
       "signOutError": "Odjava nije uspjela. Pokušaj ponovo."
     }
@@ -628,5 +627,12 @@
     "changeEmail": "Drugi e-mail",
     "completing": "Dovršavam prijavu…",
     "linkError": "Link za prijavu nije valjan ili je istekao. Zatraži novi."
+  },
+  "sync": {
+    "syncing": "Sinkroniziram…",
+    "lastSync": "Zadnja sinkronizacija: {{when}}",
+    "never": "Još nije sinkronizirano.",
+    "error": "Sinkronizacija nije uspjela. Podaci su sigurni na uređaju — pokušat ću ponovo.",
+    "now": "Sinkroniziraj sada"
   }
 }

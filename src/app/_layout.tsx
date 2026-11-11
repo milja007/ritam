@@ -8,6 +8,7 @@ import { TABS, type TabId } from '@/core/navigation';
 import { AuthLinkHandler } from '@/features/auth';
 import { NotificationsSync } from '@/features/notifications';
 import { OnboardingGate } from '@/features/onboarding';
+import { CloudSync } from '@/features/sync';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
 import { DatabaseGate } from '@/ui/database-gate';
 import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
@@ -28,6 +29,7 @@ export default function RootLayout() {
         <OnboardingGate>
           <NotificationsSync />
           <AuthLinkHandler />
+          <CloudSync />
           <AppTabs />
         </OnboardingGate>
       </DatabaseGate>
