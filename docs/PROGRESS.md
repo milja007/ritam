@@ -2,6 +2,20 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 09:50 · Korak 19 — Sync (lokalno → Supabase, pull pri pokretanju, zadnji updatedAt pobjeđuje)
+Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-18` u 07:50 UTC).
+
+**Plan (recenziran prije koda):**
+1. Grana `wip/korak-19`. Lokalni **red promjena** bez diranja repoa: ručna Drizzle migracija `0009_sync` — tablice `sync_queue` (jedan red po `(tablica, id)`, `op` upsert/delete, `version` raste pri svakoj promjeni) i `sync_state` (ključ/vrijednost), te SQLite okidači na 8 tablica (insert/update → upsert, delete → delete). Okidači šute dok se primjenjuju retci s poslužitelja (zastavica u `sync_state`), da pull ne vraća iste retke natrag.
+2. Čisto `src/core/sync/` (+ testovi): popis tablica redom roditelj → dijete (push upserta), obrnuto za brisanja; prirodni ključevi (`settings` po korisniku, `checkins` dan+vrsta, `rule_logs` zabrana+dan, `reports` razdoblje+početak); `isRemoteNewer(local, remote)` (zadnji `updatedAt` pobjeđuje, jednako → lokalno ostaje); mapiranje redaka lokalno ↔ remote (camelCase ↔ snake_case, `user_id` lokalno `local-user` ↔ `auth.uid()`, normalizacija vremena u ISO).
+3. Supabase migracija `…_sync.sql`: stupac `synced_at` (postavlja **poslužitelj** okidačem pri svakom upisu — kursor pulla ne ovisi o satu uređaja, pa se ne gube izmjene koje su neko vrijeme bile offline) + tablica `sync_tombstones` koju pune okidači pri brisanju (i kaskadnom) uz RLS vlasnika. Provjera `npm run test:supabase` (+ testovi u `tests/schema.sql`). Na remote **ne** primjenjujem bez Borne (kao P65/P68).
+4. `src/db/sync/` (+ testovi nad SQLite u memoriji, lažni remote): `pull` — po tablici retci sa `synced_at` > kursor, primjena samo kad je remote noviji (sudar prirodnog ključa s drugim id-jem: noviji pobjeđuje; ako pobijedi lokalni, remote redak ide u red za brisanje), zatim tombstoni → lokalno brisanje; `push` — red promjena → brisanja (dijete → roditelj), upserti (roditelj → dijete), uklanjanje iz reda samo za verzije koje su poslane. Prva prijava ili drugi račun → svi lokalni retci u red, kursori ispočetka.
+5. `src/features/sync/`: Supabase adapter (`RemoteStore`), `runSync()` (pull pa push, jedan prolaz u isto vrijeme) — pri pokretanju s prijavom, po povratku u prvi plan i odmah nakon prijave; nakon pulla osvježi ekrane (postojeći store promjena). Bez prijave/flaga ništa se ne događa (app ostaje čisto lokalan).
+6. Profil → Račun: "Zadnja sinkronizacija …" / greška + "Sinkroniziraj sada". i18n HR/EN.
+7. Provjere `tsc`, `lint`, `test`, `test:supabase`, `expo export --platform android`; BUILD_PLAN `[x]`, PROGRESS, merge na `main`, push.
+
+*Recenzija plana:* kriteriji 19 — red promjena lokalno → Supabase (1, 4), pull pri pokretanju (5), konflikti: zadnji `updatedAt` pobjeđuje (2, 4). Brisanja (tombstoni) i kursor koji ne ovisi o satu uređaja nisu eksplicitno u kriteriju, ali bez njih sync gubi podatke — ostaju unutar koraka, bez promjene koncepta. Realtime, sync u pozadini i spajanje polja unutar retka nisu ovaj korak. Repo funkcije se ne diraju (okidači hvataju sve upise). Remote migracije (P65, P68, nova) čekaju Bornu; bez njih se sync gradi i testira lokalno.
+
 ## 2026-11-11 07:45 · Korak 18 — Supabase klijent + auth (magic link iza feature flaga)
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17e` u 05:48 UTC).
 
