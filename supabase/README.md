@@ -24,4 +24,16 @@ Prijava je iza feature flaga i zadano isključena — bez nje app radi čisto lo
 2. Supabase dashboard → Authentication → URL Configuration → **Redirect URLs**: dodaj `ritam://auth/callback` (dev build) i po želji `exp://**` (Expo Go). Bez toga Supabase vraća na Site URL umjesto u app.
 3. Profil → Račun → "Prijavi se e-mailom" → link s maila otvori **na istom uređaju** (PKCE: kod se zamjenjuje sesijom koju je app započeo).
 
-Sinkronizacija podataka je korak 19; do tada prijava samo povezuje uređaj s računom.
+## Sync (korak 19)
+
+Kad je korisnik prijavljen, app sinkronizira pri pokretanju, po povratku u prvi plan, odmah nakon
+prijave i na "Sinkroniziraj sada" (Profil → Račun). Prolaz = pull pa push.
+
+- Lokalno: okidači (`src/db/migrations/0009_sync.sql`) pune `sync_queue` pri svakom upisu u 8 tablica.
+  Prva prijava (ili drugi račun) stavlja sve lokalne retke u red.
+- Poslužitelj (`20261111100000_sync.sql`): `synced_at` postavlja okidač (kursor pulla ne ovisi o satu
+  uređaja), `sync_tombstones` bilježi brisanja (i kaskadna) za druge uređaje.
+- Konflikt: cijeli redak, zadnji `updated_at` pobjeđuje; isti dan/razdoblje/postavke s dva uređaja
+  (drugi id) — noviji ostaje, stariji se briše.
+- Za rad na remoteu moraju biti primijenjene **sve** migracije (`block_notes`, `day_close`, `sync`),
+  inače push javlja grešku (nepostojeći stupci) i red ostaje lokalno do sljedećeg pokušaja.

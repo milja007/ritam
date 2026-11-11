@@ -16,6 +16,27 @@ Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 mi
 
 *Recenzija plana:* kriteriji 19 — red promjena lokalno → Supabase (1, 4), pull pri pokretanju (5), konflikti: zadnji `updatedAt` pobjeđuje (2, 4). Brisanja (tombstoni) i kursor koji ne ovisi o satu uređaja nisu eksplicitno u kriteriju, ali bez njih sync gubi podatke — ostaju unutar koraka, bez promjene koncepta. Realtime, sync u pozadini i spajanje polja unutar retka nisu ovaj korak. Repo funkcije se ne diraju (okidači hvataju sve upise). Remote migracije (P65, P68, nova) čekaju Bornu; bez njih se sync gradi i testira lokalno.
 
+**Napravljeno:**
+- **Red promjena** (lokalna ručna migracija `0009_sync`): `sync_queue` (jedan unos po `(tablica, id)`, zadnja operacija, `version`) i `sync_state`; 24 SQLite okidača na 8 tablica hvataju svaki upis/izmjenu/brisanje — repo funkcije nisu dirane. Okidači šute dok se primjenjuju retci s poslužitelja.
+- `src/core/sync/` (+15 testova): redoslijed tablica (upserti roditelj → dijete, brisanja obrnuto), prirodni ključevi, `isRemoteNewer` (zadnji `updatedAt`, jednako → lokalno), mapiranje redaka (snake/camel, `local-user` ↔ `auth.uid()`, ISO vremena, poslužiteljski stupci se ignoriraju), `planPush`, `chunk`.
+- `src/db/sync/` (+14 testova s lažnim Supabaseom): `syncOnce` = (prva prijava → svi lokalni retci u red) → **pull** po stranicama s kursorom (`synced_at`, `id`) → tombstoni → **push** (brisanja, upserti; unos se uklanja samo ako se nije mijenjao tijekom slanja; greška ostavlja red za sljedeći put). Pokriveno: novi retci s drugog uređaja, konflikti u oba smjera, stara offline izmjena, straničenje, brisanja u oba smjera (lokalna novija izmjena pobjeđuje tombstone), postavke i isti dan s dva uređaja.
+- Supabase migracija `20261111100000_sync.sql`: `synced_at` (okidač, poslužiteljsko vrijeme) + indeks `(user_id, synced_at, id)` na 8 tablica, `sync_tombstones` (puni ga `security definer` okidač pri brisanju, i kaskadnom; korisnik samo čita svoje). `npm run test:supabase` ✅ s novim provjerama (tombstoni, kaskade, klijent ne piše tombstone, `synced_at` od poslužitelja, B ne vidi A-ove).
+- `src/features/sync/`: Supabase `RemoteStore`, `runSync()` (jedan prolaz u isto vrijeme, poziv tijekom prolaza traži još jedan), `CloudSync` u root layoutu (pokretanje, prijava, povratak u prvi plan); nakon pulla s promjenama osvježi postavke, Dan, napredak i obavijesti.
+- Profil → Račun: "Zadnja sinkronizacija …" / "Sinkroniziram…" / greška + **Sinkroniziraj sada** (uklonjena napomena "sync stiže uskoro"). i18n HR/EN.
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 609/609, `test:supabase` ✅, `expo export --platform android` ✅ (flag isključen i uključen).
+
+**Za Bornu (da sync radi):** na remote `ritam` treba primijeniti migracije `block_notes` (P65), `day_close` (P68) i novu `sync` (P73) — bez njih push javlja grešku i podaci ostaju samo na uređaju (ništa se ne gubi). Plus postavke iz koraka 18 (ključ, flag, Redirect URL).
+
+**Na uređaju neprovjereno (Borna):** prvi sync nakon prijave (svi podaci se pošalju), promjena na jednom uređaju → otvori app na drugom, brisanje bloka, "Sinkroniziraj sada", rad bez mreže (greška, pa uspjeh kad se mreža vrati).
+
+**Ograničenja (zapisano, ne mijenja koncept):** sync je samo dok je app otvoren (nema pozadinskog ni realtime); nakon pulla se osvježavaju Dan, napredak i postavke — otvoreni večernji upit/dijagnoza vide promjenu tek pri sljedećem otvaranju; prijava drugim računom na istom uređaju šalje lokalne podatke i u taj račun.
+
+**Pitanja za Bornu:**
+73. Smijem li na remote `ritam` primijeniti migracije `block_notes`, `day_close` i `sync` (redom)? Bez toga sync na uređaju javlja grešku.
+74. Sync se pokreće pri otvaranju appa, povratku u prvi plan i na "Sinkroniziraj sada". Želiš li i automatski push nekoliko sekundi nakon svake promjene (više mrežnih poziva, brže na drugom uređaju)?
+
+**Sljedeće:** korak 20 — LLM provider (Edge Function `llm-provider`, Claude sada, sučelje za DeepSeek, logiranje u `llm_calls`; ključevi samo u Supabase secrets).
+
 ## 2026-11-11 07:45 · Korak 18 — Supabase klijent + auth (magic link iza feature flaga)
 Nema otvorenih GitHub issuea. Nijedna `wip/*` grana nije pushana u zadnjih 60 min (zadnja `wip/korak-17e` u 05:48 UTC).
 
