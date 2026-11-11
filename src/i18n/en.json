@@ -44,6 +44,15 @@
     "quests": {
       "title": "Epic quests",
       "soon": "Coming soon: long-term quests you set yourself — big goals, not daily chores."
+    },
+    "account": {
+      "title": "Account",
+      "signedOut": "You're not signed in. Your data stays on this device.",
+      "signIn": "Sign in with email",
+      "signedInAs": "Signed in as {{email}}",
+      "syncSoon": "Syncing your data with the account is coming soon.",
+      "signOut": "Sign out",
+      "signOutError": "Couldn't sign out. Try again."
     }
   },
   "database": {
@@ -593,5 +602,25 @@
     "week": "Coming soon: your week as a day-by-day calendar plus weekly goals. Add what you know — no need to fill it all at once.",
     "month": "Coming soon: your month as a calendar plus monthly goals — context for your week and day.",
     "year": "Coming soon: your year as a calendar plus yearly goals — the big picture your months and weeks grow from."
+  },
+  "auth": {
+    "overline": "Account",
+    "title": "Sign in with email",
+    "body": "Enter your email and we'll send you a sign-in link — no password. Tap the link on this device and you're back in Ritam, signed in.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "localNote": "Signing in is optional — Ritam works on this device without it.",
+    "send": "Send link",
+    "cancel": "Cancel",
+    "invalidEmail": "That doesn't look like an email address.",
+    "sendError": "Couldn't send the link. Check your connection and try again.",
+    "sentTitle": "Check your email",
+    "sentBody": "We sent a link to {{email}}.",
+    "sentHint": "Open it on this device. If it isn't there in a minute, check your spam folder.",
+    "done": "OK",
+    "resend": "Send again",
+    "changeEmail": "Use another email",
+    "completing": "Finishing sign-in…",
+    "linkError": "The sign-in link is invalid or has expired. Request a new one."
   }
 }

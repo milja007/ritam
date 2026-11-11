@@ -17,6 +17,7 @@ import {
   TIME_STEP_MINUTES,
 } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
+import { AccountCard, useSession } from '@/features/auth';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
 import { updateSettings, useSettings } from '@/features/settings';
@@ -39,7 +40,7 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
 ];
 
 /**
- * Profil: napredak (XP, streak), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
+ * Profil: napredak (XP, streak), račun (samo iza feature flaga, korak 18), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
  * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
  */
 export function ProfileScreen() {
@@ -47,6 +48,7 @@ export function ProfileScreen() {
   const { colors } = useAppTheme();
   const state = useSettings();
   const now = useNow();
+  const session = useSession();
   const [saveError, setSaveError] = useState(false);
 
   function save(patch: Partial<SettingsInput>) {
@@ -78,6 +80,12 @@ export function ProfileScreen() {
           <Section title={t('profile.quests.title')}>
             <SoonCard text={t('profile.quests.soon')} />
           </Section>
+
+          {session.status !== 'disabled' ? (
+            <Section title={t('profile.account.title')}>
+              <AccountCard session={session} />
+            </Section>
+          ) : null}
 
           <PermissionCard />
 
