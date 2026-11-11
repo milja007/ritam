@@ -9,6 +9,7 @@ import type { Row, SyncTable } from '@/core/sync';
 import type { RitamDb } from './db';
 import { createBlock, deleteBlock, getBlock, getSettings, saveSettings, updateBlock, type SettingsInput } from './repos';
 import { PULL_PAGE, queueSize, readQueue, syncOnce, type PullCursor, type RemoteStore, type Tombstone } from './sync';
+import { checkins } from './schema';
 import { createTestDb, testDeps } from './testing/test-db';
 
 const LOCAL = 'local-user';
@@ -345,5 +346,78 @@ describe('syncOnce', () => {
     await syncOnce(db, remote, ids);
     expect(countQueue(db)).toBe(0);
     expect(remote.rows('schedule_blocks')).toHaveLength(1);
+  });
+
+  describe('isti dan na dva uređaja (prirodni ključ checkina)', () => {
+    const localCheckin = (updatedAt: string) => ({
+      id: 'c-local',
+      userId: LOCAL,
+      createdAt: updatedAt,
+      updatedAt,
+      date: '2026-11-11',
+      kind: 'evening' as const,
+      sleepStart: null,
+      wakeTime: null,
+      mood: null,
+      dayRating: 4,
+      note: null,
+      scoreAreas: null,
+      gaveUp: false,
+      gaveUpNote: null,
+    });
+    const remoteCheckin = (updatedAt: string): Row => ({
+      id: 'c-remote',
+      user_id: UID,
+      created_at: updatedAt,
+      updated_at: updatedAt,
+      date: '2026-11-11',
+      kind: 'evening',
+      sleep_start: null,
+      wake_time: null,
+      mood: null,
+      day_rating: 2,
+      note: null,
+      score_areas: null,
+      gave_up: false,
+      gave_up_note: null,
+    });
+    const remoteItem: Row = {
+      id: 'i-remote',
+      user_id: UID,
+      created_at: '2026-11-11T20:00:00+00:00',
+      updated_at: '2026-11-11T20:00:00+00:00',
+      checkin_id: 'c-remote',
+      kind: 'open-question',
+      ref_id: null,
+      ok: true,
+      outcome: 'ok',
+      comment: null,
+      later_date: null,
+      moved_block_id: null,
+    };
+
+    it('noviji remote zamjenjuje lokalni checkin (sa stavkama)', async () => {
+      const { db, remote } = await setup();
+      db.insert(checkins).values(localCheckin('2026-11-11T19:00:00.000Z')).run();
+      remote.put('checkins', remoteCheckin('2026-11-11T20:00:00+00:00'));
+      remote.put('checkin_items', remoteItem);
+
+      await syncOnce(db, remote, ids);
+      const rows = db.select().from(checkins).all();
+      expect(rows.map((row) => [row.id, row.dayRating])).toEqual([['c-remote', 2]]);
+      expect(remote.rows('checkins').map((row) => row.id)).toEqual(['c-remote']);
+    });
+
+    it('noviji lokalni ostaje, remote dan se briše, njegove stavke se ne primjenjuju', async () => {
+      const { db, remote } = await setup();
+      db.insert(checkins).values(localCheckin('2026-11-11T21:00:00.000Z')).run();
+      remote.put('checkins', remoteCheckin('2026-11-11T20:00:00+00:00'));
+      remote.put('checkin_items', remoteItem);
+
+      const result = await syncOnce(db, remote, ids);
+      expect(result.skipped).toBe(2);
+      expect(db.select().from(checkins).all().map((row) => row.id)).toEqual(['c-local']);
+      expect(remote.rows('checkins').map((row) => row.id)).toEqual(['c-local']);
+    });
   });
 });

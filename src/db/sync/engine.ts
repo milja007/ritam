@@ -84,7 +84,9 @@ function deleteById(db: Tx, table: SyncTable, id: string): void {
 }
 
 function isConstraintError(error: unknown): boolean {
-  return error instanceof Error && /constraint/i.test(error.message);
+  // Ne `instanceof Error`: greške nativnog drivera mogu doći iz drugog realma.
+  const message = typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : '';
+  return /constraint/i.test(message);
 }
 
 export type ApplyResult = { applied: number; skipped: number };
