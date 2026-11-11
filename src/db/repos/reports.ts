@@ -216,7 +216,9 @@ export function markReportSeen(
     const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
     if (!row) return false;
     if (row.seenAt === null) {
-      tx.update(reports).set({ seenAt: deps.now().toISOString() }).where(eq(reports.id, row.id)).run();
+      // I `updatedAt`: sync (zadnji updatedAt pobjeđuje) inače ne bi prenio `seenAt` na drugi uređaj.
+      const now = deps.now().toISOString();
+      tx.update(reports).set({ seenAt: now, updatedAt: now }).where(eq(reports.id, row.id)).run();
     }
     return true;
   });

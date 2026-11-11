@@ -2,6 +2,32 @@
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 11:45 · fix/retrospective-audit — 4 nalaza Codexovog retrospektivnog audita (#1)
+PR #2 (PR-first docs) spojen nakon `CODEX_APPROVED` za `af83a5e` (merge `5d478d1`). Korak 20 čeka dok ovaj PR ne dobije `CODEX_APPROVED`. Nema otvorenih bug issueja osim #1.
+
+**Plan (recenziran prije koda):**
+1. **P0 auth callback:** `parseAuthCallback(url, expected)` prihvaća samo URL čija je putanja točno očekivani povratni link (`authRedirectUrl()`), i samo PKCE `?code=` (ili grešku). Tokeni u linku (`access_token`/`refresh_token`) → odbijeno, bez sesije. `completeSignInFromUrl` više nema `setSession` put. Testovi: tokenski link, tuđa shema/host, prefiks putanje → odbijeno; ispravan `code` → prihvaćen.
+2. **P1 promjena računa:** lokalni podaci se vežu uz prvi račun s kojim su sinkronizirani (`remote_user` u `sync_state`). Prijava drugim računom → `syncOnce` baca `AccountMismatchError` **prije** ikakvog upisa u red, pulla ili pusha (ništa se ne šalje ni ne miješa). Odjava ne briše vezu. U kartici Račun poruka "Podaci na ovom uređaju pripadaju drugom računu…" (i18n HR/EN). Test A → B (blokirano, B netaknut, lokalno netaknuto) → A (nastavlja normalno). Brisanje/preuzimanje lokalnih podataka za drugi račun = odluka za Bornu (pitanje 75), ne radim sam.
+3. **P2 seenAt:** `markReportSeen` postavlja i `updatedAt`; test da se `seen_at` prenese na drugi uređaj kroz sync.
+4. **P2 Bash 3.2:** `scripts/supabase-local-test.sh` bez širenja praznog niza pod `set -u` (helper funkcija); provjera s `bash --posix`-ekvivalentom nije moguća na Linuxu, pa test skripte s praznim `RUN_AS` pod `set -u` + Bornova provjera na Macu.
+5. Kontrole: `tsc`, `expo lint`, `npm test -- --runInBand`, `test:supabase`, `expo export --platform android`; draft PR, handoff `CLAUDE_READY_FOR_REVIEW` u #1.
+
+*Recenzija plana:* pokriva točno 4 nalaza, bez novih značajki. P1 je "izričito blokirati" (jedna od dvije opcije koje Codex navodi) — najmanja sigurna promjena; particioniranje po računu je veća promjena koncepta → pitanje za Bornu. Nema novih remote migracija.
+
+**Napravljeno:**
+- **P0:** `parseAuthCallback(url, expected)` prihvaća samo točan povratni link (`authRedirectUrl()`; shema, host i putanja) i samo PKCE `?code=`. Linkovi s `access_token`/`refresh_token` (u queryju ili fragmentu, i uz kod) → `rejected`; `setSession` put uklonjen iz `completeSignInFromUrl`. `AuthLinkHandler` koristi isti točni test. `+native-intent` i dalje labavo preusmjerava na Profil (bez prijave). Testovi: 6 novih u `core/auth`, 3 u `features/auth/auth-api.test.ts` (tokenski link ne zove `setSession`, tuđi link ignoriran, kod se mijenja).
+- **P1:** lokalni podaci su vezani uz prvi račun s kojim su sinkronizirani (`remote_user`). `syncOnce` s drugim računom baca `AccountMismatchError` prije reda, pulla i pusha; odjava vezu ne briše. Račun prikazuje "Podaci na ovom uređaju pripadaju drugom računu…" (HR/EN), bez loga svakih 10 s. Test A → B (B netaknut, ništa iz B lokalno, red isti) → A (izmjena iz tog vremena ide u A).
+- **P2 seenAt:** `markReportSeen` postavlja i `updatedAt`; test s dva uređaja (pada bez popravka).
+- **P2 Bash 3.2:** `RUN_AS` niz zamijenjen funkcijom `as_pg`. `test:supabase` prolazi kao root i kao ne-root (Bash 5); na pravom Bashu 3.2 nije provjereno (sandbox nema Bash 3.2).
+- Provjere: `tsc` ✅, `expo lint` ✅, `npm test` ✅ 618/618 (44 suitea), `test:supabase` ✅, `expo export --platform android` ✅ (flag isključen i uključen). `expo install --check`: nije provjereno (mreža u sandboxu).
+
+**Ograničenje (zamjenjuje staro "prijava drugim računom šalje lokalne podatke i u taj račun"):** drugi račun na istom uređaju sada ne može sinkronizirati dok se ne vrati prvi račun.
+
+**Pitanja za Bornu:**
+75. Što kad se netko na istom uređaju želi prebaciti na drugi račun? Sada je sync blokiran (sigurno, ništa se ne miješa). Opcije: (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" (uz potvrdu); (c) zasebni lokalni podaci po računu (veća promjena). Ne radim bez odluke.
+
+**Sljedeće:** Codex review ovog PR-a; nakon `CODEX_APPROVED` merge, pa korak 20 — LLM provider.
+
 ## 2026-11-11 10:40 · Odgovori na pitanja 71–74 (Borna, anketa)
 **Odluke:**
 - **P71:** naslov ekrana Dan je sada "Dan" (kao tab), i u EN "Day"; tekst "Dodaj blokove na tabu Dan".

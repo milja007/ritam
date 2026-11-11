@@ -27,24 +27,20 @@ export async function sendMagicLink(email: string): Promise<AuthResult> {
 }
 
 /**
- * Obradi povratni link: postavi sesiju (implicit tokeni) ili zamijeni PKCE kod.
- * `null` znači da URL nije povratni link prijave.
+ * Obradi povratni link: zamijeni PKCE kod za sesiju. Linkovi s gotovim tokenima se odbijaju
+ * (nalaz P0 audita) — sesiju nikad ne postavljamo iz tokena koje je netko drugi mogao složiti.
+ * `null` znači da URL nije naš povratni link prijave.
  */
 export async function completeSignInFromUrl(url: string): Promise<AuthResult | null> {
-  const parsed = parseAuthCallback(url);
+  const parsed = parseAuthCallback(url, authRedirectUrl());
   if (parsed.kind === 'none') return null;
   if (parsed.kind === 'error') return { ok: false, message: parsed.message };
+  if (parsed.kind === 'rejected') return { ok: false, message: `Sign-in link rejected (${parsed.reason})` };
 
   const supabase = getSupabase();
   if (!supabase) return disabled();
 
-  const { error } =
-    parsed.kind === 'tokens'
-      ? await supabase.auth.setSession({
-          access_token: parsed.accessToken,
-          refresh_token: parsed.refreshToken,
-        })
-      : await supabase.auth.exchangeCodeForSession(parsed.code);
+  const { error } = await supabase.auth.exchangeCodeForSession(parsed.code);
   return error ? { ok: false, message: error.message } : { ok: true };
 }
 

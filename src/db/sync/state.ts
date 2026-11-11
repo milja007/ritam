@@ -64,7 +64,7 @@ export function ackQueued(db: Tx, entry: QueueEntry): void {
   );
 }
 
-/** Svi lokalni retci korisnika u red (prva prijava ili drugi račun). */
+/** Svi lokalni retci korisnika u red (prva prijava; drugi račun je blokiran — `AccountMismatchError`). */
 export function enqueueAll(db: Tx, userId: string): void {
   for (const table of SYNC_TABLES) {
     db.run(

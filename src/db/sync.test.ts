@@ -7,9 +7,19 @@ import { sql } from 'drizzle-orm';
 import type { Row, SyncTable } from '@/core/sync';
 
 import type { RitamDb } from './db';
-import { createBlock, deleteBlock, getBlock, getSettings, saveSettings, updateBlock, type SettingsInput } from './repos';
-import { PULL_PAGE, queueSize, readQueue, syncOnce, type PullCursor, type RemoteStore, type Tombstone } from './sync';
-import { checkins } from './schema';
+import {
+  createBlock,
+  deleteBlock,
+  getBlock,
+  getReport,
+  getSettings,
+  markReportSeen,
+  saveSettings,
+  updateBlock,
+  type SettingsInput,
+} from './repos';
+import { AccountMismatchError, PULL_PAGE, queueSize, readQueue, syncOnce, type PullCursor, type RemoteStore, type Tombstone } from './sync';
+import { checkins, reports } from './schema';
 import { createTestDb, testDeps } from './testing/test-db';
 
 const LOCAL = 'local-user';
@@ -346,6 +356,75 @@ describe('syncOnce', () => {
     await syncOnce(db, remote, ids);
     expect(countQueue(db)).toBe(0);
     expect(remote.rows('schedule_blocks')).toHaveLength(1);
+  });
+
+  describe('P1 audita: promjena računa na istom uređaju', () => {
+    const UID_B = '22222222-2222-2222-2222-222222222222';
+    const idsB = { localUserId: LOCAL, remoteUserId: UID_B };
+
+    it('A → odjava → B: ništa se ne šalje u B ni ne povlači iz B; → A nastavlja normalno', async () => {
+      const { db, remote: remoteA } = await setup();
+      const remoteB = new FakeRemote();
+      const deps = testDeps();
+      const blockA = await createBlock(db, LOCAL, blockInput, deps);
+      await syncOnce(db, remoteA, ids);
+      expect(remoteA.rows('schedule_blocks').map((row) => row.id)).toEqual([blockA.id]);
+
+      // Račun B ima svoje podatke na poslužitelju; lokalno nastaje još jedna izmjena.
+      remoteB.put('schedule_blocks', remoteBlock('b-of-B', { user_id: UID_B }));
+      const blockLater = await createBlock(db, LOCAL, { ...blockInput, title: 'Kasnije' }, deps);
+      const queueBefore = readQueue(db);
+
+      await expect(syncOnce(db, remoteB, idsB)).rejects.toBeInstanceOf(AccountMismatchError);
+      expect(remoteB.rows('schedule_blocks').map((row) => row.id)).toEqual(['b-of-B']);
+      expect(remoteB.calls).toEqual({ upsert: 0, remove: 0 });
+      expect(await getBlock(db, LOCAL, 'b-of-B')).toBeNull();
+      expect(readQueue(db)).toEqual(queueBefore);
+
+      // Povratak na A: izmjena iz vremena B ide u A, bez ičega iz B.
+      const back = await syncOnce(db, remoteA, ids);
+      expect(back.seeded).toBe(false);
+      expect(remoteA.rows('schedule_blocks').map((row) => row.id).sort()).toEqual([blockA.id, blockLater.id].sort());
+      expect(remoteA.rows('schedule_blocks').every((row) => row.user_id === UID)).toBe(true);
+      expect(countQueue(db)).toBe(0);
+    });
+
+    it('greška nosi oba računa (za poruku u Računu)', async () => {
+      const { db, remote } = await setup();
+      await syncOnce(db, remote, ids);
+      const error = await syncOnce(db, new FakeRemote(), idsB).catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(AccountMismatchError);
+      expect(error).toMatchObject({ boundRemoteUserId: UID, signedInRemoteUserId: UID_B });
+    });
+  });
+
+  it('P2 audita: oznaka "viđeno" dijagnoze stiže na drugi uređaj', async () => {
+    const remote = new FakeRemote();
+    const { db: phone } = await createTestDb();
+    const { db: tablet } = await createTestDb();
+    phone
+      .insert(reports)
+      .values({
+        id: 'r-1',
+        userId: LOCAL,
+        createdAt: '2026-11-11T20:00:00.000Z',
+        updatedAt: '2026-11-11T20:00:00.000Z',
+        period: 'day',
+        periodStart: '2026-11-11',
+        sections: {},
+        stats: {},
+        promptVersion: 'v1',
+        seenAt: null,
+      })
+      .run();
+    await syncOnce(phone, remote, ids);
+    await syncOnce(tablet, remote, ids);
+    expect((await getReport(tablet, LOCAL, 'day', '2026-11-11'))?.seenAt).toBeNull();
+
+    expect(markReportSeen(phone, LOCAL, 'day', '2026-11-11', testDeps('2026-11-12T07:00:00.000Z'))).toBe(true);
+    await syncOnce(phone, remote, ids);
+    await syncOnce(tablet, remote, ids);
+    expect((await getReport(tablet, LOCAL, 'day', '2026-11-11'))?.seenAt).toBe('2026-11-12T07:00:00.000Z');
   });
 
   describe('isti dan na dva uređaja (prirodni ključ checkina)', () => {

@@ -36,7 +36,7 @@ export function SyncStatusRow() {
       </Text>
       {status.state === 'error' ? (
         <Text tone="danger" accessibilityLiveRegion="assertive">
-          {t('sync.error')}
+          {status.accountMismatch ? t('sync.accountMismatch') : t('sync.error')}
         </Text>
       ) : null}
       <Button variant="ghost" label={t('sync.now')} loading={syncing} onPress={() => void runSync()} />

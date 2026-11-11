@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { lastSyncAt, syncOnce } from '@/db/sync';
+import { AccountMismatchError, lastSyncAt, syncOnce } from '@/db/sync';
 import { getSupabase } from '@/features/auth/supabase';
 import { notifyBlocksChanged, syncNotificationsNow } from '@/features/notifications';
 import { notifyProgressChanged } from '@/features/progress';
@@ -18,9 +18,11 @@ export type SyncStatus = {
   state: 'idle' | 'syncing' | 'error';
   lastSyncAt: string | null;
   error: string | null;
+  /** Lokalni podaci pripadaju drugom računu (P1 audita) — sync je blokiran dok se ne prijavi taj račun. */
+  accountMismatch: boolean;
 };
 
-let status: SyncStatus = { state: 'idle', lastSyncAt: null, error: null };
+let status: SyncStatus = { state: 'idle', lastSyncAt: null, error: null, accountMismatch: false };
 let loadedLastSync = false;
 const listeners = new Set<() => void>();
 let running: Promise<void> | null = null;
@@ -61,7 +63,7 @@ async function runOnce(): Promise<void> {
       localUserId: LOCAL_USER_ID,
       remoteUserId: userId,
     });
-    publish({ state: 'idle', lastSyncAt: result.finishedAt, error: null });
+    publish({ state: 'idle', lastSyncAt: result.finishedAt, error: null, accountMismatch: false });
     if (result.applied > 0 || result.removedLocally > 0) {
       // Podaci s drugog uređaja: osvježi ekrane, postavke (jezik, tema) i obavijesti.
       await loadSettings().catch((error: unknown) => console.error('Reloading settings after sync failed', error));
@@ -70,8 +72,13 @@ async function runOnce(): Promise<void> {
       void syncNotificationsNow();
     }
   } catch (error) {
+    if (error instanceof AccountMismatchError) {
+      // Očekivano stanje, ne kvar: ništa nije poslano ni povučeno. Bez loga svakih 10 s.
+      publish({ state: 'error', error: error.message, accountMismatch: true });
+      return;
+    }
     console.error('Sync failed', error);
-    publish({ state: 'error', error: error instanceof Error ? error.message : String(error) });
+    publish({ state: 'error', error: error instanceof Error ? error.message : String(error), accountMismatch: false });
   }
 }
 

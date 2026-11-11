@@ -629,6 +629,7 @@
     "syncing": "Syncing…",
     "lastSync": "Last synced: {{when}}",
     "never": "Not synced yet.",
+    "accountMismatch": "The data on this device belongs to another account, so it won't sync with this one. Sign out and sign in with the account you first synced with.",
     "error": "Sync failed. Your data is safe on this device — I'll try again.",
     "now": "Sync now"
   }
