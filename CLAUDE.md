@@ -5,7 +5,7 @@ Pročitaj i poštuj `AGENTS.md` (Expo pravila: provjeri verziju SDK-a i čitaj v
 ## Kontekst
 - Koncept: `docs/CONCEPT.md` (puni dokument je u Claude Docs, link unutra).
 - Plan: `docs/BUILD_PLAN.md` — redoslijed koraka i kriteriji gotovosti.
-- Dnevnik: `docs/PROGRESS.md` — što je zadnje napravljeno i što je sljedeće.
+- Dnevnik: `docs/PROGRESS.md` — kratko aktualno stanje (≤ 5 KB). Stari unosi u `docs/PROGRESS-ARCHIVE.md` — ne čitaj ga cijelog, samo `grep` kad treba.
 
 ## Git autor (odluka Borna, 2026-11-10)
 Prije prvog commita u sesiji postavi autora na Bornu, da se commitovi vide u njegovom GitHub grafu aktivnosti:
@@ -44,6 +44,7 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 5. Ako budžet/kontekst ponestaje: stani na čistom mjestu, commit + push WIP na granu, u `PROGRESS.md` zapiši gdje si stao.
 
 ### Obavezne kontrole prije handoffa
+- GitHub Actions CI (`.github/workflows/ci.yml`) mora biti zelen na HEAD-u PR-a.
 - `npx tsc --noEmit`, `npx expo lint`, `npm test -- --runInBand`, čist `git status`.
 - Supabase shema/RLS: `npm run test:supabase` (na Bornovom Macu `env PG_BIN=/opt/homebrew/opt/postgresql@16/bin npm run test:supabase`).
 - Expo paketi/konfiguracija: `npx expo install --check`, `npx expo-doctor` (ako se sruši na vlastitom `@expo/env`, to je problem alata — prijavi ga, ne kao PASS ni kao grešku projekta).
@@ -52,7 +53,7 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 - Visokorizično (migracija, auth/sync, RLS, obavijesti, native konfiguracija): traži dodatni checkpoint review. **Remote Supabase migracije primjenjuj tek nakon `CODEX_APPROVED`** (i Bornove dozvole).
 
 ### Završetak koraka = handoff, ne merge
-1. Označi korak u `BUILD_PLAN.md`, ažuriraj `PROGRESS.md` (napravljeno, sljedeće, problemi, pitanja).
+1. Označi korak u `BUILD_PLAN.md`, ažuriraj `PROGRESS.md` kratko (napravljeno, sljedeće, pitanja); kad prijeđe ~5 KB, starije unose premjesti na vrh `PROGRESS-ARCHIVE.md`.
 2. Push grane, otvori/ažuriraj **draft PR** prema `main`.
 3. Komentar u #1: `FROM: CLAUDE`, `STATUS: CLAUDE_READY_FOR_REVIEW`, `SCOPE`, `BASE` i `HEAD` (puni SHA), `PR`, `SUMMARY`, `CHECKS`, `DEVICE/EVIDENCE`, `RISKS/QUESTIONS`, `REQUEST`. Završi footerom koji traži sustav.
 4. Stani s izmjenama i obavijesti Bornu: „Spremno za Codex review. HEAD je <SHA>, PR je <URL>. U Codexu pošalji: Provjeri najnoviji Claude handoff u Ritam issueu #1.“
