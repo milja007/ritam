@@ -23,9 +23,10 @@ Zajednički mailbox: issue **#1** (`milja007/ritam`). Format handoffa i statusi 
 - PR se spaja tek kad zadnja relevantna poruka u #1 ima `STATUS: CODEX_APPROVED` za **točan HEAD SHA** tog PR-a. Spajanje: merge commit preko PR-a, bez force pusha, bez brisanja grana.
 - Najviše **jedan PR u reviewu** u isto vrijeme. Dok čeka review, ne mijenjaj kod (ni na toj ni na novoj grani).
 
-### Brži rad (odluka Borna, 2026-11-11)
+### Brži rad (odluka Borna, 2026-11-11: "presporo", "treba jače raditi")
+- **7 sesija dnevno** (00:43, 06:43, 09:43, 12:43, 15:43, 18:43, 21:43). Svaka radi punim kapacitetom; prazna staje nakon jeftine provjere.
 - **Skupina koraka po PR-u:** jedan PR nosi 2–4 povezana koraka iz `BUILD_PLAN.md` (npr. 20–22), svaki korak kao zaseban commit s porukom `Korak N: …`, svaki zasebno označen `[x]` kad je gotov. Grana `wip/korak-N-M` (N = prvi, M = zadnji korak skupine).
-- **Predaja:** kad je skupina gotova, **ili** na kraju sesije u 12:43 ako PR ima barem jedan gotov korak, a nije predan (da Borna navečer ima što poslati Codexu). Nedovršeni korak ostaje na grani kao WIP i ne ulazi u predaju (ili se predaja jasno ograniči na gotove korake).
+- **Predaja:** kad je skupina gotova, **ili** na kraju bilo koje sesije između 12:00 i 22:00 ako PR ima barem jedan gotov korak, a nije predan (da Codex uvijek ima posla). Nedovršeni korak ostaje na grani kao WIP i ne ulazi u predaju (ili se predaja jasno ograniči na gotove korake).
 - **Brzi put (fast path)** za PR koji **ne dira nijednu visokorizičnu datoteku**: kad je CI zelen i lokalne kontrole prolaze, Claude ga sam spoji (merge commit) i u #1 objavi `STATUS: CLAUDE_MERGED_FAST` s `BASE`, `HEAD`, merge SHA i popisom koraka. Codex ga pregleda **naknadno**; nalaze Claude popravlja u novom `fix/…` PR-u (koji ide normalnim putem ako dira visokorizično).
 - **Visokorizično (uvijek puni review prije mergea):** `src/features/auth/**`, `src/core/auth/**`, `src/features/sync/**`, `src/core/sync/**`, `src/db/**` (shema, migracije, repoi, sync), `supabase/**` (migracije, RLS, Edge Functions), sve s API ključevima/tajnama/LLM pozivima, obavijesti (`src/features/notifications/**`, `src/core/notifications/**`), `app.json`, `eas.json`, `package.json`/`package-lock.json`, `.github/**`, `scripts/**`. U sumnji → visokorizično.
 - `CLAUDE_MERGED_FAST` ne blokira rad: sljedeća sesija smije nastaviti. Ako zadnja poruka u #1 traži popravak nakon fast-path mergea (`CODEX_CHANGES_REQUESTED` za taj merge), to ide prije novog koraka.

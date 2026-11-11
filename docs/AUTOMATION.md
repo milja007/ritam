@@ -1,15 +1,15 @@
 # Automatske radne sesije
 
-Scheduled task **"Ritam rad (3× dnevno)"** pokreće novu Claude Code cloud sesiju u **06:43, 12:43 i 18:43 (Europe/Zagreb)**. Repo: `milja007/ritam`. Automatsko odobravanje akcija, push obavijest na kraju sesije.
+Scheduled task **"Ritam rad (7× dnevno)"** pokreće novu Claude Code cloud sesiju u **00:43, 06:43, 09:43, 12:43, 15:43, 18:43 i 21:43 (Europe/Zagreb)**. Repo: `milja007/ritam`. Automatsko odobravanje akcija, push obavijest na kraju sesije.
 
-Povijest: 2026-11-05 1× dnevno → 2026-11-07 4× → 2026-11-09 10× → 2026-11-11 2× dnevno → **2026-11-11 3× dnevno + skupine koraka po PR-u + brzi put za manje rizične promjene** (Borna: "presporo"). Razlog je PR-first rad s Codex reviewom: dok PR čeka review, Claude miruje, pa je 10 sesija dnevno trošilo kvotu samo na provjeru stanja. Uz to `PROGRESS.md` drži samo aktualno stanje (stari dnevnik je u `PROGRESS-ARCHIVE.md`), a sesija koja nema posla staje već nakon čitanja zadnja 2 komentara u #1.
+Povijest: 2026-11-05 1× dnevno → 2026-11-07 4× → 2026-11-09 10× → 2026-11-11 2× dnevno → **2026-11-11 3× dnevno + skupine koraka po PR-u + brzi put za manje rizične promjene** (Borna: "presporo") → isti dan **7× dnevno** (Borna: "treba jače raditi", ima rezervne tjedne resete na oba modela). Razlog je PR-first rad s Codex reviewom: dok PR čeka review, Claude miruje, pa je 10 sesija dnevno trošilo kvotu samo na provjeru stanja. Uz to `PROGRESS.md` drži samo aktualno stanje (stari dnevnik je u `PROGRESS-ARCHIVE.md`), a sesija koja nema posla staje već nakon čitanja zadnja 2 komentara u #1.
 
-**Dnevni tok:** jutarnja i podnevna sesija rade skupinu od 2–4 koraka na jednom PR-u; podnevna je preda (barem gotove korake). Borna navečer pošalje Codexu review i po potrebi testira. Večernja sesija popravi nalaze ili spoji odobreni PR i nastavi. PR koji ne dira visokorizične datoteke Claude spoji sam na zelenom CI-ju, a Codex ga pregleda naknadno (vidi `CLAUDE.md`, "Brži rad").
+**Dnevni tok:** sesije rade skupinu od 2–4 koraka na jednom PR-u i predaju je čim je gotova (ili gotove korake na kraju sesije između 12 i 22 h). Codex pregledava čim stigne (Borna ili Codexova automatizacija). Večernja sesija popravi nalaze ili spoji odobreni PR i nastavi. PR koji ne dira visokorizične datoteke Claude spoji sam na zelenom CI-ju, a Codex ga pregleda naknadno (vidi `CLAUDE.md`, "Brži rad").
 
 ## Prompt
 
 ```
-Ovo je automatska radna sesija za Bornov projekt Ritam (osobni productivity app, React Native / Expo SDK 58, HR + EN). Sesije se pokreću 3 puta dnevno (06:43, 12:43 i 18:43, Europe/Zagreb). Nitko ne gleda dok radiš — ne čekaj potvrde, postupi razumno i zapiši odluke. Claude je implementator, Codex je neovisni reviewer/QA, Borna odlučuje. Vrijedi PR-first (NIKAD ne pushaj izravno na main) uz "Brži rad" iz CLAUDE.md: skupina od 2–4 povezana koraka po PR-u i brzi put za PR koji ne dira visokorizične datoteke. Najviše JEDAN PR u reviewu; dok čeka review, Claude miruje. Borna želi brzinu, ali ima najjeftiniju pretplatu: ne troši kontekst na ponovno čitanje, troši ga na kod.
+Ovo je automatska radna sesija za Bornov projekt Ritam (osobni productivity app, React Native / Expo SDK 58, HR + EN). Sesije se pokreću 7 puta dnevno (00:43, 06:43, 09:43, 12:43, 15:43, 18:43, 21:43, Europe/Zagreb). Nitko ne gleda dok radiš — ne čekaj potvrde, postupi razumno i zapiši odluke. Claude je implementator, Codex je neovisni reviewer/QA, Borna odlučuje. Vrijedi PR-first (NIKAD ne pushaj izravno na main) uz "Brži rad" iz CLAUDE.md: skupina od 2–4 povezana koraka po PR-u i brzi put za PR koji ne dira visokorizične datoteke. Najviše JEDAN PR u reviewu; dok čeka review, Claude miruje. Borna želi MAKSIMALNU brzinu (ima rezervne tjedne resete limita): radi punim kapacitetem svake sesije, ali ne troši kontekst na ponovno čitanje — troši ga na kod.
 
 1. JEFTINA PROVJERA PRIJE SVEGA: preko GitHub MCP alata pročitaj samo ZADNJA 2 komentara issuea #1 u milja007/ritam (ne cijeli issue) i otvorene PR-ove (s CI statusom). Još ne kloniraj repo i ne čitaj dokumente.
    - Zadnja poruka je Claudeova s CLAUDE_READY_FOR_REVIEW ili CLAUDE_FIXED (čeka se Codex) → STANI odmah, bez obavijesti.
@@ -25,7 +25,7 @@ Ovo je automatska radna sesija za Bornov projekt Ritam (osobni productivity app,
    - Bornin odgovor na BORNA_DECISION_NEEDED → zapiši odluku u PROGRESS.md i postupi po njoj.
 5. Rad: ako postoji otvoren nepredan wip PR, nastavi njegovu skupinu. Inače: prvo otvoreni bug issueji s uređaja (osim #1), pa sljedeća skupina od 2–4 povezana koraka iz BUILD_PLAN.md koja nisu [x]; grana wip/korak-N-M, draft PR odmah. Prije koda kratak plan skupine (3–8 točaka) na vrh docs/PROGRESS.md, provjeren kao strogi recenzent (koncept, kriteriji gotovosti). Korak po korak: svaki gotov s testovima i zasebnim commitom "Korak N: …" prije sljedećeg; označi [x]. Jedan agent u isto vrijeme, bez paralelnih subagenata.
 6. Commitaj i pushaj često. Remote Supabase migracije i tajne ne diraj prije CODEX_APPROVED i Bornine dozvole.
-7. Kraj skupine ili kraj sesije u 12:43 (ako PR ima barem jedan gotov korak i nije predan): npx tsc --noEmit, npx expo lint, npm test -- --runInBand, čist git status (+ test:supabase / expo install --check / export prema CLAUDE.md); CI zelen. PROGRESS kratko.
+7. Kraj skupine, ILI kraj bilo koje sesije između 12:00 i 22:00 ako PR ima barem jedan gotov korak i nije predan (da Codex uvijek ima posla): npx tsc --noEmit, npx expo lint, npm test -- --runInBand, čist git status (+ test:supabase / expo install --check / export prema CLAUDE.md); CI zelen. PROGRESS kratko.
    - PR NE dira visokorizične datoteke (popis u CLAUDE.md, u sumnji je visokorizično) → spoji ga sam (ready, merge commit, expectedHeadSha) i u #1 objavi STATUS: CLAUDE_MERGED_FAST (BASE, HEAD, merge SHA, koraci, CHECKS, što Codex treba naknadno pregledati). Nastavi sa sljedećom skupinom ako ima vremena.
    - Inače: PR u ready ili ostaje draft, handoff CLAUDE_READY_FOR_REVIEW u #1 (FROM, STATUS, SCOPE s popisom koraka, BASE i HEAD puni SHA, PR, SUMMARY, CHECKS, DEVICE/EVIDENCE sa simulator scenarijem, RISKS/QUESTIONS, REQUEST). Stani.
    Ne tvrdi da je predano ili spojeno ako to nije stvarno objavljeno.
@@ -38,7 +38,7 @@ Ovo je automatska radna sesija za Bornov projekt Ritam (osobni productivity app,
 - Samodostatan: nova sesija nema memoriju chata, sve upute su u promptu, `CLAUDE.md` i issueu #1.
 - Jeftino kad nema posla: prvo samo zadnja 2 komentara u #1, bez kloniranja i dokumenata; stane bez obavijesti.
 - PR-first: nema izravnog pusha na `main`; visokorizični PR se spaja samo uz `CODEX_APPROVED` za točan SHA; manje rizični (bez visokorizičnih datoteka) spaja Claude na zelenom CI-ju uz naknadni Codex review (`CLAUDE_MERGED_FAST`). Najviše jedan PR u reviewu.
-- Brzina: 2–4 koraka po PR-u, 3 sesije dnevno; podnevna sesija predaje da Borna navečer ima što poslati Codexu.
+- Brzina: 2–4 koraka po PR-u, 7 sesija dnevno; predaja čim ima gotovih koraka, da Codex uvijek ima posla.
 - CI (GitHub Actions) radi determinističke provjere, pa ih modeli ne moraju ponavljati.
 - Pokriva nestanak kredita: česti push, WIP grana i bilješka u `PROGRESS.md`.
 - Ništa nepovratno: ne briše grane ni povijest, bez force pusha, ne mijenja koncept, bez tajni; remote migracije tek nakon reviewa.
