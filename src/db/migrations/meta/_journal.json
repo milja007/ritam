@@ -64,6 +64,13 @@
       "when": 1794354676155,
       "tag": "0008_day_close",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794390870255,
+      "tag": "0009_sync",
+      "breakpoints": true
     }
   ]
 }
