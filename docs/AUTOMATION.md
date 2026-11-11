@@ -15,18 +15,20 @@ Ovo je automatska radna sesija za Bornov projekt Ritam (osobni productivity app,
    - Zadnja poruka je Claudeova s CLAUDE_READY_FOR_REVIEW ili CLAUDE_FIXED (čeka se Codex) → STANI odmah, bez obavijesti.
    - Zadnja poruka je BORNA_DECISION_NEEDED, a Borna nije odgovorio → STANI odmah, bez obavijesti.
    - Zadnja poruka je BLOCKED → jedna kratka obavijest Borni, stani.
-   - Inače (uključujući CLAUDE_MERGED_FAST, CODEX_APPROVED, CODEX_CHANGES_REQUESTED, ili otvoren nepredan wip PR) nastavi.
+   - Inače (uključujući CLAUDE_MERGED_FAST, CODEX_APPROVED, CODEX_CHANGES_REQUESTED, ili otvoren nepredan wip PR) nastavi. Ako je zadnja poruka CLAUDE_MERGED_FAST, smiješ raditi i pushati sljedeću skupinu, ali u ovoj sesiji NE predaješ (bez novog handoffa, bez novog CLAUDE_MERGED_FAST, bez mergea) dok Codex ne odgovori na taj merge.
    Ako #1 ne možeš pročitati, obavijesti Bornu (BLOCKED) i stani.
 2. Kloniraj repo s push pristupom (ako ne uspije, kratka poruka Borni i stani). git fetch origin --prune, git status.
 3. Pročitaj AGENTS.md, CLAUDE.md (sekcije "Claude ↔ Codex: PR-first" i "Brži rad"), docs/PROGRESS.md (kratak; docs/PROGRESS-ARCHIVE.md samo grep) i docs/BUILD_PLAN.md; docs/CONCEPT.md samo kad počinješ novu skupinu. Strogo prati CLAUDE.md.
 4. Postupi prema zadnjoj poruci u #1:
    - CODEX_CHANGES_REQUESTED → popravi samo navedene nalaze (na istoj grani; za fast-path merge u novom fix/… PR-u), s testovima, kontrole, push, CLAUDE_FIXED (ili za fix PR novi handoff) s punim HEAD SHA, obavijesti Bornu. Ako je ostalo vremena i nijedan PR ne čeka review, nastavi na 5.
-   - CODEX_APPROVED → ako je SHA točno HEAD otvorenog PR-a: ako je draft, prebaci u ready i spoji (merge commit, expectedHeadSha, bez force pusha), pa nastavi na 5 (osim ako Codex kaže da ne počinješ novi rad). Ako se SHA ne poklapa, ne spajaj, javi u #1 i Borni i stani.
+   - CODEX_APPROVED s poljem MERGE (naknadni pregled brzog puta) → provjeri da je taj PR već spojen i da HEAD i MERGE odgovaraju zadnjem CLAUDE_MERGED_FAST; ako da, ništa ne spajaj i nastavi na 5. Ako ne odgovaraju, javi u #1 i Borni i stani.
+   - CODEX_APPROVED (bez MERGE) → ako je SHA točno HEAD otvorenog PR-a: ako je draft, prebaci u ready i spoji (merge commit, expectedHeadSha, bez force pusha), pa nastavi na 5 (osim ako Codex kaže da ne počinješ novi rad). Ako se SHA ne poklapa, ne spajaj, javi u #1 i Borni i stani.
    - Bornin odgovor na BORNA_DECISION_NEEDED → zapiši odluku u PROGRESS.md i postupi po njoj.
 5. Rad: ako postoji otvoren nepredan wip PR, nastavi njegovu skupinu. Inače: prvo otvoreni bug issueji s uređaja (osim #1), pa sljedeća skupina od 2–4 povezana koraka iz BUILD_PLAN.md koja nisu [x]; grana wip/korak-N-M, draft PR odmah. Prije koda kratak plan skupine (3–8 točaka) na vrh docs/PROGRESS.md, provjeren kao strogi recenzent (koncept, kriteriji gotovosti). Korak po korak: svaki gotov s testovima i zasebnim commitom "Korak N: …" prije sljedećeg; označi [x]. Jedan agent u isto vrijeme, bez paralelnih subagenata.
 6. Commitaj i pushaj često. Remote Supabase migracije i tajne ne diraj prije CODEX_APPROVED i Bornine dozvole.
 7. Kraj skupine, ILI kraj bilo koje sesije između 12:00 i 22:00 ako PR ima barem jedan gotov korak i nije predan (da Codex uvijek ima posla): npx tsc --noEmit, npx expo lint, npm test -- --runInBand, čist git status (+ test:supabase / expo install --check / export prema CLAUDE.md); CI zelen. PROGRESS kratko.
-   - PR NE dira visokorizične datoteke (popis u CLAUDE.md, u sumnji je visokorizično) → spoji ga sam (ready, merge commit, expectedHeadSha) i u #1 objavi STATUS: CLAUDE_MERGED_FAST (BASE, HEAD, merge SHA, koraci, CHECKS, što Codex treba naknadno pregledati). Nastavi sa sljedećom skupinom ako ima vremena.
+   - Ako je zadnja poruka u #1 CLAUDE_MERGED_FAST bez Codexova odgovora → ne spajaj i ne objavljuj ništa; rad ostaje pushan na grani/draft PR-u, zapiši u PROGRESS.md.
+   - PR NE dira visokorizične datoteke (popis u CLAUDE.md, uključujući .claude/**; u sumnji je visokorizično) → spoji ga sam (ready, merge commit, expectedHeadSha) i u #1 objavi STATUS: CLAUDE_MERGED_FAST (BASE, HEAD, merge SHA, koraci, CHECKS, što Codex treba naknadno pregledati). Smiješ pripremati sljedeću skupinu, ali je ne predaješ dok Codex ne odgovori na taj merge.
    - Inače: PR u ready ili ostaje draft, handoff CLAUDE_READY_FOR_REVIEW u #1 (FROM, STATUS, SCOPE s popisom koraka, BASE i HEAD puni SHA, PR, SUMMARY, CHECKS, DEVICE/EVIDENCE sa simulator scenarijem, RISKS/QUESTIONS, REQUEST). Stani.
    Ne tvrdi da je predano ili spojeno ako to nije stvarno objavljeno.
 8. Ako budžet ili kontekst ponestaje: stani na čistom mjestu, commit + push na granu, u PROGRESS.md zapiši gdje si stao.
