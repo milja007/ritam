@@ -4,6 +4,12 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11 12:30 · CI + kratki PROGRESS (PR `ci/github-actions`)
+- Odluka (Borna proslijedio Codexovu preporuku): CI PR radi Claude, Codex ga samo pregledava. Korak 20 tek nakon `CODEX_APPROVED` za ovaj PR.
+- `.github/workflows/ci.yml`: TypeScript, `expo lint`, Jest (`--runInBand`) i Supabase migracije + `tests/schema.sql` na svakom PR-u i pushu na `main`.
+- Stari dnevnik (175 KB) premješten u `docs/PROGRESS-ARCHIVE.md`; ovaj ostaje kratak.
+- Automatske sesije: s 10 na **2× dnevno** (06:43, 18:43), prvo samo zadnja 2 komentara u #1 (Borna, 2026-11-11). `docs/AUTOMATION.md` ažuriran.
+
 ## 2026-11-11 11:45 · fix/retrospective-audit — 4 nalaza Codexovog retrospektivnog audita (#1)
 PR #2 (PR-first docs) spojen nakon `CODEX_APPROVED` za `af83a5e` (merge `5d478d1`). Korak 20 čeka dok ovaj PR ne dobije `CODEX_APPROVED`. Nema otvorenih bug issueja osim #1.
 
