@@ -4,6 +4,7 @@ import { EMBER_LEVELS } from '../ember/ember';
 import { addDays } from '../time/local-date';
 import {
   ORB_CORE_SCALE,
+  ORB_DASHED_INSET,
   ORB_HEAT_WINDOW_DAYS,
   ORB_PULSE_MS,
   ORB_SPARK_STREAKS,
@@ -136,7 +137,7 @@ describe('tokeni orb-plamena', () => {
     const scales = RANKS.map((rank) => ORB_CORE_SCALE[rank]);
     for (let i = 1; i < scales.length; i++) expect(scales[i]).toBeGreaterThan(scales[i - 1]);
     expect(scales[0]).toBeGreaterThanOrEqual(0.4);
-    expect(scales[scales.length - 1]).toBeLessThan(0.9);
+    expect(scales[scales.length - 1]).toBeLessThan(1 - 2 * ORB_DASHED_INSET);
   });
 
   it('topliji plamen diše brže, ugašen ne diše', () => {

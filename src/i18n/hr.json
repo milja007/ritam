@@ -774,6 +774,31 @@
       "note": "Prosjek zadnjih 30 dana, iz konačnih dnevnih rezultata."
     }
   },
+  "orb": {
+    "heat": {
+      "unlit": "Plamen još ne gori",
+      "faint": "Plamen tinja",
+      "low": "Plamen gori tiho",
+      "warm": "Plamen gori toplo",
+      "bright": "Plamen gori punim sjajem"
+    },
+    "detail": {
+      "unlit": "Upali ga prvim večernjim upitom.",
+      "resting": "Zadnjih 7 dana nema ocijenjenog dana. Čeka te, ne gasi se.",
+      "burning": "Prosjek zadnjih 7 dana: {{average}}"
+    },
+    "hint": "Dodirni za objašnjenje plamena",
+    "explain": {
+      "title": "Što oblikuje plamen",
+      "size": "Veličina raste s rangom. Sada: rang {{rank}}.",
+      "heat": "Sjaj je prosjek konačnih rezultata zadnjih 7 dana.",
+      "sparks": "Iskre kruže dok traje niz: jedna od 3 dana, dvije od 7, tri od 30.",
+      "streak_one": "Niz sada: {{count}} dan.",
+      "streak_few": "Niz sada: {{count}} dana.",
+      "streak_other": "Niz sada: {{count}} dana.",
+      "keep": "Plamen se ne gasi i ne smanjuje. Slab tjedan ništa ne oduzima."
+    }
+  },
   "badges": {
     "title": "Bedževi",
     "count": "{{earned}} / {{total}}",

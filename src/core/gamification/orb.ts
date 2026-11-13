@@ -16,15 +16,18 @@ import { streakFromDates } from './streak';
 /** Koliko dana unatrag (uključujući `today`) grije plamen. */
 export const ORB_HEAT_WINDOW_DAYS = 7;
 
-/** Promjer jezgre kao udio promjera avatara, po rangu (platno: rang D ≈ 68 / 116). */
+/** Promjer jezgre kao udio promjera avatara, po rangu (platno: rang D ≈ 68 / 116); i rang S stane u crtkani prsten. */
 export const ORB_CORE_SCALE: Readonly<Record<Rank, number>> = {
   E: 0.5,
   D: 0.58,
-  C: 0.65,
-  B: 0.72,
-  A: 0.79,
-  S: 0.86,
+  C: 0.64,
+  B: 0.7,
+  A: 0.75,
+  S: 0.8,
 };
+
+/** Razmak crtkanog prstena od ruba avatara, kao udio promjera (platno: 10 / 116). Jezgra mora stati unutar njega. */
+export const ORB_DASHED_INSET = 10 / 116;
 
 /** Duljine niza (dani) od kojih oko plamena kruži jedna, dvije i tri iskre. */
 export const ORB_SPARK_STREAKS = [3, 7, 30] as const;
