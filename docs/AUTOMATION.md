@@ -20,7 +20,7 @@ PRIORITET DO 2026-11-17 (odluka Borna, 2026-11-12): sesije rade na jačem modelu
 3. Pročitaj AGENTS.md, CLAUDE.md, docs/PROGRESS.md (kratak; docs/PROGRESS-ARCHIVE.md samo grep) i docs/BUILD_PLAN.md; docs/CONCEPT.md samo kad počinješ novu skupinu. Strogo prati CLAUDE.md.
 4. Redoslijed posla:
    a) Spojeni PR bez objave u #1 (sesija pukla nakon mergea) → objavi CLAUDE_MERGED_FAST s napomenom RECOVERED.
-   b) Otvoreni CODEX_CHANGES_REQUESTED s P0/P1 (nema Claudeove objave s "FIXES: <URL tog komentara>" ni obrazloženog odgovora) → popravi u fix/… PR-u s testom, spoji, objavi s FIXES. Dok postoji, ne spajaj drugi rad.
+   b) Otvoreni CODEX_CHANGES_REQUESTED s P0/P1 (nema Claudeove objave s "FIXES: <URL tog komentara>" ni Bornine odluke — obrazloženi odgovor ne zatvara P0/P1) → popravi u fix/… PR-u s testom, spoji, objavi s FIXES. Dok postoji, ne spajaj drugi rad. P2/P3 zatvara i obrazloženi odgovor (u #1 s razlogom) uz FIXES u sljedećem PR-u.
    c) Bornin odgovor na BORNA_DECISION_NEEDED → zapiši odluku u PROGRESS.md (datum, URL) i postupi po njoj. Pitanje bez odgovora blokira samo svoj dio — nastavi s ostalim.
    d) Otvoreni bug issueji s uređaja (osim #1).
    e) Otvoreni vlastiti PR → nastavi njegovu skupinu.
