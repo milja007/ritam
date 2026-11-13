@@ -8,6 +8,7 @@ import {
   flameBlockId,
   railLine,
   railState,
+  shouldFlareDot,
   shouldIgnite,
 } from './ember';
 
@@ -161,5 +162,27 @@ describe('shouldIgnite', () => {
     expect(shouldIgnite('low', 'bright')).toBe(false);
     expect(shouldIgnite('bright', 'faint')).toBe(false);
     expect(shouldIgnite('unlit', 'unlit')).toBe(false);
+  });
+});
+
+describe('shouldFlareDot', () => {
+  it('prvo crtanje ne bljesne, ni kad je aktivnost već odrađena', () => {
+    expect(shouldFlareDot(null, 'lit')).toBe(false);
+    expect(shouldFlareDot(null, 'half')).toBe(false);
+  });
+
+  it('bljesne kad točka zasvijetli jače: odrađeno ili napola, i pola → odrađeno', () => {
+    expect(shouldFlareDot('now', 'lit')).toBe(true);
+    expect(shouldFlareDot('unlit', 'lit')).toBe(true);
+    expect(shouldFlareDot('ahead', 'half')).toBe(true);
+    expect(shouldFlareDot('half', 'lit')).toBe(true);
+  });
+
+  it('gašenje, slabljenje i promjene bez svjetla ne bljesnu', () => {
+    expect(shouldFlareDot('lit', 'unlit')).toBe(false);
+    expect(shouldFlareDot('lit', 'half')).toBe(false);
+    expect(shouldFlareDot('lit', 'lit')).toBe(false);
+    expect(shouldFlareDot('ahead', 'now')).toBe(false);
+    expect(shouldFlareDot('now', 'unlit')).toBe(false);
   });
 });
