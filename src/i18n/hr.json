@@ -247,6 +247,12 @@
       "freeBody": "Ništa ne traje — sljedeća aktivnost je ispod.",
       "allDone": "Za danas je to sve",
       "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori."
+    },
+    "rail": {
+      "now": "Sada · {{title}}",
+      "nowFree": "Sada · slobodno",
+      "nowLabel": "Sada je {{time}}. {{title}}",
+      "nowFreeLabel": "Sada je {{time}}. Ništa ne traje."
     }
   },
   "evening": {
@@ -638,5 +644,56 @@
     "accountMismatch": "Podaci na ovom uređaju pripadaju drugom računu, pa se s ovim računom ne sinkroniziraju. Odjavi se i prijavi onim računom s kojim si prvi put sinkronizirao.",
     "error": "Sinkronizacija nije uspjela. Podaci su sigurni na uređaju — pokušat ću ponovo.",
     "now": "Sinkroniziraj sada"
+  },
+  "ember": {
+    "loadError": "Podaci se nisu mogli učitati.",
+    "retry": "Pokušaj ponovo",
+    "weaker": "slabiji dan",
+    "stronger": "jači dan",
+    "legendLabel": "Svjetlina žara: od slabijeg do jačeg dana",
+    "week": {
+      "title": "Tjedan {{week}}",
+      "vsPrevious": "{{diff}} naspram prošlog",
+      "vsPreviousLabel": "Prosjek tjedna je {{diff}} naspram prošlog tjedna",
+      "today": "danas",
+      "noScore": "–",
+      "columns": "Raspored tjedna",
+      "dayScored": "{{day}}: rezultat {{score}}, aktivnosti: {{count}}",
+      "dayToday": "{{day}}, danas: aktivnosti: {{count}}",
+      "dayPlain": "{{day}}: bez rezultata, aktivnosti: {{count}}",
+      "legendDone": "odrađeno",
+      "legendMissed": "nije",
+      "legendPlan": "plan",
+      "legendFixed": "fiksno",
+      "empty": "Ovaj tjedan još nema aktivnosti. Dodaješ ih na Danu."
+    },
+    "month": {
+      "daysLeft_one": "još {{count}} dan",
+      "daysLeft_few": "još {{count}} dana",
+      "daysLeft_other": "još {{count}} dana",
+      "lastDay": "zadnji dan",
+      "calendar": "Kalendar mjeseca",
+      "dayScored": "{{day}}: rezultat {{score}}",
+      "dayToday": "{{day}}, danas",
+      "dayUnlit": "{{day}}: bez rezultata",
+      "dayFuture": "{{day}}",
+      "compare": "Usporedba s prošlim mjesecom",
+      "average": "Prosjek {{month}}: {{score}}",
+      "noAverage": "Prosjek {{month}}: još nema rezultata",
+      "strongest": "Najjači dan: {{day}} ({{score}})",
+      "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
+    },
+    "year": {
+      "behind_one": "{{count}} dan iza tebe",
+      "behind_few": "{{count}} dana iza tebe",
+      "behind_other": "{{count}} dana iza tebe",
+      "days": "Svi dani u godini",
+      "monthLabel": "{{month}}: ocijenjenih dana {{scored}}, prosjek {{average}}",
+      "monthLabelEmpty": "{{month}}: bez ocijenjenih dana",
+      "records": "Rekordi godine",
+      "longestStreak": "dana, najduži niz",
+      "strongestMonth": "{{month}}, najjači mjesec",
+      "scoredDays": "ocijenjenih dana"
+    }
   }
 }

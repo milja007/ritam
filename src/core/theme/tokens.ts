@@ -33,6 +33,15 @@ export const palette = {
   flame600: '#C25E00',
   flame700: '#9A4A00',
 
+  // Žar: svjetlina dana od tinjanja do punog sjaja (smjer „Žar“).
+  ember50: '#FFF1DC',
+  ember100: '#FFE2BD',
+  ember200: '#FFC27A',
+  ember400: '#E88A2E',
+  ember600: '#A85A14',
+  ember800: '#6B3A12',
+  ember900: '#4A2A10',
+
   mint400: '#4ADE9B',
   mint700: '#127A4C',
   coral400: '#FF6B6B',

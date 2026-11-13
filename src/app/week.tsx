@@ -1,8 +1,3 @@
-import { useTranslation } from 'react-i18next';
+import { WeekScreen } from '@/features/ember';
 
-import { PlaceholderScreen } from '@/ui/placeholder-screen';
-
-export default function WeekScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen title={t('tabs.week')} subtitle={t('plans.week')} />;
-}
+export default WeekScreen;

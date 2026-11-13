@@ -1,8 +1,3 @@
-import { useTranslation } from 'react-i18next';
+import { MonthScreen } from '@/features/ember';
 
-import { PlaceholderScreen } from '@/ui/placeholder-screen';
-
-export default function MonthScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen title={t('tabs.month')} subtitle={t('plans.month')} />;
-}
+export default MonthScreen;
