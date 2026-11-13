@@ -2,6 +2,14 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 · Sesija 21:43 — bedževi (dio koraka 34) + animacija niza (dio koraka 35)
+Plan (prije koda):
+1. `src/core/gamification/badges.ts` — bedževi izvedeni iz konačnih rezultata i niza, ništa se ne sprema; jednom osvojen ostaje (bez kazni). Testovi.
+2. Profil: kartica „Bedževi“ po platnu (osvojeni: obrub u boji žara; u tijeku: crtkani obrub + „n/m“), dodir pokaže pravilo; HR/EN, a11y.
+3. `streakGain` + animacija pilule niza na Danu kad niz naraste dok je ekran otvoren (žar bljesne, broj poskoči); „smanji kretanje“ → bez animacije; javlja se čitaču zaslona.
+4. Listanje prošlih tjedana/mjeseci strelicama, ako ostane vremena.
+- Epski questovi i freeze tokeni (ostatak koraka 34) traže tablice → ne u ovoj skupini. Provjera protiv koncepta: bedževi samo nagrađuju, ništa ne oduzimaju; žar/bedž pali samo konačni rezultat.
+
 ## 2026-11-13 · Sesija 18:43 — korak 34b + dio koraka 35 (PR #17)
 - **34b Rang i statovi** (po platnu „Profil“), sve iz lokalnih podataka:
   - `src/core/gamification/rank.ts`: rang E→S iz broja **dobrih tjedana** — zaključen tjedan (pon–ned) s ≥ 4 konačna rezultata koji je bolji od prethodnog ubrojenog ili ima prosjek ≥ 70. Pragovi ukupno: D 2, C 5, B 9, A 14, S 20. Rang nikad ne pada.
