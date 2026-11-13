@@ -7,8 +7,10 @@ import {
   dayEmber,
   emberColor,
   hasDiagnosis,
+  isMonthOpenable,
   monthDates,
   monthGrid,
+  monthHeader,
   previousMonth,
   strongestDay,
   weekDates,
@@ -16,11 +18,13 @@ import {
 import { radius, spacing } from '@/core/theme';
 import { DiagnosisModal } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
+import { Button } from '@/ui/button';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import { dayLong, dayNumber, monthName, weekdayLetter } from './format';
+import { clearSelectedMonth, useSelectedMonth } from './selected-month';
 import { Card, EmberLegend, PeriodScreen, Pill } from './period-screen';
 import { useEmberData } from './use-ember-data';
 
@@ -29,6 +33,7 @@ const CELL = 40;
 /**
  * Tab Mjesec (smjer „Žar“): kalendar žarova — svaki prošli dan svijetli prema svom rezultatu,
  * dan bez rezultata je ugašen žar, današnji je obrub u boji plamena, budući su tek ocrtani.
+ * Dodir mjeseca u Godini (Ž10) otvara ovdje taj mjesec; „Ovaj mjesec“ vraća na tekući.
  */
 export function MonthScreen() {
   const { t, i18n } = useTranslation();
@@ -36,9 +41,12 @@ export function MonthScreen() {
   const now = useNow();
   const state = useEmberData(now.eveningDate);
   const language = i18n.language;
-  const month = now.date.slice(0, 7);
+  const thisMonth = now.date.slice(0, 7);
+  // Mjesec odabran dodirom u Godini stoji dok ga „Ovaj mjesec“ ne obriše; neispravan se ignorira.
+  const selected = useSelectedMonth();
+  const month = selected !== null && isMonthOpenable(selected, now.date) ? selected : thisMonth;
+  const header = monthHeader(month, now.date);
   const dates = monthDates(month);
-  const left = dates.length - Number(now.date.slice(8, 10));
   const before = previousMonth(month);
 
   const scores = state.data?.scores ?? null;
@@ -57,12 +65,24 @@ export function MonthScreen() {
       pill={
         <Pill>
           <Text variant="caption" style={styles.strong}>
-            {left > 0 ? t('ember.month.daysLeft', { count: left }) : t('ember.month.lastDay')}
+            {header.kind === 'current'
+              ? header.daysLeft > 0
+                ? t('ember.month.daysLeft', { count: header.daysLeft })
+                : t('ember.month.lastDay')
+              : t('ember.month.finished')}
           </Text>
         </Pill>
       }>
       {scores ? (
         <>
+          {month === thisMonth ? null : (
+            <Button
+              variant="secondary"
+              label={t('ember.month.backToThis')}
+              accessibilityHint={t('ember.month.backToThisHint')}
+              onPress={clearSelectedMonth}
+            />
+          )}
           <View>
             <View style={styles.row} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
               {weekDates(now.date).map((date) => (
@@ -144,7 +164,9 @@ export function MonthScreen() {
           <EmberLegend />
 
           {average === null && beforeAverage === null ? (
-            <Text tone="textMuted">{t('ember.month.empty')}</Text>
+            <Text tone="textMuted">
+              {t(header.kind === 'current' ? 'ember.month.empty' : 'ember.month.emptyPast')}
+            </Text>
           ) : (
             <Card label={t('ember.month.compare')}>
               <AverageRow month={monthName(month, language)} score={average} current />

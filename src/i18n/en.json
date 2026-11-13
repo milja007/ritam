@@ -684,7 +684,11 @@
       "noAverage": "{{month}} average: no scores yet",
       "strongest": "Strongest day: {{day}} ({{score}})",
       "empty": "No scored days this month yet. An ember lights up after the evening check-in.",
-      "openDiagnosis": "Opens that day's diagnosis"
+      "openDiagnosis": "Opens that day's diagnosis",
+      "finished": "finished",
+      "backToThis": "This month",
+      "backToThisHint": "Back to the current month",
+      "emptyPast": "That month has no scored days."
     },
     "year": {
       "behind_one": "{{count}} day behind you",
@@ -695,7 +699,8 @@
       "records": "Records this year",
       "longestStreak": "days, longest streak",
       "strongestMonth": "{{month}}, strongest month",
-      "scoredDays": "scored days"
+      "scoredDays": "scored days",
+      "openMonth": "Opens that month"
     },
     "trend": {
       "title": "Last 30 days",

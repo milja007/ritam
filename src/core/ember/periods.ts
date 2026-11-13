@@ -174,6 +174,34 @@ export function monthGrid(month: string): (string | null)[] {
   return [...Array.from({ length: lead }, () => null), ...dates];
 }
 
+/**
+ * Može li se mjesec otvoriti iz Godine (Ž10): samo mjesec koji je počeo. Budući mjesec nema što
+ * pokazati (svi dani su tek ocrtani), pa ostaje običan, nedodirljiv redak. Neispravan mjesec ne.
+ */
+export function isMonthOpenable(month: string, today: string): boolean {
+  if (daysInMonth(month) === 0 || today.length !== 10) return false;
+  return month <= today.slice(0, 7);
+}
+
+/**
+ * Što pilula u zaglavlju Mjeseca kaže: za tekući mjesec koliko dana još ostaje (`0` = zadnji dan),
+ * za prošli da je završen, za budući (ne otvara se iz Godine) da još nije počeo.
+ */
+export type MonthHeader =
+  | { kind: 'current'; daysLeft: number }
+  | { kind: 'past' }
+  | { kind: 'future' };
+
+export function monthHeader(month: string, today: string): MonthHeader {
+  const length = daysInMonth(month);
+  if (length === 0 || today.length !== 10) return { kind: 'future' };
+  const current = today.slice(0, 7);
+  if (month > current) return { kind: 'future' };
+  if (month < current) return { kind: 'past' };
+  const day = Number(today.slice(8, 10));
+  return { kind: 'current', daysLeft: Number.isInteger(day) ? Math.max(0, length - day) : 0 };
+}
+
 /** Prethodni mjesec: "2026-01" → "2025-12". */
 export function previousMonth(month: string): string | null {
   const [year, m] = month.split('-').map(Number);

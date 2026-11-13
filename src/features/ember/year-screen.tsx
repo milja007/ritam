@@ -1,7 +1,15 @@
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { averageScore, dayEmber, longestStreakInYear, strongestMonth, yearMonths } from '@/core/ember';
+import {
+  averageScore,
+  dayEmber,
+  isMonthOpenable,
+  longestStreakInYear,
+  strongestMonth,
+  yearMonths,
+} from '@/core/ember';
 import { daysBetween } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
 import { useNow } from '@/features/today';
@@ -10,10 +18,13 @@ import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import { monthName, monthShort } from './format';
+import { selectMonth } from './selected-month';
 import { Card, EmberLegend, PeriodScreen } from './period-screen';
 import { useEmberData } from './use-ember-data';
 
 const LABEL_WIDTH = 30;
+/** Najmanja visina dodirljivog retka mjeseca (iOS HIG / Material). */
+const TOUCH_TARGET = 44;
 const DOT_GAP = 2;
 const MAX_DOT = 8;
 const MIN_DOT = 4;
@@ -57,16 +68,14 @@ export function YearScreen() {
               const average = averageScore(dates, scores);
               const count = dates.filter((date) => scores.has(date)).length;
               const name = monthName(month, language);
-              return (
-                <View
-                  key={month}
-                  style={styles.month}
-                  accessible
-                  accessibilityLabel={
-                    average === null
-                      ? t('ember.year.monthLabelEmpty', { month: name })
-                      : t('ember.year.monthLabel', { month: name, scored: count, average })
-                  }>
+              const label =
+                average === null
+                  ? t('ember.year.monthLabelEmpty', { month: name })
+                  : t('ember.year.monthLabel', { month: name, scored: count, average });
+              // Mjesec koji je počeo otvara svoj kalendar u tabu Mjesec; budući nema što pokazati.
+              const openable = isMonthOpenable(month, now.date);
+              const body = (
+                <>
                   <Text
                     variant="caption"
                     tone={current ? 'accent' : 'textMuted'}
@@ -99,6 +108,24 @@ export function YearScreen() {
                       );
                     })}
                   </View>
+                </>
+              );
+              return openable ? (
+                <Pressable
+                  key={month}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  accessibilityHint={t('ember.year.openMonth')}
+                  onPress={() => {
+                    selectMonth(month);
+                    router.navigate('/month');
+                  }}
+                  style={({ pressed }) => [styles.month, { opacity: pressed ? 0.6 : 1 }]}>
+                  {body}
+                </Pressable>
+              ) : (
+                <View key={month} style={styles.month} accessible accessibilityLabel={label}>
+                  {body}
                 </View>
               );
             })}
@@ -143,8 +170,14 @@ function Record({ value, label }: { value: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  months: { gap: spacing.sm + spacing.xxs },
-  month: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  months: { gap: spacing.xxs },
+  // Redak mjeseca je dodirljiv (otvara Mjesec), pa mora biti dovoljno visok za prst.
+  month: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: TOUCH_TARGET,
+  },
   monthLabel: { width: LABEL_WIDTH, fontSize: 11, lineHeight: 14 },
   strong: { fontWeight: '600' },
   dots: { flexDirection: 'row', gap: DOT_GAP },
