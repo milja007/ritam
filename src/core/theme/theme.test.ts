@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
+import { clampFraction, FILL_DURATION_MS } from './motion';
 import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS, phaseStartsFor } from './phase';
 import { DAY_PHASES, DEFAULT_SCHEME, spacing, radius, themes, typography } from './tokens';
 
@@ -158,5 +159,20 @@ describe('razmaci, radius, tipografija', () => {
     for (const token of Object.values(typography)) {
       expect(token.lineHeight).toBeGreaterThanOrEqual(token.fontSize);
     }
+  });
+});
+
+describe('kretanje', () => {
+  it('clampFraction ograničava na 0–1 i neispravan broj svodi na 0', () => {
+    expect(clampFraction(0.4)).toBe(0.4);
+    expect(clampFraction(-1)).toBe(0);
+    expect(clampFraction(7)).toBe(1);
+    expect(clampFraction(Number.NaN)).toBe(0);
+    expect(clampFraction(Number.POSITIVE_INFINITY)).toBe(0);
+  });
+
+  it('ispuna trake je kratka (ispod pola sekunde)', () => {
+    expect(FILL_DURATION_MS).toBeGreaterThan(0);
+    expect(FILL_DURATION_MS).toBeLessThan(500);
   });
 });

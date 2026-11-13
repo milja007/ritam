@@ -4,6 +4,19 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-13 · Smjer „Žar“, plan Ž1–5 (grana `wip/zar-dan-tjedan`; premješteno iz PROGRESS.md 2026-11-13)
+- **Odluka Borna 2026-11-12:** vizualni smjer „Žar“ („dan izgori u žar“) ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu (Dan, Tjedan, Mjesec, Godina, Profil). **Odluka Borna 2026-11-13 (chat):** smije ići paralelno dok PR #6 čeka review.
+- Ideja: orb-plamen putuje niz današnji raspored; odrađeno iza njega svijetli, plan ispred je tek ocrtan; svaki dan je žar čija svjetlina znači dnevni rezultat (tjedan: 7 stupaca, mjesec: kalendar žarova, godina: 365 točkica); neodrađeno je ugašen žar, nikad crveni X.
+- Plan skupine (redom, svaki korak zaseban commit `Žar N: …`):
+  1. Ž1 jezgra `src/core/ember` (svjetlina iz rezultata 55/70/85, stanje točke na traci, boje za tamnu i svijetlu shemu) + tokeni `ember*`, testovi. **Gotovo.**
+  2. Ž2 Dan: kronološka traka (ranije → plamen „Sada“ → ostatak dana), izgorjela puna linija iza, crtkana ispred, orb s pulsom (Reanimated, poštuje „smanji kretanje“), bez crvene za neodrađeno. **Gotovo** (`src/ui/ember.tsx`, `now-row.tsx`, `block-card.tsx`); na uređaju još neprovjereno.
+  3. Ž3 Tjedan: 7 stupaca dana s blokovima (06–24 h), linija „sada“, žar i rezultat ispod svakog dana, razlika prosjeka prema prošlom tjednu. **Gotovo.**
+  4. Ž4 Mjesec: kalendar žarova, legenda, usporedba prosjeka s prošlim mjesecom, najjači dan. **Gotovo.** Ž5 Godina: 365 točkica po mjesecima, rekordi (najduži niz, najjači mjesec, broj ocijenjenih dana). **Gotovo.**
+  5. Sljedeća skupina: Ž6 Profil po platnu, zatim faza 3 (33 orb, 35 animacije i haptika, 34b rang i statovi, 37c grafovi, 38 teme); zaglavlje Dana s pilulama (niz, rezultat) i kartica „Trenutno“ po platnu.
+- Stanje: sve na lokalnim podacima (`listDayScores`, `listBlocksBetween`); žar pali samo konačni rezultat (nakon večernjeg upita). **Na uređaju neprovjereno** (cloud sesija nema simulator; web export ne radi zbog SQLite-a) — prošli su tsc, lint, Jest i iOS bundle.
+- Nije napravljeno namjerno: ciljevi tjedna/mjeseca/godine, „[Sustav]“ poruke, točkice fiksnih obaveza u mjesecu, listanje prošlih tjedana/mjeseci (čekaju korake 25, 25b, 34b).
+- Provjera plana: bez novih paketa (samo `View`, `boxShadow`, Reanimated koji već postoji), pa PR ne dira visokorizične datoteke. Ciljevi tjedna/mjeseca/godine i „[Sustav]“ poruke s platna još nemaju podatke (koraci 25, 25b, 34b) — ne izmišljam ih, sekcije dolaze s tim koracima. Redoslijed u `BUILD_PLAN.md` (visokorizično) ide zasebnim docs PR-om kad PR #6 prođe.
+
 ## 2026-11-11 15:45 · Fix granica brzog puta (PR #6, spojen 2026-11-13 kao `d6fee31`)
 - Pravila postupka (brzi put, visokorizične datoteke, neobrađene radnje, identitet pošiljatelja, odluke po URL-u pitanja) su u `CLAUDE.md` i `docs/AUTOMATION.md`. Tijek svih 8 krugova reviewa je u arhivi.
 - **Odluka Borna 2026-11-13 (chat):** dizajn „Žar“ smije ići paralelno na `wip/zar-…` dok PR čeka review (do 2026-11-17).

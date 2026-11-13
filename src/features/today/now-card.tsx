@@ -28,47 +28,50 @@ export function NowCard({ view, nowSeconds, onDone, onOpen }: NowCardProps) {
 
   return (
     <View
-      style={[styles.card, { backgroundColor: colors.surface, borderColor: current ? colors.accent : colors.border }]}
+      style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
       accessibilityLabel={t('today.nowCard.label')}>
       <View style={styles.topRow}>
-        <View style={styles.liveRow}>
-          <View style={[styles.liveDot, { backgroundColor: current ? colors.accent : colors.textMuted }]} />
-          <Text variant="overline" tone={current ? 'accent' : 'textMuted'}>
-            {t('today.nowCard.current')}
-          </Text>
-        </View>
-        <Text
-          variant="bodyStrong"
-          tone="textMuted"
-          style={styles.tabular}
-          accessibilityLabel={t('today.nowCard.clockLabel', { time: clock.slice(0, 5) })}>
-          {clock}
+        <Text variant="overline" tone={current ? 'accent' : 'textMuted'}>
+          {t('today.nowCard.current')}
         </Text>
+        {current ? (
+          <Text variant="caption" tone="textMuted" style={styles.tabular}>
+            {t('today.timeRange', { start: current.start, end: current.end })}
+          </Text>
+        ) : null}
+      </View>
+
+      <Text variant="title" numberOfLines={2} accessibilityRole="header">
+        {current ? current.title : next ? t('today.nowCard.free') : t('today.nowCard.allDone')}
+      </Text>
+      {current ? null : (
+        <Text tone="textMuted">{next ? t('today.nowCard.freeBody') : t('today.nowCard.allDoneBody')}</Text>
+      )}
+
+      {/* Živi sat: sekunde u boji plamena; desno koliko je još do kraja aktivnosti. */}
+      <View style={styles.clockRow}>
+        <Text
+          variant="display"
+          style={[styles.clock, styles.tabular]}
+          accessibilityLabel={t('today.nowCard.clockLabel', { time: clock.slice(0, 5) })}>
+          {clock.slice(0, 5)}
+          <Text variant="display" tone="accent" style={[styles.clock, styles.tabular]}>
+            {clock.slice(5)}
+          </Text>
+        </Text>
+        {current ? (
+          <Text
+            style={styles.tabular}
+            accessibilityLabel={t('today.nowCard.leftLabel', {
+              minutes: Math.ceil((secondsLeft ?? 0) / 60),
+            })}>
+            {t('today.nowCard.left', { time: formatCountdown(secondsLeft ?? 0) })}
+          </Text>
+        ) : null}
       </View>
 
       {current ? (
         <>
-          <View style={styles.titleBlock}>
-            <Text variant="title" numberOfLines={2} accessibilityRole="header">
-              {current.title}
-            </Text>
-            <Text variant="caption" tone="textMuted" style={styles.tabular}>
-              {t('today.timeRange', { start: current.start, end: current.end })}
-            </Text>
-          </View>
-
-          <View style={styles.countdownRow}>
-            <Text
-              variant="display"
-              tone="accent"
-              style={[styles.countdown, styles.tabular]}
-              accessibilityLabel={t('today.nowCard.leftLabel', {
-                minutes: Math.ceil((secondsLeft ?? 0) / 60),
-              })}>
-              {formatCountdown(secondsLeft ?? 0)}
-            </Text>
-            <Text tone="textMuted">{t('today.nowCard.untilEnd')}</Text>
-          </View>
           <ProgressBar
             fraction={progress ?? 0}
             height={6}
@@ -98,14 +101,7 @@ export function NowCard({ view, nowSeconds, onDone, onOpen }: NowCardProps) {
             />
           </View>
         </>
-      ) : (
-        <View style={styles.titleBlock}>
-          <Text variant="title" accessibilityRole="header">
-            {next ? t('today.nowCard.free') : t('today.nowCard.allDone')}
-          </Text>
-          <Text tone="textMuted">{next ? t('today.nowCard.freeBody') : t('today.nowCard.allDoneBody')}</Text>
-        </View>
-      )}
+      ) : null}
 
       {next ? (
         <View style={[styles.next, { borderTopColor: colors.border }]}>
@@ -139,15 +135,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.xl,
     borderRadius: radius.xl,
-    borderWidth: 1.5,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  liveRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  liveDot: { width: 8, height: 8, borderRadius: radius.pill },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   tabular: { fontVariant: ['tabular-nums'] },
-  titleBlock: { gap: spacing.xs },
-  countdownRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
-  countdown: { fontSize: 48, lineHeight: 54 },
+  clockRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: spacing.md },
+  clock: { fontSize: 40, lineHeight: 46, letterSpacing: -1 },
   actions: { flexDirection: 'row', gap: spacing.sm },
   action: { flex: 1 },
   next: {

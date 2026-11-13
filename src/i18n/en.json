@@ -242,13 +242,20 @@
       "free": "Free time",
       "freeBody": "Nothing is on right now — the next activity is below.",
       "allDone": "That's it for today",
-      "allDoneBody": "Nothing else is planned. Add something or take a rest."
+      "allDoneBody": "Nothing else is planned. Add something or take a rest.",
+      "left": "{{time}} left"
     },
     "rail": {
       "now": "Now · {{title}}",
       "nowFree": "Now · free",
       "nowLabel": "It is {{time}}. {{title}}",
       "nowFreeLabel": "It is {{time}}. Nothing is in progress."
+    },
+    "header": {
+      "title": "Today",
+      "streak_one": "{{count}} day",
+      "streak_other": "{{count}} days",
+      "scoreYesterday": "Yesterday's score {{score}} out of 100. {{trend}}."
     }
   },
   "evening": {
@@ -674,7 +681,8 @@
       "average": "{{month}} average: {{score}}",
       "noAverage": "{{month}} average: no scores yet",
       "strongest": "Strongest day: {{day}} ({{score}})",
-      "empty": "No scored days this month yet. An ember lights up after the evening check-in."
+      "empty": "No scored days this month yet. An ember lights up after the evening check-in.",
+      "openDiagnosis": "Opens that day's diagnosis"
     },
     "year": {
       "behind_one": "{{count}} day behind you",
@@ -686,6 +694,14 @@
       "longestStreak": "days, longest streak",
       "strongestMonth": "{{month}}, strongest month",
       "scoredDays": "scored days"
+    },
+    "trend": {
+      "title": "Last 30 days",
+      "average": "average {{score}}",
+      "averageWithPrevious": "average {{score}} · before {{previous}}",
+      "label": "Last 30 days: {{scored}} scored days, average {{score}}",
+      "labelWithPrevious": "Last 30 days: {{scored}} scored days, average {{score}}, the 30 days before {{previous}}",
+      "empty": "No scored days yet. An ember lights up after the evening check-in."
     }
   }
 }

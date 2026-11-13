@@ -18,6 +18,7 @@ import {
 } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { AccountCard, useSession } from '@/features/auth';
+import { TrendCard } from '@/features/ember';
 import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
@@ -72,6 +73,7 @@ export function ProfileScreen() {
 
           <Section title={t('profile.progress')}>
             <ProgressCard today={now.date} checkinDay={now.eveningDate} />
+            <TrendCard checkinDay={now.eveningDate} />
           </Section>
 
           <Section title={t('profile.habits.title')}>

@@ -246,13 +246,21 @@
       "free": "Slobodno",
       "freeBody": "Ništa ne traje — sljedeća aktivnost je ispod.",
       "allDone": "Za danas je to sve",
-      "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori."
+      "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori.",
+      "left": "još {{time}}"
     },
     "rail": {
       "now": "Sada · {{title}}",
       "nowFree": "Sada · slobodno",
       "nowLabel": "Sada je {{time}}. {{title}}",
       "nowFreeLabel": "Sada je {{time}}. Ništa ne traje."
+    },
+    "header": {
+      "title": "Danas",
+      "streak_one": "{{count}} dan",
+      "streak_few": "{{count}} dana",
+      "streak_other": "{{count}} dana",
+      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}."
     }
   },
   "evening": {
@@ -681,7 +689,8 @@
       "average": "Prosjek {{month}}: {{score}}",
       "noAverage": "Prosjek {{month}}: još nema rezultata",
       "strongest": "Najjači dan: {{day}} ({{score}})",
-      "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
+      "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita.",
+      "openDiagnosis": "Otvara dijagnozu tog dana"
     },
     "year": {
       "behind_one": "{{count}} dan iza tebe",
@@ -694,6 +703,14 @@
       "longestStreak": "dana, najduži niz",
       "strongestMonth": "{{month}}, najjači mjesec",
       "scoredDays": "ocijenjenih dana"
+    },
+    "trend": {
+      "title": "Zadnjih 30 dana",
+      "average": "prosjek {{score}}",
+      "averageWithPrevious": "prosjek {{score}} · prije {{previous}}",
+      "label": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}",
+      "labelWithPrevious": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}, 30 dana prije {{previous}}",
+      "empty": "Još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
     }
   }
 }

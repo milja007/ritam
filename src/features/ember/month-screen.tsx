@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   averageScore,
   dayEmber,
   emberColor,
+  hasDiagnosis,
   monthDates,
   monthGrid,
   previousMonth,
@@ -12,6 +14,7 @@ import {
   weekDates,
 } from '@/core/ember';
 import { radius, spacing } from '@/core/theme';
+import { DiagnosisModal } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
@@ -42,6 +45,8 @@ export function MonthScreen() {
   const average = scores ? averageScore(dates, scores) : null;
   const beforeAverage = scores && before !== null ? averageScore(monthDates(before), scores) : null;
   const best = scores ? strongestDay(dates, scores) : null;
+  // Žar dana s rezultatom otvara dijagnozu tog dana (arhiva dijagnoza, korak 37c).
+  const [diagnosisFor, setDiagnosisFor] = useState<string | null>(null);
 
   return (
     <PeriodScreen
@@ -82,40 +87,54 @@ export function MonthScreen() {
                       : ember.score !== null
                         ? t('ember.month.dayScored', { day, score: ember.score })
                         : t('ember.month.dayUnlit', { day });
-                return (
-                  <View key={date} style={[styles.cell, styles.dayCell]} accessible accessibilityLabel={label}>
-                    <View
+                const emberView = (
+                  <View
+                    style={[
+                      styles.ember,
+                      ember.kind === 'today'
+                        ? { borderWidth: 2, borderColor: colors.accent, boxShadow: `0 0 14px ${colors.accent}` }
+                        : ember.kind === 'future'
+                          ? { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }
+                          : color !== null && color.fill !== null
+                            ? [
+                                { backgroundColor: color.fill },
+                                scheme === 'dark' && color.glow > 0
+                                  ? { boxShadow: `0 0 ${Math.round(12 * color.glow)}px ${color.fill}` }
+                                  : null,
+                              ]
+                            : { borderWidth: 1.5, borderColor: color?.on ?? colors.border },
+                    ]}>
+                    <Text
+                      variant="caption"
                       style={[
-                        styles.ember,
-                        ember.kind === 'today'
-                          ? { borderWidth: 2, borderColor: colors.accent, boxShadow: `0 0 14px ${colors.accent}` }
-                          : ember.kind === 'future'
-                            ? { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }
-                            : color !== null && color.fill !== null
-                              ? [
-                                  { backgroundColor: color.fill },
-                                  scheme === 'dark' && color.glow > 0
-                                    ? { boxShadow: `0 0 ${Math.round(12 * color.glow)}px ${color.fill}` }
-                                    : null,
-                                ]
-                              : { borderWidth: 1.5, borderColor: color?.on ?? colors.border },
+                        styles.number,
+                        {
+                          color:
+                            ember.kind === 'today'
+                              ? colors.accent
+                              : color !== null && color.fill !== null
+                                ? color.on
+                                : colors.textMuted,
+                        },
                       ]}>
-                      <Text
-                        variant="caption"
-                        style={[
-                          styles.number,
-                          {
-                            color:
-                              ember.kind === 'today'
-                                ? colors.accent
-                                : color !== null && color.fill !== null
-                                  ? color.on
-                                  : colors.textMuted,
-                          },
-                        ]}>
-                        {dayNumber(date)}
-                      </Text>
-                    </View>
+                      {dayNumber(date)}
+                    </Text>
+                  </View>
+                );
+                return hasDiagnosis(ember) ? (
+                  <Pressable
+                    key={date}
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    accessibilityHint={t('ember.month.openDiagnosis')}
+                    hitSlop={spacing.xs}
+                    onPress={() => setDiagnosisFor(date)}
+                    style={({ pressed }) => [styles.cell, styles.dayCell, { opacity: pressed ? 0.6 : 1 }]}>
+                    {emberView}
+                  </Pressable>
+                ) : (
+                  <View key={date} style={[styles.cell, styles.dayCell]} accessible accessibilityLabel={label}>
+                    {emberView}
                   </View>
                 );
               })}
@@ -138,6 +157,13 @@ export function MonthScreen() {
             </Card>
           )}
         </>
+      ) : null}
+      {diagnosisFor !== null ? (
+        <DiagnosisModal
+          date={diagnosisFor}
+          dayLabel={dayLong(diagnosisFor, language)}
+          onClose={() => setDiagnosisFor(null)}
+        />
       ) : null}
     </PeriodScreen>
   );
