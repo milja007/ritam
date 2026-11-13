@@ -74,7 +74,7 @@ Ovi koraci idu ispred koraka 20–22 dok prioritet traje. Numeracija je zasebna 
 - [x] **Ž9. Paljenje žara** — žar današnjeg dana u zaglavlju Dana: ugašen obrub dok dan traje, pa se nakon večernjeg upita upali na svoju razinu uz jednokratnu animaciju (`todayEmber`, `shouldIgnite`, `EmberIgnite`; poštuje „smanji kretanje“).
 - [x] **Ž10. Godina → dodir mjeseca** — redak mjeseca u Godini otvara taj mjesec u tabu Mjesec, „Ovaj mjesec“ vraća na tekući; budući mjesec nije dodirljiv.
 - [ ] **Ž11. Haptika i +XP / level-up animacije** — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
-- [ ] **Ž12. Arhiva dijagnoza** — popis prošlih dijagnoza (dio koraka 37c); traži novi upit u `src/db/**` (visokorizično).
+- [x] **Ž12. Arhiva dijagnoza** — popis prošlih dnevnih dijagnoza na Profilu, po mjesecima, najnovija prvo; dodir otvara dijagnozu tog dana, „Prikaži još“ dodaje sljedećih deset. Nepročitane su označene točkom. Čita se samo popis (`listDayReportArchive`) — dijagnoza se ne generira dok se red ne otvori.
 
 Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/godine (25, 25b), „[Sustav]“ poruke te rang i statovi (34b), bedževi i otključavanja (32, 34), listanje prošlih razdoblja strelicama (34b), točkice fiksnih obaveza (24).
 

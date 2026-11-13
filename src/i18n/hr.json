@@ -520,6 +520,14 @@
       "title": "Dijagnoza dana je spremna",
       "body": "Sve aktivnosti imaju ishod. Pogledaj što je išlo, što nije i jednu ideju za sutra.",
       "open": "Pokupi dijagnozu"
+    },
+    "archive": {
+      "title": "Arhiva dijagnoza",
+      "empty": "Arhiva se puni sama: svaka ispunjena večer ostavi svoju dijagnozu.",
+      "loadError": "Arhivu sad ne mogu učitati.",
+      "unseen": "Nepročitano.",
+      "openHint": "Otvara dijagnozu tog dana",
+      "more": "Prikaži još"
     }
   },
   "score": {

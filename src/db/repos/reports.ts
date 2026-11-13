@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, lte } from 'drizzle-orm';
 
 import { isEveningCheckinComplete, mainStreak } from '@/core/gamification';
 import {
@@ -7,6 +7,7 @@ import {
   diagnosisSuggestion,
   LOCAL_DAY_DIAGNOSIS_VERSION,
   parseDayDiagnosis,
+  type ArchiveEntry,
   type DayDiagnosis,
   type DayStats,
 } from '@/core/diagnosis';
@@ -52,6 +53,45 @@ export async function getReport(
 ): Promise<Report | null> {
   const row = await db.select().from(reports).where(reportOf(userId, period, periodStart)).get();
   return row ? reportSchema.parse(row) : null;
+}
+
+/**
+ * Arhiva dnevnih dijagnoza (Ž12): najnovije prvo, do `limit` zapisa, samo do dana `through`
+ * (uključivo) — budući dani se ne pokazuju. Čita se samo za popis, pa se iz `sections` uzimaju
+ * trend i „Ukratko“ redak; zapis koji nije lokalna dnevna dijagnoza (stara ili LLM verzija) se
+ * preskače, bez greške. Ništa se ne generira ni ne sprema — dijagnoza se radi tek pri otvaranju.
+ *
+ * Napomena: `limit` je limit **pročitanih redaka**, ne vraćenih. Dok svi zapisi prolaze
+ * `parseDayDiagnosis` (danas: samo lokalna dijagnoza) to je isto. Kad dođe LLM dijagnoza
+ * (korak 31) i počne preskakati zapise, „ima li još“ u arhivi će znati reći „ne“ prerano —
+ * tada paginaciju treba vezati na zadnji vraćeni dan, a ne na broj redaka.
+ */
+export async function listDayReportArchive(
+  db: RitamDb,
+  userId: string,
+  through: LocalDate,
+  limit: number,
+): Promise<ArchiveEntry[]> {
+  if (!Number.isInteger(limit) || limit <= 0) return [];
+  const rows = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), eq(reports.period, 'day'), lte(reports.periodStart, through)))
+    .orderBy(desc(reports.periodStart))
+    .limit(limit)
+    .all();
+  const entries: ArchiveEntry[] = [];
+  for (const row of rows) {
+    const diagnosis = parseDayDiagnosis(row.sections);
+    if (diagnosis === null) continue;
+    entries.push({
+      date: row.periodStart,
+      trend: diagnosis.trend,
+      summary: diagnosis.summary,
+      seen: row.seenAt !== null,
+    });
+  }
+  return entries;
 }
 
 /** Statistika jednog dana unutar transakcije (`eveningRows` = svi večernji upiti korisnika, za streak). */

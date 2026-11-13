@@ -18,7 +18,8 @@ import {
 } from '@/core/onboarding';
 import { radius, spacing } from '@/core/theme';
 import { AccountCard, useSession } from '@/features/auth';
-import { TrendCard } from '@/features/ember';
+import { DiagnosisArchive } from '@/features/diagnosis';
+import { dayLong, monthName, TrendCard } from '@/features/ember';
 import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
@@ -46,7 +47,8 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
  * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
  */
 export function ProfileScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const { colors } = useAppTheme();
   const state = useSettings();
   const now = useNow();
@@ -74,6 +76,11 @@ export function ProfileScreen() {
           <Section title={t('profile.progress')}>
             <ProgressCard today={now.date} checkinDay={now.eveningDate} />
             <TrendCard checkinDay={now.eveningDate} />
+            <DiagnosisArchive
+              checkinDay={now.eveningDate}
+              dayLabel={(date) => dayLong(date, language)}
+              monthLabel={(month) => `${monthName(month, language)} ${month.slice(0, 4)}.`}
+            />
           </Section>
 
           <Section title={t('profile.habits.title')}>
