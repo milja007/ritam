@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from '../theme';
-import { EMBER_LEVELS, emberColor, emberLevel, railLine, railState } from './ember';
+import { EMBER_LEVELS, emberColor, emberLevel, flameBlockId, railLine, railState } from './ember';
 
 describe('emberLevel', () => {
   it('dan bez rezultata je ugašen žar', () => {
@@ -96,5 +96,42 @@ describe('railLine', () => {
     expect(railLine('past')).toBe('burnt');
     expect(railLine('current')).toBe('ahead');
     expect(railLine('upcoming')).toBe('ahead');
+  });
+});
+
+describe('jedan orb na traci (preklop aktivnosti)', () => {
+  const planned = { status: 'planned', kind: 'task' } as const;
+
+  it('aktivnost koja traje ne dobiva orb kad plamen nosi drugi redak', () => {
+    expect(railState(planned, 'current')).toBe('now');
+    expect(railState(planned, 'current', false)).toBe('ahead');
+    // Riješeni statusi ne ovise o plamenu.
+    expect(railState({ status: 'done', kind: 'task' }, 'current', false)).toBe('lit');
+  });
+
+  it('blokovi 09–11 i 10–12 u 10:30: plamen nosi samo prvi', () => {
+    const blocks = [
+      { id: 'a', ...planned },
+      { id: 'b', ...planned },
+      { id: 'c', ...planned },
+    ];
+    const phaseOf = (block: { id: string }) => (block.id === 'c' ? 'upcoming' : 'current');
+    const flame = flameBlockId(blocks, phaseOf);
+    expect(flame).toBe('a');
+    const orbs = blocks.filter((block) => railState(block, phaseOf(block), block.id === flame) === 'now');
+    expect(orbs.map((block) => block.id)).toEqual(['a']);
+  });
+
+  it('bez aktivnosti koja traje (ili samo san / već prijavljena) nema plamena', () => {
+    expect(flameBlockId([{ id: 'a', ...planned }], () => 'upcoming')).toBeNull();
+    expect(
+      flameBlockId([{ id: 's', status: 'planned', kind: 'sleep' } as const], () => 'current'),
+    ).toBeNull();
+    expect(
+      flameBlockId(
+        [{ id: 'd', status: 'done', kind: 'task' } as const, { id: 'e', ...planned }],
+        () => 'current',
+      ),
+    ).toBe('e');
   });
 });

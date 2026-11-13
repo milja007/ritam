@@ -4,6 +4,7 @@
  */
 import type { ScheduleBlock } from '../domain';
 import { weekStart, type ScoredDay } from '../progress';
+import { streakFromDates } from '../gamification/streak';
 import { blockRange } from '../schedule';
 import { addDays, daysBetween } from '../time/local-date';
 import { emberLevel, type EmberLevel } from './ember';
@@ -116,9 +117,15 @@ export function nowLine(nowMinutes: number): number | null {
 
 /** Prosjek konačnih rezultata u danima `dates` (zaokružen), ili `null` bez ijednog. */
 export function averageScore(dates: readonly string[], scores: ReadonlyMap<string, number>): number | null {
+  const exact = exactAverage(dates, scores);
+  return exact === null ? null : Math.round(exact);
+}
+
+/** Nezaokružen prosjek (za usporedbe; prikaz ide kroz `averageScore`). */
+function exactAverage(dates: readonly string[], scores: ReadonlyMap<string, number>): number | null {
   const values = dates.map((date) => scores.get(date)).filter((value): value is number => value !== undefined);
   if (values.length === 0) return null;
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 /** Broj dana u mjesecu "YYYY-MM". */
@@ -174,15 +181,28 @@ export function strongestDay(
   return best;
 }
 
-/** Mjesec s najvišim prosjekom u godini (barem jedan ocijenjen dan); kod izjednačenja raniji. */
+/**
+ * Mjesec s najvišim prosjekom u godini (barem jedan ocijenjen dan); kod izjednačenja raniji.
+ * Uspoređuju se stvarni prosjeci; `average` je zaokružen samo za prikaz.
+ */
 export function strongestMonth(
   year: string,
   scores: ReadonlyMap<string, number>,
 ): { month: string; average: number } | null {
-  let best: { month: string; average: number } | null = null;
+  let best: { month: string; exact: number } | null = null;
   for (const { month, dates } of yearMonths(year)) {
-    const average = averageScore(dates, scores);
-    if (average !== null && (best === null || average > best.average)) best = { month, average };
+    const exact = exactAverage(dates, scores);
+    if (exact !== null && (best === null || exact > best.exact)) best = { month, exact };
   }
-  return best;
+  return best === null ? null : { month: best.month, average: Math.round(best.exact) };
+}
+
+/**
+ * Najduži niz unutar godine `year`: uzastopni dani iz `streakDates` (dani koji se računaju u
+ * glavni niz — ispunjen večernji upit ili „Odustajem“) koji pripadaju toj godini, do `through`.
+ * Niz koji prelazi iz prošle godine broji se samo od 1. siječnja.
+ */
+export function longestStreakInYear(streakDates: Iterable<string>, year: string, through: string): number {
+  const inYear = [...streakDates].filter((date) => date.length === 10 && date.slice(0, 4) === year);
+  return streakFromDates(inYear, through).longest;
 }

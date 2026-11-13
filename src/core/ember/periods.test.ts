@@ -11,6 +11,7 @@ import {
   previousMonth,
   segmentLook,
   strongestDay,
+  longestStreakInYear,
   strongestMonth,
   weekDates,
   weekSegments,
@@ -145,5 +146,59 @@ describe('mjesec i godina', () => {
     expect(strongestDay([], scores)).toBeNull();
     expect(strongestMonth('2026', scores)).toEqual({ month: '2026-11', average: 79 });
     expect(strongestMonth('2025', scores)).toBeNull();
+  });
+});
+
+describe('rekordi godine (naknadni pregled PR-a #7)', () => {
+  it('najjači mjesec uspoređuje stvarne prosjeke, a prikazuje zaokruženi', () => {
+    const scores = new Map([
+      ['2026-01-05', 70],
+      ['2026-01-06', 70],
+      ['2026-02-02', 70],
+      ['2026-02-03', 70],
+      ['2026-02-04', 71],
+    ]);
+    expect(strongestMonth('2026', scores)).toEqual({
+      month: '2026-02',
+      average: 70,
+    });
+  });
+
+  it('kod stvarno jednakih prosjeka ostaje raniji mjesec', () => {
+    const scores = new Map([
+      ['2026-01-05', 70],
+      ['2026-02-02', 70],
+    ]);
+    expect(strongestMonth('2026', scores)).toEqual({
+      month: '2026-01',
+      average: 70,
+    });
+  });
+
+  it('niz od sedam dana iz prošle godine ne ulazi u rekord ove godine', () => {
+    const dates = [
+      '2025-03-01',
+      '2025-03-02',
+      '2025-03-03',
+      '2025-03-04',
+      '2025-03-05',
+      '2025-03-06',
+      '2025-03-07',
+      '2026-02-10',
+    ];
+    expect(longestStreakInYear(dates, '2026', '2026-11-12')).toBe(1);
+    expect(longestStreakInYear(dates, '2025', '2026-11-12')).toBe(7);
+  });
+
+  it('niz preko Nove godine broji se od 1. siječnja', () => {
+    const dates = ['2025-12-29', '2025-12-30', '2025-12-31', '2026-01-01', '2026-01-02'];
+    expect(longestStreakInYear(dates, '2026', '2026-01-02')).toBe(2);
+    expect(longestStreakInYear(dates, '2025', '2026-01-02')).toBe(3);
+  });
+
+  it('dani nakon `through` i godina bez dana daju 0 odnosno ne ulaze', () => {
+    expect(longestStreakInYear(['2026-01-01', '2026-01-02', '2026-01-03'], '2026', '2026-01-02')).toBe(2);
+    expect(longestStreakInYear([], '2026', '2026-11-12')).toBe(0);
+    expect(longestStreakInYear(['2025-05-05'], '2026', '2026-11-12')).toBe(0);
   });
 });

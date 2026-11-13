@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { BlockStatus, ScheduleBlock } from '@/core/domain';
+import { flameBlockId } from '@/core/ember';
 import {
   blockPhase,
   canGiveUp,
@@ -222,6 +223,8 @@ export function TodayScreen() {
     }
   }
 
+  const flameId = flameBlockId(day.blocks, (block) => blockPhase(block, liveMinutes));
+
   /** Redak trake; `joined` = redak se nastavlja na plamen „Sada“ (linija ide do njega). */
   const renderRow = (
     block: ScheduleBlock,
@@ -235,6 +238,8 @@ export function TodayScreen() {
       phase={blockPhase(block, liveMinutes)}
       first={index === 0 && joined !== 'below'}
       last={index === list.length - 1 && joined !== 'above'}
+      // Jedan orb na traci: uz redak „Sada“ nosi ga taj redak, inače prva aktivnost koja traje.
+      flame={joined === 'none' && block.id === flameId}
       onPress={() => setSheetId(block.id)}
       onReport={(status) => void report(block, status)}
     />

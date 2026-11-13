@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { averageScore, dayEmber, strongestMonth, yearMonths } from '@/core/ember';
+import { averageScore, dayEmber, longestStreakInYear, strongestMonth, yearMonths } from '@/core/ember';
 import { daysBetween } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
 import { useNow } from '@/features/today';
@@ -107,7 +107,10 @@ export function YearScreen() {
           <EmberLegend size={10} />
 
           <View style={styles.records} accessibilityLabel={t('ember.year.records')}>
-            <Record value={String(state.data.longestStreak)} label={t('ember.year.longestStreak')} />
+            <Record
+              value={String(longestStreakInYear(state.data.streakDates, year, now.eveningDate))}
+              label={t('ember.year.longestStreak')}
+            />
             <Record
               value={best === null ? '–' : String(best.average)}
               label={

@@ -3,16 +3,18 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { ScheduleBlock } from '@/core/domain';
 import { finalScores } from '@/core/ember';
+import { countsForStreak } from '@/core/gamification/streak';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { listBlocksBetween, listDayScores } from '@/db/repos';
+import { listBlocksBetween, listDayScores, listEveningCheckins } from '@/db/repos';
 import { useBlocksVersion } from '@/features/notifications';
 import { useProgressVersion } from '@/features/progress';
 
 export type EmberData = {
   /** Konačni dnevni rezultati po danu. */
   scores: ReadonlyMap<string, number>;
-  longestStreak: number;
+  /** Dani koji se računaju u glavni niz (ispunjen večernji upit ili „Odustajem“) do `checkinDay`. */
+  streakDates: readonly string[];
   /** Blokovi traženog raspona (prazno ako raspon nije zadan). */
   blocks: readonly ScheduleBlock[];
 };
@@ -49,7 +51,11 @@ export function useEmberData(checkinDay: string, range?: { from: string; to: str
       const db = getDb();
       const history = listDayScores(db, LOCAL_USER_ID, checkinDay);
       const blocks = from !== null && to !== null ? await listBlocksBetween(db, LOCAL_USER_ID, from, to) : [];
-      return { scores: finalScores(history.days), longestStreak: history.longestStreak, blocks };
+      const evenings = await listEveningCheckins(db, LOCAL_USER_ID);
+      const streakDates = evenings
+        .filter((checkin) => checkin.date <= checkinDay && countsForStreak(checkin))
+        .map((checkin) => checkin.date);
+      return { scores: finalScores(history.days), streakDates, blocks };
     };
     // Čitanje baze odgodi iza prvog crtanja.
     const handle = setTimeout(() => {
