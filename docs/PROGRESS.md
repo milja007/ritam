@@ -2,6 +2,13 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-14 · Sesija 00:43 — orb-plamen avatar na Profilu (korak 33, bez Skie)
+Plan (provjeren protiv koncepta: „orb-plamen avatar“, bez kazni, napredak naspram vlastite prošlosti; platno „Profil“ → „Avatar i rang“):
+1. **Čista logika** `src/core/gamification/orb.ts`: veličina jezgre iz ranga (plamen raste kad napredak traje), toplina iz prosjeka konačnih rezultata zadnjih 7 dana, iskre iz niza (3 / 7 / 30 dana), brzina disanja iz topline. Jednom upaljen plamen bez svježih rezultata tinja — nikad se ne gasi (bez kazni). Rezultat „u tijeku“ ne grije.
+2. **UI** `src/ui/orb-flame.tsx`: prstenovi + jezgra (`radial-gradient`, kao postojeći `Orb`) + aureola koja diše + iskre koje kruže po crtkanom prstenu; Reanimated, uz „smanji kretanje“ sve stoji. Skia ostaje kao kasnija nadogradnja (paket traži Bornu).
+3. **Profil**: zaglavlje „Avatar i rang“ po platnu — orb zamjenjuje medaljon u kartici „Rang i statovi“; dodir orba objašnjava što ga oblikuje (rang, tjedan, niz). HR/EN, čitač zaslona.
+4. 37c: sva tri dijela (graf 30 dana, godišnja karta, arhiva) su gotova → `[x]`.
+
 ## 2026-11-13 · Sesija 21:43 — bedževi (34, dio), animacije niza i „Gotovo“ (35, dio), listanje razdoblja (PR #18)
 - **Bedževi** (`src/core/gamification/badges.ts`, kartica `features/ember/badges-card.tsx`): 9 bedževa iz konačnih rezultata i niza, ništa se ne sprema, osvojeno se ne gubi. Prvi tjedan (7 ocijenjenih dana), 7 / 30 dana zaredom, 7 dana bez prekršaja, Dan punog sjaja (≥ 85), Rekord tjedna, 4 dobra tjedna zaredom, 30 / 100 žarova. Osvojeni: puni obrub u boji žara; u tijeku: crtkani obrub + „n/m“; dodir pokaže pravilo.
 - **Animacija niza** (35): žar u piluli niza na Danu bljesne i broj poskoči kad niz naraste (`streakGain`, `useStreakGain`, `ui/flare.tsx`); javlja se čitaču zaslona.
