@@ -206,3 +206,48 @@ export function longestStreakInYear(streakDates: Iterable<string>, year: string,
   const inYear = [...streakDates].filter((date) => date.length === 10 && date.slice(0, 4) === year);
   return streakFromDates(inYear, through).longest;
 }
+
+/** Zadnjih `count` dana do `end` (uključivo), uzlazno; prazno za neispravan datum ili broj. */
+export function trailingDates(end: string, count: number): string[] {
+  if (!Number.isInteger(count) || count <= 0) return [];
+  const dates: string[] = [];
+  for (let back = count - 1; back >= 0; back--) {
+    const date = addDays(end, -back);
+    if (date === null) return [];
+    dates.push(date);
+  }
+  return dates;
+}
+
+/** Stupac grafa trenda: dan, konačni rezultat (ili `null`) i je li u zadnjem, istaknutom dijelu. */
+export type TrendBar = { date: string; score: number | null; recent: boolean };
+
+export type Trend = {
+  bars: TrendBar[];
+  /** Prosjek prikazanog razdoblja i razdoblja iste duljine prije njega (zaokruženo), ili `null`. */
+  average: number | null;
+  previous: number | null;
+  /** Broj ocijenjenih dana u prikazanom razdoblju. */
+  scored: number;
+};
+
+/**
+ * Trend zadnjih `count` dana do `end` (Profil, „Zadnjih 30 dana“): stupac po danu, zadnjih
+ * `recent` dana je istaknuto; usporedba je s `count` dana prije toga.
+ */
+export function trend(end: string, scores: ReadonlyMap<string, number>, count = 30, recent = 7): Trend {
+  const dates = trailingDates(end, count);
+  const before = dates.length > 0 ? addDays(dates[0], -1) : null;
+  const previousDates = before === null ? [] : trailingDates(before, count);
+  const bars = dates.map((date, index) => ({
+    date,
+    score: scores.get(date) ?? null,
+    recent: index >= dates.length - recent,
+  }));
+  return {
+    bars,
+    average: averageScore(dates, scores),
+    previous: averageScore(previousDates, scores),
+    scored: bars.filter((bar) => bar.score !== null).length,
+  };
+}

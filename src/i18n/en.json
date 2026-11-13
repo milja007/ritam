@@ -686,6 +686,14 @@
       "longestStreak": "days, longest streak",
       "strongestMonth": "{{month}}, strongest month",
       "scoredDays": "scored days"
+    },
+    "trend": {
+      "title": "Last 30 days",
+      "average": "average {{score}}",
+      "averageWithPrevious": "average {{score}} · before {{previous}}",
+      "label": "Last 30 days: {{scored}} scored days, average {{score}}",
+      "labelWithPrevious": "Last 30 days: {{scored}} scored days, average {{score}}, the 30 days before {{previous}}",
+      "empty": "No scored days yet. An ember lights up after the evening check-in."
     }
   }
 }

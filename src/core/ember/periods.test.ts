@@ -13,6 +13,8 @@ import {
   strongestDay,
   longestStreakInYear,
   strongestMonth,
+  trailingDates,
+  trend,
   weekDates,
   weekSegments,
   yearMonths,
@@ -200,5 +202,48 @@ describe('rekordi godine (naknadni pregled PR-a #7)', () => {
     expect(longestStreakInYear(['2026-01-01', '2026-01-02', '2026-01-03'], '2026', '2026-01-02')).toBe(2);
     expect(longestStreakInYear([], '2026', '2026-11-12')).toBe(0);
     expect(longestStreakInYear(['2025-05-05'], '2026', '2026-11-12')).toBe(0);
+  });
+});
+
+describe('trend zadnjih dana (Profil)', () => {
+  it('trailingDates vraća dane uzlazno do zadanog dana, i preko granice mjeseca', () => {
+    expect(trailingDates('2026-03-02', 4)).toEqual(['2026-02-27', '2026-02-28', '2026-03-01', '2026-03-02']);
+    expect(trailingDates('2026-03-02', 0)).toEqual([]);
+    expect(trailingDates('nije-datum', 3)).toEqual([]);
+  });
+
+  it('30 stupaca, zadnjih 7 istaknuto, dani bez rezultata su null', () => {
+    const scores = new Map([
+      ['2026-11-12', 80],
+      ['2026-11-01', 60],
+    ]);
+    const result = trend('2026-11-12', scores);
+    expect(result.bars).toHaveLength(30);
+    expect(result.bars[0]).toEqual({ date: '2026-10-14', score: null, recent: false });
+    expect(result.bars[29]).toEqual({ date: '2026-11-12', score: 80, recent: true });
+    expect(result.bars.filter((bar) => bar.recent)).toHaveLength(7);
+    expect(result.bars[22].recent).toBe(false);
+    expect(result.scored).toBe(2);
+    expect(result.average).toBe(70);
+    expect(result.previous).toBeNull();
+  });
+
+  it('usporedba je s 30 dana prije prikazanog razdoblja', () => {
+    const scores = new Map([
+      ['2026-11-12', 71],
+      ['2026-10-14', 71], // prvi dan prikazanog razdoblja
+      ['2026-10-13', 63], // zadnji dan prethodnog
+      ['2026-09-14', 63], // prvi dan prethodnog
+      ['2026-09-13', 10], // izvan oba
+    ]);
+    const result = trend('2026-11-12', scores);
+    expect(result.average).toBe(71);
+    expect(result.previous).toBe(63);
+  });
+
+  it('bez ijednog rezultata nema prosjeka', () => {
+    const result = trend('2026-11-12', new Map());
+    expect(result.average).toBeNull();
+    expect(result.scored).toBe(0);
   });
 });

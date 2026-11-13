@@ -694,6 +694,14 @@
       "longestStreak": "dana, najduži niz",
       "strongestMonth": "{{month}}, najjači mjesec",
       "scoredDays": "ocijenjenih dana"
+    },
+    "trend": {
+      "title": "Zadnjih 30 dana",
+      "average": "prosjek {{score}}",
+      "averageWithPrevious": "prosjek {{score}} · prije {{previous}}",
+      "label": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}",
+      "labelWithPrevious": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}, 30 dana prije {{previous}}",
+      "empty": "Još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
     }
   }
 }
