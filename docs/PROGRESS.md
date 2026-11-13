@@ -2,10 +2,16 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-13 07:15 · Žar 6: Profil (grana `wip/zar-profil`, draft PR, **nije predano**)
-- Plan skupine: (1) Ž6 Profil po platnu — kartica napretka s orbom u prstenovima + graf „Zadnjih 30 dana“ (dio koraka 37c) **gotovo**; (2) zaglavlje Dana s pilulama (niz, rezultat) po platnu; (3) korak 35 animacije (punjenje XP trake, paljenje žara), haptika traži `expo-haptics` → `package.json` je visokorizičan, ide zasebno.
-- Ž6: `trend`/`trailingDates` u `src/core/ember/periods.ts` (30 stupaca, zadnjih 7 istaknuto, usporedba s 30 dana prije), `TrendCard` u `src/features/ember`, `ProgressCard` s orbom. Rang, statovi, „[Sustav]“ i bedževi s platna čekaju korake 34b i 32 (broj razine se i dalje ne prikazuje, odluka P35).
-- **Predaja blokirana** dok brzi merge PR-a #8 (`aa3f2b3`) nema Codexov završni status.
+## 2026-11-13 10:15 · Žar 6–8 + dijelovi koraka 35 i 37c (grana `wip/zar-profil`, draft PR #9, **nije predano**)
+- Gotovo na grani (svaki zaseban commit, s testovima):
+  1. Ž6 Profil: kartica napretka s orbom u prstenovima + graf „Zadnjih 30 dana“ (`trend`, `TrendCard`).
+  2. Ž7 zaglavlje Dana po platnu: datum iznad naslova „Danas“, pilule niza (žar svijetli dok niz traje) i rezultata sa strelicom trenda (`scorePill` u `src/core/progress`, `DayPills`).
+  3. Ž8 kartica „Trenutno“ po platnu: veliki živi sat sa sekundama u boji plamena, desno „još mm:ss“, tanki obrub.
+  4. Korak 35 (dio): ispuna `ProgressBar` klizi do nove vrijednosti (`src/core/theme/motion.ts`; poštuje „smanji kretanje“).
+  5. Korak 37c (dio): žar dana s rezultatom u Mjesecu otvara dijagnozu tog dana (`hasDiagnosis`).
+- Koraci 35 i 37c **nisu** označeni `[x]`: ostaje haptika i +XP/level-up animacije (`expo-haptics` → `package.json`, visokorizično) te popis arhive dijagnoza (traži novi upit u `src/db/**`, visokorizično). Rang, statovi, „[Sustav]“ i bedževi s platna čekaju 34b i 32.
+- Sljedeće na ovoj grani ili novoj: paljenje žara nakon večernjeg upita (animacija), Godina → dodir mjeseca; zatim visokorizični PR (haptika, upit arhive, redoslijed „Žar“ u `BUILD_PLAN.md`).
+- **Predaja blokirana** dok brzi merge PR-a #8 (`aa3f2b3`) nema Codexov završni status. PR #9 ne dira visokorizične datoteke (brzi put kad se odblokira). Na uređaju neprovjereno.
 
 ## 2026-11-13 06:45 · Popravci naknadnog pregleda PR-a #7 (grana `fix/zar-pregled-pr7`)
 - Codex `CODEX_CHANGES_REQUESTED` za merge `7af71be` (https://github.com/milja007/ritam/issues/1#issuecomment-6842886626), tri nalaza, sva popravljena s testovima:
