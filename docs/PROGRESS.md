@@ -2,6 +2,14 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 · Sesija 18:43 — plan (korak 34b + dio koraka 35)
+Skupina po platnu „Profil“ (rang, „[Sustav]“, statovi), sve iz lokalnih podataka:
+1. **34b čisto:** `src/core/gamification/rank.ts` — rang E→S iz broja „dobrih tjedana“ (zaključen tjedan s ≥ 4 konačna rezultata koji nije slabiji od prethodnog ili je prosjekom ≥ 70); rang nikad ne pada (bez kazni). `stats.ts` — Disciplina / Volja / Energija 0–100 iz dijelova konačnog rezultata (plan / zabrane / san) zadnjih 30 dana. Testovi.
+2. **34b podaci:** `ScoredDay` dobiva neobavezne `parts`; `listDayScores` ih samo prosljeđuje (čitanje, bez migracije) → `HIGH_RISK: da`.
+3. **34b UI:** kartica „Rang“ na Profilu — medaljon ranga (svjetlina žara raste s rangom), poruka „[Sustav]“, koraci do sljedećeg ranga, trake statova; Zdravlje i Novac prigušeni dok trackeri (31b) ne postoje. HR/EN, a11y oznake. Jedno čitanje podataka dijele „Rang“ i „Zadnjih 30 dana“.
+4. **35 dio (bez haptike):** „+N XP“ iskoči uz XP traku na Danu kad XP naraste dok je ekran otvoren; poštuje „smanji kretanje“. Haptika ostaje Ž11 (čeka `expo-haptics`).
+- Provjera protiv koncepta: rang „raste kad napredak traje tjednima“, statovi „iz stvarnog ponašanja“, bez broja razine (P35), žar/rang samo iz **konačnih** rezultata (P43). Pragovi ranga nisu u konceptu → pitanje 76 (ne blokira).
+
 ## 2026-11-13 · Sesija 15:43 — plan
 
 Plan sesije (korak 20–22, grupe 2–4 koraka):
