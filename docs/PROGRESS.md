@@ -2,6 +2,16 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 · Sesija 15:43 — plan
+
+Plan sesije (korak 20–22, grupe 2–4 koraka):
+1. `tsconfig.json`: isključi `supabase/**` (Deno runtime — TS kompilator ih ne razumije)
+2. **Korak 20 (LLM provider):** `supabase/functions/_shared/cors.ts` + `llm-provider.ts` (interface `LLMProvider` + Claude implementacija + logger u `llm_calls`)
+3. **Korak 21 (parse-input):** `supabase/functions/parse-input/index.ts` + `src/core/schedule/edge-types.ts` (TS tipovi za app stranu)
+4. **Korak 22 (plan-day):** `supabase/functions/plan-day/index.ts` (scaffold s fallback pravilima; korisnik odobrava plan)
+- Edge Functions se ne mogu deployati ovdje (nema Expo ni remote Supabase ključeva); kod se piše i provjerava `tsc`-om za tipove u `src/core/`; testovi za čistu logiku. Deployment čeka Bornu.
+- API ključ (`ANTHROPIC_API_KEY`) ide samo u Supabase secrets — BORNA_DECISION_NEEDED za deployment.
+
 ## 2026-11-13 · Sesija 12:43 — Ž9, Ž10, Ž12 spojeni (PR #11 `fe51250`, #12 `b74df90`, #13 `d25805f`)
 - Spojeno (svaki korak zaseban commit, s testovima):
   1. **Ž9 Paljenje žara.** Žar današnjeg dana stoji uz broj rezultata u zaglavlju Dana: ugašen obrub dok dan traje, a kad večernji upit da konačni rezultat upali se na svoju razinu uz jednokratnu animaciju (aureola nabuja i smiri se, žar malo naraste i vrati se). Čisto: `todayEmber` (pali **samo konačni rezultat**, pravilo P43 — rezultat „u tijeku“ i istaknuti jučerašnji ostavljaju žar ugašen) i `shouldIgnite` (prvo crtanje i gašenje ne animiraju); tokeni `IGNITE_DURATION_MS` / `IGNITE_SWELL_MS`; `EmberIgnite` poštuje „smanji kretanje“.
