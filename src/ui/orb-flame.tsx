@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -7,11 +7,13 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withRepeat,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
+import { shouldIgnite, type EmberLevel } from '@/core/ember';
 import { ORB_DASHED_INSET, orbFlameColors, type OrbFlame as OrbFlameState } from '@/core/gamification';
-import { ORB_FLICKER_RATIO, ORB_ORBIT_MS } from '@/core/theme';
+import { IGNITE_DURATION_MS, IGNITE_SWELL_MS, ORB_FLICKER_RATIO, ORB_ORBIT_MS } from '@/core/theme';
 
 import { useAppTheme } from './theme';
 
@@ -27,7 +29,8 @@ type OrbFlameProps = {
 /**
  * Orb-plamen avatar (korak 33, platno „Profil“): dva prstena, jezgra čija veličina prati rang i
  * svjetlina zadnjih 7 dana, aureola koja diše i iskre koje kruže po crtkanom prstenu dok traje niz.
- * Ugašen plamen je samo obrub jezgre. Uz „smanji kretanje“ sve stoji. Čisto ukrasno — značenje
+ * Ugašen plamen je samo obrub jezgre; kad se prvi put upali dok je ekran otvoren, aureola bljesne
+ * (isto pravilo kao paljenje žara dana, `shouldIgnite`). Uz „smanji kretanje“ sve stoji. Čisto ukrasno — značenje
  * (rang, toplina, niz) nosi tekst uz avatar.
  */
 export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
@@ -71,10 +74,29 @@ export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
     return () => cancelAnimation(orbit);
   }, [orbit, reduceMotion, sparks]);
 
+  // Paljenje: plamen koji je bio ugašen dok je Profil stajao otvoren (tab ostaje montiran) upali se
+  // uz jednokratan bljesak aureole kad stigne prvi konačni rezultat. Prvo crtanje ne animira.
+  const ignite = useSharedValue(0);
+  const previousHeat = useRef<EmberLevel | null>(null);
+  const heat = flame.heat;
+  useEffect(() => {
+    const before = previousHeat.current;
+    previousHeat.current = heat;
+    if (reduceMotion || !shouldIgnite(before, heat)) return;
+    ignite.value = withSequence(
+      withTiming(1, { duration: IGNITE_SWELL_MS, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: IGNITE_DURATION_MS - IGNITE_SWELL_MS, easing: Easing.inOut(Easing.quad) }),
+    );
+    return () => {
+      cancelAnimation(ignite);
+      ignite.value = 0;
+    };
+  }, [heat, ignite, reduceMotion]);
+
   const haloStrength = colors.halo;
   const haloStyle = useAnimatedStyle(() => ({
-    opacity: haloStrength * (0.3 + breath.value * 0.4),
-    transform: [{ scale: 1.04 + breath.value * 0.16 }],
+    opacity: Math.min(1, haloStrength * (0.3 + breath.value * 0.4) + ignite.value * 0.5),
+    transform: [{ scale: 1.04 + breath.value * 0.16 + ignite.value * 0.5 }],
   }));
   const coreStyle = useAnimatedStyle(() => ({ transform: [{ scale: 1 + breath.value * 0.03 }] }));
   const flickerStyle = useAnimatedStyle(() => ({
