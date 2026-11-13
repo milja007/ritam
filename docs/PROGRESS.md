@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 13:00 · Plan: Žar 9–10 (grana `wip/zar-paljenje-godina`)
+1. **Ž9 Paljenje žara.** Dan dobiva žar današnjeg dana u zaglavlju: dok dan traje žar je ugašen obrub, nakon večernjeg upita se **upali** na svoju razinu uz jednokratnu animaciju (aureola nabuja i smiri se). Čisto: `todayEmber(headline)` (pali samo konačni rezultat, pravilo P43) i `shouldIgnite(prethodni, novi)` (prvo crtanje ne animira); token `IGNITE_DURATION_MS`.
+2. **Ž10 Godina → dodir mjeseca.** Redak mjeseca u Godini postaje dodirljiv i otvara taj mjesec u tabu Mjesec. Čisto: `isMonthOpenable` (budući mjesec nema što pokazati) i `monthHeader` (pilula: tekući → još N dana, prošli → prosjek). Prijenos između tabova ide istim uzorkom kao zahtjevi obavijesti (`useSyncExternalStore`), Mjesec drži odabrani mjesec i ima povratak „Ovaj mjesec“.
+3. Kontrole (`tsc`, `lint`, `npm test`), zeleni CI, oznake u `BUILD_PLAN.md`, merge + `CLAUDE_MERGED_FAST`.
+- Provjereno protiv koncepta: žar pali **samo konačni rezultat** (nema paljenja iz rezultata „u tijeku“); neodrađeno ostaje ugašen žar, bez crvenog i bez kazne; animacija poštuje „smanji kretanje“. Listanje prošlih razdoblja (strelice naprijed/nazad) ostaje namjerno izvan opsega — to je korak 34b.
+
 ## 2026-11-13 · Samostalan rad (odluka Borna, 2026-11-13 chat; isto poslano Codexu)
 - Codex zaustavlja Claudea samo kod P0/P1 greške koja mijenja sve; inače Claude radi sam i sam spaja PR na zelenom CI-ju, Codex pregledava usporedno. P2/P3 idu u sljedeći PR. Pravila u `CLAUDE.md` ("samostalan rad") i prompt u `docs/AUTOMATION.md` prepisani; stara pravila čekanja i `REPOST` mehanizmi više ne vrijede.
 - Bez Borne i dalje ne ide: remote Supabase migracije, tajne, promjene koncepta, brisanje.
