@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { describe, expect, it } from '@jest/globals';
+import { eq } from 'drizzle-orm';
 
 import type { ChecklistAnswer, EveningDraft } from '@/core/checkin';
 import { parseDayDiagnosis } from '@/core/diagnosis';
@@ -12,6 +13,8 @@ import {
   createRule,
   generateDayReport,
   getReport,
+  listDayReportArchive,
+  markReportSeen,
   saveEveningCheckin,
   saveSettings,
   type RuleInput,
@@ -162,5 +165,65 @@ describe('reports repo — dnevna dijagnoza', () => {
     saveEveningCheckin(db, USER, draft(DATE, [ans(a.id, 'ok')], rule.id, true, 4), deps);
     generateDayReport(db, USER, DATE, deps);
     expect(await getReport(db, 'drugi', 'day', DATE)).toBeNull();
+  });
+});
+
+describe('listDayReportArchive', () => {
+  /** Dijagnoze za zadane dane; svaki dan ima svoj blok i ispunjen upit. */
+  async function withReports(dates: readonly string[]) {
+    const ctx = await setup();
+    for (const date of dates) {
+      const b = await ctx.block(date, 'Učenje', '09:00', '10:00');
+      saveEveningCheckin(ctx.db, USER, draft(date, [ans(b.id, 'ok')], ctx.rule.id, true, 4), ctx.deps);
+      generateDayReport(ctx.db, USER, date, ctx.deps);
+    }
+    return ctx;
+  }
+
+  it('vraća najnovije prvo, s trendom i „Ukratko“ retkom', async () => {
+    const { db } = await withReports(['2026-11-08', YESTERDAY, DATE]);
+    const archive = await listDayReportArchive(db, USER, DATE, 10);
+    expect(archive.map((entry) => entry.date)).toEqual([DATE, YESTERDAY, '2026-11-08']);
+    expect(archive[0]?.summary.key).toMatch(/^summary\./);
+    expect(archive.every((entry) => entry.seen === false)).toBe(true);
+  });
+
+  it('ne pokazuje dane poslije `through` (budući dani)', async () => {
+    const { db } = await withReports([YESTERDAY, DATE]);
+    const archive = await listDayReportArchive(db, USER, YESTERDAY, 10);
+    expect(archive.map((entry) => entry.date)).toEqual([YESTERDAY]);
+  });
+
+  it('`limit` reže popis, a neispravan limit daje prazno', async () => {
+    const { db } = await withReports(['2026-11-08', YESTERDAY, DATE]);
+    expect((await listDayReportArchive(db, USER, DATE, 2)).map((e) => e.date)).toEqual([DATE, YESTERDAY]);
+    expect(await listDayReportArchive(db, USER, DATE, 0)).toEqual([]);
+    expect(await listDayReportArchive(db, USER, DATE, -1)).toEqual([]);
+    expect(await listDayReportArchive(db, USER, DATE, 1.5)).toEqual([]);
+  });
+
+  it('pokupljena dijagnoza je označena viđenom', async () => {
+    const { db, deps } = await withReports([DATE]);
+    expect(markReportSeen(db, USER, 'day', DATE, deps)).toBe(true);
+    const archive = await listDayReportArchive(db, USER, DATE, 10);
+    expect(archive[0]?.seen).toBe(true);
+  });
+
+  it('arhiva je po korisniku i ne dira tuđe dijagnoze', async () => {
+    const { db } = await withReports([DATE]);
+    expect(await listDayReportArchive(db, 'drugi', DATE, 10)).toEqual([]);
+  });
+
+  it('zapis koji nije lokalna dnevna dijagnoza se preskače, bez greške', async () => {
+    const { db } = await withReports([YESTERDAY, DATE]);
+    // Npr. dijagnoza druge (LLM ili starije) verzije: popis je preskače, ostatak ostaje.
+    await db.update(reports).set({ sections: { version: 'llm-day-v1' } }).where(eq(reports.periodStart, DATE)).run();
+    const archive = await listDayReportArchive(db, USER, DATE, 10);
+    expect(archive.map((entry) => entry.date)).toEqual([YESTERDAY]);
+  });
+
+  it('bez ijedne dijagnoze arhiva je prazna', async () => {
+    const { db } = await setup();
+    expect(await listDayReportArchive(db, USER, DATE, 10)).toEqual([]);
   });
 });

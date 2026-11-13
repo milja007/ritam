@@ -515,6 +515,14 @@
       "title": "Your day diagnosis is ready",
       "body": "Every activity has an outcome. See what worked, what didn't and one idea for tomorrow.",
       "open": "Open diagnosis"
+    },
+    "archive": {
+      "title": "Diagnosis archive",
+      "empty": "The archive fills itself: every completed evening leaves its diagnosis.",
+      "loadError": "Can't load the archive right now.",
+      "unseen": "Unread.",
+      "openHint": "Opens that day's diagnosis",
+      "more": "Show more"
     }
   },
   "score": {
