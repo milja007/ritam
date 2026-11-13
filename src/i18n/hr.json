@@ -246,7 +246,8 @@
       "free": "Slobodno",
       "freeBody": "Ništa ne traje — sljedeća aktivnost je ispod.",
       "allDone": "Za danas je to sve",
-      "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori."
+      "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori.",
+      "left": "još {{time}}"
     },
     "rail": {
       "now": "Sada · {{title}}",

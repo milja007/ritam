@@ -242,7 +242,8 @@
       "free": "Free time",
       "freeBody": "Nothing is on right now — the next activity is below.",
       "allDone": "That's it for today",
-      "allDoneBody": "Nothing else is planned. Add something or take a rest."
+      "allDoneBody": "Nothing else is planned. Add something or take a rest.",
+      "left": "{{time}} left"
     },
     "rail": {
       "now": "Now · {{title}}",
