@@ -1,6 +1,14 @@
+import { useEffect } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { radius } from '@/core/theme';
+import { clampFraction, FILL_DURATION_MS } from '@/core/theme';
 
 import { useAppTheme } from './theme';
 
@@ -15,7 +23,10 @@ type ProgressBarProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Vodoravna traka napretka u boji akcenta (XP). Statična; animacija punjenja dolazi s korakom 35. */
+/**
+ * Vodoravna traka napretka u boji akcenta (XP, trajanje aktivnosti). Ispuna klizi do nove
+ * vrijednosti (korak 35); uz „smanji kretanje“ skoči odmah. Prvo crtanje je bez animacije.
+ */
 export function ProgressBar({
   fraction,
   accessibilityLabel,
@@ -24,7 +35,18 @@ export function ProgressBar({
   style,
 }: ProgressBarProps) {
   const { colors } = useAppTheme();
-  const clamped = Number.isFinite(fraction) ? Math.min(1, Math.max(0, fraction)) : 0;
+  const reduceMotion = useReducedMotion();
+  const clamped = clampFraction(fraction);
+  const shown = useSharedValue(clamped);
+
+  useEffect(() => {
+    shown.value = reduceMotion
+      ? clamped
+      : withTiming(clamped, { duration: FILL_DURATION_MS, easing: Easing.out(Easing.cubic) });
+  }, [clamped, reduceMotion, shown]);
+
+  const fill = useAnimatedStyle(() => ({ width: `${shown.value * 100}%` }));
+
   return (
     <View
       accessibilityRole="progressbar"
@@ -35,17 +57,14 @@ export function ProgressBar({
         { height, borderRadius: height / 2, backgroundColor: colors.surfaceRaised },
         style,
       ]}>
-      <View
-        style={[
-          styles.fill,
-          { width: `${clamped * 100}%`, borderRadius: height / 2, backgroundColor: colors.accent },
-        ]}
+      <Animated.View
+        style={[styles.fill, { borderRadius: height / 2, backgroundColor: colors.accent }, fill]}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  track: { width: '100%', overflow: 'hidden', borderRadius: radius.pill },
+  track: { width: '100%', overflow: 'hidden' },
   fill: { height: '100%' },
 });
