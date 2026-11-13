@@ -761,5 +761,38 @@
       "emptyA11y": "{{stat}}: {{reason}}",
       "note": "Prosjek zadnjih 30 dana, iz konačnih dnevnih rezultata."
     }
+  },
+  "badges": {
+    "title": "Bedževi",
+    "count": "{{earned}} / {{total}}",
+    "countA11y": "Osvojeno bedževa: {{earned}} od {{total}}",
+    "earned": "Osvojeno",
+    "progress": "U tijeku: {{done}} od {{total}}",
+    "locked": "Još nije osvojeno",
+    "chip": "{{name}} · {{done}}/{{total}}",
+    "hint": "Dodirni bedž za pravilo. Osvojen bedž ostaje tvoj — slab dan ništa ne oduzima.",
+    "hintEmpty": "Dodirni bedž i vidi kako se osvaja. Prvi stiže s prvim večernjim upitima.",
+    "name": {
+      "firstWeek": "Prvi tjedan",
+      "streak7": "7 dana zaredom",
+      "cleanWeek": "7 dana bez prekršaja",
+      "brightDay": "Dan punog sjaja",
+      "weekRecord": "Rekord tjedna",
+      "goodWeeks4": "4 dobra tjedna",
+      "embers30": "30 žarova",
+      "streak30": "30 dana zaredom",
+      "embers100": "100 žarova"
+    },
+    "rule": {
+      "firstWeek": "Sedam dana s ispunjenim večernjim upitom. Ne moraju biti zaredom.",
+      "streak7": "Večernji upit ispunjen 7 dana zaredom.",
+      "cleanWeek": "Sedam dana zaredom bez prekršene zabrane. Broji se kad su zabrane uključene u područja rezultata.",
+      "brightDay": "Dan s konačnim rezultatom 85 ili više — žar tada gori punim sjajem.",
+      "weekRecord": "Tjedan s prosjekom boljim od svih prethodnih. Tjedan se broji kad ima barem 4 ocijenjena dana.",
+      "goodWeeks4": "Četiri dobra tjedna zaredom. Dobar tjedan je bolji od prethodnog ili ima prosjek 70 i više.",
+      "embers30": "Trideset dana s ispunjenim večernjim upitom — trideset žarova.",
+      "streak30": "Večernji upit ispunjen 30 dana zaredom.",
+      "embers100": "Sto dana s ispunjenim večernjim upitom — sto žarova."
+    }
   }
 }

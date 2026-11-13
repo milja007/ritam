@@ -751,5 +751,38 @@
       "emptyA11y": "{{stat}}: {{reason}}",
       "note": "Average of the last 30 days, from final daily scores."
     }
+  },
+  "badges": {
+    "title": "Badges",
+    "count": "{{earned}} / {{total}}",
+    "countA11y": "Badges earned: {{earned}} of {{total}}",
+    "earned": "Earned",
+    "progress": "In progress: {{done}} of {{total}}",
+    "locked": "Not earned yet",
+    "chip": "{{name}} · {{done}}/{{total}}",
+    "hint": "Tap a badge to see its rule. An earned badge stays yours — a weak day takes nothing away.",
+    "hintEmpty": "Tap a badge to see how to earn it. The first one comes with your first evening check-ins.",
+    "name": {
+      "firstWeek": "First week",
+      "streak7": "7 days in a row",
+      "cleanWeek": "7 days, no slips",
+      "brightDay": "Full-glow day",
+      "weekRecord": "Week record",
+      "goodWeeks4": "4 good weeks",
+      "embers30": "30 embers",
+      "streak30": "30 days in a row",
+      "embers100": "100 embers"
+    },
+    "rule": {
+      "firstWeek": "Seven days with a completed evening check-in. They don't have to be in a row.",
+      "streak7": "Evening check-in completed 7 days in a row.",
+      "cleanWeek": "Seven days in a row without breaking a rule. Counts when rules are part of your score areas.",
+      "brightDay": "A day with a final score of 85 or more — the ember burns at full glow.",
+      "weekRecord": "A week with a higher average than every week before it. A week counts once it has at least 4 scored days.",
+      "goodWeeks4": "Four good weeks in a row. A good week beats the previous one or averages 70 or more.",
+      "embers30": "Thirty days with a completed evening check-in — thirty embers.",
+      "streak30": "Evening check-in completed 30 days in a row.",
+      "embers100": "A hundred days with a completed evening check-in — a hundred embers."
+    }
   }
 }
