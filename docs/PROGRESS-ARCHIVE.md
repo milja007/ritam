@@ -4,6 +4,24 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-13 12:50 · Žar 6–8 + dijelovi koraka 35 i 37c (grana `wip/zar-profil`, PR #9 → brzi put; premješteno iz PROGRESS.md 2026-11-13)
+- Gotovo na grani (svaki zaseban commit, s testovima):
+  1. Ž6 Profil: kartica napretka s orbom u prstenovima + graf „Zadnjih 30 dana“ (`trend`, `TrendCard`).
+  2. Ž7 zaglavlje Dana po platnu: datum iznad naslova „Danas“, pilule niza (žar svijetli dok niz traje) i rezultata sa strelicom trenda (`scorePill` u `src/core/progress`, `DayPills`).
+  3. Ž8 kartica „Trenutno“ po platnu: veliki živi sat sa sekundama u boji plamena, desno „još mm:ss“, tanki obrub.
+  4. Korak 35 (dio): ispuna `ProgressBar` klizi do nove vrijednosti (`src/core/theme/motion.ts`; poštuje „smanji kretanje“).
+  5. Korak 37c (dio): žar dana s rezultatom u Mjesecu otvara dijagnozu tog dana (`hasDiagnosis`).
+- Koraci 35 i 37c **nisu** označeni `[x]`: ostaje haptika i +XP/level-up animacije (`expo-haptics` → `package.json`, visokorizično) te popis arhive dijagnoza (traži novi upit u `src/db/**`, visokorizično). Rang, statovi, „[Sustav]“ i bedževi s platna čekaju 34b i 32.
+- Sljedeće na novoj grani `wip/zar-…`: paljenje žara nakon večernjeg upita (animacija), Godina → dodir mjeseca; zatim visokorizični PR (haptika, upit arhive, redoslijed „Žar“ u `BUILD_PLAN.md`).
+- Brzi merge PR-a #8 (`aa3f2b3`) ima `CODEX_APPROVED` (https://github.com/milja007/ritam/issues/1#issuecomment-6851503695), pa je predaja odblokirana: PR #9 ne dira visokorizične datoteke i ide brzim putem (`CLAUDE_MERGED_FAST` u #1). Na uređaju neprovjereno.
+
+## 2026-11-13 06:45 · Popravci naknadnog pregleda PR-a #7 (grana `fix/zar-pregled-pr7`; premješteno iz PROGRESS.md 2026-11-13)
+- Codex `CODEX_CHANGES_REQUESTED` za merge `7af71be` (https://github.com/milja007/ritam/issues/1#issuecomment-6842886626), tri nalaza, sva popravljena s testovima:
+  1. P2 jedan orb na traci: kod preklopa (09–11 i 10–12 u 10:30) plamen nosi samo redak „Sada“; druga aktivnost koja traje ostaje ocrtana i dalje se otvara (`railState(…, flame)`, `flameBlockId` u `src/core/ember/ember.ts`).
+  2. P2 „Rekordi ove godine“: najduži niz samo unutar prikazane godine, uz pravilo „Odustajem“ (`longestStreakInYear`; dani iz `listEveningCheckins`).
+  3. P3 „Najjači mjesec“ uspoređuje stvarne prosjeke, zaokružuje samo prikaz.
+- Sljedeće: Ž6 Profil po platnu, zatim faza 3 (33, 35, 34b, 37c, 38) i docs PR s redoslijedom „Žar“ u `BUILD_PLAN.md` (visokorizično).
+
 ## 2026-11-13 · Smjer „Žar“, plan Ž1–5 (grana `wip/zar-dan-tjedan`; premješteno iz PROGRESS.md 2026-11-13)
 - **Odluka Borna 2026-11-12:** vizualni smjer „Žar“ („dan izgori u žar“) ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu (Dan, Tjedan, Mjesec, Godina, Profil). **Odluka Borna 2026-11-13 (chat):** smije ići paralelno dok PR #6 čeka review.
 - Ideja: orb-plamen putuje niz današnji raspored; odrađeno iza njega svijetli, plan ispred je tek ocrtan; svaki dan je žar čija svjetlina znači dnevni rezultat (tjedan: 7 stupaca, mjesec: kalendar žarova, godina: 365 točkica); neodrađeno je ugašen žar, nikad crveni X.
