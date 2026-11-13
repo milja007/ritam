@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 · Samostalan rad (odluka Borna, chat; isto poslano Codexu)
+- Codex zaustavlja Claudea samo kod greške koja mijenja sve (P0/P1); inače Claude radi sam i sam spaja PR na zelenom CI-ju, a Codex pregledava usporedno. P2/P3 idu u sljedeći PR. Pravila u `CLAUDE.md` ("samostalan rad") i prompt u `docs/AUTOMATION.md` su prepisani; stara pravila čekanja, `REPOST` i zapisi odluka po URL-u pitanja više ne vrijede.
+- Bez Borne i dalje ne ide: remote Supabase migracije, tajne, promjene koncepta, brisanje.
+- PR #7 (Žar 1–5) spojen kao `7af71be`; Codexov naknadni pregled još nije stigao i ne blokira.
+
 ## 2026-11-13 · Smjer „Žar“ (grana `wip/zar-dan-tjedan`)
 - **Odluka Borna 2026-11-12:** vizualni smjer „Žar“ („dan izgori u žar“) ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu (Dan, Tjedan, Mjesec, Godina, Profil). **Odluka Borna 2026-11-13 (chat):** smije ići paralelno dok PR #6 čeka review.
 - Ideja: orb-plamen putuje niz današnji raspored; odrađeno iza njega svijetli, plan ispred je tek ocrtan; svaki dan je žar čija svjetlina znači dnevni rezultat (tjedan: 7 stupaca, mjesec: kalendar žarova, godina: 365 točkica); neodrađeno je ugašen žar, nikad crveni X.
@@ -14,10 +19,6 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Stanje: sve na lokalnim podacima (`listDayScores`, `listBlocksBetween`); žar pali samo konačni rezultat (nakon večernjeg upita). **Na uređaju neprovjereno** (cloud sesija nema simulator; web export ne radi zbog SQLite-a) — prošli su tsc, lint, Jest i iOS bundle.
 - Nije napravljeno namjerno: ciljevi tjedna/mjeseca/godine, „[Sustav]“ poruke, točkice fiksnih obaveza u mjesecu, listanje prošlih tjedana/mjeseci (čekaju korake 25, 25b, 34b).
 - Provjera plana: bez novih paketa (samo `View`, `boxShadow`, Reanimated koji već postoji), pa PR ne dira visokorizične datoteke. Ciljevi tjedna/mjeseca/godine i „[Sustav]“ poruke s platna još nemaju podatke (koraci 25, 25b, 34b) — ne izmišljam ih, sekcije dolaze s tim koracima. Redoslijed u `BUILD_PLAN.md` (visokorizično) ide zasebnim docs PR-om kad PR #6 prođe.
-
-## 2026-11-11 15:45 · Fix granica brzog puta (PR #6, spojen 2026-11-13 kao `d6fee31`)
-- Pravila postupka (brzi put, visokorizične datoteke, neobrađene radnje, identitet pošiljatelja, odluke po URL-u pitanja) su u `CLAUDE.md` i `docs/AUTOMATION.md`. Tijek svih 8 krugova reviewa je u arhivi.
-- **Odluka Borna 2026-11-13 (chat):** dizajn „Žar“ smije ići paralelno na `wip/zar-…` dok PR čeka review (do 2026-11-17).
 
 ## 2026-11-11 13:00 · Brži rad (Borna: "presporo")
 - 7 sesija dnevno (00:43, 06:43, 09:43, 12:43, 15:43, 18:43, 21:43; Borna: "treba jače raditi"); 2–4 povezana koraka po PR-u; brzi put: PR bez visokorizičnih datoteka Claude spaja na zelenom CI-ju, Codex pregledava naknadno (`CLAUDE_MERGED_FAST`). Pravila u `CLAUDE.md` → "Brži rad".
