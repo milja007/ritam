@@ -4,6 +4,24 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-13 · Sesija 12:43 — Ž9, Ž10, Ž12 spojeni (PR #11 `fe51250`, #12 `b74df90`, #13 `d25805f`)
+- Spojeno (svaki korak zaseban commit, s testovima):
+  1. **Ž9 Paljenje žara.** Žar današnjeg dana stoji uz broj rezultata u zaglavlju Dana: ugašen obrub dok dan traje, a kad večernji upit da konačni rezultat upali se na svoju razinu uz jednokratnu animaciju (aureola nabuja i smiri se, žar malo naraste i vrati se). Čisto: `todayEmber` (pali **samo konačni rezultat**, pravilo P43 — rezultat „u tijeku“ i istaknuti jučerašnji ostavljaju žar ugašen) i `shouldIgnite` (prvo crtanje i gašenje ne animiraju); tokeni `IGNITE_DURATION_MS` / `IGNITE_SWELL_MS`; `EmberIgnite` poštuje „smanji kretanje“.
+  2. **Ž10 Godina → dodir mjeseca.** Redak mjeseca u Godini otvara taj mjesec u tabu Mjesec, „Ovaj mjesec“ vraća na tekući; budući mjesec nije dodirljiv. Čisto: `isMonthOpenable` i `monthHeader` (pilula „još N dana“ / „završen“). Odabir stoji u `src/features/ember/selected-month.ts` (`useSyncExternalStore`, uzorak zahtjeva obavijesti), jer su tabovi odvojeni ekrani. Prazan prošli mjesec ima svoju poruku.
+  3. **Ž12 Arhiva dijagnoza** (PR #13, visokorizično): prošle dnevne dijagnoze na Profilu po mjesecima, najnovija prvo; dodir otvara dijagnozu tog dana, „Prikaži još“ dodaje deset, nepročitane nose točku. `listDayReportArchive` je **samo čitanje** (bez migracije, bez pisanja, popis ne generira dijagnozu). Čisto: `archiveByMonth`, `archiveLimit`, `archivePage`.
+- Uz Ž10 je ispravljena visina dodira retka mjeseca u Godini: bila je 14 px, sad 44 px (`minHeight`), pa je grid godine zračniji.
+- Namjerno izvan opsega: listanje prošlih razdoblja strelicama (korak 34b).
+- Redoslijed „Žar“ (Ž1–Ž12) je sada u `BUILD_PLAN.md`, sa zasebnom numeracijom i vezama na dijelove koraka 35 i 37c.
+- **Na uređaju neprovjereno** (cloud sesija nema simulator).
+- Prije toga u istoj sesiji: PR #10 (`6befc61`) — pravila „samostalan rad“ u `CLAUDE.md` i novi prompt u `docs/AUTOMATION.md`; planirani zadatak je ažuriran istim promptom.
+- **Zapreke iz ove sesije:**
+  - GitHub credential servis i API su oko 13:05–13:15 UTC vraćali 503; push je prošao nakon ponavljanja. Ništa nije izgubljeno.
+  - `npx expo install --check` ne prolazi u cloud sandboxu: proxy vraća `HTTP Proxy Network Error: Forbidden` za Expo API. Zato je taj check u objavama `NOT RUN` — i zato **Ž11 (haptika) ne može ovdje**, jer `expo-haptics` treba `npx expo install`.
+
+## 2026-11-13 · Samostalan rad (odluka Borna, 2026-11-13 chat; isto poslano Codexu)
+- Codex zaustavlja Claudea samo kod P0/P1 greške koja mijenja sve; inače Claude radi sam i sam spaja PR na zelenom CI-ju, Codex pregledava usporedno. P2/P3 idu u sljedeći PR. Pravila u `CLAUDE.md` ("samostalan rad") i prompt u `docs/AUTOMATION.md` prepisani; stara pravila čekanja i `REPOST` mehanizmi više ne vrijede.
+- Bez Borne i dalje ne ide: remote Supabase migracije, tajne, promjene koncepta, brisanje.
+
 ## 2026-11-13 12:50 · Žar 6–8 + dijelovi koraka 35 i 37c (grana `wip/zar-profil`, PR #9 → brzi put; premješteno iz PROGRESS.md 2026-11-13)
 - Gotovo na grani (svaki zaseban commit, s testovima):
   1. Ž6 Profil: kartica napretka s orbom u prstenovima + graf „Zadnjih 30 dana“ (`trend`, `TrendCard`).
