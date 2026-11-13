@@ -7,3 +7,4 @@ export * from './today-plan';
 export * from './plan-entry';
 export * from './now-view';
 export * from './day-close';
+export * from './edge-types';
