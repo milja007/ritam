@@ -253,6 +253,13 @@
       "nowFree": "Sada · slobodno",
       "nowLabel": "Sada je {{time}}. {{title}}",
       "nowFreeLabel": "Sada je {{time}}. Ništa ne traje."
+    },
+    "header": {
+      "title": "Danas",
+      "streak_one": "{{count}} dan",
+      "streak_few": "{{count}} dana",
+      "streak_other": "{{count}} dana",
+      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}."
     }
   },
   "evening": {

@@ -44,6 +44,7 @@ import { useAppTheme } from '@/ui/theme';
 import { BlockCard } from './block-card';
 import { BlockEditor } from './block-editor';
 import { BlockSheet } from './block-sheet';
+import { DayPills } from './day-pills';
 import { formatDay } from './format-day';
 import { GiveUp } from './give-up';
 import { NowCard } from './now-card';
@@ -250,12 +251,15 @@ export function TodayScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
-            <Text variant="overline" tone="textMuted">
-              {t('tabs.day')}
-            </Text>
-            <Text variant="title" accessibilityRole="header">
-              {formatDay(now.date, i18n.language)}
-            </Text>
+            <View style={styles.headerText}>
+              <Text variant="caption" tone="textMuted" numberOfLines={1}>
+                {formatDay(now.date, i18n.language)}
+              </Text>
+              <Text variant="title" accessibilityRole="header">
+                {t('today.header.title')}
+              </Text>
+            </View>
+            <DayPills today={now.date} checkinDay={now.eveningDate} />
           </View>
 
           {day.status === 'ready' && !needsPlan ? (
@@ -459,7 +463,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
     gap: spacing.lg,
   },
-  header: { gap: spacing.xs, paddingHorizontal: spacing.xs },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  headerText: { flex: 1, gap: spacing.xxs },
   loading: { marginTop: spacing.xxl },
   message: { gap: spacing.md },
   section: { gap: spacing.sm },

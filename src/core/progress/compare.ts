@@ -164,3 +164,25 @@ export function scoreHeadline(days: readonly ScoredDay[], date: string, longestS
     todayInProgress: today,
   };
 }
+
+export type ScorePill = {
+  score: number;
+  /** Trend naspram dana prije; `null` kad nema dana za usporedbu. */
+  trend: ScoreTrend | null;
+  /** `true` kad je to jučerašnji konačni rezultat (današnji upit još nije ispunjen). */
+  yesterday: boolean;
+};
+
+/**
+ * Pilula rezultata u zaglavlju Dana (smjer „Žar“): isti broj koji je istaknut na kartici rezultata
+ * (pravilo P43), sa strelicom trenda. Bez ijednog rezultata nema pilule.
+ */
+export function scorePill(headline: ScoreHeadline): ScorePill | null {
+  const { featured, featuresYesterday } = headline;
+  if (featured.today === null) return null;
+  return {
+    score: featured.today.score,
+    trend: featured.vsYesterday?.trend ?? null,
+    yesterday: featuresYesterday,
+  };
+}

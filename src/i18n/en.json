@@ -249,6 +249,12 @@
       "nowFree": "Now · free",
       "nowLabel": "It is {{time}}. {{title}}",
       "nowFreeLabel": "It is {{time}}. Nothing is in progress."
+    },
+    "header": {
+      "title": "Today",
+      "streak_one": "{{count}} day",
+      "streak_other": "{{count}} days",
+      "scoreYesterday": "Yesterday's score {{score}} out of 100. {{trend}}."
     }
   },
   "evening": {

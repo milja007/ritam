@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { progressOverview, scoreHeadline, scoreTrend, weekStart, type ScoredDay } from './compare';
+import { progressOverview, scoreHeadline, scorePill, scoreTrend, weekStart, type ScoredDay } from './compare';
 import { dayScore, scoreWeights, sleepPart, type ScoreInput } from './score';
 
 const input = (over: Partial<ScoreInput> = {}): ScoreInput => ({
@@ -215,5 +215,26 @@ describe('scoreHeadline (odluka P43)', () => {
     const headline = scoreHeadline([at('2026-11-08', 60), at('2026-11-10', 30, false)], '2026-11-10');
     expect(headline.featuresYesterday).toBe(false);
     expect(headline.featured.today).toEqual(at('2026-11-10', 30, false));
+  });
+});
+
+describe('scorePill (zaglavlje Dana)', () => {
+  it('bez ijednog rezultata nema pilule', () => {
+    expect(scorePill(scoreHeadline([], '2026-11-10'))).toBeNull();
+  });
+
+  it('prije upita: jučerašnji konačni rezultat i trend naspram prekjučer', () => {
+    const days = [day('2026-11-08', 50), day('2026-11-09', 70), day('2026-11-10', 20, false)];
+    expect(scorePill(scoreHeadline(days, '2026-11-10'))).toEqual({ score: 70, trend: 'better', yesterday: true });
+  });
+
+  it('nakon upita: današnji rezultat; slabiji dan je trend, ne kazna', () => {
+    const days = [day('2026-11-09', 70), day('2026-11-10', 40)];
+    expect(scorePill(scoreHeadline(days, '2026-11-10'))).toEqual({ score: 40, trend: 'worse', yesterday: false });
+  });
+
+  it('bez dana za usporedbu nema trenda', () => {
+    const days = [day('2026-11-08', 60), day('2026-11-10', 30, false)];
+    expect(scorePill(scoreHeadline(days, '2026-11-10'))).toEqual({ score: 30, trend: null, yesterday: false });
   });
 });
