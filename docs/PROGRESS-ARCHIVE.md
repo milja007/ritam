@@ -4,6 +4,12 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-11/12 · PR #6, krugovi 1–4 Codexovih nalaza (premješteno iz PROGRESS.md)
+- Codex nalazi za PR #6 (P1 preimenovanja, P2 konfiguracije provjera): klasifikacija s `git diff --no-renames --name-only -z`, preimenovanje računa obje putanje; `eslint.config.js`, `tsconfig.json`, `babel.config.js`, `metro.config.js`, `jest.config.*` i slične konfiguracije provjera su visokorizične; iznimka za `BUILD_PLAN.md` se provjerava sadržajem diffa (`-U0`).
+- Codex nalazi za PR #6, 2. krug (P1, 2× P2, P3): nakon `CLAUDE_MERGED_FAST` sljedeća skupina se smije pripremati, ali predaja/merge čeka Codexov status za taj merge; `CODEX_APPROVED` s `MERGE` je potvrda već spojenog PR-a (bez ponovnog mergea); `.claude/**` je visokorizično; iznimka `[ ]` → `[x]` vrijedi samo za stvarne stavke koraka (`- [ ] **N.`), ne za legendu. Nakon odobrenja treba ažurirati i prompt scheduled taska prema `docs/AUTOMATION.md`.
+- Codex nalazi za PR #6, 3. krug (P1, P2, P3): "otvoreni naknadni pregled" se provjerava kroz sve komentare #1 od zadnjeg `CLAUDE_MERGED_FAST` (ne samo zadnju poruku) i to **prije** grananja na handoff/merge; potisnuti `CLAUDE_MERGED_FAST` se nakon riješenog pitanja ponovno objavljuje (`REPOST`); `CLAUDE_MERGED_FAST` obavezno nosi `PR`, `BASE`, `HEAD`, `MERGE`; iznimka za `BUILD_PLAN.md` prihvaća i obične stavke (`- [ ] 24.`) i sparuje retke po poziciji u hunku (provjereno na simuliranom diffu 20/24/25).
+- Codex nalazi za PR #6, 4. krug (3× P2): oporavak izgubljene objave (spojeni PR bez `CLAUDE_MERGED_FAST` u #1 → `RECOVERED` objava prije svega, provjera nedavno spojenih PR-ova); `REPOST` i kad handoff potisne običan komentar (uvjet je samo da nema otvorenog `BORNA_DECISION_NEEDED`); završni status nakon izvornika zatvara pregled i ako je `REPOST` objavljen poslije.
+
 ## 2026-11-11 12:30 · CI + kratki PROGRESS (PR `ci/github-actions`)
 - Odluka (Borna proslijedio Codexovu preporuku): CI PR radi Claude, Codex ga samo pregledava. Korak 20 tek nakon `CODEX_APPROVED` za ovaj PR.
 - `.github/workflows/ci.yml`: TypeScript, `expo lint`, Jest (`--runInBand`) i Supabase migracije + `tests/schema.sql` na svakom PR-u i pushu na `main`.
