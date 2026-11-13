@@ -6,7 +6,7 @@ import { radius, spacing } from '@/core/theme';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
-import { useEmberData } from './use-ember-data';
+import type { EmberState } from './use-ember-data';
 
 const CHART_HEIGHT = 64;
 /** Dan bez rezultata: niska crtica (ugašen žar), da se vidi da je dan postojao. */
@@ -16,10 +16,9 @@ const UNLIT_HEIGHT = 3;
  * Profil, „Zadnjih 30 dana“ (smjer „Žar“): stupac po danu, visina je konačni dnevni rezultat.
  * Zadnjih 7 dana svijetli u boji plamena, stariji su prigušeni; dan bez rezultata je ugašen.
  */
-export function TrendCard({ checkinDay }: { checkinDay: string }) {
+export function TrendCard({ checkinDay, state }: { checkinDay: string; state: EmberState }) {
   const { t } = useTranslation();
   const { colors, scheme } = useAppTheme();
-  const state = useEmberData(checkinDay);
   const rail = railColors(scheme);
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 

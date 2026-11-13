@@ -107,8 +107,8 @@ export function listDayScores(db: RitamDb, userId: string, through: LocalDate): 
       });
       // Zaključen dan zadrži područja koja su tada vrijedila (P48).
       const evening = dayCheckins.find((checkin) => checkin.kind === 'evening');
-      const { score } = dayScore(stats, evening?.scoreAreas ?? currentAreas);
-      if (score !== null) days.push({ date, score, final: complete.has(date) });
+      const { score, parts } = dayScore(stats, evening?.scoreAreas ?? currentAreas);
+      if (score !== null) days.push({ date, score, final: complete.has(date), parts });
     }
     return { days, longestStreak: mainStreak(evenings, through).longest };
   });

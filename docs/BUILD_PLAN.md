@@ -42,6 +42,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] **20. LLM provider** — Edge Function `llm-provider` modul (Claude sada, sučelje za DeepSeek), logiranje u `llm_calls`. Bez ključeva u repou.
 - [ ] **21. parse-input** — Edge Function: slobodan tekst → blokovi (JSON). Spojiti na korak 13.
 - [ ] **22. plan-day** — Edge Function: raspored sutrašnjeg dana + 0–3 pitanja, validacija u appu, fallback pravila. Plan se slaže zajedno s korisnikom (što mora, kada, mogućnosti, što ne može i zašto) i **korisnik ga odobrava** prije nego postane plan za sutra (vidljiv već iste noći).
+  - *Koraci 20–22: kod je spojen (PR #16, 2026-11-13), ali ostaju `[ ]` dok funkcije nisu deployane (Borna: tajna + deploy), pokrivene testovima i `parse-input` spojen na korak 13.*
 - [x] ~~**22b. Danas kao raspored sati (odluka 2026-11-10)**~~ *(zamijenjeno korakom 17c)* — dashboard dana kao školski raspored dok vrijeme ide: trenutni blok otvoren/istaknut, sljedeće ispod, status "trenutno: …" sa strane.
 - [ ] **23. Provjera faze 1** — expo-doctor, pregled TODO-ova, README s uputama za pokretanje i testiranje.
 
@@ -73,7 +74,7 @@ Ovi koraci idu ispred koraka 20–22 dok prioritet traje. Numeracija je zasebna 
 - [x] **Ž8. Kartica „Trenutno“** — veliki živi sat sa sekundama u boji plamena, „još mm:ss“ desno, tanki obrub.
 - [x] **Ž9. Paljenje žara** — žar današnjeg dana u zaglavlju Dana: ugašen obrub dok dan traje, pa se nakon večernjeg upita upali na svoju razinu uz jednokratnu animaciju (`todayEmber`, `shouldIgnite`, `EmberIgnite`; poštuje „smanji kretanje“).
 - [x] **Ž10. Godina → dodir mjeseca** — redak mjeseca u Godini otvara taj mjesec u tabu Mjesec, „Ovaj mjesec“ vraća na tekući; budući mjesec nije dodirljiv.
-- [ ] **Ž11. Haptika i +XP / level-up animacije** — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
+- [ ] **Ž11. Haptika** *(„+N XP“ animacija je gotova bez haptike; level-up ide uz korak 32)* — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
 - [x] **Ž12. Arhiva dijagnoza** — popis prošlih dnevnih dijagnoza na Profilu, po mjesecima, najnovija prvo; dodir otvara dijagnozu tog dana, „Prikaži još“ dodaje sljedećih deset. Nepročitane su označene točkom. Čita se samo popis (`listDayReportArchive`) — dijagnoza se ne generira dok se red ne otvori.
 
 Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/godine (25, 25b), „[Sustav]“ poruke te rang i statovi (34b), bedževi i otključavanja (32, 34), listanje prošlih razdoblja strelicama (34b), točkice fiksnih obaveza (24).
@@ -82,8 +83,8 @@ Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/go
 - [ ] 32. Leveli + otključavanja
 - [ ] 33. Orb-plamen avatar (Skia)
 - [ ] 34. Epski questovi u Profilu (samo dugoročni, sam ih postaviš; bez dnevnih/tjednih — 2026-11-10) + freeze tokeni + bedževi
-- [ ] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]"
-- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). Ostaje haptika i +XP / level-up → **Ž11**.
+- [x] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]" — *rang iz „dobrih tjedana“, statovi iz dijelova konačnog rezultata zadnjih 30 dana, kartica na Profilu; Zdravlje i Novac dobivaju vrijednost s trackerima (31b).*
+- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Ostaje haptika → **Ž11**, level-up (uz korak 32) i animacija niza.
 - [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
 - [ ] 37. Mjesečna dijagnoza (zadnji dan u mjesecu: dan + tjedan + mjesec)
 - [ ] 37b. Godišnja dijagnoza (31. 12.: dan + tjedan + mjesec + godina)

@@ -417,7 +417,9 @@
       "hintStart": "Večernji upit danas pokreće novi niz."
     },
     "toNextXp": "{{xp}} / {{total}} XP do sljedećeg praga",
-    "xpTitle": "Iskustvo (XP)"
+    "xpTitle": "Iskustvo (XP)",
+    "xpGain": "+{{xp}} XP",
+    "xpGainA11y": "Dobiveno {{xp}} XP"
   },
   "diagnosis": {
     "title": "Dijagnoza dana",
@@ -726,6 +728,38 @@
       "label": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}",
       "labelWithPrevious": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}, 30 dana prije {{previous}}",
       "empty": "Još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
+    }
+  },
+  "rank": {
+    "label": "Rang {{rank}}",
+    "a11y": "Rang {{rank}}. {{message}}",
+    "system": "[Sustav]",
+    "start": "Rang raste kad napredak traje tjednima. Tjedan se broji kad ima barem 4 ocijenjena dana.",
+    "toNext_one": "Još {{count}} dobar tjedan do ranga {{rank}}. Plamen raste kad napredak traje.",
+    "toNext_few": "Još {{count}} dobra tjedna do ranga {{rank}}. Plamen raste kad napredak traje.",
+    "toNext_other": "Još {{count}} dobrih tjedana do ranga {{rank}}. Plamen raste kad napredak traje.",
+    "top": "Rang S. Plamen gori punim sjajem. Čuvaj ga.",
+    "steps": "Dobri tjedni: {{done}} / {{total}} do ranga {{rank}}",
+    "rule": "Dobar tjedan je bolji od prethodnog ili ima prosjek 70 i više. Slab tjedan ništa ne oduzima.",
+    "stats": {
+      "title": "Statovi",
+      "discipline": "Disciplina",
+      "will": "Volja",
+      "energy": "Energija",
+      "health": "Zdravlje",
+      "money": "Novac",
+      "empty": {
+        "discipline": "još nema ocijenjenog plana",
+        "will": "još nema ocijenjenih zabrana",
+        "energy": "još nema ocijenjenog sna"
+      },
+      "tracker": {
+        "health": "dolazi s trackerom kalorija",
+        "money": "dolazi s trackerom novca"
+      },
+      "valueA11y": "{{stat}}: {{value}} od 100",
+      "emptyA11y": "{{stat}}: {{reason}}",
+      "note": "Prosjek zadnjih 30 dana, iz konačnih dnevnih rezultata."
     }
   }
 }

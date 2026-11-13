@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { ScheduleBlock } from '@/core/domain';
 import { finalScores } from '@/core/ember';
+import type { ScoredDay } from '@/core/progress';
 import { countsForStreak } from '@/core/gamification/streak';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
@@ -13,6 +14,8 @@ import { useProgressVersion } from '@/features/progress';
 export type EmberData = {
   /** Konačni dnevni rezultati po danu. */
   scores: ReadonlyMap<string, number>;
+  /** Svi ocijenjeni dani do `checkinDay` (i „u tijeku“), s dijelovima rezultata — za rang i statove. */
+  days: readonly ScoredDay[];
   /** Dani koji se računaju u glavni niz (ispunjen večernji upit ili „Odustajem“) do `checkinDay`. */
   streakDates: readonly string[];
   /** Blokovi traženog raspona (prazno ako raspon nije zadan). */
@@ -55,7 +58,7 @@ export function useEmberData(checkinDay: string, range?: { from: string; to: str
       const streakDates = evenings
         .filter((checkin) => checkin.date <= checkinDay && countsForStreak(checkin))
         .map((checkin) => checkin.date);
-      return { scores: finalScores(history.days), streakDates, blocks };
+      return { scores: finalScores(history.days), days: history.days, streakDates, blocks };
     };
     // Čitanje baze odgodi iza prvog crtanja.
     const handle = setTimeout(() => {

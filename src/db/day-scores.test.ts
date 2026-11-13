@@ -47,6 +47,15 @@ const draft = (date: string, items: ChecklistAnswer[], ruleId: string, kept: boo
   note: '',
 });
 
+/** Bez dijelova rezultata — stare provjere gledaju samo datum, rezultat i zaključenost. */
+const plain = (days: readonly { date: string; score: number; final: boolean }[]) =>
+  days.map(({ date, score, final }) => ({ date, score, final }));
+
+function scores(...args: Parameters<typeof listDayScores>) {
+  const history = listDayScores(...args);
+  return { days: plain(history.days), longestStreak: history.longestStreak };
+}
+
 async function setup() {
   const { db } = await createTestDb();
   const deps = testDeps('2026-11-10T19:00:00.000Z');
@@ -64,7 +73,7 @@ async function setup() {
 describe('listDayScores', () => {
   it('prazna baza: nema ocijenjenih dana', async () => {
     const { db } = await setup();
-    expect(listDayScores(db, USER, DATE)).toEqual({ days: [], longestStreak: 0 });
+    expect(scores(db, USER, DATE)).toEqual({ days: [], longestStreak: 0 });
   });
 
   it('dani s ispunjenim upitom + današnji "u tijeku"; dani bez upita ne ulaze', async () => {
@@ -78,7 +87,7 @@ describe('listDayScores', () => {
     saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, false), deps);
 
     // Bez postavki boduje se samo plan (zadano). Jučer: plan 50 % → 50. Danas: ništa odrađeno, upit nije ispunjen → 0, u tijeku.
-    expect(listDayScores(db, USER, DATE)).toEqual({
+    expect(scores(db, USER, DATE)).toEqual({
       days: [
         { date: YESTERDAY, score: 50, final: true },
         { date: DATE, score: 0, final: false },
@@ -87,7 +96,7 @@ describe('listDayScores', () => {
     });
 
     saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok'), ans(t2.id, 'ok')], rule.id, true), deps);
-    expect(listDayScores(db, USER, DATE)).toEqual({
+    expect(scores(db, USER, DATE)).toEqual({
       days: [
         { date: YESTERDAY, score: 50, final: true },
         { date: DATE, score: 100, final: true },
@@ -96,7 +105,7 @@ describe('listDayScores', () => {
     });
 
     // Pogled na jučer ne vidi današnji dan.
-    expect(listDayScores(db, USER, YESTERDAY).days).toEqual([{ date: YESTERDAY, score: 50, final: true }]);
+    expect(plain(listDayScores(db, USER, YESTERDAY).days)).toEqual([{ date: YESTERDAY, score: 50, final: true }]);
   });
 
   it('boduje odabrana područja; zaključen dan zadrži područja iz svog upita (P48)', async () => {
@@ -110,11 +119,11 @@ describe('listDayScores', () => {
     // Jučer zaključen s planom i zabranama: plan 0,5 × 50 + zabrane 0 × 30 → 25 / 80 → 31.
     await saveSettings(db, USER, { ...base, scoreRules: true }, deps);
     saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, false), deps);
-    expect(listDayScores(db, USER, YESTERDAY).days).toEqual([{ date: YESTERDAY, score: 31, final: true }]);
+    expect(plain(listDayScores(db, USER, YESTERDAY).days)).toEqual([{ date: YESTERDAY, score: 31, final: true }]);
 
     // Danas samo plan: jučer ostaje 31, danas u tijeku po novom odabiru.
     await saveSettings(db, USER, { ...base, scoreRules: false }, deps);
-    expect(listDayScores(db, USER, DATE).days).toEqual([
+    expect(plain(listDayScores(db, USER, DATE).days)).toEqual([
       { date: YESTERDAY, score: 31, final: true },
       { date: DATE, score: 0, final: false },
     ]);
@@ -124,9 +133,21 @@ describe('listDayScores', () => {
     saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok'), ans(t2.id, 'not')], rule.id, false), deps);
     await saveSettings(db, USER, { ...base, scoreRules: true }, deps);
     saveEveningCheckin(db, USER, draft(DATE, [ans(t1.id, 'ok'), ans(t2.id, 'not')], rule.id, false), deps);
-    expect(listDayScores(db, USER, DATE).days).toEqual([
+    expect(plain(listDayScores(db, USER, DATE).days)).toEqual([
       { date: YESTERDAY, score: 31, final: true },
       { date: DATE, score: 50, final: true },
     ]);
+  });
+
+  it('nosi dijelove rezultata za statove; neodabrano područje je null (korak 34b)', async () => {
+    const { db, deps, block, rule } = await setup();
+    const y1 = await block(YESTERDAY, 'Učenje', '09:00', '10:00');
+    const y2 = await block(YESTERDAY, 'Trening', '18:00', '19:00');
+    const base = toSettingsInput(createDefaultDraft('hr'));
+    await saveSettings(db, USER, { ...base, scoreRules: true, scoreSleep: false }, deps);
+    saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, true), deps);
+
+    const [day] = listDayScores(db, USER, YESTERDAY).days;
+    expect(day?.parts).toEqual({ plan: 0.5, rules: 1, sleep: null });
   });
 });

@@ -412,7 +412,9 @@
       "hintStart": "Today's evening check-in starts a new streak."
     },
     "toNextXp": "{{xp}} / {{total}} XP to the next milestone",
-    "xpTitle": "Experience (XP)"
+    "xpTitle": "Experience (XP)",
+    "xpGain": "+{{xp}} XP",
+    "xpGainA11y": "Gained {{xp}} XP"
   },
   "diagnosis": {
     "title": "Daily diagnosis",
@@ -717,6 +719,37 @@
       "label": "Last 30 days: {{scored}} scored days, average {{score}}",
       "labelWithPrevious": "Last 30 days: {{scored}} scored days, average {{score}}, the 30 days before {{previous}}",
       "empty": "No scored days yet. An ember lights up after the evening check-in."
+    }
+  },
+  "rank": {
+    "label": "Rank {{rank}}",
+    "a11y": "Rank {{rank}}. {{message}}",
+    "system": "[System]",
+    "start": "Your rank grows when progress lasts for weeks. A week counts once it has at least 4 scored days.",
+    "toNext_one": "{{count}} more good week to rank {{rank}}. The flame grows when progress lasts.",
+    "toNext_other": "{{count}} more good weeks to rank {{rank}}. The flame grows when progress lasts.",
+    "top": "Rank S. The flame burns at full strength. Keep it going.",
+    "steps": "Good weeks: {{done}} / {{total}} to rank {{rank}}",
+    "rule": "A good week beats the one before it or averages 70 or more. A weak week takes nothing away.",
+    "stats": {
+      "title": "Stats",
+      "discipline": "Discipline",
+      "will": "Willpower",
+      "energy": "Energy",
+      "health": "Health",
+      "money": "Money",
+      "empty": {
+        "discipline": "no scored plan yet",
+        "will": "no scored rules yet",
+        "energy": "no scored sleep yet"
+      },
+      "tracker": {
+        "health": "comes with the calorie tracker",
+        "money": "comes with the money tracker"
+      },
+      "valueA11y": "{{stat}}: {{value}} out of 100",
+      "emptyA11y": "{{stat}}: {{reason}}",
+      "note": "Average of the last 30 days, from final daily scores."
     }
   }
 }
