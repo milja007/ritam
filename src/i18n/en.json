@@ -243,6 +243,12 @@
       "freeBody": "Nothing is on right now — the next activity is below.",
       "allDone": "That's it for today",
       "allDoneBody": "Nothing else is planned. Add something or take a rest."
+    },
+    "rail": {
+      "now": "Now · {{title}}",
+      "nowFree": "Now · free",
+      "nowLabel": "It is {{time}}. {{title}}",
+      "nowFreeLabel": "It is {{time}}. Nothing is in progress."
     }
   },
   "evening": {

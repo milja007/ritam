@@ -247,6 +247,12 @@
       "freeBody": "Ništa ne traje — sljedeća aktivnost je ispod.",
       "allDone": "Za danas je to sve",
       "allDoneBody": "U planu više nema aktivnosti. Dodaj nešto ili se odmori."
+    },
+    "rail": {
+      "now": "Sada · {{title}}",
+      "nowFree": "Sada · slobodno",
+      "nowLabel": "Sada je {{time}}. {{title}}",
+      "nowFreeLabel": "Sada je {{time}}. Ništa ne traje."
     }
   },
   "evening": {

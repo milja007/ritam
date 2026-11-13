@@ -87,3 +87,39 @@ export type RailLine = 'burnt' | 'ahead';
 export function railLine(phase: BlockPhase): RailLine {
   return phase === 'past' ? 'burnt' : 'ahead';
 }
+
+export type RailColors = {
+  /** Odrađena točka. */
+  lit: string;
+  /** Djelomično odrađena točka (ispuna); obrub je `lit`. */
+  half: string;
+  /** Obrub ugašenog žara. */
+  ring: string;
+  /** Izgorjela linija iza plamena. */
+  burnt: string;
+  /** Crtkana linija plana ispred plamena. */
+  ahead: string;
+  /** Orb-plamen: jezgra, sredina, rub i sjaj. */
+  orb: { core: string; mid: string; edge: string; glow: string };
+};
+
+/** Boje trake dana po shemi. */
+export function railColors(scheme: ColorScheme): RailColors {
+  return scheme === 'dark'
+    ? {
+        lit: palette.flame300,
+        half: palette.flame600,
+        ring: palette.ink400,
+        burnt: palette.flame600,
+        ahead: palette.ink500,
+        orb: { core: palette.ember50, mid: palette.flame300, edge: palette.flame600, glow: palette.flame400 },
+      }
+    : {
+        lit: palette.flame600,
+        half: palette.ember200,
+        ring: palette.ink400,
+        burnt: palette.flame300,
+        ahead: palette.ink400,
+        orb: { core: palette.ember50, mid: palette.flame400, edge: palette.flame700, glow: palette.flame400 },
+      };
+}

@@ -9,6 +9,7 @@ import {
   canGiveUp,
   daySchedule,
   draftFromBlock,
+  formatClockSeconds,
   giveUpBlocks,
   isCancelled,
   needsTodayPlan,
@@ -45,6 +46,7 @@ import { BlockSheet } from './block-sheet';
 import { formatDay } from './format-day';
 import { GiveUp } from './give-up';
 import { NowCard } from './now-card';
+import { NowRow } from './now-row';
 import { TodayPlan } from './today-plan';
 import { useLiveClock } from './use-live-clock';
 import { useDayBlocks, useNow } from './use-today';
@@ -220,12 +222,19 @@ export function TodayScreen() {
     }
   }
 
-  const renderRow = (block: ScheduleBlock, index: number, list: readonly ScheduleBlock[]) => (
+  /** Redak trake; `joined` = redak se nastavlja na plamen „Sada“ (linija ide do njega). */
+  const renderRow = (
+    block: ScheduleBlock,
+    index: number,
+    list: readonly ScheduleBlock[],
+    joined: 'none' | 'above' | 'below' = 'none',
+  ) => (
     <BlockCard
       key={block.id}
       block={block}
       phase={blockPhase(block, liveMinutes)}
-      last={index === list.length - 1}
+      first={index === 0 && joined !== 'below'}
+      last={index === list.length - 1 && joined !== 'above'}
       onPress={() => setSheetId(block.id)}
       onReport={(status) => void report(block, status)}
     />
@@ -275,45 +284,42 @@ export function TodayScreen() {
               <Text variant="heading">{t('todayPlan.cardTitle')}</Text>
               <Text tone="textMuted">{t('todayPlan.cardBody')}</Text>
               <Button label={t('todayPlan.cardAction')} onPress={() => setPlanOpen(true)} />
-              {day.blocks.map(renderRow)}
+              {day.blocks.map((block, index, list) => renderRow(block, index, list))}
             </View>
           ) : (
-            <>
-              <View style={styles.section}>
-                <Text variant="overline" tone="textMuted" accessibilityRole="header" style={styles.sectionTitle}>
-                  {t('today.restOfDay')}
-                </Text>
-                {view.upcoming.length > 0 ? (
-                  <View>{view.upcoming.map(renderRow)}</View>
-                ) : (
-                  <Text tone="textMuted" style={styles.sectionTitle}>
-                    {t('today.restOfDayEmpty')}
-                  </Text>
-                )}
-              </View>
-
+            // Traka dana, kronološki: izgorjeli dio (ranije) → plamen „Sada“ → plan ispred.
+            <View style={styles.section}>
               {view.past.length > 0 ? (
-                <View style={styles.section}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{ expanded: showPast }}
-                    onPress={() => setPastOpen(!showPast)}
-                    style={({ pressed }) => [styles.pastHeader, { opacity: pressed ? 0.7 : 1 }]}>
-                    <Text variant="overline" tone="textMuted">
-                      {t('today.earlier', { count: view.past.length })}
-                    </Text>
-                    <Text variant="caption" tone={pastUnreported ? 'accent' : 'textMuted'}>
-                      {showPast
-                        ? t('today.hide')
-                        : pastUnreported
-                          ? t('today.toReport')
-                          : t('today.show')}
-                    </Text>
-                  </Pressable>
-                  {showPast ? <View>{view.past.map(renderRow)}</View> : null}
-                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: showPast }}
+                  onPress={() => setPastOpen(!showPast)}
+                  style={({ pressed }) => [styles.pastHeader, { opacity: pressed ? 0.7 : 1 }]}>
+                  <Text variant="overline" tone="textMuted">
+                    {t('today.earlier', { count: view.past.length })}
+                  </Text>
+                  <Text variant="caption" tone={pastUnreported ? 'accent' : 'textMuted'}>
+                    {showPast ? t('today.hide') : pastUnreported ? t('today.toReport') : t('today.show')}
+                  </Text>
+                </Pressable>
               ) : null}
-            </>
+              <View>
+                {showPast ? view.past.map((block, index, list) => renderRow(block, index, list, 'above')) : null}
+                <NowRow
+                  time={formatClockSeconds(nowSeconds).slice(0, 5)}
+                  current={view.current}
+                  hasPast={showPast && view.past.length > 0}
+                  hasUpcoming={view.upcoming.length > 0}
+                  onOpen={(block) => setSheetId(block.id)}
+                />
+                {view.upcoming.map((block, index, list) => renderRow(block, index, list, 'below'))}
+              </View>
+              {view.upcoming.length === 0 ? (
+                <Text tone="textMuted" style={styles.sectionTitle}>
+                  {t('today.restOfDayEmpty')}
+                </Text>
+              ) : null}
+            </View>
           )}
 
           {actionFailed ? (
