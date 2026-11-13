@@ -6,6 +6,9 @@ import {
   FILL_DURATION_MS,
   IGNITE_DURATION_MS,
   IGNITE_SWELL_MS,
+  BUMP_SCALE,
+  FLARE_DURATION_MS,
+  FLARE_SWELL_MS,
   XP_POP_DURATION_MS,
   XP_POP_IN_MS,
   XP_POP_RISE,
@@ -198,5 +201,13 @@ describe('kretanje', () => {
     expect(XP_POP_DURATION_MS).toBeLessThanOrEqual(2000);
     expect(XP_POP_RISE).toBeGreaterThan(0);
     expect(XP_POP_RISE).toBeLessThanOrEqual(24);
+  });
+
+  it('bljesak niza je kratak, nabuja brzo, a broj poskoči tek malo', () => {
+    expect(FLARE_SWELL_MS).toBeGreaterThan(0);
+    expect(FLARE_SWELL_MS).toBeLessThan(FLARE_DURATION_MS / 2);
+    expect(FLARE_DURATION_MS).toBeLessThanOrEqual(1000);
+    expect(BUMP_SCALE).toBeGreaterThan(1);
+    expect(BUMP_SCALE).toBeLessThanOrEqual(1.3);
   });
 });

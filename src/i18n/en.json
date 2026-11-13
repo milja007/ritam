@@ -409,7 +409,9 @@
       "a11y": "Days in a row with the evening check-in: {{count}}",
       "hintDone": "Today's check-in counts toward your streak.",
       "hintKeep": "Fill in the evening check-in to grow your streak.",
-      "hintStart": "Today's evening check-in starts a new streak."
+      "hintStart": "Today's evening check-in starts a new streak.",
+      "gainA11y_one": "Streak grew: {{count}} day in a row.",
+      "gainA11y_other": "Streak grew: {{count}} days in a row."
     },
     "toNextXp": "{{xp}} / {{total}} XP to the next milestone",
     "xpTitle": "Experience (XP)",

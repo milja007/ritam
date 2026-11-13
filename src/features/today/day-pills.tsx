@@ -1,11 +1,13 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
-import { todayEmber } from '@/core/ember';
+import { railColors, todayEmber } from '@/core/ember';
 import { scorePill, type ScoreTrend } from '@/core/progress';
 import { radius, spacing } from '@/core/theme';
-import { useDayScore, useProgress } from '@/features/progress';
+import { useDayScore, useProgress, useStreakGain } from '@/features/progress';
 import { EmberIgnite, RailDot } from '@/ui/ember';
+import { Bump, Flare } from '@/ui/flare';
 import { Text, type TextProps } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -19,22 +21,33 @@ const TREND_TONE: Record<ScoreTrend, NonNullable<TextProps['tone']>> = {
 
 /** Veličina žara današnjeg dana uz broj rezultata. */
 const EMBER_SIZE = 12;
+/** Veličina žara u piluli niza. */
+const STREAK_DOT = 10;
 
 /**
  * Pilule u zaglavlju Dana (smjer „Žar“): niz dana (žar svijetli dok niz traje) i dnevni rezultat
  * sa strelicom trenda. Uz rezultat stoji žar današnjeg dana — ugašen dok dan traje, a nakon
- * večernjeg upita se upali na svoju razinu (Ž9). Dok se podaci učitavaju ili kod greške pilule
+ * večernjeg upita se upali na svoju razinu (Ž9). Kad niz naraste dok je ekran otvoren, žar niza
+ * bljesne i broj poskoči (korak 35), a rast se javi čitaču zaslona. Dok se podaci učitavaju ili kod greške pilule
  * nema — detalji su na karticama niže.
  */
 export function DayPills({ today, checkinDay }: { today: string; checkinDay: string }) {
   const { t, i18n } = useTranslation();
-  const { colors } = useAppTheme();
+  const { colors, scheme } = useAppTheme();
   const progress = useProgress(today, checkinDay);
   const score = useDayScore(checkinDay);
 
   const streak = progress.status === 'ready' ? progress.summary.streak.current : null;
   const pill = score.status === 'ready' ? scorePill(score.headline) : null;
   const ember = score.status === 'ready' ? todayEmber(score.headline) : null;
+  const { gain, id } = useStreakGain(streak);
+  const flare = gain > 0 ? id : 0;
+  const gainAnnouncement = gain > 0 && streak !== null ? t('progress.streak.gainA11y', { count: streak }) : null;
+
+  useEffect(() => {
+    if (gainAnnouncement !== null) AccessibilityInfo.announceForAccessibility(gainAnnouncement);
+  }, [gainAnnouncement, id]);
+
   if (streak === null && pill === null) return null;
 
   const pillStyle = [styles.pill, { backgroundColor: colors.surface, borderColor: colors.border }];
@@ -51,10 +64,14 @@ export function DayPills({ today, checkinDay }: { today: string; checkinDay: str
           style={pillStyle}
           accessible
           accessibilityLabel={t('progress.streak.a11y', { count: streak })}>
-          <RailDot state={streak > 0 ? 'lit' : 'unlit'} />
-          <Text variant="caption" tone={streak > 0 ? 'text' : 'textMuted'} style={styles.value}>
-            {t('today.header.streak', { count: streak })}
-          </Text>
+          <Flare trigger={flare} size={STREAK_DOT} color={railColors(scheme).lit}>
+            <RailDot state={streak > 0 ? 'lit' : 'unlit'} size={STREAK_DOT} />
+          </Flare>
+          <Bump trigger={flare}>
+            <Text variant="caption" tone={streak > 0 ? 'text' : 'textMuted'} style={styles.value}>
+              {t('today.header.streak', { count: streak })}
+            </Text>
+          </Bump>
         </View>
       ) : null}
       {pill !== null ? (

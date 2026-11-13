@@ -414,7 +414,10 @@
       "a11y": "Dani zaredom s večernjim upitom: {{count}}",
       "hintDone": "Današnji upit je ubrojen u niz.",
       "hintKeep": "Ispuni večernji upit i niz raste.",
-      "hintStart": "Večernji upit danas pokreće novi niz."
+      "hintStart": "Večernji upit danas pokreće novi niz.",
+      "gainA11y_one": "Niz je narastao: {{count}} dan zaredom.",
+      "gainA11y_few": "Niz je narastao: {{count}} dana zaredom.",
+      "gainA11y_other": "Niz je narastao: {{count}} dana zaredom."
     },
     "toNextXp": "{{xp}} / {{total}} XP do sljedećeg praga",
     "xpTitle": "Iskustvo (XP)",
