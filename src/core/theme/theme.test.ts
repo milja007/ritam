@@ -9,6 +9,8 @@ import {
   BUMP_SCALE,
   FLARE_DURATION_MS,
   FLARE_SWELL_MS,
+  ORB_FLICKER_RATIO,
+  ORB_ORBIT_MS,
   XP_POP_DURATION_MS,
   XP_POP_IN_MS,
   XP_POP_RISE,
@@ -209,5 +211,11 @@ describe('kretanje', () => {
     expect(FLARE_DURATION_MS).toBeLessThanOrEqual(1000);
     expect(BUMP_SCALE).toBeGreaterThan(1);
     expect(BUMP_SCALE).toBeLessThanOrEqual(1.3);
+  });
+
+  it('iskre orb-plamena kruže sporo, a žarište treperi brže od disanja', () => {
+    expect(ORB_ORBIT_MS).toBeGreaterThanOrEqual(15000);
+    expect(ORB_FLICKER_RATIO).toBeGreaterThan(0.2);
+    expect(ORB_FLICKER_RATIO).toBeLessThan(0.5);
   });
 });

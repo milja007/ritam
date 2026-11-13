@@ -30,6 +30,12 @@ export const FLARE_SWELL_MS = 200;
 /** Koliko broj niza poskoči (višekratnik veličine) dok žar bljesne. */
 export const BUMP_SCALE = 1.2;
 
+/** Jedan krug iskri oko orb-plamena na Profilu (korak 33); sporo, da ne odvlači pažnju. */
+export const ORB_ORBIT_MS = 28000;
+
+/** Treperenje žarišta orb-plamena kao udio trajanja udaha; namjerno neusklađeno s disanjem aureole. */
+export const ORB_FLICKER_RATIO = 0.37;
+
 /** Udio 0–1 za trake i grafove; neispravan broj (NaN, ±∞) je 0. */
 export function clampFraction(value: number): number {
   return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;

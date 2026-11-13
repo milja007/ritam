@@ -763,6 +763,30 @@
       "note": "Average of the last 30 days, from final daily scores."
     }
   },
+  "orb": {
+    "heat": {
+      "unlit": "The flame is not lit yet",
+      "faint": "The flame is smouldering",
+      "low": "The flame burns low",
+      "warm": "The flame burns warm",
+      "bright": "The flame burns at full strength"
+    },
+    "detail": {
+      "unlit": "Light it with your first evening check-in.",
+      "resting": "No scored day in the last 7 days. It waits for you and does not go out.",
+      "burning": "Average of the last 7 days: {{average}}"
+    },
+    "hint": "Tap to see what shapes the flame",
+    "explain": {
+      "title": "What shapes the flame",
+      "size": "Its size grows with your rank. Now: rank {{rank}}.",
+      "heat": "Its glow is the average of final scores from the last 7 days.",
+      "sparks": "Sparks circle while your streak lasts: one from 3 days, two from 7, three from 30.",
+      "streak_one": "Streak now: {{count}} day.",
+      "streak_other": "Streak now: {{count}} days.",
+      "keep": "The flame never goes out or shrinks. A weak week takes nothing away."
+    }
+  },
   "badges": {
     "title": "Badges",
     "count": "{{earned}} / {{total}}",

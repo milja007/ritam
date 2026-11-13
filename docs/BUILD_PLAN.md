@@ -81,14 +81,14 @@ Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/go
 
 ## Faza 3 — Igra i animacije
 - [ ] 32. Leveli + otključavanja
-- [ ] 33. Orb-plamen avatar (Skia)
+- [ ] 33. Orb-plamen avatar (Skia) — *dio gotov (2026-11-14):* **avatar bez Skie** na Profilu (`src/core/gamification/orb.ts`, `src/ui/orb-flame.tsx`): veličina jezgre iz ranga, sjaj iz prosjeka konačnih rezultata zadnjih 7 dana, iskre iz niza (3 / 7 / 30 dana), aureola diše, plamen se nikad ne gasi ni ne smanjuje; dodir objašnjava što ga oblikuje. Ostaje nadogradnja na Skiu (pravi plamen, čestice) — novi paket, traži `npx expo install` na Bornovom Macu.
 - [ ] 34. Epski questovi u Profilu (samo dugoročni, sam ih postaviš; bez dnevnih/tjednih — 2026-11-10) + freeze tokeni + bedževi — *dio gotov (2026-11-13):* **bedževi** — 9 bedževa izvedenih iz konačnih rezultata i niza (`src/core/gamification/badges.ts`), kartica „Bedževi“ na Profilu po platnu. Ostaju epski questovi i freeze tokeni (traže tablice).
 - [x] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]" — *rang iz „dobrih tjedana“, statovi iz dijelova konačnog rezultata zadnjih 30 dana, kartica na Profilu; Zdravlje i Novac dobivaju vrijednost s trackerima (31b).* *Listanje prošlih tjedana i mjeseci strelicama (`weekNav`, `monthNav`) dodano 2026-11-13.*
 - [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Animacija niza (žar u piluli niza bljesne kad niz naraste) i „Gotovo“ (točka na traci dana bljesne kad se aktivnost prijavi kao odrađena) su gotove (2026-11-13). Ostaje haptika → **Ž11** i level-up (uz korak 32).
 - [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
 - [ ] 37. Mjesečna dijagnoza (zadnji dan u mjesecu: dan + tjedan + mjesec)
 - [ ] 37b. Godišnja dijagnoza (31. 12.: dan + tjedan + mjesec + godina)
-- [ ] 37c. Grafovi napretka: 30 dana na Profilu, godišnja toplinska karta, arhiva dijagnoza — *dio gotov u smjeru „Žar“:* graf 30 dana (Ž6), godišnja karta žarova (Ž5), dodir žara dana otvara dijagnozu tog dana. Ostaje popis arhive dijagnoza → **Ž12**.
+- [x] 37c. Grafovi napretka: 30 dana na Profilu, godišnja toplinska karta, arhiva dijagnoza — gotovo kroz smjer „Žar“: graf 30 dana (Ž6), godišnja karta žarova (Ž5), dodir žara dana otvara dijagnozu tog dana, arhiva dijagnoza (Ž12).
 - [ ] 38. Teme boja
 
 ## Faza 4 — Nadogradnje

@@ -1,36 +1,40 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { emberColor, emberLevel } from '@/core/ember';
 import {
-  RANK_EMBER,
+  orbFlame,
   rankProgress,
   statValues,
   systemMessage,
-  type Rank,
+  type OrbFlame as OrbFlameState,
   type RankProgress,
   type StatValue,
   type SystemMessage,
 } from '@/core/gamification';
 import { radius, spacing } from '@/core/theme';
 import { Ember } from '@/ui/ember';
+import { OrbFlame } from '@/ui/orb-flame';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import type { EmberState } from './use-ember-data';
 
-const MEDALLION = 64;
+const ORB = 108;
 const PIP = 10;
 
 /**
- * Profil, „Rang i statovi“ (korak 34b, platno „Profil“): medaljon ranga čiji sjaj raste s rangom,
- * koraci do sljedećeg ranga, poruka „[Sustav]“ i trake statova iz stvarnog ponašanja.
+ * Profil, „Rang i statovi“ (koraci 33 i 34b, platno „Profil“): orb-plamen avatar čija veličina prati
+ * rang, a sjaj zadnjih 7 dana; koraci do sljedećeg ranga, poruka „[Sustav]“ i trake statova iz
+ * stvarnog ponašanja. Dodir avatara objašnjava što oblikuje plamen.
  * Sve je izvedeno iz konačnih dnevnih rezultata — rang nikad ne pada, slab tjedan ništa ne oduzima.
  */
 export function RankCard({ checkinDay, state }: { checkinDay: string; state: EmberState }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
+  const [explained, setExplained] = useState(false);
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 
   if (state.status === 'loading') {
@@ -51,18 +55,36 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
   const progress = rankProgress(state.data.days, checkinDay);
   const message = messageText(systemMessage(progress), t);
   const stats = statValues(state.data.days, checkinDay);
+  const flame = orbFlame(state.data.days, state.data.streakDates, checkinDay);
+  const heat = t(`orb.heat.${flame.heat}`);
+  const detail =
+    flame.average !== null
+      ? t('orb.detail.burning', { average: flame.average })
+      : t(`orb.detail.${flame.state === 'unlit' ? 'unlit' : 'resting'}`);
 
   return (
     <View style={cardStyle}>
-      <View style={styles.hero} accessible accessibilityLabel={t('rank.a11y', { rank: progress.rank, message })}>
-        <Medallion rank={progress.rank} />
+      <Pressable
+        style={styles.hero}
+        onPress={() => setExplained((open) => !open)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: explained }}
+        accessibilityLabel={`${t('rank.a11y', { rank: progress.rank, message })} ${heat}. ${detail}`}
+        accessibilityHint={t('orb.hint')}>
+        <OrbFlame flame={flame} size={ORB} />
         <View style={styles.heroText}>
           <Text variant="overline" tone="accent">
             {t('rank.label', { rank: progress.rank })}
           </Text>
+          <Text variant="heading">{heat}</Text>
+          <Text variant="caption" tone="textMuted" style={styles.tabular}>
+            {detail}
+          </Text>
           <Steps progress={progress} />
         </View>
-      </View>
+      </Pressable>
+
+      {explained ? <Explain flame={flame} /> : null}
 
       <View
         style={[styles.system, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}
@@ -102,20 +124,29 @@ function messageText(message: SystemMessage, t: Translate): string {
   return t('rank.toNext', { count: message.count, rank: message.rank });
 }
 
-/** Slovo ranga u prstenu boje žara; sjaj prstena raste s rangom. Značenje nosi oznaka kartice. */
-function Medallion({ rank }: { rank: Rank }) {
-  const { colors, scheme } = useAppTheme();
-  const { fill, glow } = emberColor(RANK_EMBER[rank], scheme);
-  const ring = fill ?? colors.border;
+/** Što oblikuje plamen: veličina (rang), sjaj (zadnjih 7 dana), iskre (niz) i pravilo „bez kazni“. */
+function Explain({ flame }: { flame: OrbFlameState }) {
+  const { t } = useTranslation();
+  const { colors } = useAppTheme();
+  const lines = [
+    t('orb.explain.size', { rank: flame.rank }),
+    t('orb.explain.heat'),
+    `${t('orb.explain.sparks')} ${t('orb.explain.streak', { count: flame.streak })}`,
+  ];
   return (
     <View
-      style={[
-        styles.medallion,
-        { borderColor: ring, backgroundColor: colors.surfaceRaised },
-        scheme === 'dark' ? { boxShadow: `0 0 ${Math.round(8 + 20 * glow)}px ${ring}` } : null,
-      ]}>
-      <Text variant="display" style={styles.medallionLetter}>
-        {rank}
+      style={[styles.system, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}
+      accessibilityLiveRegion="polite">
+      <Text variant="overline" tone="textMuted">
+        {t('orb.explain.title')}
+      </Text>
+      {lines.map((line) => (
+        <Text key={line} variant="caption" style={styles.tabular}>
+          {line}
+        </Text>
+      ))}
+      <Text variant="caption" tone="textMuted">
+        {t('orb.explain.keep')}
       </Text>
     </View>
   );
@@ -189,17 +220,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  hero: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, minHeight: ORB },
   heroText: { flex: 1, gap: spacing.xs },
-  medallion: {
-    width: MEDALLION,
-    height: MEDALLION,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  medallionLetter: { fontSize: 30, lineHeight: 36 },
   pips: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + spacing.xxs },
   tabular: { fontVariant: ['tabular-nums'] },
   system: {

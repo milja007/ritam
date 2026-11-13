@@ -4,6 +4,13 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-13 · Sesija 21:43 — bedževi (34, dio), animacije niza i „Gotovo“ (35, dio), listanje razdoblja (PR #18)
+- **Bedževi** (`src/core/gamification/badges.ts`, kartica `features/ember/badges-card.tsx`): 9 bedževa iz konačnih rezultata i niza, ništa se ne sprema, osvojeno se ne gubi. Prvi tjedan (7 ocijenjenih dana), 7 / 30 dana zaredom, 7 dana bez prekršaja, Dan punog sjaja (≥ 85), Rekord tjedna, 4 dobra tjedna zaredom, 30 / 100 žarova. Osvojeni: puni obrub u boji žara; u tijeku: crtkani obrub + „n/m“; dodir pokaže pravilo.
+- **Animacija niza** (35): žar u piluli niza na Danu bljesne i broj poskoči kad niz naraste (`streakGain`, `useStreakGain`, `ui/flare.tsx`); javlja se čitaču zaslona.
+- **Animacija „Gotovo“** (35): točka na traci dana bljesne kad se aktivnost prijavi kao (napola) odrađena (`shouldFlareDot`, `useDotFlare`).
+- **Listanje strelicama** (34b): Tjedan i Mjesec imaju ‹ › i povratak na tekuće razdoblje; unatrag do razdoblja najranijeg rezultata, unaprijed ne dalje od tekućeg (`weekNav`, `monthNav`).
+- Sve bez haptike i **na uređaju neprovjereno**. Prethodna sesija (18:43, PR #17: rang, statovi, „+N XP“) je u arhivi.
+
 ## 2026-11-13 · Sesija 18:43 — korak 34b + dio koraka 35 (PR #17)
 - **34b Rang i statovi** (po platnu „Profil“), sve iz lokalnih podataka:
   - `src/core/gamification/rank.ts`: rang E→S iz broja **dobrih tjedana** — zaključen tjedan (pon–ned) s ≥ 4 konačna rezultata koji je bolji od prethodnog ubrojenog ili ima prosjek ≥ 70. Pragovi ukupno: D 2, C 5, B 9, A 14, S 20. Rang nikad ne pada.
