@@ -109,27 +109,33 @@ type EmberProps = {
   size: number;
   /** Današnji dan: obrub u boji plamena umjesto ispune. */
   today?: boolean;
+  /** Sjaj oko žara; isključi za guste prikaze (godina). */
+  glow?: boolean;
 };
 
 /** Žar jednog dana: svjetlina znači dnevni rezultat; ugašen žar je samo obrub. */
-export function Ember({ level, size, today = false }: EmberProps) {
+export function Ember({ level, size, today = false, glow: withGlow = true }: EmberProps) {
   const { scheme, colors } = useAppTheme();
   const { fill, on, glow } = emberColor(level, scheme);
   const base = { width: size, height: size, borderRadius: radius.pill };
   if (today) {
     return (
       <View
-        style={[base, { borderWidth: 2, borderColor: colors.accent, boxShadow: `0 0 ${size * 0.5}px ${colors.accent}` }]}
+        style={[
+          base,
+          { borderWidth: Math.min(2, size / 4), borderColor: colors.accent },
+          withGlow ? { boxShadow: `0 0 ${size * 0.5}px ${colors.accent}` } : null,
+        ]}
       />
     );
   }
-  if (fill === null) return <View style={[base, { borderWidth: 1.5, borderColor: on }]} />;
+  if (fill === null) return <View style={[base, { borderWidth: Math.min(1.5, size / 5), borderColor: on }]} />;
   return (
     <View
       style={[
         base,
         { backgroundColor: fill },
-        glow > 0 && scheme === 'dark' ? { boxShadow: `0 0 ${Math.round(size * 0.7 * glow)}px ${fill}` } : null,
+        withGlow && glow > 0 && scheme === 'dark' ? { boxShadow: `0 0 ${Math.round(size * 0.7 * glow)}px ${fill}` } : null,
       ]}
     />
   );

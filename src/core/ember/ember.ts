@@ -123,3 +123,30 @@ export function railColors(scheme: ColorScheme): RailColors {
         orb: { core: palette.ember50, mid: palette.flame400, edge: palette.flame700, glow: palette.flame400 },
       };
 }
+
+export type SegmentColor = { fill: string | null; border: string | null };
+
+/**
+ * Boje odsječka u stupcu tjedna. Tip je string ključ (`SegmentLook` iz `periods`), da ovaj modul
+ * ostane bez kružnog uvoza.
+ */
+export function segmentColor(
+  look: 'done' | 'half' | 'missed' | 'plan' | 'fixed' | 'fixedPlan',
+  scheme: ColorScheme,
+): SegmentColor {
+  const dark = scheme === 'dark';
+  switch (look) {
+    case 'done':
+      return { fill: dark ? palette.flame400 : palette.flame600, border: null };
+    case 'half':
+      return { fill: dark ? palette.flame600 : palette.ember200, border: dark ? palette.flame300 : palette.flame600 };
+    case 'missed':
+      return { fill: dark ? palette.ink700 : palette.ink100, border: null };
+    case 'plan':
+      return { fill: null, border: palette.ink400 };
+    case 'fixed':
+      return { fill: dark ? palette.sky700 : palette.sky400, border: null };
+    case 'fixedPlan':
+      return { fill: null, border: dark ? palette.sky400 : palette.sky700 };
+  }
+}

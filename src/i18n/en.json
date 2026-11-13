@@ -638,5 +638,54 @@
     "accountMismatch": "The data on this device belongs to another account, so it won't sync with this one. Sign out and sign in with the account you first synced with.",
     "error": "Sync failed. Your data is safe on this device — I'll try again.",
     "now": "Sync now"
+  },
+  "ember": {
+    "loadError": "Could not load the data.",
+    "retry": "Try again",
+    "weaker": "weaker day",
+    "stronger": "stronger day",
+    "legendLabel": "Ember brightness: from a weaker to a stronger day",
+    "week": {
+      "title": "Week {{week}}",
+      "vsPrevious": "{{diff}} vs last week",
+      "vsPreviousLabel": "This week's average is {{diff}} compared with last week",
+      "today": "today",
+      "noScore": "–",
+      "columns": "Week schedule",
+      "dayScored": "{{day}}: score {{score}}, activities: {{count}}",
+      "dayToday": "{{day}}, today: activities: {{count}}",
+      "dayPlain": "{{day}}: no score, activities: {{count}}",
+      "legendDone": "done",
+      "legendMissed": "not done",
+      "legendPlan": "plan",
+      "legendFixed": "fixed",
+      "empty": "No activities this week yet. You add them on the Day tab."
+    },
+    "month": {
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "lastDay": "last day",
+      "calendar": "Month calendar",
+      "dayScored": "{{day}}: score {{score}}",
+      "dayToday": "{{day}}, today",
+      "dayUnlit": "{{day}}: no score",
+      "dayFuture": "{{day}}",
+      "compare": "Compared with last month",
+      "average": "{{month}} average: {{score}}",
+      "noAverage": "{{month}} average: no scores yet",
+      "strongest": "Strongest day: {{day}} ({{score}})",
+      "empty": "No scored days this month yet. An ember lights up after the evening check-in."
+    },
+    "year": {
+      "behind_one": "{{count}} day behind you",
+      "behind_other": "{{count}} days behind you",
+      "days": "Every day of the year",
+      "monthLabel": "{{month}}: scored days {{scored}}, average {{average}}",
+      "monthLabelEmpty": "{{month}}: no scored days",
+      "records": "Records this year",
+      "longestStreak": "days, longest streak",
+      "strongestMonth": "{{month}}, strongest month",
+      "scoredDays": "scored days"
+    }
   }
 }
