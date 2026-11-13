@@ -4,10 +4,15 @@ import {
   averageScore,
   dayEmber,
   daysInMonth,
+  earliestScored,
   finalScores,
   hasDiagnosis,
   isMonthOpenable,
+  isWeekOpenable,
   isoWeek,
+  monthNav,
+  nextMonth,
+  weekNav,
   monthGrid,
   monthHeader,
   nowLine,
@@ -345,5 +350,62 @@ describe('monthHeader', () => {
   it('neispravan mjesec ili dan ne ruši prikaz', () => {
     expect(monthHeader('2026-13', TODAY)).toEqual({ kind: 'future' });
     expect(monthHeader('2026-11', 'danas')).toEqual({ kind: 'future' });
+  });
+});
+
+describe('listanje razdoblja', () => {
+  // 2026-11-13 je petak; tjedan počinje u ponedjeljak 2026-11-09.
+  const TODAY = '2026-11-13';
+
+  it('nextMonth prelazi godinu; neispravan mjesec daje null', () => {
+    expect(nextMonth('2026-11')).toBe('2026-12');
+    expect(nextMonth('2026-12')).toBe('2027-01');
+    expect(nextMonth('2026-13')).toBeNull();
+  });
+
+  it('earliestScored: najraniji ispravan dan ili null', () => {
+    expect(earliestScored(new Map())).toBeNull();
+    expect(earliestScored(new Map([['2026-10-05', 60], ['2026-09-30', 70], ['x', 1]]))).toBe('2026-09-30');
+  });
+
+  it('monthNav: tekući mjesec nema „sljedeće“, a unatrag ide do mjeseca najranijeg rezultata', () => {
+    expect(monthNav('2026-11', TODAY, '2026-09-30')).toEqual({ previous: '2026-10', next: null, current: true });
+    expect(monthNav('2026-10', TODAY, '2026-09-30')).toEqual({ previous: '2026-09', next: '2026-11', current: false });
+    expect(monthNav('2026-09', TODAY, '2026-09-30')).toEqual({ previous: null, next: '2026-10', current: false });
+  });
+
+  it('monthNav: bez rezultata nema listanja unatrag; preko Nove godine radi', () => {
+    expect(monthNav('2026-11', TODAY, null).previous).toBeNull();
+    expect(monthNav('2027-01', '2027-01-03', '2026-12-31')).toEqual({ previous: '2026-12', next: null, current: true });
+  });
+
+  it('monthNav: neispravan ulaz gasi obje strelice', () => {
+    expect(monthNav('2026-13', TODAY, '2026-01-01')).toEqual({ previous: null, next: null, current: true });
+    expect(monthNav('2026-11', 'danas', '2026-01-01')).toEqual({ previous: null, next: null, current: true });
+    expect(monthNav('2026-11', TODAY, 'x').previous).toBeNull();
+  });
+
+  it('weekNav: odredišta su ponedjeljci; tekući tjedan nema „sljedeće“', () => {
+    expect(weekNav(TODAY, TODAY, '2026-10-28')).toEqual({ previous: '2026-11-02', next: null, current: true });
+    expect(weekNav('2026-11-02', TODAY, '2026-10-28')).toEqual({
+      previous: '2026-10-26',
+      next: '2026-11-09',
+      current: false,
+    });
+    // Tjedan najranijeg rezultata je zadnji unatrag.
+    expect(weekNav('2026-10-26', TODAY, '2026-10-28').previous).toBeNull();
+  });
+
+  it('weekNav: bez rezultata ili s neispravnim danom nema listanja unatrag', () => {
+    expect(weekNav(TODAY, TODAY, null)).toEqual({ previous: null, next: null, current: true });
+    expect(weekNav('x', TODAY, '2026-01-01')).toEqual({ previous: null, next: null, current: true });
+  });
+
+  it('isWeekOpenable: samo ponedjeljak koji nije nakon tekućeg tjedna', () => {
+    expect(isWeekOpenable('2026-11-09', TODAY)).toBe(true);
+    expect(isWeekOpenable('2026-11-02', TODAY)).toBe(true);
+    expect(isWeekOpenable('2026-11-16', TODAY)).toBe(false);
+    expect(isWeekOpenable('2026-11-10', TODAY)).toBe(false);
+    expect(isWeekOpenable('x', TODAY)).toBe(false);
   });
 });

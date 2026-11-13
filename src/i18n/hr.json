@@ -688,7 +688,10 @@
       "legendMissed": "nije",
       "legendPlan": "plan",
       "legendFixed": "fiksno",
-      "empty": "Ovaj tjedan još nema aktivnosti. Dodaješ ih na Danu."
+      "empty": "Ovaj tjedan još nema aktivnosti. Dodaješ ih na Danu.",
+      "backToThis": "Ovaj tjedan",
+      "backToThisHint": "Vraća na tekući tjedan",
+      "emptyPast": "Taj tjedan nema zabilježenih aktivnosti."
     },
     "month": {
       "daysLeft_one": "još {{count}} dan",
@@ -731,6 +734,12 @@
       "label": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}",
       "labelWithPrevious": "Zadnjih 30 dana: ocijenjenih dana {{scored}}, prosjek {{score}}, 30 dana prije {{previous}}",
       "empty": "Još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
+    },
+    "nav": {
+      "previousWeek": "Prethodni tjedan",
+      "nextWeek": "Sljedeći tjedan",
+      "previousMonth": "Prethodni mjesec",
+      "nextMonth": "Sljedeći mjesec"
     }
   },
   "rank": {

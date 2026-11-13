@@ -680,7 +680,10 @@
       "legendMissed": "not done",
       "legendPlan": "plan",
       "legendFixed": "fixed",
-      "empty": "No activities this week yet. You add them on the Day tab."
+      "empty": "No activities this week yet. You add them on the Day tab.",
+      "backToThis": "This week",
+      "backToThisHint": "Back to the current week",
+      "emptyPast": "That week has no recorded activities."
     },
     "month": {
       "daysLeft_one": "{{count}} day left",
@@ -721,6 +724,12 @@
       "label": "Last 30 days: {{scored}} scored days, average {{score}}",
       "labelWithPrevious": "Last 30 days: {{scored}} scored days, average {{score}}, the 30 days before {{previous}}",
       "empty": "No scored days yet. An ember lights up after the evening check-in."
+    },
+    "nav": {
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
     }
   },
   "rank": {

@@ -3,6 +3,7 @@
  * (365 točkica). Čista logika nad lokalnim danima "YYYY-MM-DD"; bez React importa.
  */
 import type { ScheduleBlock } from '../domain';
+import { isValidLocalDate } from '../domain/common';
 import { weekStart, type ScoredDay, type ScoreHeadline } from '../progress';
 import { streakFromDates } from '../gamification/streak';
 import { blockRange } from '../schedule';
@@ -208,6 +209,68 @@ export function previousMonth(month: string): string | null {
   if (year === undefined || m === undefined || daysInMonth(month) === 0) return null;
   const prev = m === 1 ? { y: year - 1, m: 12 } : { y: year, m: m - 1 };
   return `${String(prev.y).padStart(4, '0')}-${String(prev.m).padStart(2, '0')}`;
+}
+
+/** Sljedeći mjesec: "2026-12" → "2027-01". */
+export function nextMonth(month: string): string | null {
+  const [year, m] = month.split('-').map(Number);
+  if (year === undefined || m === undefined || daysInMonth(month) === 0) return null;
+  const next = m === 12 ? { y: year + 1, m: 1 } : { y: year, m: m + 1 };
+  return `${String(next.y).padStart(4, '0')}-${String(next.m).padStart(2, '0')}`;
+}
+
+/** Najraniji dan s konačnim rezultatom — dokle listanje unatrag ima što pokazati. */
+export function earliestScored(scores: ReadonlyMap<string, number>): string | null {
+  let earliest: string | null = null;
+  for (const date of scores.keys()) {
+    if (isValidLocalDate(date) && (earliest === null || date < earliest)) earliest = date;
+  }
+  return earliest;
+}
+
+/**
+ * Listanje razdoblja strelicama: kamo vode „prethodno“ i „sljedeće“ (`null` = strelica je ugašena)
+ * i je li prikazano tekuće razdoblje. Unaprijed se ne ide dalje od tekućeg (budućnost nema žar), a
+ * unatrag ne dalje od razdoblja s najranijim konačnim rezultatom.
+ */
+export type PeriodNav = { previous: string | null; next: string | null; current: boolean };
+
+const NO_NAV: PeriodNav = { previous: null, next: null, current: true };
+
+/** Listanje mjeseci ("YYYY-MM"). `earliest` je najraniji dan s rezultatom ili `null`. */
+export function monthNav(month: string, today: string, earliest: string | null): PeriodNav {
+  if (daysInMonth(month) === 0 || !isValidLocalDate(today)) return NO_NAV;
+  const thisMonth = today.slice(0, 7);
+  const before = previousMonth(month);
+  const after = nextMonth(month);
+  const first = earliest !== null && isValidLocalDate(earliest) ? earliest.slice(0, 7) : null;
+  return {
+    previous: before !== null && first !== null && before >= first ? before : null,
+    next: after !== null && after <= thisMonth ? after : null,
+    current: month === thisMonth,
+  };
+}
+
+/** Listanje tjedana; `date` je bilo koji dan tjedna, a odredišta su ponedjeljci. */
+export function weekNav(date: string, today: string, earliest: string | null): PeriodNav {
+  const start = isValidLocalDate(date) ? weekStart(date) : null;
+  const thisWeek = isValidLocalDate(today) ? weekStart(today) : null;
+  if (start === null || thisWeek === null) return NO_NAV;
+  const before = addDays(start, -7);
+  const after = addDays(start, 7);
+  const first = earliest !== null && isValidLocalDate(earliest) ? weekStart(earliest) : null;
+  return {
+    previous: before !== null && first !== null && before >= first ? before : null,
+    next: after !== null && after <= thisWeek ? after : null,
+    current: start === thisWeek,
+  };
+}
+
+/** Može li se tjedan s ponedjeljkom `start` prikazati: ispravan ponedjeljak, ne nakon tekućeg tjedna. */
+export function isWeekOpenable(start: string, today: string): boolean {
+  if (!isValidLocalDate(start) || !isValidLocalDate(today)) return false;
+  const thisWeek = weekStart(today);
+  return thisWeek !== null && weekStart(start) === start && start <= thisWeek;
 }
 
 /** Dvanaest mjeseci godine, svaki sa svojim danima. */
