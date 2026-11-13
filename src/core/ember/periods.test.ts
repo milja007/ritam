@@ -12,6 +12,7 @@ import {
   previousMonth,
   segmentLook,
   strongestDay,
+  todayEmber,
   longestStreakInYear,
   strongestMonth,
   trailingDates,
@@ -254,5 +255,51 @@ describe('trend zadnjih dana (Profil)', () => {
     const result = trend('2026-11-12', new Map());
     expect(result.average).toBeNull();
     expect(result.scored).toBe(0);
+  });
+});
+
+describe('todayEmber', () => {
+  const headline = (over: Partial<Parameters<typeof todayEmber>[0]> = {}) =>
+    ({
+      featured: { today: null, vsYesterday: null },
+      featuresYesterday: false,
+      todayInProgress: null,
+      ...over,
+    }) as Parameters<typeof todayEmber>[0];
+
+  it('konačni rezultat pali žar na svoju razinu', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 88, final: true } } as never }),
+    );
+    expect(ember).toEqual({ level: 'bright', score: 88 });
+  });
+
+  it('rezultat "u tijeku" ne pali žar', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 88, final: false } } as never }),
+    );
+    expect(ember).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('dok je istaknut jučerašnji rezultat, današnji žar je ugašen', () => {
+    const ember = todayEmber(
+      headline({
+        featured: { today: { date: '2026-11-11', score: 90, final: true } } as never,
+        featuresYesterday: true,
+        todayInProgress: { date: TODAY, score: 40, final: false },
+      }),
+    );
+    expect(ember).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('bez ijednog rezultata žar je ugašen', () => {
+    expect(todayEmber(headline())).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('konačni rezultat 0 ipak tinja (dan s rezultatom nikad nije ugašen)', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 0, final: true } } as never }),
+    );
+    expect(ember).toEqual({ level: 'faint', score: 0 });
   });
 });

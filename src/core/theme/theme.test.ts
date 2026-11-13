@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
-import { clampFraction, FILL_DURATION_MS } from './motion';
+import { clampFraction, FILL_DURATION_MS, IGNITE_DURATION_MS, IGNITE_SWELL_MS } from './motion';
 import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS, phaseStartsFor } from './phase';
 import { DAY_PHASES, DEFAULT_SCHEME, spacing, radius, themes, typography } from './tokens';
 
@@ -174,5 +174,13 @@ describe('kretanje', () => {
   it('ispuna trake je kratka (ispod pola sekunde)', () => {
     expect(FILL_DURATION_MS).toBeGreaterThan(0);
     expect(FILL_DURATION_MS).toBeLessThan(500);
+  });
+
+  it('paljenje žara je kratko, a nabujanje je manji dio animacije', () => {
+    expect(IGNITE_SWELL_MS).toBeGreaterThan(0);
+    expect(IGNITE_SWELL_MS).toBeLessThan(IGNITE_DURATION_MS);
+    // Smirivanje traje dulje od nabujanja: žar se upali naglo, pa polako sjedne.
+    expect(IGNITE_DURATION_MS - IGNITE_SWELL_MS).toBeGreaterThan(IGNITE_SWELL_MS);
+    expect(IGNITE_DURATION_MS).toBeLessThanOrEqual(1200);
   });
 });

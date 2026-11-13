@@ -260,7 +260,9 @@
       "streak_one": "{{count}} dan",
       "streak_few": "{{count}} dana",
       "streak_other": "{{count}} dana",
-      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}."
+      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}.",
+      "emberLit": "Današnji žar gori.",
+      "emberUnlit": "Današnji žar još ne gori — upali ga večernji upit."
     }
   },
   "evening": {

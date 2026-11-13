@@ -3,7 +3,7 @@
  * (365 točkica). Čista logika nad lokalnim danima "YYYY-MM-DD"; bez React importa.
  */
 import type { ScheduleBlock } from '../domain';
-import { weekStart, type ScoredDay } from '../progress';
+import { weekStart, type ScoredDay, type ScoreHeadline } from '../progress';
 import { streakFromDates } from '../gamification/streak';
 import { blockRange } from '../schedule';
 import { addDays, daysBetween } from '../time/local-date';
@@ -36,6 +36,20 @@ export function dayEmber(date: string, today: string, scores: ReadonlyMap<string
  */
 export function hasDiagnosis(ember: DayEmber): boolean {
   return ember.kind !== 'future' && ember.score !== null;
+}
+
+/** Današnji žar u zaglavlju Dana: razina i rezultat koji ju je upalio (`null` dok žar ne gori). */
+export type TodayEmber = { level: EmberLevel; score: number | null };
+
+/**
+ * Žar današnjeg dana za zaglavlje Dana (Ž9). Pali ga **samo konačni rezultat** — dok je istaknut
+ * jučerašnji rezultat (pravilo P43, večernji upit još nije ispunjen), današnji žar je ugašen.
+ * Rezultat „u tijeku“ ne pali ništa.
+ */
+export function todayEmber(headline: ScoreHeadline): TodayEmber {
+  const today = headline.featured.today;
+  const score = !headline.featuresYesterday && today !== null && today.final ? today.score : null;
+  return { level: emberLevel(score), score };
 }
 
 /** Sedam dana tjedna (pon–ned) kojem `date` pripada. */

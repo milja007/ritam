@@ -255,7 +255,9 @@
       "title": "Today",
       "streak_one": "{{count}} day",
       "streak_other": "{{count}} days",
-      "scoreYesterday": "Yesterday's score {{score}} out of 100. {{trend}}."
+      "scoreYesterday": "Yesterday's score {{score}} out of 100. {{trend}}.",
+      "emberLit": "Today's ember is burning.",
+      "emberUnlit": "Today's ember isn't burning yet — the evening check-in lights it."
     }
   },
   "evening": {
