@@ -13,11 +13,9 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
   5. Ž6 Profil i faza 3 (33 orb, 35 animacije i haptika, 34b rang i statovi, 37c grafovi, 38 teme) — sljedeće skupine.
 - Provjera plana: bez novih paketa (samo `View`, `boxShadow`, Reanimated koji već postoji), pa PR ne dira visokorizične datoteke. Ciljevi tjedna/mjeseca/godine i „[Sustav]“ poruke s platna još nemaju podatke (koraci 25, 25b, 34b) — ne izmišljam ih, sekcije dolaze s tim koracima. Redoslijed u `BUILD_PLAN.md` (visokorizično) ide zasebnim docs PR-om kad PR #6 prođe.
 
-## 2026-11-11 12:30 · CI + kratki PROGRESS (PR `ci/github-actions`)
-- Odluka (Borna proslijedio Codexovu preporuku): CI PR radi Claude, Codex ga samo pregledava. Korak 20 tek nakon `CODEX_APPROVED` za ovaj PR.
-- `.github/workflows/ci.yml`: TypeScript, `expo lint`, Jest (`--runInBand`) i Supabase migracije + `tests/schema.sql` na svakom PR-u i pushu na `main`.
-- Stari dnevnik (175 KB) premješten u `docs/PROGRESS-ARCHIVE.md`; ovaj ostaje kratak.
-- Automatske sesije: s 10 na **2× dnevno** (06:43, 18:43), prvo samo zadnja 2 komentara u #1 (Borna, 2026-11-11). `docs/AUTOMATION.md` ažuriran.
+## 2026-11-11 15:45 · Fix granica brzog puta (PR #6, spojen 2026-11-13 kao `d6fee31`)
+- Pravila postupka (brzi put, visokorizične datoteke, neobrađene radnje, identitet pošiljatelja, odluke po URL-u pitanja) su u `CLAUDE.md` i `docs/AUTOMATION.md`. Tijek svih 8 krugova reviewa je u arhivi.
+- **Odluka Borna 2026-11-13 (chat):** dizajn „Žar“ smije ići paralelno na `wip/zar-…` dok PR čeka review (do 2026-11-17).
 
 ## 2026-11-11 13:00 · Brži rad (Borna: "presporo")
 - 7 sesija dnevno (00:43, 06:43, 09:43, 12:43, 15:43, 18:43, 21:43; Borna: "treba jače raditi"); 2–4 povezana koraka po PR-u; brzi put: PR bez visokorizičnih datoteka Claude spaja na zelenom CI-ju, Codex pregledava naknadno (`CLAUDE_MERGED_FAST`). Pravila u `CLAUDE.md` → "Brži rad".
