@@ -260,7 +260,9 @@
       "streak_one": "{{count}} dan",
       "streak_few": "{{count}} dana",
       "streak_other": "{{count}} dana",
-      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}."
+      "scoreYesterday": "Jučerašnji rezultat {{score}} od 100. {{trend}}.",
+      "emberLit": "Današnji žar gori.",
+      "emberUnlit": "Današnji žar još ne gori — upali ga večernji upit."
     }
   },
   "evening": {
@@ -690,7 +692,11 @@
       "noAverage": "Prosjek {{month}}: još nema rezultata",
       "strongest": "Najjači dan: {{day}} ({{score}})",
       "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita.",
-      "openDiagnosis": "Otvara dijagnozu tog dana"
+      "openDiagnosis": "Otvara dijagnozu tog dana",
+      "finished": "završen",
+      "backToThis": "Ovaj mjesec",
+      "backToThisHint": "Vraća na tekući mjesec",
+      "emptyPast": "Taj mjesec nema ocijenjenih dana."
     },
     "year": {
       "behind_one": "{{count}} dan iza tebe",
@@ -702,7 +708,8 @@
       "records": "Rekordi godine",
       "longestStreak": "dana, najduži niz",
       "strongestMonth": "{{month}}, najjači mjesec",
-      "scoredDays": "ocijenjenih dana"
+      "scoredDays": "ocijenjenih dana",
+      "openMonth": "Otvara taj mjesec"
     },
     "trend": {
       "title": "Zadnjih 30 dana",

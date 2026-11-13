@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
+import { todayEmber } from '@/core/ember';
 import { scorePill, type ScoreTrend } from '@/core/progress';
 import { radius, spacing } from '@/core/theme';
 import { useDayScore, useProgress } from '@/features/progress';
-import { RailDot } from '@/ui/ember';
+import { EmberIgnite, RailDot } from '@/ui/ember';
 import { Text, type TextProps } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -16,9 +17,14 @@ const TREND_TONE: Record<ScoreTrend, NonNullable<TextProps['tone']>> = {
   worse: 'textMuted',
 };
 
+/** Veličina žara današnjeg dana uz broj rezultata. */
+const EMBER_SIZE = 12;
+
 /**
  * Pilule u zaglavlju Dana (smjer „Žar“): niz dana (žar svijetli dok niz traje) i dnevni rezultat
- * sa strelicom trenda. Dok se podaci učitavaju ili kod greške pilule nema — detalji su na karticama niže.
+ * sa strelicom trenda. Uz rezultat stoji žar današnjeg dana — ugašen dok dan traje, a nakon
+ * večernjeg upita se upali na svoju razinu (Ž9). Dok se podaci učitavaju ili kod greške pilule
+ * nema — detalji su na karticama niže.
  */
 export function DayPills({ today, checkinDay }: { today: string; checkinDay: string }) {
   const { t, i18n } = useTranslation();
@@ -28,6 +34,7 @@ export function DayPills({ today, checkinDay }: { today: string; checkinDay: str
 
   const streak = progress.status === 'ready' ? progress.summary.streak.current : null;
   const pill = score.status === 'ready' ? scorePill(score.headline) : null;
+  const ember = score.status === 'ready' ? todayEmber(score.headline) : null;
   if (streak === null && pill === null) return null;
 
   const pillStyle = [styles.pill, { backgroundColor: colors.surface, borderColor: colors.border }];
@@ -54,10 +61,11 @@ export function DayPills({ today, checkinDay }: { today: string; checkinDay: str
         <View
           style={pillStyle}
           accessible
-          accessibilityLabel={t(pill.yesterday ? 'today.header.scoreYesterday' : 'score.a11y', {
+          accessibilityLabel={`${t(pill.yesterday ? 'today.header.scoreYesterday' : 'score.a11y', {
             score: number(pill.score),
             trend: trendText,
-          })}>
+          })} ${t(ember !== null && ember.level !== 'unlit' ? 'today.header.emberLit' : 'today.header.emberUnlit')}`}>
+          {ember !== null ? <EmberIgnite level={ember.level} size={EMBER_SIZE} /> : null}
           <Text variant="bodyStrong" style={styles.value}>
             {number(pill.score)}
           </Text>

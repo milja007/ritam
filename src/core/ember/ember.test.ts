@@ -1,7 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from '../theme';
-import { EMBER_LEVELS, emberColor, emberLevel, flameBlockId, railLine, railState } from './ember';
+import {
+  EMBER_LEVELS,
+  emberColor,
+  emberLevel,
+  flameBlockId,
+  railLine,
+  railState,
+  shouldIgnite,
+} from './ember';
 
 describe('emberLevel', () => {
   it('dan bez rezultata je ugašen žar', () => {
@@ -133,5 +141,25 @@ describe('jedan orb na traci (preklop aktivnosti)', () => {
         () => 'current',
       ),
     ).toBe('e');
+  });
+});
+
+describe('shouldIgnite', () => {
+  it('pali se prijelaz iz ugašenog u upaljeni (večernji upit je dao rezultat)', () => {
+    for (const level of EMBER_LEVELS.filter((l) => l !== 'unlit')) {
+      expect(shouldIgnite('unlit', level)).toBe(true);
+    }
+  });
+
+  it('prvo crtanje ne animira — dan je već gorio kad se ekran otvorio', () => {
+    expect(shouldIgnite(null, 'bright')).toBe(false);
+    expect(shouldIgnite(null, 'unlit')).toBe(false);
+  });
+
+  it('gašenje i jača/slabija razina već upaljenog žara ne animiraju', () => {
+    expect(shouldIgnite('warm', 'unlit')).toBe(false);
+    expect(shouldIgnite('low', 'bright')).toBe(false);
+    expect(shouldIgnite('bright', 'faint')).toBe(false);
+    expect(shouldIgnite('unlit', 'unlit')).toBe(false);
   });
 });

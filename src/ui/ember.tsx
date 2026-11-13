@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -7,11 +7,12 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withRepeat,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
-import { emberColor, railColors, type EmberLevel, type RailState } from '@/core/ember';
-import { radius } from '@/core/theme';
+import { emberColor, railColors, shouldIgnite, type EmberLevel, type RailState } from '@/core/ember';
+import { IGNITE_DURATION_MS, IGNITE_SWELL_MS, radius } from '@/core/theme';
 
 import { useAppTheme } from './theme';
 
@@ -138,6 +139,58 @@ export function Ember({ level, size, today = false, glow: withGlow = true }: Emb
         withGlow && glow > 0 && scheme === 'dark' ? { boxShadow: `0 0 ${Math.round(size * 0.7 * glow)}px ${fill}` } : null,
       ]}
     />
+  );
+}
+
+/** Najveći razmak aureole pri paljenju (višekratnik veličine žara). */
+const IGNITE_HALO_SCALE = 2.4;
+
+/**
+ * Žar dana koji se **upali** kad dan dobije konačni rezultat (Ž9, nakon večernjeg upita): aureola
+ * kratko nabuja oko žara i smiri se, a sam žar malo naraste i vrati se na svoju veličinu.
+ * Pali se samo prijelaz iz ugašenog u upaljeni (`shouldIgnite`) — prvo crtanje i gašenje ne animiraju.
+ * Uz uključeno „smanji kretanje“ odmah stoji krajnje stanje.
+ */
+export function EmberIgnite({ level, size, glow = true }: EmberProps) {
+  const { scheme } = useAppTheme();
+  const { fill } = emberColor(level, scheme);
+  const reduceMotion = useReducedMotion();
+  const ignite = useSharedValue(0);
+  // Razina s prošlog crtanja; `null` na prvom, da se već upaljen dan ne pali ponovo.
+  const previous = useRef<EmberLevel | null>(null);
+
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = level;
+    if (reduceMotion || !shouldIgnite(before, level)) return;
+    ignite.value = withSequence(
+      withTiming(1, { duration: IGNITE_SWELL_MS, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: IGNITE_DURATION_MS - IGNITE_SWELL_MS, easing: Easing.inOut(Easing.quad) }),
+    );
+    return () => cancelAnimation(ignite);
+  }, [ignite, level, reduceMotion]);
+
+  const halo = useAnimatedStyle(() => ({
+    opacity: ignite.value * 0.55,
+    transform: [{ scale: 1 + ignite.value * (IGNITE_HALO_SCALE - 1) }],
+  }));
+  const core = useAnimatedStyle(() => ({ transform: [{ scale: 1 + ignite.value * 0.18 }] }));
+
+  return (
+    <View style={{ width: size, height: size }} accessible={false} importantForAccessibility="no-hide-descendants">
+      {fill === null ? null : (
+        <Animated.View
+          style={[
+            styles.fill,
+            { borderRadius: size, backgroundColor: fill, boxShadow: `0 0 ${size}px ${fill}` },
+            halo,
+          ]}
+        />
+      )}
+      <Animated.View style={core}>
+        <Ember level={level} size={size} glow={glow} />
+      </Animated.View>
+    </View>
   );
 }
 

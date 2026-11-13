@@ -6,12 +6,15 @@ import {
   daysInMonth,
   finalScores,
   hasDiagnosis,
+  isMonthOpenable,
   isoWeek,
   monthGrid,
+  monthHeader,
   nowLine,
   previousMonth,
   segmentLook,
   strongestDay,
+  todayEmber,
   longestStreakInYear,
   strongestMonth,
   trailingDates,
@@ -254,5 +257,93 @@ describe('trend zadnjih dana (Profil)', () => {
     const result = trend('2026-11-12', new Map());
     expect(result.average).toBeNull();
     expect(result.scored).toBe(0);
+  });
+});
+
+describe('todayEmber', () => {
+  const headline = (over: Partial<Parameters<typeof todayEmber>[0]> = {}) =>
+    ({
+      featured: { today: null, vsYesterday: null },
+      featuresYesterday: false,
+      todayInProgress: null,
+      ...over,
+    }) as Parameters<typeof todayEmber>[0];
+
+  it('konačni rezultat pali žar na svoju razinu', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 88, final: true } } as never }),
+    );
+    expect(ember).toEqual({ level: 'bright', score: 88 });
+  });
+
+  it('rezultat "u tijeku" ne pali žar', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 88, final: false } } as never }),
+    );
+    expect(ember).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('dok je istaknut jučerašnji rezultat, današnji žar je ugašen', () => {
+    const ember = todayEmber(
+      headline({
+        featured: { today: { date: '2026-11-11', score: 90, final: true } } as never,
+        featuresYesterday: true,
+        todayInProgress: { date: TODAY, score: 40, final: false },
+      }),
+    );
+    expect(ember).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('bez ijednog rezultata žar je ugašen', () => {
+    expect(todayEmber(headline())).toEqual({ level: 'unlit', score: null });
+  });
+
+  it('konačni rezultat 0 ipak tinja (dan s rezultatom nikad nije ugašen)', () => {
+    const ember = todayEmber(
+      headline({ featured: { today: { date: TODAY, score: 0, final: true } } as never }),
+    );
+    expect(ember).toEqual({ level: 'faint', score: 0 });
+  });
+});
+
+describe('isMonthOpenable', () => {
+  it('mjesec koji je počeo se otvara (tekući i prošli)', () => {
+    expect(isMonthOpenable('2026-11', TODAY)).toBe(true);
+    expect(isMonthOpenable('2026-10', TODAY)).toBe(true);
+    expect(isMonthOpenable('2025-01', TODAY)).toBe(true);
+  });
+
+  it('budući mjesec se ne otvara — nema što pokazati', () => {
+    expect(isMonthOpenable('2026-12', TODAY)).toBe(false);
+    expect(isMonthOpenable('2027-01', TODAY)).toBe(false);
+  });
+
+  it('neispravan mjesec ili dan se ne otvara', () => {
+    expect(isMonthOpenable('2026-13', TODAY)).toBe(false);
+    expect(isMonthOpenable('', TODAY)).toBe(false);
+    expect(isMonthOpenable('2026-10', '2026-11')).toBe(false);
+  });
+});
+
+describe('monthHeader', () => {
+  it('tekući mjesec kaže koliko dana još ostaje', () => {
+    // 12. studenoga 2026., mjesec ima 30 dana → još 18.
+    expect(monthHeader('2026-11', TODAY)).toEqual({ kind: 'current', daysLeft: 18 });
+  });
+
+  it('zadnji dan mjeseca nema dana koji ostaju', () => {
+    expect(monthHeader('2026-11', '2026-11-30')).toEqual({ kind: 'current', daysLeft: 0 });
+    expect(monthHeader('2026-02', '2026-02-28')).toEqual({ kind: 'current', daysLeft: 0 });
+  });
+
+  it('prošli mjesec je završen, budući još nije počeo', () => {
+    expect(monthHeader('2026-10', TODAY)).toEqual({ kind: 'past' });
+    expect(monthHeader('2025-12', TODAY)).toEqual({ kind: 'past' });
+    expect(monthHeader('2026-12', TODAY)).toEqual({ kind: 'future' });
+  });
+
+  it('neispravan mjesec ili dan ne ruši prikaz', () => {
+    expect(monthHeader('2026-13', TODAY)).toEqual({ kind: 'future' });
+    expect(monthHeader('2026-11', 'danas')).toEqual({ kind: 'future' });
   });
 });

@@ -3,7 +3,7 @@
  * (365 točkica). Čista logika nad lokalnim danima "YYYY-MM-DD"; bez React importa.
  */
 import type { ScheduleBlock } from '../domain';
-import { weekStart, type ScoredDay } from '../progress';
+import { weekStart, type ScoredDay, type ScoreHeadline } from '../progress';
 import { streakFromDates } from '../gamification/streak';
 import { blockRange } from '../schedule';
 import { addDays, daysBetween } from '../time/local-date';
@@ -36,6 +36,20 @@ export function dayEmber(date: string, today: string, scores: ReadonlyMap<string
  */
 export function hasDiagnosis(ember: DayEmber): boolean {
   return ember.kind !== 'future' && ember.score !== null;
+}
+
+/** Današnji žar u zaglavlju Dana: razina i rezultat koji ju je upalio (`null` dok žar ne gori). */
+export type TodayEmber = { level: EmberLevel; score: number | null };
+
+/**
+ * Žar današnjeg dana za zaglavlje Dana (Ž9). Pali ga **samo konačni rezultat** — dok je istaknut
+ * jučerašnji rezultat (pravilo P43, večernji upit još nije ispunjen), današnji žar je ugašen.
+ * Rezultat „u tijeku“ ne pali ništa.
+ */
+export function todayEmber(headline: ScoreHeadline): TodayEmber {
+  const today = headline.featured.today;
+  const score = !headline.featuresYesterday && today !== null && today.final ? today.score : null;
+  return { level: emberLevel(score), score };
 }
 
 /** Sedam dana tjedna (pon–ned) kojem `date` pripada. */
@@ -158,6 +172,34 @@ export function monthGrid(month: string): (string | null)[] {
   const start = first === undefined ? null : weekStart(first);
   const lead = first === undefined || start === null ? 0 : (daysBetween(start, first) ?? 0);
   return [...Array.from({ length: lead }, () => null), ...dates];
+}
+
+/**
+ * Može li se mjesec otvoriti iz Godine (Ž10): samo mjesec koji je počeo. Budući mjesec nema što
+ * pokazati (svi dani su tek ocrtani), pa ostaje običan, nedodirljiv redak. Neispravan mjesec ne.
+ */
+export function isMonthOpenable(month: string, today: string): boolean {
+  if (daysInMonth(month) === 0 || today.length !== 10) return false;
+  return month <= today.slice(0, 7);
+}
+
+/**
+ * Što pilula u zaglavlju Mjeseca kaže: za tekući mjesec koliko dana još ostaje (`0` = zadnji dan),
+ * za prošli da je završen, za budući (ne otvara se iz Godine) da još nije počeo.
+ */
+export type MonthHeader =
+  | { kind: 'current'; daysLeft: number }
+  | { kind: 'past' }
+  | { kind: 'future' };
+
+export function monthHeader(month: string, today: string): MonthHeader {
+  const length = daysInMonth(month);
+  if (length === 0 || today.length !== 10) return { kind: 'future' };
+  const current = today.slice(0, 7);
+  if (month > current) return { kind: 'future' };
+  if (month < current) return { kind: 'past' };
+  const day = Number(today.slice(8, 10));
+  return { kind: 'current', daysLeft: Number.isInteger(day) ? Math.max(0, length - day) : 0 };
 }
 
 /** Prethodni mjesec: "2026-01" → "2025-12". */

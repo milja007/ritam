@@ -26,6 +26,15 @@ export function emberLevel(score: number | null): EmberLevel {
   return 'faint';
 }
 
+/**
+ * Pali li se žar upravo sada (Ž9): prijelaz iz ugašenog u upaljeni dok ekran stoji otvoren —
+ * dan je dobio konačni rezultat (večernji upit). Prvo crtanje (`previous === null`) ne animira,
+ * jer je dan tada već bio upaljen kad se ekran otvorio. Gašenje se nikad ne animira.
+ */
+export function shouldIgnite(previous: EmberLevel | null, next: EmberLevel): boolean {
+  return previous === 'unlit' && next !== 'unlit';
+}
+
 export type EmberColor = {
   /** Ispuna žara; `null` za ugašen žar (samo obrub). */
   fill: string | null;
