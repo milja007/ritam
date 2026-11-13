@@ -7,6 +7,7 @@
  * prosjekom jak (`STRONG_WEEK_AVERAGE`). Slab tjedan ništa ne oduzima — rang nikad ne pada.
  */
 import { isValidLocalDate } from '../domain/common';
+import type { EmberLevel } from '../ember/ember';
 import { weekStart } from '../progress/compare';
 
 export const RANKS = ['E', 'D', 'C', 'B', 'A', 'S'] as const;
@@ -14,6 +15,16 @@ export type Rank = (typeof RANKS)[number];
 
 /** Koliko dobrih tjedana ukupno treba za rang. */
 export const RANK_GOOD_WEEKS: Readonly<Record<Rank, number>> = { E: 0, D: 2, C: 5, B: 9, A: 14, S: 20 };
+
+/** Svjetlina medaljona ranga: plamen raste s rangom (E tinja, A i S gore punim sjajem). */
+export const RANK_EMBER: Readonly<Record<Rank, Exclude<EmberLevel, 'unlit'>>> = {
+  E: 'faint',
+  D: 'low',
+  C: 'warm',
+  B: 'warm',
+  A: 'bright',
+  S: 'bright',
+};
 
 /** Tjedan se broji tek s toliko konačnih rezultata (više od pola tjedna). */
 export const MIN_WEEK_DAYS = 4;

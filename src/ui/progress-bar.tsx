@@ -20,6 +20,8 @@ type ProgressBarProps = {
   /** Tekst vrijednosti za čitač zaslona (npr. "30 od 130 XP"). */
   valueText: string;
   height?: number;
+  /** Boja ispune; zadano akcent teme. */
+  color?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -32,6 +34,7 @@ export function ProgressBar({
   accessibilityLabel,
   valueText,
   height = 8,
+  color,
   style,
 }: ProgressBarProps) {
   const { colors } = useAppTheme();
@@ -58,7 +61,7 @@ export function ProgressBar({
         style,
       ]}>
       <Animated.View
-        style={[styles.fill, { borderRadius: height / 2, backgroundColor: colors.accent }, fill]}
+        style={[styles.fill, { borderRadius: height / 2, backgroundColor: color ?? colors.accent }, fill]}
       />
     </View>
   );

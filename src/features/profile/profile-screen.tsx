@@ -19,7 +19,7 @@ import {
 import { radius, spacing } from '@/core/theme';
 import { AccountCard, useSession } from '@/features/auth';
 import { DiagnosisArchive } from '@/features/diagnosis';
-import { dayLong, monthName, TrendCard } from '@/features/ember';
+import { dayLong, monthName, ProfileEmberCards } from '@/features/ember';
 import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
@@ -75,7 +75,7 @@ export function ProfileScreen() {
 
           <Section title={t('profile.progress')}>
             <ProgressCard today={now.date} checkinDay={now.eveningDate} />
-            <TrendCard checkinDay={now.eveningDate} />
+            <ProfileEmberCards checkinDay={now.eveningDate} />
             <DiagnosisArchive
               checkinDay={now.eveningDate}
               dayLabel={(date) => dayLong(date, language)}
