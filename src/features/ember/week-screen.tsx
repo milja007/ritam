@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
@@ -5,9 +6,11 @@ import {
   averageScore,
   dayEmber,
   isoWeek,
+  isWeekOpenable,
   nowLine,
   segmentColor,
   weekDates,
+  weekNav,
   weekSegments,
   type SegmentLook,
 } from '@/core/ember';
@@ -19,7 +22,8 @@ import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import { dayLong, dayNumber, weekdayLetter, weekRange } from './format';
-import { PeriodScreen, Pill } from './period-screen';
+import { PeriodNavRow, PeriodScreen, Pill } from './period-screen';
+import { useEarliestScored } from './use-earliest-scored';
 import { useEmberData } from './use-ember-data';
 
 const COLUMN_HEIGHT = 300;
@@ -35,17 +39,22 @@ const LEGEND: readonly { look: SegmentLook; key: 'legendDone' | 'legendMissed' |
 /**
  * Tab Tjedan (smjer „Žar“): sedam stupaca dana s blokovima (odrađeno svijetli, neodrađeno je
  * ugašeno, plan je ocrtan), linija „sada“ kroz današnji stupac i žar svakog dana ispod.
+ * Strelice listaju prošle tjedne (do tjedna najranijeg rezultata); „Ovaj tjedan“ vraća na tekući.
  */
 export function WeekScreen() {
   const { t, i18n } = useTranslation();
   const { colors, scheme } = useAppTheme();
   const now = useNow();
-  const dates = weekDates(now.date);
+  // Ponedjeljak tjedna odabranog strelicom; `null` (ili neispravan) znači tekući tjedan.
+  const [selected, setSelected] = useState<string | null>(null);
+  const shown = selected !== null && isWeekOpenable(selected, now.date) ? selected : now.date;
+  const dates = weekDates(shown);
   const from = dates[0] ?? now.date;
   const to = dates[6] ?? now.date;
   const state = useEmberData(now.eveningDate, { from, to });
   const language = i18n.language;
-  const week = isoWeek(now.date);
+  const week = isoWeek(from);
+  const nav = weekNav(shown, now.date, useEarliestScored(state));
 
   const previous = dates.map((date) => addDays(date, -7)).filter((date): date is string => date !== null);
   const average = state.data ? averageScore(dates, state.data.scores) : null;
@@ -61,6 +70,19 @@ export function WeekScreen() {
       title={t('ember.week.title', { week: week ?? '' })}
       status={state.status}
       onRetry={state.reload}
+      nav={
+        <PeriodNavRow
+          nav={nav}
+          onSelect={setSelected}
+          onCurrent={() => setSelected(null)}
+          labels={{
+            previous: t('ember.nav.previousWeek'),
+            next: t('ember.nav.nextWeek'),
+            current: t('ember.week.backToThis'),
+            currentHint: t('ember.week.backToThisHint'),
+          }}
+        />
+      }
       pill={
         diffText !== null ? (
           <Pill label={t('ember.week.vsPreviousLabel', { diff: diffText })}>
@@ -173,7 +195,7 @@ export function WeekScreen() {
             })}
           </View>
 
-          {empty ? <Text tone="textMuted">{t('ember.week.empty')}</Text> : null}
+          {empty ? <Text tone="textMuted">{t(nav.current ? 'ember.week.empty' : 'ember.week.emptyPast')}</Text> : null}
         </>
       ) : null}
     </PeriodScreen>

@@ -2,14 +2,18 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { BlockStatus, ScheduleBlock } from '@/core/domain';
-import { railLine, railState } from '@/core/ember';
+import { railColors, railLine, railState } from '@/core/ember';
 import { blockActions, isCancelled, type BlockPhase } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { Orb, RailDot, RailLineView } from '@/ui/ember';
+import { Flare } from '@/ui/flare';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import { ReportPills } from './report-pills';
+import { useDotFlare } from './use-dot-flare';
+
+const DOT = 10;
 
 type BlockCardProps = {
   block: ScheduleBlock;
@@ -29,6 +33,7 @@ type BlockCardProps = {
  * Redak trake dana (17c, smjer „Žar“): vrijeme lijevo, točka i linija vremena, naziv i tip.
  * Iza plamena linija je izgorjela, a odrađeno svijetli; ispred njega plan je tek ocrtan.
  * Neodrađeno i otkazano su ugašen žar (bez crvene); prošle se prijavljuju izravno na traci.
+ * Kad se aktivnost prijavi kao odrađena, njezina točka bljesne (korak 35).
  */
 export function BlockCard({
   block,
@@ -40,13 +45,14 @@ export function BlockCard({
   onReport,
 }: BlockCardProps) {
   const { t } = useTranslation();
-  const { colors } = useAppTheme();
+  const { colors, scheme } = useAppTheme();
   const cancelled = isCancelled(block) && phase !== 'past';
   const reportable = blockActions(block, phase).report.length > 1;
   const settled = block.status !== 'planned';
   const dimmed = cancelled || (phase === 'past' && settled) || block.kind === 'sleep';
   const time = t('today.timeRange', { start: block.start, end: block.end });
   const state = railState(block, phase, flame);
+  const dotFlare = useDotFlare(state);
   const line = railLine(phase);
   // Riješena prošla aktivnost je sažeta u jedan redak bez kartice.
   const compact = phase === 'past' && settled;
@@ -64,7 +70,13 @@ export function BlockCard({
 
       <View style={styles.rail}>
         <View style={styles.railTop}>{first ? null : <RailLineView kind={line} />}</View>
-        {state === 'now' ? <Orb size={14} /> : <RailDot state={state} />}
+        {state === 'now' ? (
+          <Orb size={14} />
+        ) : (
+          <Flare trigger={dotFlare} size={DOT} color={railColors(scheme).lit}>
+            <RailDot state={state} size={DOT} />
+          </Flare>
+        )}
         {last ? <View style={styles.railEnd} /> : <RailLineView kind={line} />}
       </View>
 

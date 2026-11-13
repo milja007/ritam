@@ -4,6 +4,20 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-13 · Sesija 18:43 — korak 34b + dio koraka 35 (PR #17)
+- **34b Rang i statovi** (po platnu „Profil“), sve iz lokalnih podataka:
+  - `src/core/gamification/rank.ts`: rang E→S iz broja **dobrih tjedana** — zaključen tjedan (pon–ned) s ≥ 4 konačna rezultata koji je bolji od prethodnog ubrojenog ili ima prosjek ≥ 70. Pragovi ukupno: D 2, C 5, B 9, A 14, S 20. Rang nikad ne pada.
+  - `stats.ts`: Disciplina = plan, Volja = zabrane, Energija = san; 0–100 je prosjek tog dijela **konačnog** rezultata zadnjih 30 dana. Zdravlje i Novac čekaju trackere (31b).
+  - `ScoredDay.parts` (neobavezno) — `listDayScores` samo prosljeđuje dijelove koje je već računao (čitanje, bez migracije).
+  - Profil: kartica „Rang i statovi“ (`features/ember/rank-card.tsx`) — medaljon čiji sjaj raste s rangom, žarovi do sljedećeg ranga, „[Sustav]“ poruka + pravilo, trake statova u boji žara. `ProfileEmberCards` dijeli jedno čitanje s „Zadnjih 30 dana“.
+- **35 (dio, bez haptike):** „+N XP“ iskoči uz XP traku na Danu kad XP naraste dok je ekran otvoren (`xpGain`, `XpPop`, `useXpGain`); uz „smanji kretanje“ samo blijedi; dobitak se javlja čitaču zaslona.
+- Bez broja razine (P35). **Na uređaju neprovjereno** (cloud nema simulator; web export pada na `expo-sqlite`).
+- Issue #1 je bio zatvoren (GitHub ga je zatvorio uz merge PR-a #15) — ponovo otvoren; u opis PR-a ne pisati „fixes #1“.
+
+## 2026-11-13 · Sesija 15:43 — koraci 20–22, kod spojen (PR #16 `39f6724`), **nije dovršeno**
+- `supabase/functions/_shared/{cors,llm-provider}.ts`, `parse-input`, `plan-day`, `src/core/schedule/edge-types.ts`; `tsconfig.json` isključuje `supabase/**`.
+- Ostaje prije `[x]`: funkcije nisu deployane, nemaju testove (fallback pravila `plan-day` treba izvući u `src/core` i pokriti), `parse-input` nije spojen na korak 13, validacija plana u appu ne postoji. Codex ih još nije pregledao.
+
 ## 2026-11-13 · Sesija 12:43 — Ž9, Ž10, Ž12 spojeni (PR #11 `fe51250`, #12 `b74df90`, #13 `d25805f`)
 - Spojeno (svaki korak zaseban commit, s testovima):
   1. **Ž9 Paljenje žara.** Žar današnjeg dana stoji uz broj rezultata u zaglavlju Dana: ugašen obrub dok dan traje, a kad večernji upit da konačni rezultat upali se na svoju razinu uz jednokratnu animaciju (aureola nabuja i smiri se, žar malo naraste i vrati se). Čisto: `todayEmber` (pali **samo konačni rezultat**, pravilo P43 — rezultat „u tijeku“ i istaknuti jučerašnji ostavljaju žar ugašen) i `shouldIgnite` (prvo crtanje i gašenje ne animiraju); tokeni `IGNITE_DURATION_MS` / `IGNITE_SWELL_MS`; `EmberIgnite` poštuje „smanji kretanje“.

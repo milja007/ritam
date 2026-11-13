@@ -77,14 +77,14 @@ Ovi koraci idu ispred koraka 20–22 dok prioritet traje. Numeracija je zasebna 
 - [ ] **Ž11. Haptika** *(„+N XP“ animacija je gotova bez haptike; level-up ide uz korak 32)* — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
 - [x] **Ž12. Arhiva dijagnoza** — popis prošlih dnevnih dijagnoza na Profilu, po mjesecima, najnovija prvo; dodir otvara dijagnozu tog dana, „Prikaži još“ dodaje sljedećih deset. Nepročitane su označene točkom. Čita se samo popis (`listDayReportArchive`) — dijagnoza se ne generira dok se red ne otvori.
 
-Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/godine (25, 25b), „[Sustav]“ poruke te rang i statovi (34b), bedževi i otključavanja (32, 34), listanje prošlih razdoblja strelicama (34b), točkice fiksnih obaveza (24).
+Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/godine (25, 25b), „[Sustav]“ poruke te rang i statovi (34b), bedževi i otključavanja (32, 34; bedževi gotovi 2026-11-13), listanje prošlih razdoblja strelicama (34b; gotovo 2026-11-13), točkice fiksnih obaveza (24).
 
 ## Faza 3 — Igra i animacije
 - [ ] 32. Leveli + otključavanja
 - [ ] 33. Orb-plamen avatar (Skia)
-- [ ] 34. Epski questovi u Profilu (samo dugoročni, sam ih postaviš; bez dnevnih/tjednih — 2026-11-10) + freeze tokeni + bedževi
-- [x] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]" — *rang iz „dobrih tjedana“, statovi iz dijelova konačnog rezultata zadnjih 30 dana, kartica na Profilu; Zdravlje i Novac dobivaju vrijednost s trackerima (31b).*
-- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Ostaje haptika → **Ž11**, level-up (uz korak 32) i animacija niza.
+- [ ] 34. Epski questovi u Profilu (samo dugoročni, sam ih postaviš; bez dnevnih/tjednih — 2026-11-10) + freeze tokeni + bedževi — *dio gotov (2026-11-13):* **bedževi** — 9 bedževa izvedenih iz konačnih rezultata i niza (`src/core/gamification/badges.ts`), kartica „Bedževi“ na Profilu po platnu. Ostaju epski questovi i freeze tokeni (traže tablice).
+- [x] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]" — *rang iz „dobrih tjedana“, statovi iz dijelova konačnog rezultata zadnjih 30 dana, kartica na Profilu; Zdravlje i Novac dobivaju vrijednost s trackerima (31b).* *Listanje prošlih tjedana i mjeseci strelicama (`weekNav`, `monthNav`) dodano 2026-11-13.*
+- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Animacija niza (žar u piluli niza bljesne kad niz naraste) i „Gotovo“ (točka na traci dana bljesne kad se aktivnost prijavi kao odrađena) su gotove (2026-11-13). Ostaje haptika → **Ž11** i level-up (uz korak 32).
 - [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
 - [ ] 37. Mjesečna dijagnoza (zadnji dan u mjesecu: dan + tjedan + mjesec)
 - [ ] 37b. Godišnja dijagnoza (31. 12.: dan + tjedan + mjesec + godina)

@@ -94,6 +94,20 @@ export function railState(block: RailBlock, phase: BlockPhase, flame = true): Ra
   return phase === 'past' ? 'unlit' : 'ahead';
 }
 
+/** Koliko točka svijetli: ugašena/ocrtana 0, pola 1, odrađeno 2. */
+function railGlow(state: RailState): number {
+  return state === 'lit' ? 2 : state === 'half' ? 1 : 0;
+}
+
+/**
+ * Bljesne li točka na traci (korak 35, animacija „Gotovo“): samo kad zasvijetli jače nego prije dok
+ * je ekran otvoren — aktivnost je upravo prijavljena kao odrađena ili napola odrađena. Prvo crtanje
+ * (`previous === null`) i gašenje (poništena prijava) ne animiraju.
+ */
+export function shouldFlareDot(previous: RailState | null, next: RailState): boolean {
+  return previous !== null && railGlow(next) > railGlow(previous);
+}
+
 /**
  * Aktivnost koja nosi plamen na traci bez zasebnog retka „Sada“: prva (po redoslijedu trake)
  * koja traje. Kod preklopa ostale ostaju ocrtane.

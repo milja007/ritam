@@ -4,3 +4,4 @@ export * from './level';
 export * from './progress';
 export * from './rank';
 export * from './stats';
+export * from './badges';

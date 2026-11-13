@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { CheckinKind } from '../domain/checkin';
-import { EMPTY_STREAK, isEveningCheckinComplete, mainStreak, streakFromDates } from './streak';
+import { EMPTY_STREAK, isEveningCheckinComplete, mainStreak, streakFromDates, streakGain } from './streak';
 
 const TODAY = '2026-11-08';
 
@@ -92,5 +92,24 @@ describe('glavni streak iz checkina', () => {
 
   it('jutarnji checkin bez večernjeg ne drži streak', () => {
     expect(mainStreak([checkin('2026-11-07', 'morning', null)], TODAY)).toEqual(EMPTY_STREAK);
+  });
+});
+
+describe('streakGain', () => {
+  it('prvo crtanje ne bljesne', () => {
+    expect(streakGain(null, 5)).toBe(0);
+  });
+
+  it('rast niza daje razliku', () => {
+    expect(streakGain(0, 1)).toBe(1);
+    expect(streakGain(4, 5)).toBe(1);
+    expect(streakGain(2, 5)).toBe(3);
+  });
+
+  it('isti niz, prekid niza i neispravni brojevi daju 0', () => {
+    expect(streakGain(5, 5)).toBe(0);
+    expect(streakGain(5, 0)).toBe(0);
+    expect(streakGain(Number.NaN, 3)).toBe(0);
+    expect(streakGain(3, Number.POSITIVE_INFINITY)).toBe(0);
   });
 });

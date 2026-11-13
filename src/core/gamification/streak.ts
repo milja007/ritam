@@ -71,3 +71,13 @@ export function mainStreak(checkins: readonly CheckinLike[], today: string): Str
     today,
   );
 }
+
+/**
+ * Za koliko je niz narastao između dva crtanja (animacija niza, korak 35). Prvo crtanje
+ * (`previous === null`), pad ili prekid niza i neispravni brojevi daju 0 — bljesne samo stvaran
+ * rast dok je ekran otvoren.
+ */
+export function streakGain(previous: number | null, next: number): number {
+  if (previous === null || !Number.isFinite(previous) || !Number.isFinite(next)) return 0;
+  return Math.max(0, Math.floor(next) - Math.floor(previous));
+}

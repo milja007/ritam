@@ -21,6 +21,15 @@ export const XP_POP_IN_MS = 160;
 /** Koliko se „+N XP“ digne (px) dok blijedi; uz „smanji kretanje“ samo blijedi. */
 export const XP_POP_RISE = 14;
 
+/** Bljesak žara u piluli niza kad niz naraste (korak 35): aureola nabuja i nestane. */
+export const FLARE_DURATION_MS = 700;
+
+/** Koliko brzo bljesak nabuja; ostatak `FLARE_DURATION_MS` je smirivanje. */
+export const FLARE_SWELL_MS = 200;
+
+/** Koliko broj niza poskoči (višekratnik veličine) dok žar bljesne. */
+export const BUMP_SCALE = 1.2;
+
 /** Udio 0–1 za trake i grafove; neispravan broj (NaN, ±∞) je 0. */
 export function clampFraction(value: number): number {
   return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;

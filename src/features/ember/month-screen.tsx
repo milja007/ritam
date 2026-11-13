@@ -11,6 +11,7 @@ import {
   monthDates,
   monthGrid,
   monthHeader,
+  monthNav,
   previousMonth,
   strongestDay,
   weekDates,
@@ -18,14 +19,14 @@ import {
 import { radius, spacing } from '@/core/theme';
 import { DiagnosisModal } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
-import { Button } from '@/ui/button';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
 import { dayLong, dayNumber, monthName, weekdayLetter } from './format';
-import { clearSelectedMonth, useSelectedMonth } from './selected-month';
-import { Card, EmberLegend, PeriodScreen, Pill } from './period-screen';
+import { clearSelectedMonth, selectMonth, useSelectedMonth } from './selected-month';
+import { Card, EmberLegend, PeriodNavRow, PeriodScreen, Pill } from './period-screen';
+import { useEarliestScored } from './use-earliest-scored';
 import { useEmberData } from './use-ember-data';
 
 const CELL = 40;
@@ -33,7 +34,8 @@ const CELL = 40;
 /**
  * Tab Mjesec (smjer „Žar“): kalendar žarova — svaki prošli dan svijetli prema svom rezultatu,
  * dan bez rezultata je ugašen žar, današnji je obrub u boji plamena, budući su tek ocrtani.
- * Dodir mjeseca u Godini (Ž10) otvara ovdje taj mjesec; „Ovaj mjesec“ vraća na tekući.
+ * Dodir mjeseca u Godini (Ž10) otvara ovdje taj mjesec; strelice listaju mjesece (do mjeseca
+ * najranijeg rezultata i ne dalje od tekućeg), „Ovaj mjesec“ vraća na tekući.
  */
 export function MonthScreen() {
   const { t, i18n } = useTranslation();
@@ -42,12 +44,13 @@ export function MonthScreen() {
   const state = useEmberData(now.eveningDate);
   const language = i18n.language;
   const thisMonth = now.date.slice(0, 7);
-  // Mjesec odabran dodirom u Godini stoji dok ga „Ovaj mjesec“ ne obriše; neispravan se ignorira.
+  // Mjesec odabran dodirom u Godini ili strelicom stoji dok ga „Ovaj mjesec“ ne obriše; neispravan se ignorira.
   const selected = useSelectedMonth();
   const month = selected !== null && isMonthOpenable(selected, now.date) ? selected : thisMonth;
   const header = monthHeader(month, now.date);
   const dates = monthDates(month);
   const before = previousMonth(month);
+  const nav = monthNav(month, now.date, useEarliestScored(state));
 
   const scores = state.data?.scores ?? null;
   const average = scores ? averageScore(dates, scores) : null;
@@ -62,6 +65,19 @@ export function MonthScreen() {
       title={monthName(month, language)}
       status={state.status}
       onRetry={state.reload}
+      nav={
+        <PeriodNavRow
+          nav={nav}
+          onSelect={selectMonth}
+          onCurrent={clearSelectedMonth}
+          labels={{
+            previous: t('ember.nav.previousMonth'),
+            next: t('ember.nav.nextMonth'),
+            current: t('ember.month.backToThis'),
+            currentHint: t('ember.month.backToThisHint'),
+          }}
+        />
+      }
       pill={
         <Pill>
           <Text variant="caption" style={styles.strong}>
@@ -75,14 +91,6 @@ export function MonthScreen() {
       }>
       {scores ? (
         <>
-          {month === thisMonth ? null : (
-            <Button
-              variant="secondary"
-              label={t('ember.month.backToThis')}
-              accessibilityHint={t('ember.month.backToThisHint')}
-              onPress={clearSelectedMonth}
-            />
-          )}
           <View>
             <View style={styles.row} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
               {weekDates(now.date).map((date) => (
