@@ -2,6 +2,10 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-13 · Samostalan rad (odluka Borna, 2026-11-13 chat; isto poslano Codexu)
+- Codex zaustavlja Claudea samo kod P0/P1 greške koja mijenja sve; inače Claude radi sam i sam spaja PR na zelenom CI-ju, Codex pregledava usporedno. P2/P3 idu u sljedeći PR. Pravila u `CLAUDE.md` ("samostalan rad") i prompt u `docs/AUTOMATION.md` prepisani; stara pravila čekanja i `REPOST` mehanizmi više ne vrijede.
+- Bez Borne i dalje ne ide: remote Supabase migracije, tajne, promjene koncepta, brisanje.
+
 ## 2026-11-13 12:50 · Žar 6–8 + dijelovi koraka 35 i 37c (grana `wip/zar-profil`, PR #9 → brzi put)
 - Gotovo na grani (svaki zaseban commit, s testovima):
   1. Ž6 Profil: kartica napretka s orbom u prstenovima + graf „Zadnjih 30 dana“ (`trend`, `TrendCard`).
