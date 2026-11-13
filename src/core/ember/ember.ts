@@ -73,12 +73,27 @@ export type RailState = (typeof RAIL_STATES)[number];
 
 type RailBlock = Pick<ScheduleBlock, 'status' | 'kind'>;
 
-export function railState(block: RailBlock, phase: BlockPhase): RailState {
+/**
+ * Stanje točke na traci. `flame: false` = plamen već nosi drugi redak (redak „Sada“ ili ranija
+ * preklopljena aktivnost), pa aktivnost koja traje ostaje ocrtana — na traci je uvijek jedan orb.
+ */
+export function railState(block: RailBlock, phase: BlockPhase, flame = true): RailState {
   if (block.status === 'done') return 'lit';
   if (block.status === 'partial') return 'half';
   if (block.status === 'skipped' || block.status === 'moved') return 'unlit';
-  if (phase === 'current') return block.kind === 'sleep' ? 'ahead' : 'now';
+  if (phase === 'current') return block.kind === 'sleep' || !flame ? 'ahead' : 'now';
   return phase === 'past' ? 'unlit' : 'ahead';
+}
+
+/**
+ * Aktivnost koja nosi plamen na traci bez zasebnog retka „Sada“: prva (po redoslijedu trake)
+ * koja traje. Kod preklopa ostale ostaju ocrtane.
+ */
+export function flameBlockId<T extends RailBlock & { id: string }>(
+  blocks: readonly T[],
+  phaseOf: (block: T) => BlockPhase,
+): string | null {
+  return blocks.find((block) => railState(block, phaseOf(block)) === 'now')?.id ?? null;
 }
 
 /** Linija ispod točke: iza plamena je izgorjela (puna), ispred njega tek ocrtana (crtkana). */

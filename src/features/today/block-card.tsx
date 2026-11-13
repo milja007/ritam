@@ -18,6 +18,8 @@ type BlockCardProps = {
   first?: boolean;
   /** Zadnji redak trake (bez linije prema dolje). */
   last?: boolean;
+  /** Nosi li ovaj redak plamen dok traje; `false` kad ga nosi redak „Sada“ ili drugi redak. */
+  flame?: boolean;
   onPress: () => void;
   /** Prijava prošle aktivnosti izravno na rasporedu. */
   onReport: (status: BlockStatus) => void;
@@ -28,7 +30,15 @@ type BlockCardProps = {
  * Iza plamena linija je izgorjela, a odrađeno svijetli; ispred njega plan je tek ocrtan.
  * Neodrađeno i otkazano su ugašen žar (bez crvene); prošle se prijavljuju izravno na traci.
  */
-export function BlockCard({ block, phase, first = false, last = false, onPress, onReport }: BlockCardProps) {
+export function BlockCard({
+  block,
+  phase,
+  first = false,
+  last = false,
+  flame = true,
+  onPress,
+  onReport,
+}: BlockCardProps) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const cancelled = isCancelled(block) && phase !== 'past';
@@ -36,7 +46,7 @@ export function BlockCard({ block, phase, first = false, last = false, onPress, 
   const settled = block.status !== 'planned';
   const dimmed = cancelled || (phase === 'past' && settled) || block.kind === 'sleep';
   const time = t('today.timeRange', { start: block.start, end: block.end });
-  const state = railState(block, phase);
+  const state = railState(block, phase, flame);
   const line = railLine(phase);
   // Riješena prošla aktivnost je sažeta u jedan redak bez kartice.
   const compact = phase === 'past' && settled;
