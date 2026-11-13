@@ -1,7 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
-import { clampFraction, FILL_DURATION_MS, IGNITE_DURATION_MS, IGNITE_SWELL_MS } from './motion';
+import {
+  clampFraction,
+  FILL_DURATION_MS,
+  IGNITE_DURATION_MS,
+  IGNITE_SWELL_MS,
+  XP_POP_DURATION_MS,
+  XP_POP_IN_MS,
+  XP_POP_RISE,
+} from './motion';
 import { dayPhaseAt, dayPhaseOf, linearGradientCss, PHASE_STARTS, phaseStartsFor } from './phase';
 import { DAY_PHASES, DEFAULT_SCHEME, spacing, radius, themes, typography } from './tokens';
 
@@ -182,5 +190,13 @@ describe('kretanje', () => {
     // Smirivanje traje dulje od nabujanja: žar se upali naglo, pa polako sjedne.
     expect(IGNITE_DURATION_MS - IGNITE_SWELL_MS).toBeGreaterThan(IGNITE_SWELL_MS);
     expect(IGNITE_DURATION_MS).toBeLessThanOrEqual(1200);
+  });
+
+  it('„+N XP“ se pojavi brzo, kratko traje i diže se tek malo', () => {
+    expect(XP_POP_IN_MS).toBeGreaterThan(0);
+    expect(XP_POP_IN_MS).toBeLessThan(XP_POP_DURATION_MS / 4);
+    expect(XP_POP_DURATION_MS).toBeLessThanOrEqual(2000);
+    expect(XP_POP_RISE).toBeGreaterThan(0);
+    expect(XP_POP_RISE).toBeLessThanOrEqual(24);
   });
 });

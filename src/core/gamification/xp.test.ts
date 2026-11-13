@@ -4,6 +4,7 @@ import {
   bedtimeDeviationMinutes,
   totalXp,
   XP_TABLE,
+  xpGain,
   xpByDate,
   xpForBedtime,
   xpForDate,
@@ -97,5 +98,26 @@ describe('zbrojevi iz xp_events', () => {
       ['2026-11-07', 10],
       ['2026-11-08', 40],
     ]);
+  });
+});
+
+describe('xpGain', () => {
+  it('prvo crtanje ne animira', () => {
+    expect(xpGain(null, 120)).toBe(0);
+  });
+
+  it('rast ukupnog XP-a je dobitak', () => {
+    expect(xpGain(100, 110)).toBe(10);
+    expect(xpGain(0, 35)).toBe(35);
+  });
+
+  it('isti ili manji XP (poništena radnja) ne animira', () => {
+    expect(xpGain(110, 110)).toBe(0);
+    expect(xpGain(110, 100)).toBe(0);
+  });
+
+  it('neispravni brojevi daju 0', () => {
+    expect(xpGain(NaN, 10)).toBe(0);
+    expect(xpGain(10, Infinity)).toBe(0);
   });
 });

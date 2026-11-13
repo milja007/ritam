@@ -107,3 +107,13 @@ export function xpByDate(events: readonly XpEventLike[]): Map<string, number> {
   }
   return new Map([...totals.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 }
+
+/**
+ * Koliko je XP-a upravo dobiveno (za „+N XP“ animaciju, korak 35): razlika ukupnog XP-a između
+ * dva crtanja. Prvo crtanje (`previous === null`) i pad ukupnog XP-a (poništena radnja) daju 0 —
+ * animira se samo stvaran dobitak dok je ekran otvoren. Neispravni brojevi daju 0.
+ */
+export function xpGain(previous: number | null, next: number): number {
+  if (previous === null || !Number.isFinite(previous) || !Number.isFinite(next)) return 0;
+  return Math.max(0, Math.floor(next) - Math.floor(previous));
+}
