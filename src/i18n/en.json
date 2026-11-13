@@ -681,7 +681,8 @@
       "average": "{{month}} average: {{score}}",
       "noAverage": "{{month}} average: no scores yet",
       "strongest": "Strongest day: {{day}} ({{score}})",
-      "empty": "No scored days this month yet. An ember lights up after the evening check-in."
+      "empty": "No scored days this month yet. An ember lights up after the evening check-in.",
+      "openDiagnosis": "Opens that day's diagnosis"
     },
     "year": {
       "behind_one": "{{count}} day behind you",

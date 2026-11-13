@@ -5,6 +5,7 @@ import {
   dayEmber,
   daysInMonth,
   finalScores,
+  hasDiagnosis,
   isoWeek,
   monthGrid,
   nowLine,
@@ -35,6 +36,14 @@ describe('dayEmber', () => {
   it('rezultat u tijeku ne pali žar', () => {
     expect(scores.has(TODAY)).toBe(false);
     expect(dayEmber(TODAY, TODAY, scores)).toEqual({ kind: 'today', score: null });
+  });
+
+  it('dijagnoza se otvara samo za dan s konačnim rezultatom', () => {
+    expect(hasDiagnosis(dayEmber('2026-11-10', TODAY, scores))).toBe(true);
+    expect(hasDiagnosis(dayEmber('2026-11-11', TODAY, scores))).toBe(false);
+    expect(hasDiagnosis(dayEmber(TODAY, TODAY, scores))).toBe(false);
+    expect(hasDiagnosis({ kind: 'today', score: 80 })).toBe(true);
+    expect(hasDiagnosis({ kind: 'future' })).toBe(false);
   });
 
   it('prošli dan svijetli po rezultatu, bez rezultata je ugašen', () => {

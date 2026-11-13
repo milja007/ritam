@@ -30,6 +30,14 @@ export function dayEmber(date: string, today: string, scores: ReadonlyMap<string
   return { kind: 'past', level: emberLevel(score), score };
 }
 
+/**
+ * Dan ima dijagnozu koju se može otvoriti iz kalendara: samo dan s konačnim rezultatom
+ * (večernji upit je ispunjen). Ugašen žar i budući dan nemaju što pokazati.
+ */
+export function hasDiagnosis(ember: DayEmber): boolean {
+  return ember.kind !== 'future' && ember.score !== null;
+}
+
 /** Sedam dana tjedna (pon–ned) kojem `date` pripada. */
 export function weekDates(date: string): string[] {
   const start = weekStart(date);

@@ -689,7 +689,8 @@
       "average": "Prosjek {{month}}: {{score}}",
       "noAverage": "Prosjek {{month}}: još nema rezultata",
       "strongest": "Najjači dan: {{day}} ({{score}})",
-      "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita."
+      "empty": "Ovaj mjesec još nema ocijenjenih dana. Žar se pali nakon večernjeg upita.",
+      "openDiagnosis": "Otvara dijagnozu tog dana"
     },
     "year": {
       "behind_one": "{{count}} dan iza tebe",
