@@ -4,14 +4,24 @@
  * Čista logika: bez React importa.
  */
 import { addDays } from '../time/local-date';
+import type { ScorePart } from './score';
 
 /** Razlika u bodovima potrebna da dan bude "bolji" ili "slabiji". */
 export const SCORE_TREND_THRESHOLD = 5;
 
 export type ScoreTrend = 'better' | 'same' | 'worse';
 
-/** Rezultat jednog dana; `final = false` dok večernji upit tog dana nije ispunjen. */
-export type ScoredDay = { date: string; score: number; final: boolean };
+/**
+ * Rezultat jednog dana; `final = false` dok večernji upit tog dana nije ispunjen.
+ * `parts` su dijelovi rezultata 0–1 (plan / zabrane / san) za statove (korak 34b); `null` =
+ * nije zabilježeno ili područje nije odabrano.
+ */
+export type ScoredDay = {
+  date: string;
+  score: number;
+  final: boolean;
+  parts?: Readonly<Record<ScorePart, number | null>>;
+};
 
 export type ScoreComparison = { previous: number; diff: number; trend: ScoreTrend };
 
