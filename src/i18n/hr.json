@@ -667,6 +667,102 @@
           }
         }
       }
+    },
+    "month": {
+      "title": "Dijagnoza mjeseca",
+      "trend": {
+        "better": "Bolje nego prošli mjesec",
+        "same": "Slično kao prošli mjesec",
+        "worse": "Slabije nego prošli mjesec",
+        "first": "Prvi mjesec za usporedbu"
+      },
+      "metric": {
+        "average": "Prosjek mjeseca",
+        "days": "Zaključeni dani",
+        "plan": "Plan",
+        "rules": "Zabrane poštovane",
+        "sleep": "Prosječan san",
+        "xp": "XP",
+        "rating": "Ocjena dana",
+        "best": "Najbolji dan"
+      },
+      "previous": "prošli mjesec {{value}}",
+      "ideasNote": "Ovo je smjer, ne nova obveza. Promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu.",
+      "card": {
+        "overline": "Dijagnoza mjeseca",
+        "unseen": "Novo",
+        "open": "Otvori dijagnozu",
+        "openAgain": "Pogledaj dijagnozu",
+        "openHint": "Otvara dijagnozu ovog mjeseca",
+        "pending": "Dijagnoza mjeseca stiže zadnji dan u mjesecu, nakon večernjeg upita.",
+        "changes": "Tjedne promjene: prihvaćeno {{accepted}}, preskočeno {{rejected}}"
+      },
+      "lines": {
+        "summary": {
+          "better": "Prosjek mjeseca je {{average}}, za {{diff}} više nego prošli mjesec ({{previous}}). Zaključeni dani: {{days}}.",
+          "same": "Prosjek mjeseca je {{average}}, gotovo isto kao prošli mjesec ({{previous}}). Ritam se drži. Zaključeni dani: {{days}}.",
+          "worse": "Prosjek mjeseca je {{average}}, za {{diff}} manje nego prošli mjesec ({{previous}}). To je podatak, ne presuda — dolje je smjer za idući mjesec. Zaključeni dani: {{days}}.",
+          "first": "Prosjek mjeseca je {{average}}. Zaključeni dani: {{days}}. Od idućeg mjeseca uspoređujemo mjesec s prethodnim.",
+          "empty": "Mjesec je zapisan (zaključeni dani: {{days}}), ali za rezultat još nema dovoljno podataka."
+        },
+        "praise": {
+          "better": "Mjesec je bolji od prethodnog za {{diff}}. Napredak se vidi.",
+          "record": "Novi rekord mjeseca: prosjek {{average}}.",
+          "bestDay": "Najbolji dan: {{bestDate}} ({{score}}). Zapamti što je taj dan bilo drukčije.",
+          "planDone": "Odrađeno {{done}} od {{total}} iz plana. Disciplina na djelu.",
+          "planBetter": "Plan ide bolje: {{percent}} % naspram {{previous}} % prošli mjesec.",
+          "rulesClean": "Cijeli mjesec bez prekršene zabrane (poštovano: {{count}}).",
+          "rulesFewer": "Manje prekršaja nego prošli mjesec: {{broken}} naspram {{previous}}.",
+          "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
+          "allDays": "Zaključio si svih {{days}} dana u mjesecu. Upit je postao navika.",
+          "showedUp": "Zapisao si mjesec (zaključeni dani: {{days}}). Od toga sve kreće."
+        },
+        "noticed": {
+          "bestWorst": "Najbolji dan: {{bestDate}} ({{best}}). Najslabiji: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Propusti su uglavnom ujutro ({{count}} od {{total}}). Jutro možda treba blaži početak.",
+            "afternoon": "Propusti su uglavnom poslijepodne ({{count}} od {{total}}). Sredina dana je možda prenatrpana.",
+            "evening": "Propusti su uglavnom navečer ({{count}} od {{total}}). Energija pred kraj dana pada."
+          },
+          "repeated": "„{{title}}” je propušteno {{count}} puta u mjesecu.",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "ruleTrigger": "Zabrana „{{rule}}” je prekršena {{count}} puta, najčešće uz okidač: {{trigger}}.",
+          "shortSleep": "Nakon kratkog sna prosjek dana je {{short}}, a inače {{rest}}. San se vidi u rezultatu.",
+          "gaveUp": "Dani zatvoreni s „Odustajem”: {{count}}.",
+          "moved": "Premještanja na kasnije: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: „{{comment}}”",
+          "none": "U ovom mjesecu nema posebnih uzoraka.",
+          "weekday": {
+            "weak": "{{weakWeekday}} je najslabiji dan u tjednu: prosjek {{average}}, a mjesec {{overall}}. Taj dan možda treba lakši plan.",
+            "strong": "{{strongWeekday}} ti najbolje ide: prosjek {{average}}, a mjesec {{overall}}."
+          },
+          "halves": {
+            "up": "Druga polovica mjeseca bila je bolja od prve: {{second}} naspram {{first}}.",
+            "down": "Druga polovica mjeseca bila je slabija od prve: {{second}} naspram {{first}}."
+          },
+          "changes": "Tjedne promjene ovog mjeseca: prihvaćeno {{accepted}}, preskočeno {{rejected}}."
+        },
+        "problems": {
+          "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika mjeseca nepotpuna.",
+          "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}, {{percent}} %).",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "heavyRule": "Važna zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "shortSleep": "Premalo sna: prosjek {{hours}} h, kratkih noći: {{nights}}.",
+          "worse": "Mjesec je osjetno slabiji od prethodnog (−{{diff}}).",
+          "none": "Nema velikih problema. Bravo."
+        },
+        "ideas": {
+          "fillCheckin": "Smjer za idući mjesec: večernji upit svaki dan (ovaj mjesec zaključeno dana: {{days}}). Bez toga ne vidimo što ti pomaže.",
+          "ruleTrigger": "Smjer za idući mjesec: za „{{rule}}” unaprijed odluči što ćeš napraviti kad se javi „{{trigger}}”.",
+          "rule": "Smjer za idući mjesec: kad prekršiš „{{rule}}”, zapiši što je to pokrenulo — tako nalazimo uzorak.",
+          "eveningLighter": "Smjer za idući mjesec: lakše večeri, a najzahtjevniji blokovi ranije u danu.",
+          "smallerPlan": "Smjer za idući mjesec: manji plan — najviše blokova dnevno: {{count}}. Bolje manji plan koji odradiš.",
+          "repeatedBlock": "Smjer za idući mjesec: „{{title}}” (propušteno {{count}} puta) premjesti u drugo doba dana ili ga skrati.",
+          "bedEarlier": "Smjer za idući mjesec: u krevet malo ranije nego dosad.",
+          "fewerMoves": "Smjer za idući mjesec: planiraj samo ono za što stvarno imaš vremena (premještanja: {{count}}).",
+          "keepRhythm": "Bez novog smjera — zadrži ritam koji imaš."
+        }
+      }
     }
   },
   "score": {

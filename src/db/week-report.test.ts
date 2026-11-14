@@ -163,6 +163,31 @@ describe('reports repo — tjedna dijagnoza', () => {
     expect(answerReportSuggestion(db, USER, 'week', W3, true, deps)).toBe(false); // nema dijagnoze
   });
 
+  it('odgovor se ne prenosi na drugu konkretnu ideju istog ključa (druga zabrana ili okidač)', async () => {
+    const { db, deps, closeDay, closeWeek } = await setup();
+    await closeWeek(W2, 4, 1, 4, false);
+    const first = generateWeekReport(db, USER, W2, W3, deps);
+    expect(first?.diagnosis.suggestion).toBe('ideas.ruleTrigger');
+    answerReportSuggestion(db, USER, 'week', W2, true, deps);
+    // Spremljena ideja je govorila o drugom okidaču (kao da su se podaci tjedna u međuvremenu promijenili).
+    const stored = first?.diagnosis;
+    if (!stored) throw new Error('nema dijagnoze');
+    const oldIdea = { ...stored.ideas[0], params: { ...stored.ideas[0]?.params, trigger: 'umor' } };
+    await db
+      .update(reports)
+      .set({ sections: { ...stored, ideas: [oldIdea] } })
+      .where(eq(reports.period, 'week'))
+      .run();
+    await closeDay(day(W2, 4), 1, 4, false);
+    const next = generateWeekReport(db, USER, W2, W3, deps);
+    expect(next?.diagnosis.suggestion).toBe('ideas.ruleTrigger');
+    expect(next?.report.suggestionAccepted).toBeNull();
+    // Ista konkretna ideja: odgovor ostaje.
+    answerReportSuggestion(db, USER, 'week', W2, true, deps);
+    await closeDay(day(W2, 5), 1, 4, false);
+    expect(generateWeekReport(db, USER, W2, W3, deps)?.report.suggestionAccepted).toBe(true);
+  });
+
   it('odbijeni prijedlog se sljedeći tjedan ne nudi ponovo', async () => {
     const { db, deps, closeWeek } = await setup();
     await closeWeek(W2, 5, 4, 4, false);

@@ -36,6 +36,21 @@ export function weekdayName(date: string, language: string): string {
   }
 }
 
+/** "2026-11-12" → "12. studenoga" / "November 12"; neispravan datum ostaje kakav je. */
+export function dayMonthName(date: string, language: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  if (y === undefined || m === undefined || d === undefined || [y, m, d].some((part) => !Number.isFinite(part))) {
+    return date;
+  }
+  try {
+    return new Intl.DateTimeFormat(language === 'hr' ? 'hr-HR' : 'en-US', { day: 'numeric', month: 'long' }).format(
+      new Date(y, m - 1, d),
+    );
+  } catch {
+    return date;
+  }
+}
+
 /** Parametri retka za prikaz: svaki `…Date` parametar postaje naziv dana na jeziku appa. */
 export function weekLineParams(line: WeekLine, language: string): Record<string, string | number> {
   const params: Record<string, string | number> = {};
@@ -89,7 +104,7 @@ export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnos
           {t('diagnosis.sections.progress')}
         </Text>
         {diagnosis.progress.map((row) => (
-          <WeekProgressRowView key={row.metric} row={row} />
+          <WeekProgressRowView key={row.metric} row={row} period="week" />
         ))}
       </View>
 
@@ -172,8 +187,16 @@ function SuggestionAnswer({ carried, accepted, onAnswer }: SuggestionAnswerProps
   );
 }
 
-function WeekProgressRowView({ row }: { row: WeekProgressRow }) {
+type ProgressRowProps = {
+  row: WeekProgressRow;
+  /** Tjedan: najbolji dan je naziv dana; mjesec: datum. Oznake i „prije“ po razdoblju. */
+  period: 'week' | 'month';
+};
+
+/** Redak napretka tjedne ili mjesečne dijagnoze: oznaka, vrijednost sa strelicom, prethodno razdoblje. */
+export function WeekProgressRowView({ row, period }: ProgressRowProps) {
   const { t, i18n } = useTranslation();
+  const dayLabel = (date: string) => (period === 'week' ? weekdayName(date, i18n.language) : dayMonthName(date, i18n.language));
   const number = (value: number) => value.toLocaleString(i18n.language);
 
   const format = (value: number, total?: number): string => {
@@ -192,7 +215,7 @@ function WeekProgressRowView({ row }: { row: WeekProgressRow }) {
         return t('diagnosis.value.rating', { rating: number(value) });
       case 'best':
         return t('diagnosis.week.value.best', {
-          day: row.date === undefined ? '' : weekdayName(row.date, i18n.language),
+          day: row.date === undefined ? '' : dayLabel(row.date),
           score: number(value),
         });
       case 'betterWeeks':
@@ -201,11 +224,19 @@ function WeekProgressRowView({ row }: { row: WeekProgressRow }) {
   };
 
   const current = format(row.value, row.total);
+  const previousValue = row.previous === null ? null : format(row.previous, row.previousTotal);
   const previous =
-    row.previous === null ? null : t('diagnosis.week.previous', { value: format(row.previous, row.previousTotal) });
+    previousValue === null
+      ? null
+      : period === 'week'
+        ? t('diagnosis.week.previous', { value: previousValue })
+        : t('diagnosis.month.previous', { value: previousValue });
   const tone: NonNullable<TextProps['tone']> =
     row.good === true ? 'success' : row.good === false ? 'textMuted' : 'info';
-  const label = t(`diagnosis.week.metric.${row.metric}`);
+  const label =
+    period === 'month' && row.metric !== 'betterWeeks'
+      ? t(`diagnosis.month.metric.${row.metric}`)
+      : t(`diagnosis.week.metric.${row.metric}`);
 
   return (
     <View
