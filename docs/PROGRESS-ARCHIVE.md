@@ -4,6 +4,16 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-14 · Sesije 09:43 i 12:43 — tjedna dijagnoza (korak 36) + P2 level-up (PR #21)
+- **P2 Codexa za PR #20** (`level-up-host`): kad `pending` nestane, „prikazano“ se briše, pa ponovni prikaz opet čeka fokus, zatvorene modale i pauzu (`level-up-gate.ts` + test).
+- **Niz boljih tjedana** (`src/core/gamification/better-weeks.ts`): zaključeni tjedni zaredom jednako dobri ili bolji od prethodnog (isti tjedni kao rang: ≥ 4 konačna rezultata; preskočen tjedan prekida niz).
+- **Statistika razdoblja** (`src/core/diagnosis/period-stats.ts`): zbroj zaključenih dana — plan, zabrane po zabrani i okidaču, san, XP, ocjena, najbolji/najslabiji dan, propusti po dobu dana, ponovljeni propusti, kratki san naspram rezultata. Općenita, mjesec (37) je može ponovno koristiti.
+- **Tjedna dijagnoza** (`week-diagnosis.ts`, `local-week-v1`, bez LLM-a): šest sekcija redom iz koncepta; **jedna** promjena tjedno; odbijena se ne nudi 2 tjedna; prihvaćena ostaje jedina 2 tjedna i svaka iduća dijagnoza kaže je li upalila.
+- **Spremanje** (`generateWeekReport`, `answerReportSuggestion` u `src/db/repos/reports.ts`): postojeća tablica `reports`, `period = 'week'`, **bez migracije**. Dostupna kad tjedan prođe ili nedjeljom nakon večernjeg upita. Ponovni poziv bez promjene podataka ništa ne piše (ne dira `updatedAt` / sync).
+- **Tab Tjedan**: kartica „Dijagnoza tjedna“ (trend, „Ukratko“, niz boljih tjedana, stanje prijedloga, oznaka „Novo“) → modal s cijelom dijagnozom i „Probat ću“ / „Ne sada“ (odgovor se može promijeniti). Radi i za prošle tjedne (strelice). HR/EN.
+- Usput: `Translate = ReturnType<typeof useTranslation>['t']` u `badges-card` i `rank-card` zamijenjen s `TFunction` — s više i18n ključeva TypeScript je na tom tipu javljao TS2589.
+- **Nije napravljeno:** tjedna dijagnoza se otvara s taba Tjedan, nije dodana u nedjeljnu dnevnu dijagnozu (pitanje 82); nema obavijesti za nju. Na uređaju neprovjereno.
+
 ## 2026-11-14 · Sesija 06:43 — razine, otključavanja, teme boja, level-up (koraci 32, 38, dio 35; PR #20)
 - **38 teme boja**: `src/core/theme/flame.ts` — pet paleta plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak). Tema mijenja akcent, žarove, traku dana, odsječke tjedna, orb i orb-plamen (`theme.flame`); pozadine, tekst i statusne boje ostaju. Odabir se pamti **na uređaju** (`src/ui/device-prefs.ts` → `expo-sqlite/kv-store`), bez migracije i bez novog paketa.
 - **32 otključavanja**: `src/core/gamification/unlocks.ts` — razine otključavaju teme i naslove; Profil: „Razina N · naslov“, XP do sljedeće razine, što ona otključava; kartica „Tema boja“ (zaključana tema pokazuje razinu).
