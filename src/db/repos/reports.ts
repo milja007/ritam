@@ -278,6 +278,15 @@ export type WeekReportResult = { report: Report; diagnosis: WeekDiagnosis };
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+/** Prva ideja spremljenih sekcija i nove dijagnoze je ista (ključ i parametri). */
+const sameIdea = (stored: unknown, next: { ideas: readonly unknown[] }): boolean => {
+  const storedIdeas =
+    typeof stored === 'object' && stored !== null && 'ideas' in stored && Array.isArray(stored.ideas)
+      ? (stored.ideas as unknown[])
+      : [];
+  return sameJson(storedIdeas[0] ?? null, next.ideas[0] ?? null);
+};
+
 /**
  * Lokalna dijagnoza tjedna koji počinje ponedjeljkom `start` (korak 36): statistika zaključenih
  * dana tog i prošlog tjedna → sekcije → upsert u `reports` (period `week`). Vraća `null` dok
@@ -366,10 +375,11 @@ export function generateWeekReport(
       stats,
       promptVersion: LOCAL_WEEK_DIAGNOSIS_VERSION,
       suggestion: diagnosis.suggestion,
-      // Prenesena promjena je već prihvaćena; inače odgovor vrijedi samo dok je prijedlog isti.
+      // Prenesena promjena je već prihvaćena; inače odgovor vrijedi samo dok je konkretna ideja
+      // ista — isti ključ i isti parametri (npr. ista zabrana i okidač), P2 Codexa za PR #21.
       suggestionAccepted: diagnosis.carried
         ? true
-        : existing && existing.suggestion === diagnosis.suggestion
+        : existing && existing.suggestion === diagnosis.suggestion && sameIdea(existing.sections, diagnosis)
           ? existing.suggestionAccepted
           : null,
       helpful: existing?.helpful ?? null,
