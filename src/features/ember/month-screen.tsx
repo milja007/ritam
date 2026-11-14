@@ -17,7 +17,7 @@ import {
   weekDates,
 } from '@/core/ember';
 import { radius, spacing } from '@/core/theme';
-import { DiagnosisModal } from '@/features/diagnosis';
+import { DiagnosisModal, MonthDiagnosisCard, useMonthReport } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
@@ -58,6 +58,7 @@ export function MonthScreen() {
   const best = scores ? strongestDay(dates, scores) : null;
   // Žar dana s rezultatom otvara dijagnozu tog dana (arhiva dijagnoza, korak 37c).
   const [diagnosisFor, setDiagnosisFor] = useState<string | null>(null);
+  const report = useMonthReport(month, now.date, state.data);
 
   return (
     <PeriodScreen
@@ -186,6 +187,12 @@ export function MonthScreen() {
               ) : null}
             </Card>
           )}
+
+          <MonthDiagnosisCard
+            report={report}
+            monthLabel={`${monthName(month, language)} ${month.slice(0, 4)}${language === 'hr' ? '.' : ''}`}
+            current={header.kind === 'current'}
+          />
         </>
       ) : null}
       {diagnosisFor !== null ? (

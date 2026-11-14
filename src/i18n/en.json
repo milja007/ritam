@@ -661,6 +661,102 @@
           }
         }
       }
+    },
+    "month": {
+      "title": "Month diagnosis",
+      "trend": {
+        "better": "Better than last month",
+        "same": "Similar to last month",
+        "worse": "Weaker than last month",
+        "first": "First month to compare"
+      },
+      "metric": {
+        "average": "Month average",
+        "days": "Days closed",
+        "plan": "Plan",
+        "rules": "Rules kept",
+        "sleep": "Average sleep",
+        "xp": "XP",
+        "rating": "Day rating",
+        "best": "Best day"
+      },
+      "previous": "last month {{value}}",
+      "ideasNote": "This is a direction, not a new obligation. Changes still come one at a time through the weekly diagnosis.",
+      "card": {
+        "overline": "Month diagnosis",
+        "unseen": "New",
+        "open": "Open diagnosis",
+        "openAgain": "View diagnosis",
+        "openHint": "Opens this month’s diagnosis",
+        "pending": "The month diagnosis arrives on the last day of the month, after the evening check-in.",
+        "changes": "Weekly changes: accepted {{accepted}}, skipped {{rejected}}"
+      },
+      "lines": {
+        "summary": {
+          "better": "Month average is {{average}}, {{diff}} more than last month ({{previous}}). Days closed: {{days}}.",
+          "same": "Month average is {{average}}, about the same as last month ({{previous}}). The rhythm holds. Days closed: {{days}}.",
+          "worse": "Month average is {{average}}, {{diff}} less than last month ({{previous}}). That's data, not a verdict — there's a direction for next month below. Days closed: {{days}}.",
+          "first": "Month average is {{average}}. Days closed: {{days}}. From next month on we compare each month with the one before.",
+          "empty": "The month is recorded (days closed: {{days}}), but there isn't enough data for a score yet."
+        },
+        "praise": {
+          "better": "This month beats the one before by {{diff}}. Progress shows.",
+          "record": "New month record: average {{average}}.",
+          "bestDay": "Best day: {{bestDate}} ({{score}}). Remember what was different that day.",
+          "planDone": "{{done}} of {{total}} planned items done. Discipline at work.",
+          "planBetter": "Your plan is going better: {{percent}}% versus {{previous}}% last month.",
+          "rulesClean": "A whole month without a broken rule (kept: {{count}}).",
+          "rulesFewer": "Fewer slips than last month: {{broken}} versus {{previous}}.",
+          "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
+          "allDays": "You closed all {{days}} days of the month. The check-in has become a habit.",
+          "showedUp": "You recorded the month (days closed: {{days}}). Everything starts there."
+        },
+        "noticed": {
+          "bestWorst": "Best day: {{bestDate}} ({{best}}). Weakest: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Misses are mostly in the morning ({{count}} of {{total}}). Mornings may need a gentler start.",
+            "afternoon": "Misses are mostly in the afternoon ({{count}} of {{total}}). The middle of the day may be overpacked.",
+            "evening": "Misses are mostly in the evening ({{count}} of {{total}}). Energy drops late in the day."
+          },
+          "repeated": "“{{title}}” was missed {{count}} times this month.",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "ruleTrigger": "The rule “{{rule}}” was broken {{count}} times, mostly triggered by: {{trigger}}.",
+          "shortSleep": "After short sleep your day average is {{short}}, otherwise {{rest}}. Sleep shows in the score.",
+          "gaveUp": "Days closed with “I give up”: {{count}}.",
+          "moved": "Moves to later: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: “{{comment}}”",
+          "none": "No particular patterns this month.",
+          "weekday": {
+            "weak": "{{weakWeekday}} is your weakest day of the week: average {{average}}, the month {{overall}}. That day may need a lighter plan.",
+            "strong": "{{strongWeekday}} goes best for you: average {{average}}, the month {{overall}}."
+          },
+          "halves": {
+            "up": "The second half of the month was better than the first: {{second}} versus {{first}}.",
+            "down": "The second half of the month was weaker than the first: {{second}} versus {{first}}."
+          },
+          "changes": "Weekly changes this month: accepted {{accepted}}, skipped {{rejected}}."
+        },
+        "problems": {
+          "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the month is incomplete.",
+          "lowPlan": "Less than half of the plan was done ({{done}}/{{total}}, {{percent}}%).",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "heavyRule": "The important rule “{{rule}}” was broken {{count}} times.",
+          "shortSleep": "Too little sleep: average {{hours}} h, short nights: {{nights}}.",
+          "worse": "The month is noticeably weaker than the one before (−{{diff}}).",
+          "none": "No big problems. Well done."
+        },
+        "ideas": {
+          "fillCheckin": "Direction for next month: the evening check-in every day (days closed this month: {{days}}). Without it we can't see what helps you.",
+          "ruleTrigger": "Direction for next month: for “{{rule}}”, decide in advance what you'll do when “{{trigger}}” shows up.",
+          "rule": "Direction for next month: when you break “{{rule}}”, note what set it off — that's how we find the pattern.",
+          "eveningLighter": "Direction for next month: lighter evenings, with your hardest blocks earlier in the day.",
+          "smallerPlan": "Direction for next month: a smaller plan — blocks per day at most: {{count}}. Better a small plan you finish.",
+          "repeatedBlock": "Direction for next month: move “{{title}}” (missed {{count}} times) to another part of the day, or shorten it.",
+          "bedEarlier": "Direction for next month: go to bed a little earlier than so far.",
+          "fewerMoves": "Direction for next month: plan only what you really have time for (moves: {{count}}).",
+          "keepRhythm": "No new direction — keep the rhythm you have."
+        }
+      }
     }
   },
   "score": {

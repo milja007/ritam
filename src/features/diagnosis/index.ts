@@ -6,3 +6,6 @@ export { DiagnosisReadyCard, useDiagnosisPickup } from './diagnosis-pickup';
 export { WeekDiagnosisCard } from './week-diagnosis-card';
 export { WeekDiagnosisView, weekdayName, weekLineParams } from './week-diagnosis-view';
 export { useWeekReport, type WeekReportState } from './week-report';
+export { MonthDiagnosisCard } from './month-diagnosis-card';
+export { capitalize, MonthDiagnosisView, monthLineParams } from './month-diagnosis-view';
+export { useMonthReport, type MonthReportState } from './month-report';
