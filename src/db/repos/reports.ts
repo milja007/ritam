@@ -1,15 +1,23 @@
-import { and, desc, eq, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, lte } from 'drizzle-orm';
 
-import { isEveningCheckinComplete, mainStreak } from '@/core/gamification';
+import { betterWeeksStreak, closedWeeks, isEveningCheckinComplete, mainStreak } from '@/core/gamification';
 import {
   buildDayDiagnosis,
+  buildWeekDiagnosis,
   dayStats,
   diagnosisSuggestion,
+  isWeekDiagnosisReady,
   LOCAL_DAY_DIAGNOSIS_VERSION,
+  LOCAL_WEEK_DIAGNOSIS_VERSION,
   parseDayDiagnosis,
+  periodStats,
+  statsForAreas,
   type ArchiveEntry,
   type DayDiagnosis,
   type DayStats,
+  type PeriodDay,
+  type WeekDiagnosis,
+  type WeekHistoryEntry,
 } from '@/core/diagnosis';
 import {
   checkinItemSchema,
@@ -25,6 +33,7 @@ import {
   type Report,
   type ReportPeriod,
 } from '@/core/domain';
+import { dayScore, weekStart } from '@/core/progress';
 import { addDays } from '@/core/time/local-date';
 
 import type { RitamDb } from '../db';
@@ -39,6 +48,7 @@ import {
   xpEvents,
 } from '../schema';
 import type { RitamTx } from './block-xp';
+import { listDayScores } from './day-scores';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
 const reportOf = (userId: string, period: ReportPeriod, periodStart: LocalDate) =>
@@ -259,6 +269,143 @@ export function markReportSeen(
       // I `updatedAt`: sync (zadnji updatedAt pobjeđuje) inače ne bi prenio `seenAt` na drugi uređaj.
       const now = deps.now().toISOString();
       tx.update(reports).set({ seenAt: now, updatedAt: now }).where(eq(reports.id, row.id)).run();
+    }
+    return true;
+  });
+}
+
+export type WeekReportResult = { report: Report; diagnosis: WeekDiagnosis };
+
+const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Lokalna dijagnoza tjedna koji počinje ponedjeljkom `start` (korak 36): statistika zaključenih
+ * dana tog i prošlog tjedna → sekcije → upsert u `reports` (period `week`). Vraća `null` dok
+ * dijagnoza nije dostupna (tjedan nije prošao, a nedjeljni upit nije ispunjen, ili tjedan nema
+ * nijedan zaključen dan) i kad `start` nije ponedjeljak.
+ *
+ * Svaki dan se boduje i svodi na područja koja su vrijedila uz njegov večernji upit (P48).
+ * Prijedlog prati ranije tjedne (`reports` s `period = 'week'`): prihvaćena promjena ostaje dva
+ * tjedna i tada se sprema kao već prihvaćena, odbijena se ne nudi dva tjedna.
+ *
+ * Ponovni poziv bez promjene podataka ništa ne piše (da otvaranje taba ne dira `updatedAt` i
+ * sync); s promjenom osvježi sekcije, a odgovor na prijedlog ostaje dok je prijedlog isti.
+ */
+export function generateWeekReport(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+  today: LocalDate,
+  deps: RepoDeps = defaultRepoDeps,
+): WeekReportResult | null {
+  if (weekStart(start) !== start) return null;
+  const end = addDays(start, 6);
+  const nextStart = addDays(start, 7);
+  const previousStart = addDays(start, -7);
+  if (end === null || nextStart === null || previousStart === null) return null;
+
+  // Niz boljih tjedana i dotadašnji rekord gledaju se „s ponedjeljka poslije“: tada je i ovaj
+  // tjedan zaključen. Čita se prije transakcije (`listDayScores` otvara svoju).
+  const weeks = closedWeeks(listDayScores(db, userId, end).days, nextStart);
+  const betterWeeks = betterWeeksStreak(weeks, nextStart).current;
+  const earlier = weeks.filter((week) => week.start < start).map((week) => week.average);
+  const previousBest = earlier.length > 0 ? Math.max(...earlier) : null;
+
+  const now = deps.now().toISOString();
+  return db.transaction((tx) => {
+    const eveningRows = tx
+      .select()
+      .from(checkins)
+      .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+      .all()
+      .map((row) => checkinSchema.parse(row));
+    const complete = new Map(
+      eveningRows.filter((row) => row.date <= today && isEveningCheckinComplete(row)).map((row) => [row.date, row]),
+    );
+    if (!isWeekDiagnosisReady(end, today, complete.keys())) return null;
+
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const currentAreas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const weekDays = (from: LocalDate): PeriodDay[] => {
+      const days: PeriodDay[] = [];
+      for (let offset = 0; offset < 7; offset += 1) {
+        const date = addDays(from, offset);
+        const evening = date === null ? undefined : complete.get(date);
+        if (date === null || evening === undefined) continue;
+        const full = readDayStats(tx, userId, date, eveningRows);
+        const areas = evening.scoreAreas ?? currentAreas;
+        days.push({ stats: statsForAreas(full, areas), score: dayScore(full, areas).score });
+      }
+      return days;
+    };
+    const current = periodStats(start, end, 7, weekDays(start));
+    const previousDays = weekDays(previousStart);
+    const previous = previousDays.length > 0 ? periodStats(previousStart, addDays(start, -1) ?? start, 7, previousDays) : null;
+
+    const history: WeekHistoryEntry[] = tx
+      .select()
+      .from(reports)
+      .where(and(eq(reports.userId, userId), eq(reports.period, 'week'), lt(reports.periodStart, start)))
+      .all()
+      .map((row) => ({ start: row.periodStart, suggestion: row.suggestion, accepted: row.suggestionAccepted }));
+
+    const diagnosis = buildWeekDiagnosis(current, previous, { history, betterWeeks, previousBest });
+    const stats = { current, previous };
+    const existing = tx.select().from(reports).where(reportOf(userId, 'week', start)).get();
+    if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
+      return { report: reportSchema.parse(existing), diagnosis };
+    }
+    const report = reportSchema.parse({
+      id: existing?.id ?? deps.newId(),
+      userId,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      period: 'week',
+      periodStart: start,
+      sections: diagnosis,
+      stats,
+      promptVersion: LOCAL_WEEK_DIAGNOSIS_VERSION,
+      suggestion: diagnosis.suggestion,
+      // Prenesena promjena je već prihvaćena; inače odgovor vrijedi samo dok je prijedlog isti.
+      suggestionAccepted: diagnosis.carried
+        ? true
+        : existing && existing.suggestion === diagnosis.suggestion
+          ? existing.suggestionAccepted
+          : null,
+      helpful: existing?.helpful ?? null,
+      feedbackComment: existing?.feedbackComment ?? null,
+      seenAt: existing?.seenAt ?? null,
+    });
+    const values = { ...report, sections: diagnosis, stats };
+    if (existing) {
+      tx.update(reports).set(values).where(eq(reports.id, existing.id)).run();
+    } else {
+      tx.insert(reports).values(values).run();
+    }
+    return { report, diagnosis };
+  });
+}
+
+/**
+ * Odgovor na prijedlog iz dijagnoze („Probat ću“ / „Ne sada“). Vraća `false` kad dijagnoze nema
+ * ili ne nudi prijedlog; isti odgovor drugi put ništa ne mijenja.
+ */
+export function answerReportSuggestion(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+  accepted: boolean,
+  deps: RepoDeps = defaultRepoDeps,
+): boolean {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+    if (!row || row.suggestion === null) return false;
+    if (row.suggestionAccepted !== accepted) {
+      tx.update(reports)
+        .set({ suggestionAccepted: accepted, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
     }
     return true;
   });
