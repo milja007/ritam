@@ -25,6 +25,7 @@ import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
 import { updateSettings, useSettings } from '@/features/settings';
 import { useNow } from '@/features/today';
+import { ThemePickerCard } from '@/features/unlocks';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
 import { Stepper } from '@/ui/stepper';
@@ -43,7 +44,7 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
 ];
 
 /**
- * Profil: napredak (XP, streak), račun (samo iza feature flaga, korak 18), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
+ * Profil: napredak (XP, razina, streak), tema boja plamena (korak 38), račun (samo iza feature flaga, korak 18), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
  * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
  */
 export function ProfileScreen() {
@@ -81,6 +82,10 @@ export function ProfileScreen() {
               dayLabel={(date) => dayLong(date, language)}
               monthLabel={(month) => `${monthName(month, language)} ${month.slice(0, 4)}.`}
             />
+          </Section>
+
+          <Section title={t('unlocks.picker.title')}>
+            <ThemePickerCard today={now.date} checkinDay={now.eveningDate} />
           </Section>
 
           <Section title={t('profile.habits.title')}>
