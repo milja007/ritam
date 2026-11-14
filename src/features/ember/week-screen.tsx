@@ -43,7 +43,7 @@ const LEGEND: readonly { look: SegmentLook; key: 'legendDone' | 'legendMissed' |
  */
 export function WeekScreen() {
   const { t, i18n } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame } = useAppTheme();
   const now = useNow();
   // Ponedjeljak tjedna odabranog strelicom; `null` (ili neispravan) znači tekući tjedan.
   const [selected, setSelected] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export function WeekScreen() {
                       { backgroundColor: colors.surface, borderColor: today ? colors.accent : colors.border },
                     ]}>
                     {segments.map((segment) => {
-                      const color = segmentColor(segment.look, scheme);
+                      const color = segmentColor(segment.look, scheme, flame);
                       return (
                         <View
                           key={segment.id}
@@ -177,7 +177,7 @@ export function WeekScreen() {
 
           <View style={styles.legend}>
             {LEGEND.map(({ look, key }) => {
-              const color = segmentColor(look, scheme);
+              const color = segmentColor(look, scheme, flame);
               return (
                 <View key={key} style={styles.legendItem}>
                   <View

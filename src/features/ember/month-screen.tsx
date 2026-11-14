@@ -39,7 +39,7 @@ const CELL = 40;
  */
 export function MonthScreen() {
   const { t, i18n } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame } = useAppTheme();
   const now = useNow();
   const state = useEmberData(now.eveningDate);
   const language = i18n.language;
@@ -106,7 +106,7 @@ export function MonthScreen() {
                 if (date === null) return <View key={`blank-${index}`} style={styles.cell} />;
                 const ember = dayEmber(date, now.date, scores);
                 const day = dayLong(date, language);
-                const color = ember.kind === 'past' ? emberColor(ember.level, scheme) : null;
+                const color = ember.kind === 'past' ? emberColor(ember.level, scheme, flame) : null;
                 const label =
                   ember.kind === 'today'
                     ? t('ember.month.dayToday', { day })

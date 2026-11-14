@@ -7,6 +7,8 @@
  * Paleta je početni prijedlog (topli akcent prati orb-plamen) — mijenja se samo ovdje.
  */
 
+import { type ColorThemeId, DEFAULT_COLOR_THEME, type FlamePalette, flamePalettes } from './flame';
+
 export type ColorScheme = 'dark' | 'light';
 
 /** Doba dana za koje postoje gradijenti. */
@@ -28,19 +30,9 @@ export const palette = {
   ink50: '#F5F5F9',
   white: '#FFFFFF',
 
-  flame300: '#FFB86B',
-  flame400: '#FF9F43',
-  flame600: '#C25E00',
-  flame700: '#9A4A00',
-
-  // Žar: svjetlina dana od tinjanja do punog sjaja (smjer „Žar“).
-  ember50: '#FFF1DC',
-  ember100: '#FFE2BD',
-  ember200: '#FFC27A',
-  ember400: '#E88A2E',
-  ember600: '#A85A14',
-  ember800: '#6B3A12',
-  ember900: '#4A2A10',
+  // Plamen i žar zadane teme „Žar“ (svjetlina dana od tinjanja do punog sjaja). Ostale teme su u
+  // `flame.ts`; UI ih čita kroz `theme.flame`, ne odavde.
+  ...flamePalettes.ember,
 
   mint400: '#4ADE9B',
   mint700: '#127A4C',
@@ -86,6 +78,10 @@ export type Gradient = {
 
 export type Theme = {
   scheme: ColorScheme;
+  /** Odabrana tema boja plamena (korak 38). */
+  colorTheme: ColorThemeId;
+  /** Boje plamena i žara odabrane teme. */
+  flame: FlamePalette;
   colors: SemanticColors;
   gradients: Record<DayPhase, Gradient>;
 };
@@ -123,6 +119,8 @@ const VERTICAL = 180;
 export const themes: Record<ColorScheme, Theme> = {
   dark: {
     scheme: 'dark',
+    colorTheme: DEFAULT_COLOR_THEME,
+    flame: flamePalettes[DEFAULT_COLOR_THEME],
     colors: darkColors,
     gradients: {
       dawn: { colors: palette.dawnDark, angle: VERTICAL },
@@ -132,6 +130,8 @@ export const themes: Record<ColorScheme, Theme> = {
   },
   light: {
     scheme: 'light',
+    colorTheme: DEFAULT_COLOR_THEME,
+    flame: flamePalettes[DEFAULT_COLOR_THEME],
     colors: lightColors,
     gradients: {
       dawn: { colors: palette.dawnLight, angle: VERTICAL },
@@ -140,6 +140,22 @@ export const themes: Record<ColorScheme, Theme> = {
     },
   },
 };
+
+/** Akcent teme plamena: svijetli plamen na tamnoj pozadini, tamni na svijetloj. */
+export function accentOf(flame: FlamePalette, scheme: ColorScheme): string {
+  return scheme === 'dark' ? flame.flame400 : flame.flame700;
+}
+
+/**
+ * Tema za shemu i temu boja plamena. Mijenja se samo plamen (akcent, žarovi, orb); pozadine, tekst,
+ * statusne boje i gradijenti doba dana su isti u svakoj temi.
+ */
+export function themeFor(scheme: ColorScheme, colorTheme: ColorThemeId = DEFAULT_COLOR_THEME): Theme {
+  const base = themes[scheme];
+  if (colorTheme === base.colorTheme) return base;
+  const flame = flamePalettes[colorTheme];
+  return { ...base, colorTheme, flame, colors: { ...base.colors, accent: accentOf(flame, scheme) } };
+}
 
 /** Shema kad sustav ne javi svoju (dark-first). */
 export const DEFAULT_SCHEME: ColorScheme = 'dark';

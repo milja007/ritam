@@ -5,7 +5,10 @@
  */
 import type { ScheduleBlock } from '../domain';
 import type { BlockPhase } from '../schedule';
-import { contrastRatio, palette, type ColorScheme } from '../theme';
+import { contrastRatio, DEFAULT_COLOR_THEME, type FlamePalette, flamePalettes, palette, type ColorScheme } from '../theme';
+
+/** Paleta kad pozivatelj ne proslijedi temu (testovi, zadana tema „Žar“). */
+const DEFAULT_FLAME = flamePalettes[DEFAULT_COLOR_THEME];
 
 /** Svjetlina žara, od ugašenog do najjačeg. */
 export const EMBER_LEVELS = ['unlit', 'faint', 'low', 'warm', 'bright'] as const;
@@ -44,29 +47,27 @@ export type EmberColor = {
   glow: number;
 };
 
-const DARK_FILL: Record<Exclude<EmberLevel, 'unlit'>, string> = {
-  faint: palette.ember800,
-  low: palette.ember600,
-  warm: palette.ember400,
-  bright: palette.ember200,
-};
+type LitLevel = Exclude<EmberLevel, 'unlit'>;
+
+function darkFill(flame: FlamePalette): Record<LitLevel, string> {
+  return { faint: flame.ember800, low: flame.ember600, warm: flame.ember400, bright: flame.ember200 };
+}
 
 // Na svijetloj pozadini jači dan je zasićeniji i tamniji, slabiji blijedi.
-const LIGHT_FILL: Record<Exclude<EmberLevel, 'unlit'>, string> = {
-  faint: palette.ember100,
-  low: palette.ember200,
-  warm: palette.ember400,
-  bright: palette.flame600,
-};
+function lightFill(flame: FlamePalette): Record<LitLevel, string> {
+  return { faint: flame.ember100, low: flame.ember200, warm: flame.ember400, bright: flame.flame600 };
+}
 
 const GLOW: Record<EmberLevel, number> = { unlit: 0, faint: 0.25, low: 0.45, warm: 0.7, bright: 1 };
 
-/** Boje žara za razinu i shemu; tekst na žaru bira se po kontrastu (bijela ili tamna). */
-export function emberColor(level: EmberLevel, scheme: ColorScheme): EmberColor {
+/**
+ * Boje žara za razinu, shemu i temu plamena; tekst na žaru bira se po kontrastu (bijela ili tamna).
+ */
+export function emberColor(level: EmberLevel, scheme: ColorScheme, flame: FlamePalette = DEFAULT_FLAME): EmberColor {
   if (level === 'unlit') {
     return { fill: null, on: scheme === 'dark' ? palette.ink500 : palette.ink400, glow: 0 };
   }
-  const fill = (scheme === 'dark' ? DARK_FILL : LIGHT_FILL)[level];
+  const fill = (scheme === 'dark' ? darkFill(flame) : lightFill(flame))[level];
   const light = contrastRatio(palette.white, fill) ?? 0;
   const dark = contrastRatio(palette.ink950, fill) ?? 0;
   return { fill, on: light >= dark ? palette.white : palette.ink950, glow: GLOW[level] };
@@ -141,24 +142,24 @@ export type RailColors = {
   orb: { core: string; mid: string; edge: string; glow: string };
 };
 
-/** Boje trake dana po shemi. */
-export function railColors(scheme: ColorScheme): RailColors {
+/** Boje trake dana po shemi i temi plamena. */
+export function railColors(scheme: ColorScheme, flame: FlamePalette = DEFAULT_FLAME): RailColors {
   return scheme === 'dark'
     ? {
-        lit: palette.flame300,
-        half: palette.flame600,
+        lit: flame.flame300,
+        half: flame.flame600,
         ring: palette.ink400,
-        burnt: palette.flame600,
+        burnt: flame.flame600,
         ahead: palette.ink500,
-        orb: { core: palette.ember50, mid: palette.flame300, edge: palette.flame600, glow: palette.flame400 },
+        orb: { core: flame.ember50, mid: flame.flame300, edge: flame.flame600, glow: flame.flame400 },
       }
     : {
-        lit: palette.flame600,
-        half: palette.ember200,
+        lit: flame.flame600,
+        half: flame.ember200,
         ring: palette.ink400,
-        burnt: palette.flame300,
+        burnt: flame.flame300,
         ahead: palette.ink400,
-        orb: { core: palette.ember50, mid: palette.flame400, edge: palette.flame700, glow: palette.flame400 },
+        orb: { core: flame.ember50, mid: flame.flame400, edge: flame.flame700, glow: flame.flame400 },
       };
 }
 
@@ -171,13 +172,14 @@ export type SegmentColor = { fill: string | null; border: string | null };
 export function segmentColor(
   look: 'done' | 'half' | 'missed' | 'plan' | 'fixed' | 'fixedPlan',
   scheme: ColorScheme,
+  flame: FlamePalette = DEFAULT_FLAME,
 ): SegmentColor {
   const dark = scheme === 'dark';
   switch (look) {
     case 'done':
-      return { fill: dark ? palette.flame400 : palette.flame600, border: null };
+      return { fill: dark ? flame.flame400 : flame.flame600, border: null };
     case 'half':
-      return { fill: dark ? palette.flame600 : palette.ember200, border: dark ? palette.flame300 : palette.flame600 };
+      return { fill: dark ? flame.flame600 : flame.ember200, border: dark ? flame.flame300 : flame.flame600 };
     case 'missed':
       return { fill: dark ? palette.ink700 : palette.ink100, border: null };
     case 'plan':

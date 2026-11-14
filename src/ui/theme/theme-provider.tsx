@@ -4,6 +4,7 @@ import { useColorScheme } from 'react-native';
 import { wakeTimeFor } from '@/core/schedule';
 import {
   type ColorScheme,
+  type ColorThemeId,
   type DayPhase,
   dayPhaseOf,
   DEFAULT_SCHEME,
@@ -12,11 +13,12 @@ import {
   radius,
   spacing,
   type Theme,
-  themes,
+  themeFor,
   typography,
 } from '@/core/theme';
 import { localDateOf } from '@/core/time/local-date';
 
+import { useColorTheme } from './color-theme';
 import { usePhaseAnchor } from './phase-anchor';
 
 export type AppTheme = Theme & {
@@ -44,21 +46,28 @@ function useDayPhase(): DayPhase {
   return dayPhaseOf(now, starts);
 }
 
-function buildTheme(scheme: ColorScheme, phase: DayPhase): AppTheme {
-  return { ...themes[scheme], phase, spacing, radius, typography };
+function buildTheme(scheme: ColorScheme, phase: DayPhase, colorTheme?: ColorThemeId): AppTheme {
+  return { ...themeFor(scheme, colorTheme), phase, spacing, radius, typography };
 }
 
 const AppThemeContext = createContext<AppTheme>(buildTheme(DEFAULT_SCHEME, dayPhaseOf(new Date())));
 
 /**
  * Tema aplikacije: shema prati sustav (dark-first — tamna kad sustav ne javi
- * shemu), a faza dana prati sat. `scheme` prop služi za testove/preglede.
+ * shemu), faza dana prati sat, a tema boja plamena je korisnikov odabir (pamti se na uređaju).
+ * `scheme` i `colorTheme` propovi služe za testove/preglede i za uzorke tema u biraču.
  */
-export function AppThemeProvider({ children, scheme }: PropsWithChildren<{ scheme?: ColorScheme }>) {
+export function AppThemeProvider({
+  children,
+  scheme,
+  colorTheme,
+}: PropsWithChildren<{ scheme?: ColorScheme; colorTheme?: ColorThemeId }>) {
   const systemScheme = useColorScheme();
   const resolved: ColorScheme = scheme ?? (systemScheme === 'light' ? 'light' : DEFAULT_SCHEME);
   const phase = useDayPhase();
-  const value = useMemo(() => buildTheme(resolved, phase), [resolved, phase]);
+  const stored = useColorTheme();
+  const flameTheme = colorTheme ?? stored;
+  const value = useMemo(() => buildTheme(resolved, phase, flameTheme), [resolved, phase, flameTheme]);
   return <AppThemeContext.Provider value={value}>{children}</AppThemeContext.Provider>;
 }
 

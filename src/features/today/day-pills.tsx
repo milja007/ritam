@@ -33,7 +33,7 @@ const STREAK_DOT = 10;
  */
 export function DayPills({ today, checkinDay }: { today: string; checkinDay: string }) {
   const { t, i18n } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame } = useAppTheme();
   const progress = useProgress(today, checkinDay);
   const score = useDayScore(checkinDay);
 
@@ -64,7 +64,7 @@ export function DayPills({ today, checkinDay }: { today: string; checkinDay: str
           style={pillStyle}
           accessible
           accessibilityLabel={t('progress.streak.a11y', { count: streak })}>
-          <Flare trigger={flare} size={STREAK_DOT} color={railColors(scheme).lit}>
+          <Flare trigger={flare} size={STREAK_DOT} color={railColors(scheme, flame).lit}>
             <RailDot state={streak > 0 ? 'lit' : 'unlit'} size={STREAK_DOT} />
           </Flare>
           <Bump trigger={flare}>

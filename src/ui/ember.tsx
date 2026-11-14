@@ -25,8 +25,8 @@ type OrbProps = { size?: number };
  * uz uključeno „smanji kretanje“ aureola stoji. Čisto ukrasno — značenje nosi tekst uz orb.
  */
 export function Orb({ size = 26 }: OrbProps) {
-  const { scheme } = useAppTheme();
-  const { orb } = railColors(scheme);
+  const { scheme, flame } = useAppTheme();
+  const { orb } = railColors(scheme, flame);
   const reduceMotion = useReducedMotion();
   const pulse = useSharedValue(0);
 
@@ -79,8 +79,8 @@ type RailDotProps = { state: Exclude<RailState, 'now'>; size?: number };
 
 /** Točka na traci dana: svijetli (odrađeno), pola, ugašen žar ili tek ocrtan plan. */
 export function RailDot({ state, size = 10 }: RailDotProps) {
-  const { scheme } = useAppTheme();
-  const colors = railColors(scheme);
+  const { scheme, flame } = useAppTheme();
+  const colors = railColors(scheme, flame);
   if (state === 'ahead') return <View style={{ width: size, height: size }} />;
   const style =
     state === 'lit'
@@ -95,8 +95,8 @@ type RailLineProps = { kind: 'burnt' | 'ahead' };
 
 /** Linija trake: puna (izgorjela) iza plamena, crtkana (plan) ispred njega. */
 export function RailLineView({ kind }: RailLineProps) {
-  const { scheme } = useAppTheme();
-  const colors = railColors(scheme);
+  const { scheme, flame } = useAppTheme();
+  const colors = railColors(scheme, flame);
   return kind === 'burnt' ? (
     <View style={[styles.line, { backgroundColor: colors.burnt }]} />
   ) : (
@@ -116,8 +116,8 @@ type EmberProps = {
 
 /** Žar jednog dana: svjetlina znači dnevni rezultat; ugašen žar je samo obrub. */
 export function Ember({ level, size, today = false, glow: withGlow = true }: EmberProps) {
-  const { scheme, colors } = useAppTheme();
-  const { fill, on, glow } = emberColor(level, scheme);
+  const { scheme, colors, flame } = useAppTheme();
+  const { fill, on, glow } = emberColor(level, scheme, flame);
   const base = { width: size, height: size, borderRadius: radius.pill };
   if (today) {
     return (
@@ -152,8 +152,8 @@ const IGNITE_HALO_SCALE = 2.4;
  * Uz uključeno „smanji kretanje“ odmah stoji krajnje stanje.
  */
 export function EmberIgnite({ level, size, glow = true }: EmberProps) {
-  const { scheme } = useAppTheme();
-  const { fill } = emberColor(level, scheme);
+  const { scheme, flame } = useAppTheme();
+  const { fill } = emberColor(level, scheme, flame);
   const reduceMotion = useReducedMotion();
   const ignite = useSharedValue(0);
   // Razina s prošlog crtanja; `null` na prvom, da se već upaljen dan ne pali ponovo.
