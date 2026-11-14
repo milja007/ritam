@@ -2,7 +2,15 @@ import { describe, expect, it } from '@jest/globals';
 
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
 import {
+  burstSparks,
   clampFraction,
+  countUpLevels,
+  LEVEL_UP_BURST_MS,
+  LEVEL_UP_COUNT_STEP_MS,
+  LEVEL_UP_DELAY_MS,
+  LEVEL_UP_FILL_MS,
+  LEVEL_UP_REVEAL_MS,
+  LEVEL_UP_SPARKS,
   FILL_DURATION_MS,
   IGNITE_DURATION_MS,
   IGNITE_SWELL_MS,
@@ -217,5 +225,64 @@ describe('kretanje', () => {
     expect(ORB_ORBIT_MS).toBeGreaterThanOrEqual(15000);
     expect(ORB_FLICKER_RATIO).toBeGreaterThan(0.2);
     expect(ORB_FLICKER_RATIO).toBeLessThan(0.5);
+  });
+
+  it('level-up: cijelo slavlje stane u oko tri sekunde, a pauza prije njega je kratka', () => {
+    expect(LEVEL_UP_DELAY_MS).toBeGreaterThanOrEqual(400);
+    expect(LEVEL_UP_DELAY_MS).toBeLessThanOrEqual(800);
+    const total = LEVEL_UP_FILL_MS + 6 * LEVEL_UP_COUNT_STEP_MS + LEVEL_UP_BURST_MS + LEVEL_UP_REVEAL_MS;
+    expect(total).toBeLessThanOrEqual(3500);
+    expect(LEVEL_UP_SPARKS).toBeGreaterThanOrEqual(8);
+    expect(LEVEL_UP_SPARKS).toBeLessThanOrEqual(24);
+  });
+});
+
+describe('burstSparks', () => {
+  it('daje traženi broj iskri, isti pri svakom pozivu', () => {
+    expect(burstSparks(LEVEL_UP_SPARKS)).toHaveLength(LEVEL_UP_SPARKS);
+    expect(burstSparks(12)).toEqual(burstSparks(12));
+    expect(burstSparks(0)).toEqual([]);
+    expect(burstSparks(-4)).toEqual([]);
+    expect(burstSparks(Number.NaN)).toEqual([]);
+    expect(burstSparks(3.9)).toHaveLength(3);
+  });
+
+  it('sve vrijednosti su u rasponu i iskre lete na sve strane', () => {
+    const sparks = burstSparks(LEVEL_UP_SPARKS);
+    const quadrants = new Set<number>();
+    for (const spark of sparks) {
+      expect(spark.reach).toBeGreaterThanOrEqual(0.55);
+      expect(spark.reach).toBeLessThanOrEqual(1);
+      expect(spark.size).toBeGreaterThanOrEqual(0.45);
+      expect(spark.size).toBeLessThanOrEqual(1);
+      expect(spark.delay).toBeGreaterThanOrEqual(0);
+      expect(spark.delay).toBeLessThanOrEqual(0.25);
+      expect([0, 1, 2]).toContain(spark.tone);
+      quadrants.add(Math.floor((((spark.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2)));
+    }
+    expect(quadrants.size).toBe(4);
+    expect(new Set(sparks.map((spark) => spark.reach.toFixed(3))).size).toBeGreaterThan(LEVEL_UP_SPARKS / 2);
+  });
+});
+
+describe('countUpLevels', () => {
+  it('jedna razina: od stare do nove', () => {
+    expect(countUpLevels(2, 3)).toEqual([2, 3]);
+  });
+
+  it('više razina: sve redom', () => {
+    expect(countUpLevels(1, 5)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('velik skok: samo zadnjih nekoliko koraka, uvijek završi na novoj razini', () => {
+    expect(countUpLevels(1, 20)).toEqual([14, 15, 16, 17, 18, 19, 20]);
+    expect(countUpLevels(1, 20, 2)).toEqual([18, 19, 20]);
+  });
+
+  it('bez rasta ili neispravan unos: samo krajnja razina', () => {
+    expect(countUpLevels(4, 4)).toEqual([4]);
+    expect(countUpLevels(6, 4)).toEqual([4]);
+    expect(countUpLevels(Number.NaN, 4)).toEqual([4]);
+    expect(countUpLevels(2, Number.NaN)).toEqual([1]);
   });
 });
