@@ -41,7 +41,7 @@ import {
 import type { RitamTx } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
-const reportOf = (userId: string, period: ReportPeriod, periodStart: LocalDate) =>
+export const reportOf = (userId: string, period: ReportPeriod, periodStart: LocalDate) =>
   and(eq(reports.userId, userId), eq(reports.period, period), eq(reports.periodStart, periodStart));
 
 /** Dijagnoza razdoblja, ili `null` ako još nije napravljena. */
@@ -94,8 +94,8 @@ export async function listDayReportArchive(
   return entries;
 }
 
-/** Statistika jednog dana unutar transakcije (`eveningRows` = svi večernji upiti korisnika, za streak). */
-function readDayStats(
+/** Statistika jednog dana unutar transakcije (koristi je i tjedna dijagnoza) (`eveningRows` = svi večernji upiti korisnika, za streak). */
+export function readDayStats(
   tx: RitamTx,
   userId: string,
   date: LocalDate,
@@ -259,6 +259,31 @@ export function markReportSeen(
       // I `updatedAt`: sync (zadnji updatedAt pobjeđuje) inače ne bi prenio `seenAt` na drugi uređaj.
       const now = deps.now().toISOString();
       tx.update(reports).set({ seenAt: now, updatedAt: now }).where(eq(reports.id, row.id)).run();
+    }
+    return true;
+  });
+}
+
+/**
+ * Odgovor na prijedlog iz dijagnoze („Probat ću“ / „Ne sada“, korak 36). Dijagnoza bez prijedloga
+ * se ne mijenja. Vraća je li odgovor zapisan.
+ */
+export function answerReportSuggestion(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+  accepted: boolean,
+  deps: RepoDeps = defaultRepoDeps,
+): boolean {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+    if (!row || row.suggestion === null) return false;
+    if (row.suggestionAccepted !== accepted) {
+      tx.update(reports)
+        .set({ suggestionAccepted: accepted, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
     }
     return true;
   });

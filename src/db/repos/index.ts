@@ -7,3 +7,4 @@ export * from './schedule-blocks';
 export * from './settings';
 export * from './reports';
 export * from './day-scores';
+export * from './week-reports';
