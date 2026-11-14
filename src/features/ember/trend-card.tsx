@@ -18,8 +18,8 @@ const UNLIT_HEIGHT = 3;
  */
 export function TrendCard({ checkinDay, state }: { checkinDay: string; state: EmberState }) {
   const { t } = useTranslation();
-  const { colors, scheme } = useAppTheme();
-  const rail = railColors(scheme);
+  const { colors, scheme, flame } = useAppTheme();
+  const rail = railColors(scheme, flame);
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 
   if (state.status === 'loading') {

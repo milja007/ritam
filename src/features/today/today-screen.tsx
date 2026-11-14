@@ -36,6 +36,7 @@ import {
   useMorningRequested,
 } from '@/features/notifications';
 import { DayScoreCard, XpStreakBar } from '@/features/progress';
+import { LevelUpHost, useLevelUpState } from '@/features/unlocks';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -171,10 +172,14 @@ export function TodayScreen() {
     giveUpOpen ||
     activeEditing !== null ||
     sheetBlock !== null;
+  // Nova razina čeka slavlje (korak 35): prikazuje se tek kad je sve ostalo zatvoreno, a plan dana
+  // se ne otvara sam dok ona čeka.
+  const levelUp = useLevelUpState(now.date, now.eveningDate);
   const autoOpenPlan =
     day.status === 'ready' &&
     !planOpen &&
     !otherModalOpen &&
+    levelUp.pending === null &&
     planDismissedFor !== now.date &&
     shouldAutoOpenTodayPlan(day.blocks, now.minutes);
   useEffect(() => {
@@ -451,6 +456,8 @@ export function TodayScreen() {
         // Prije 04:00 "sutra" je današnji timeline, pa se dan nakon spremanja osvježava.
         <TomorrowPlan date={tomorrowFor} onSaved={day.reload} onClose={() => setTomorrowFor(null)} />
       ) : null}
+
+      <LevelUpHost state={levelUp} blocked={otherModalOpen || planOpen} />
     </GradientBackground>
   );
 }

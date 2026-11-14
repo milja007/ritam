@@ -30,10 +30,13 @@ export function XpStreakBar({ today, checkinDay }: { today: string; checkinDay: 
 
   if (progress.status !== 'ready') return null;
 
-  // Bez broja razine dok ne dođu otključavanja (odluka P35, korak 32): samo XP.
   const { totalXp, level, todayXp, streak } = progress.summary;
   const xpLabel = t('progress.totalXp', { xp: totalXp });
-  const valueText = t('progress.toNextXp', { xp: level.xpIntoLevel, total: level.xpForNext });
+  const valueText = t('progress.toNextLevel', {
+    xp: level.xpIntoLevel,
+    total: level.xpForNext,
+    level: level.level + 1,
+  });
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>

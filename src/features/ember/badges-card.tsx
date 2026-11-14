@@ -103,10 +103,10 @@ type ChipProps = { badge: BadgeProgress; selected: boolean; onPress: () => void 
 /** Čip bedža. Stanje ne nosi samo boja: osvojen ima puni obrub, neosvojen crtkani (i brojač). */
 function Chip({ badge, selected, onPress }: ChipProps) {
   const { t } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame } = useAppTheme();
   const name = t(`badges.name.${badge.badge}`);
   const counter = hasCounter(badge);
-  const lit = emberColor('warm', scheme).fill ?? colors.accent;
+  const lit = emberColor('warm', scheme, flame).fill ?? colors.accent;
 
   return (
     <Pressable

@@ -34,8 +34,8 @@ type OrbFlameProps = {
  * (rang, toplina, niz) nosi tekst uz avatar.
  */
 export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
-  const { scheme } = useAppTheme();
-  const colors = orbFlameColors(flame.heat, scheme);
+  const { scheme, flame: palette } = useAppTheme();
+  const colors = orbFlameColors(flame.heat, scheme, palette);
   const reduceMotion = useReducedMotion();
   const lit = flame.heat !== 'unlit';
   const { pulseMs, sparks } = flame;

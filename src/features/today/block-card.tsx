@@ -45,7 +45,7 @@ export function BlockCard({
   onReport,
 }: BlockCardProps) {
   const { t } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame: palette } = useAppTheme();
   const cancelled = isCancelled(block) && phase !== 'past';
   const reportable = blockActions(block, phase).report.length > 1;
   const settled = block.status !== 'planned';
@@ -73,7 +73,7 @@ export function BlockCard({
         {state === 'now' ? (
           <Orb size={14} />
         ) : (
-          <Flare trigger={dotFlare} size={DOT} color={railColors(scheme).lit}>
+          <Flare trigger={dotFlare} size={DOT} color={railColors(scheme, palette).lit}>
             <RailDot state={state} size={DOT} />
           </Flare>
         )}

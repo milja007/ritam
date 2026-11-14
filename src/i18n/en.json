@@ -413,10 +413,10 @@
       "gainA11y_one": "Streak grew: {{count}} day in a row.",
       "gainA11y_other": "Streak grew: {{count}} days in a row."
     },
-    "toNextXp": "{{xp}} / {{total}} XP to the next milestone",
     "xpTitle": "Experience (XP)",
     "xpGain": "+{{xp}} XP",
-    "xpGainA11y": "Gained {{xp}} XP"
+    "xpGainA11y": "Gained {{xp}} XP",
+    "toNextLevel": "{{xp}} / {{total}} XP to level {{level}}"
   },
   "diagnosis": {
     "title": "Daily diagnosis",
@@ -818,6 +818,51 @@
       "embers30": "Thirty days with a completed evening check-in — thirty embers.",
       "streak30": "Evening check-in completed 30 days in a row.",
       "embers100": "A hundred days with a completed evening check-in — a hundred embers."
+    }
+  },
+  "unlocks": {
+    "level": "Level {{level}}",
+    "levelTitle": "Level {{level}} · {{title}}",
+    "levelTitleA11y": "Level {{level}}, title {{title}}",
+    "next": "Level {{level}} unlocks: {{what}}",
+    "allUnlocked": "All themes and titles are unlocked. The flame keeps growing.",
+    "theme": "the “{{name}}” theme",
+    "title": "the title “{{name}}”",
+    "listJoin": ", ",
+    "titles": {
+      "spark": "Spark",
+      "earlyBird": "Early Bird",
+      "flameKeeper": "Flame Keeper",
+      "routineMaster": "Routine Master",
+      "habitSmith": "Habit Smith",
+      "eternalFlame": "Eternal Flame"
+    },
+    "themes": {
+      "ember": "Ember",
+      "rose": "Dawn",
+      "azure": "Blue Flame",
+      "aurora": "Aurora",
+      "violet": "Dusk"
+    },
+    "picker": {
+      "title": "Colour theme",
+      "hint": "The theme changes the colour of the flame and embers across the app. New themes unlock with levels.",
+      "group": "Flame colour theme",
+      "locked": "Level {{level}}",
+      "lockedA11y": "{{name}}, locked until level {{level}}",
+      "lockedInfo": "The “{{name}}” theme unlocks at level {{level}}. You're at level {{current}}.",
+      "selected": "Selected"
+    },
+    "levelUp": {
+      "overline": "New level",
+      "unlocked": "Unlocked",
+      "themeRow": "“{{name}}” theme",
+      "titleRow": "Title “{{name}}”",
+      "nothing": "The flame is stronger. The next unlock comes at level {{level}}.",
+      "nothingAll": "The flame is stronger. Everything is already unlocked — now only it grows.",
+      "tryTheme": "Try the “{{name}}” theme",
+      "continue": "Continue",
+      "a11y": "New level: {{level}}."
     }
   }
 }

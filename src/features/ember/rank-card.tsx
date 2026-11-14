@@ -174,7 +174,7 @@ function Steps({ progress }: { progress: RankProgress }) {
 /** Red stata: naziv, traka u boji žara (jači stat svijetli jače) i broj; bez podataka prigušen tekst. */
 function StatRow({ stat }: { stat: StatValue }) {
   const { t } = useTranslation();
-  const { colors, scheme } = useAppTheme();
+  const { colors, scheme, flame } = useAppTheme();
   const name = t(`rank.stats.${stat.stat}`);
 
   if (stat.value === null) {
@@ -203,7 +203,7 @@ function StatRow({ stat }: { stat: StatValue }) {
           fraction={stat.value / 100}
           accessibilityLabel={name}
           valueText={String(stat.value)}
-          color={emberColor(emberLevel(stat.value), scheme).fill ?? colors.accent}
+          color={emberColor(emberLevel(stat.value), scheme, flame).fill ?? colors.accent}
         />
       </View>
       <Text variant="bodyStrong" style={[styles.statValue, styles.tabular]}>

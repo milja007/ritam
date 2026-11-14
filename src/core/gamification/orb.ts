@@ -8,7 +8,7 @@
  */
 import { isValidLocalDate } from '../domain/common';
 import { emberLevel, type EmberLevel } from '../ember/ember';
-import { palette, type ColorScheme } from '../theme';
+import { DEFAULT_COLOR_THEME, type FlamePalette, flamePalettes, palette, type ColorScheme } from '../theme';
 import { addDays } from '../time/local-date';
 import { rankProgress, type Rank, type RankDay } from './rank';
 import { streakFromDates } from './streak';
@@ -132,26 +132,30 @@ export type OrbFlameColors = {
 const HALO: Readonly<Record<EmberLevel, number>> = { unlit: 0, faint: 0.3, low: 0.5, warm: 0.75, bright: 1 };
 
 /**
- * Boje plamena po toplini i shemi. Topliji plamen ima svjetlije žarište i jaču aureolu; slabiji je
+ * Boje plamena po toplini, shemi i temi plamena. Topliji plamen ima svjetlije žarište i jaču aureolu; slabiji je
  * tamniji žar. Ugašen plamen nema ispunu — crta se samo obrub (`edge`).
  */
-export function orbFlameColors(heat: EmberLevel, scheme: ColorScheme): OrbFlameColors {
+export function orbFlameColors(
+  heat: EmberLevel,
+  scheme: ColorScheme,
+  flame: FlamePalette = flamePalettes[DEFAULT_COLOR_THEME],
+): OrbFlameColors {
   const dark = scheme === 'dark';
   const rings = {
     ring: dark ? palette.ink700 : palette.ink100,
     dashed: dark ? palette.ink500 : palette.ink400,
-    spark: dark ? palette.flame300 : palette.flame600,
+    spark: dark ? flame.flame300 : flame.flame600,
     halo: HALO[heat],
   };
   switch (heat) {
     case 'bright':
-      return { ...rings, core: palette.ember50, mid: palette.flame300, glow: palette.flame400, edge: palette.flame600 };
+      return { ...rings, core: flame.ember50, mid: flame.flame300, glow: flame.flame400, edge: flame.flame600 };
     case 'warm':
-      return { ...rings, core: palette.ember100, mid: palette.flame400, glow: palette.ember400, edge: palette.flame700 };
+      return { ...rings, core: flame.ember100, mid: flame.flame400, glow: flame.ember400, edge: flame.flame700 };
     case 'low':
-      return { ...rings, core: palette.ember200, mid: palette.ember400, glow: palette.ember600, edge: palette.ember800 };
+      return { ...rings, core: flame.ember200, mid: flame.ember400, glow: flame.ember600, edge: flame.ember800 };
     case 'faint':
-      return { ...rings, core: palette.ember400, mid: palette.ember600, glow: palette.ember800, edge: palette.ember900 };
+      return { ...rings, core: flame.ember400, mid: flame.ember600, glow: flame.ember800, edge: flame.ember900 };
     default:
       return {
         ...rings,
