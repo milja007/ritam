@@ -2,6 +2,16 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-14 · Sesija 09:43 — tjedna dijagnoza (korak 36) + P2 level-up (PR u tijeku)
+Plan (provjeren protiv koncepta „Dijagnoze“ i „Napredak u odnosu na prošlost“):
+1. **P2 Codexa za PR #20** (`level-up-host`): kad `pending` nestane, „prikazano“ se briše, pa ponovni prikaz opet čeka fokus, zatvorene modale i pauzu. Čista funkcija + test.
+2. **Niz boljih tjedana** (`src/core/progress/better-weeks.ts`): zaključeni tjedni zaredom jednako dobri ili bolji od prethodnog (isti tjedni kao rang: ≥ 4 konačna rezultata; preskočen tjedan prekida niz).
+3. **Statistika tjedna** (`src/core/diagnosis/period-stats.ts`): zbroj `DayStats` zaključenih dana — plan, zabrane po zabrani i okidaču, san, XP, ocjena, najbolji/najslabiji dan, propusti po dobu dana, ponovljeni propusti, kratki san naspram rezultata. Općenito po razdoblju, da ga mjesec (37) može ponovno koristiti.
+4. **Tjedna dijagnoza** (`week-diagnosis.ts`, `local-week-v1`): šest sekcija istim redom; trend naspram prošlog tjedna; **jedna** promjena tjedno; odbijena se ne nudi 2 tjedna; prihvaćena ostaje 2 tjedna („ostani na istoj“) i dijagnoza kaže je li upalila.
+5. **Spremanje** u postojeću tablicu `reports` (`period = 'week'`, bez migracije; lokalno i remote već dopuštaju `week`) — `generateWeekReport`, odgovor na prijedlog. `src/db/**` → HIGH_RISK.
+6. **Tab Tjedan**: kartica „Dijagnoza tjedna“ za zaključen tjedan (ili nedjelju nakon večernjeg upita) → modal s dijagnozom i gumbima „Probat ću“ / „Ne sada“; niz boljih tjedana u kartici. HR/EN, pristupačnost.
+7. Ako ostane vremena: mjesečna dijagnoza (37) na istoj statistici.
+
 ## 2026-11-14 · Sesija 06:43 — razine, otključavanja, teme boja, level-up (koraci 32, 38, dio 35; PR #20)
 - **38 teme boja**: `src/core/theme/flame.ts` — pet paleta plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak). Tema mijenja akcent, žarove, traku dana, odsječke tjedna, orb i orb-plamen (`theme.flame`); pozadine, tekst i statusne boje ostaju. Odabir se pamti **na uređaju** (`src/ui/device-prefs.ts` → `expo-sqlite/kv-store`), bez migracije i bez novog paketa.
 - **32 otključavanja**: `src/core/gamification/unlocks.ts` — razine otključavaju teme i naslove; Profil: „Razina N · naslov“, XP do sljedeće razine, što ona otključava; kartica „Tema boja“ (zaključana tema pokazuje razinu).
