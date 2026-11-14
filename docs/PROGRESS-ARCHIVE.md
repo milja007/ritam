@@ -4,6 +4,13 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-14 · Sesija 06:43 — razine, otključavanja, teme boja, level-up (koraci 32, 38, dio 35; PR #20)
+- **38 teme boja**: `src/core/theme/flame.ts` — pet paleta plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak). Tema mijenja akcent, žarove, traku dana, odsječke tjedna, orb i orb-plamen (`theme.flame`); pozadine, tekst i statusne boje ostaju. Odabir se pamti **na uređaju** (`src/ui/device-prefs.ts` → `expo-sqlite/kv-store`), bez migracije i bez novog paketa.
+- **32 otključavanja**: `src/core/gamification/unlocks.ts` — razine otključavaju teme i naslove; Profil: „Razina N · naslov“, XP do sljedeće razine, što ona otključava; kartica „Tema boja“ (zaključana tema pokazuje razinu).
+- **35 level-up**: `src/features/unlocks/` — slavlje preko cijelog ekrana na Danu (traka → odbrojavanje razine → prasak iskri → popis otključanog, „Isprobaj temu“). Zadnja viđena razina se pamti na uređaju i mijenja tek zatvaranjem slavlja; čeka da se ostali modali zatvore. Postojeći korisnik pri prvom pokretanju ne dobiva slavlje (razina se samo zabilježi).
+- Stanje #1: nema P0/P1. **P2 nalazi Codexa za PR #16** (plan-day: fiksni blok ne rezervira vrijeme, predug prvi zadatak troši prozore, blok izvan prozora i vrijeme 99:99; `null` u tijelu → 400; logiranje bez `waitUntil`; Sonnet 4.5 se povlači 30. 11.) rješavaju se uz dovršavanje 20–22, kako Codex traži.
+- **Na uređaju neprovjereno** (boje provjerene samo na statičnoj skici). Sesija 00:43 (PR #19, orb-plamen) je u arhivi.
+
 ## 2026-11-14 · Sesija 00:43 — orb-plamen avatar na Profilu (korak 33, dio; PR #19)
 - **Čista logika** `src/core/gamification/orb.ts` (`orbFlame`): veličina jezgre iz ranga, toplina iz prosjeka **konačnih** rezultata zadnjih 7 dana, iskre iz tekućeg niza (3 / 7 / 30 dana), brzina disanja iz topline. Jednom upaljen plamen bez svježih rezultata tinja (`resting`) — ne gasi se i ne smanjuje. Ništa se ne sprema.
 - **UI** `src/ui/orb-flame.tsx`: dva prstena, jezgra (`radial-gradient`), aureola koja diše, žarište koje treperi, iskre koje kruže; bljesak kad se plamen prvi put upali dok je Profil otvoren. Reanimated, bez Skie; uz „smanji kretanje“ sve stoji.
