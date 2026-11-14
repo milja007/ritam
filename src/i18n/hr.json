@@ -533,6 +533,140 @@
       "unseen": "Nepročitano.",
       "openHint": "Otvara dijagnozu tog dana",
       "more": "Prikaži još"
+    },
+    "week": {
+      "title": "Dijagnoza tjedna",
+      "trend": {
+        "better": "Bolje nego prošli tjedan",
+        "same": "Slično kao prošli tjedan",
+        "worse": "Slabije nego prošli tjedan",
+        "first": "Prvi tjedan za usporedbu"
+      },
+      "metric": {
+        "average": "Prosjek tjedna",
+        "days": "Zaključeni dani",
+        "plan": "Plan",
+        "rules": "Zabrane poštovane",
+        "sleep": "Prosječan san",
+        "xp": "XP",
+        "rating": "Ocjena dana",
+        "best": "Najbolji dan",
+        "betterWeeks": "Niz boljih tjedana"
+      },
+      "value": {
+        "best": "{{day}} · {{score}}",
+        "weeks": "{{count}} tj."
+      },
+      "previous": "tjedan prije {{value}}",
+      "card": {
+        "overline": "Dijagnoza tjedna",
+        "unseen": "Novo",
+        "open": "Otvori dijagnozu",
+        "openAgain": "Pogledaj dijagnozu",
+        "openHint": "Otvara dijagnozu ovog tjedna",
+        "betterWeeks": "Niz boljih tjedana: {{count}}",
+        "pending": "Dijagnoza tjedna stiže u nedjelju, nakon večernjeg upita.",
+        "accepted": "Promjena tjedna: prihvaćena",
+        "rejected": "Promjena tjedna: preskočena",
+        "unanswered": "Čeka te jedan prijedlog"
+      },
+      "suggestion": {
+        "question": "Hoćeš li ovo probati?",
+        "accept": "Probat ću",
+        "reject": "Ne sada",
+        "accepted": "Prihvaćeno. Ovo ostaje jedina promjena dok ne potraje dva tjedna, a svaka iduća dijagnoza kaže je li upalila.",
+        "rejected": "U redu. Ovaj prijedlog se ne nudi ponovo dva tjedna.",
+        "carried": "Ovu promjenu si već prihvatio. Ostaje jedina dok ne potraje dva tjedna.",
+        "change": "Promijeni odgovor",
+        "saveError": "Odgovor nije spremljen. Pokušaj ponovo."
+      },
+      "lines": {
+        "summary": {
+          "better": "Prosjek tjedna je {{average}}, za {{diff}} više nego tjedan prije ({{previous}}). Zaključeni dani: {{days}}.",
+          "same": "Prosjek tjedna je {{average}}, gotovo isto kao tjedan prije ({{previous}}). Ritam se drži. Zaključeni dani: {{days}}.",
+          "worse": "Prosjek tjedna je {{average}}, za {{diff}} manje nego tjedan prije ({{previous}}). To je podatak, ne presuda — dolje je jedna ideja. Zaključeni dani: {{days}}.",
+          "first": "Prosjek tjedna je {{average}}. Zaključeni dani: {{days}}. Od idućeg tjedna uspoređujemo tjedan s prethodnim.",
+          "empty": "Tjedan je zapisan (zaključeni dani: {{days}}), ali za rezultat još nema dovoljno podataka."
+        },
+        "praise": {
+          "better": "Tjedan je bolji od prethodnog za {{diff}}. Napredak se vidi.",
+          "betterWeeks": "Tjedana zaredom jednako dobrih ili boljih: {{count}}. Tako napredak traje.",
+          "record": "Novi rekord tjedna: prosjek {{average}}.",
+          "bestDay": "Najbolji dan: {{bestDate}} ({{score}}). Zapamti što je taj dan bilo drukčije.",
+          "planDone": "Odrađeno {{done}} od {{total}} iz plana. Disciplina na djelu.",
+          "planBetter": "Plan ide bolje: {{percent}} % naspram {{previous}} % tjedan prije.",
+          "rulesClean": "Cijeli tjedan bez prekršene zabrane (poštovano: {{count}}).",
+          "rulesFewer": "Manje prekršaja nego tjedan prije: {{broken}} naspram {{previous}}.",
+          "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
+          "allDays": "Zaključio si svih {{days}} dana u tjednu. Upit je postao navika.",
+          "showedUp": "Zapisao si tjedan (zaključeni dani: {{days}}). Od toga sve kreće."
+        },
+        "followUp": {
+          "checkin": {
+            "worked": "Prošlotjedna promjena (večernji upit svaki dan) je upalila: zapisano je više dana.",
+            "notYet": "Prošlotjedna promjena (večernji upit svaki dan) još nije sjela. Daj joj još tjedan."
+          },
+          "rules": {
+            "worked": "Prošlotjedna promjena oko zabrana je upalila: manje prekršaja nego tjedan prije.",
+            "notYet": "Prošlotjedna promjena oko zabrana još se ne vidi u brojkama. Daj joj još tjedan."
+          },
+          "plan": {
+            "worked": "Prošlotjedna promjena plana je upalila: odrađen je veći dio plana nego tjedan prije.",
+            "notYet": "Prošlotjedna promjena plana još se ne vidi u brojkama. Daj joj još tjedan."
+          },
+          "evening": {
+            "worked": "Prošlotjedna promjena za večeri je upalila: manje večernjih propusta.",
+            "notYet": "Prošlotjedna promjena za večeri još se ne vidi u brojkama. Daj joj još tjedan."
+          },
+          "sleep": {
+            "worked": "Prošlotjedna promjena sna je upalila: spavaš dulje ili imaš manje kratkih noći.",
+            "notYet": "Prošlotjedna promjena sna još se ne vidi u brojkama. Daj joj još tjedan."
+          }
+        },
+        "noticed": {
+          "bestWorst": "Najbolji dan: {{bestDate}} ({{best}}). Najslabiji: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Propusti su uglavnom ujutro ({{count}} od {{total}}). Jutro možda treba blaži početak.",
+            "afternoon": "Propusti su uglavnom poslijepodne ({{count}} od {{total}}). Sredina dana je možda prenatrpana.",
+            "evening": "Propusti su uglavnom navečer ({{count}} od {{total}}). Energija pred kraj dana pada."
+          },
+          "repeated": "„{{title}}” je propušteno {{count}} puta u tjednu.",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "ruleTrigger": "Zabrana „{{rule}}” je prekršena {{count}} puta, najčešće uz okidač: {{trigger}}.",
+          "shortSleep": "Nakon kratkog sna prosjek dana je {{short}}, a inače {{rest}}. San se vidi u rezultatu.",
+          "gaveUp": "Dani zatvoreni s „Odustajem”: {{count}}.",
+          "moved": "Premještanja na kasnije: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: „{{comment}}”",
+          "none": "U ovom tjednu nema posebnih uzoraka."
+        },
+        "problems": {
+          "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika tjedna nepotpuna.",
+          "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}, {{percent}} %).",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "heavyRule": "Važna zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "shortSleep": "Premalo sna: prosjek {{hours}} h, kratkih noći: {{nights}}.",
+          "worse": "Tjedan je osjetno slabiji od prethodnog (−{{diff}}).",
+          "none": "Nema velikih problema. Bravo."
+        },
+        "ideas": {
+          "fillCheckin": "Jedna promjena za novi tjedan: ispuni večernji upit svaki dan (dosad zaključeno dana: {{days}}). Bez toga ne vidimo što ti pomaže.",
+          "ruleTrigger": "Jedna promjena za novi tjedan: za „{{rule}}” unaprijed odluči što ćeš napraviti kad se javi „{{trigger}}”.",
+          "rule": "Jedna promjena za novi tjedan: kad prekršiš „{{rule}}”, zapiši što je to pokrenulo — tako nalazimo uzorak.",
+          "eveningLighter": "Jedna promjena za novi tjedan: večeri ostavi lakšima, a najzahtjevnije blokove stavi ranije u dan.",
+          "smallerPlan": "Jedna promjena za novi tjedan: manji plan — najviše blokova dnevno: {{count}}. Bolje manji plan koji odradiš.",
+          "repeatedBlock": "Jedna promjena za novi tjedan: „{{title}}” (propušteno {{count}} puta) premjesti u drugo doba dana ili ga skrati.",
+          "bedEarlier": "Jedna promjena za novi tjedan: u krevet 15 minuta ranije nego dosad.",
+          "fewerMoves": "Jedna promjena za novi tjedan: planiraj samo ono za što stvarno imaš vremena (premještanja: {{count}}).",
+          "keepRhythm": "Bez novih promjena — zadrži ritam koji imaš.",
+          "stay": {
+            "checkin": "Ostani na istoj promjeni: večernji upit svaki dan. Nova dolazi tek kad ova potraje dva tjedna.",
+            "rules": "Ostani na istoj promjeni oko zabrana. Nova dolazi tek kad ova potraje dva tjedna.",
+            "plan": "Ostani na istoj promjeni plana. Nova dolazi tek kad ova potraje dva tjedna.",
+            "evening": "Ostani na istoj promjeni: lakše večeri. Nova dolazi tek kad ova potraje dva tjedna.",
+            "sleep": "Ostani na istoj promjeni: ranije u krevet. Nova dolazi tek kad ova potraje dva tjedna."
+          }
+        }
+      }
     }
   },
   "score": {

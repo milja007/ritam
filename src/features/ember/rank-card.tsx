@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
@@ -116,9 +117,7 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
   );
 }
 
-type Translate = ReturnType<typeof useTranslation>['t'];
-
-function messageText(message: SystemMessage, t: Translate): string {
+function messageText(message: SystemMessage, t: TFunction): string {
   if (message.kind === 'top') return t('rank.top');
   if (message.kind === 'start') return t('rank.start');
   return t('rank.toNext', { count: message.count, rank: message.rank });

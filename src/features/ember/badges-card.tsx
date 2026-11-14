@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
@@ -91,9 +92,7 @@ export function BadgesCard({ checkinDay, state }: { checkinDay: string; state: E
   );
 }
 
-type Translate = ReturnType<typeof useTranslation>['t'];
-
-function statusText(badge: BadgeProgress, t: Translate): string {
+function statusText(badge: BadgeProgress, t: TFunction): string {
   if (badge.earned) return t('badges.earned');
   return hasCounter(badge) ? t('badges.progress', { done: badge.done, total: badge.total }) : t('badges.locked');
 }

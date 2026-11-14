@@ -16,6 +16,7 @@ import {
 } from '@/core/ember';
 import { addDays } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
+import { useWeekReport, WeekDiagnosisCard } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -55,6 +56,8 @@ export function WeekScreen() {
   const language = i18n.language;
   const week = isoWeek(from);
   const nav = weekNav(shown, now.date, useEarliestScored(state));
+  // Dijagnoza se ponovno provjeri kad se podaci taba osvježe (fokus, novi upit, „Gotovo“).
+  const report = useWeekReport(from, now.date, state.data);
 
   const previous = dates.map((date) => addDays(date, -7)).filter((date): date is string => date !== null);
   const average = state.data ? averageScore(dates, state.data.scores) : null;
@@ -196,6 +199,8 @@ export function WeekScreen() {
           </View>
 
           {empty ? <Text tone="textMuted">{t(nav.current ? 'ember.week.empty' : 'ember.week.emptyPast')}</Text> : null}
+
+          <WeekDiagnosisCard report={report} rangeLabel={weekRange(from, to, language)} current={nav.current} />
         </>
       ) : null}
     </PeriodScreen>

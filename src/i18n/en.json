@@ -527,6 +527,140 @@
       "unseen": "Unread.",
       "openHint": "Opens that day's diagnosis",
       "more": "Show more"
+    },
+    "week": {
+      "title": "Week diagnosis",
+      "trend": {
+        "better": "Better than last week",
+        "same": "About the same as last week",
+        "worse": "Weaker than last week",
+        "first": "First week to compare"
+      },
+      "metric": {
+        "average": "Week average",
+        "days": "Days closed",
+        "plan": "Plan",
+        "rules": "Rules kept",
+        "sleep": "Average sleep",
+        "xp": "XP",
+        "rating": "Day rating",
+        "best": "Best day",
+        "betterWeeks": "Better-week streak"
+      },
+      "value": {
+        "best": "{{day}} · {{score}}",
+        "weeks": "{{count}} wk"
+      },
+      "previous": "week before {{value}}",
+      "card": {
+        "overline": "Week diagnosis",
+        "unseen": "New",
+        "open": "Open diagnosis",
+        "openAgain": "View diagnosis",
+        "openHint": "Opens this week's diagnosis",
+        "betterWeeks": "Better-week streak: {{count}}",
+        "pending": "Your week diagnosis arrives on Sunday, after the evening check-in.",
+        "accepted": "This week's change: accepted",
+        "rejected": "This week's change: skipped",
+        "unanswered": "One suggestion is waiting for you"
+      },
+      "suggestion": {
+        "question": "Will you try this?",
+        "accept": "I'll try it",
+        "reject": "Not now",
+        "accepted": "Accepted. This stays your only change until it has lasted two weeks, and each next diagnosis tells you whether it worked.",
+        "rejected": "All right. This suggestion won't be offered again for two weeks.",
+        "carried": "You already accepted this change. It stays your only one until it has lasted two weeks.",
+        "change": "Change answer",
+        "saveError": "Your answer wasn't saved. Try again."
+      },
+      "lines": {
+        "summary": {
+          "better": "Week average is {{average}}, {{diff}} more than the week before ({{previous}}). Days closed: {{days}}.",
+          "same": "Week average is {{average}}, about the same as the week before ({{previous}}). The rhythm holds. Days closed: {{days}}.",
+          "worse": "Week average is {{average}}, {{diff}} less than the week before ({{previous}}). That's data, not a verdict — there's one idea below. Days closed: {{days}}.",
+          "first": "Week average is {{average}}. Days closed: {{days}}. From next week on we compare each week with the one before.",
+          "empty": "The week is recorded (days closed: {{days}}), but there isn't enough data for a score yet."
+        },
+        "praise": {
+          "better": "This week beats the one before by {{diff}}. Progress shows.",
+          "betterWeeks": "Weeks in a row as good or better: {{count}}. That's how progress lasts.",
+          "record": "New week record: average {{average}}.",
+          "bestDay": "Best day: {{bestDate}} ({{score}}). Remember what was different that day.",
+          "planDone": "{{done}} of {{total}} planned items done. Discipline at work.",
+          "planBetter": "Your plan is going better: {{percent}}% versus {{previous}}% the week before.",
+          "rulesClean": "A whole week without a broken rule (kept: {{count}}).",
+          "rulesFewer": "Fewer slips than the week before: {{broken}} versus {{previous}}.",
+          "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
+          "allDays": "You closed all {{days}} days of the week. The check-in has become a habit.",
+          "showedUp": "You recorded the week (days closed: {{days}}). Everything starts there."
+        },
+        "followUp": {
+          "checkin": {
+            "worked": "Last week's change (evening check-in every day) worked: more days were recorded.",
+            "notYet": "Last week's change (evening check-in every day) hasn't settled yet. Give it another week."
+          },
+          "rules": {
+            "worked": "Last week's change around your rules worked: fewer slips than the week before.",
+            "notYet": "Last week's change around your rules doesn't show in the numbers yet. Give it another week."
+          },
+          "plan": {
+            "worked": "Last week's change to your plan worked: you completed a bigger share of it than the week before.",
+            "notYet": "Last week's change to your plan doesn't show in the numbers yet. Give it another week."
+          },
+          "evening": {
+            "worked": "Last week's change for your evenings worked: fewer evening misses.",
+            "notYet": "Last week's change for your evenings doesn't show in the numbers yet. Give it another week."
+          },
+          "sleep": {
+            "worked": "Last week's sleep change worked: you sleep longer or have fewer short nights.",
+            "notYet": "Last week's sleep change doesn't show in the numbers yet. Give it another week."
+          }
+        },
+        "noticed": {
+          "bestWorst": "Best day: {{bestDate}} ({{best}}). Weakest: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Misses are mostly in the morning ({{count}} of {{total}}). Mornings may need a gentler start.",
+            "afternoon": "Misses are mostly in the afternoon ({{count}} of {{total}}). The middle of the day may be overpacked.",
+            "evening": "Misses are mostly in the evening ({{count}} of {{total}}). Energy drops late in the day."
+          },
+          "repeated": "“{{title}}” was missed {{count}} times this week.",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "ruleTrigger": "The rule “{{rule}}” was broken {{count}} times, mostly triggered by: {{trigger}}.",
+          "shortSleep": "After short sleep your day average is {{short}}, otherwise {{rest}}. Sleep shows in the score.",
+          "gaveUp": "Days closed with “I give up”: {{count}}.",
+          "moved": "Moves to later: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: “{{comment}}”",
+          "none": "No particular patterns this week."
+        },
+        "problems": {
+          "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the week is incomplete.",
+          "lowPlan": "Less than half of the plan was done ({{done}}/{{total}}, {{percent}}%).",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "heavyRule": "The important rule “{{rule}}” was broken {{count}} times.",
+          "shortSleep": "Too little sleep: average {{hours}} h, short nights: {{nights}}.",
+          "worse": "The week is noticeably weaker than the one before (−{{diff}}).",
+          "none": "No big problems. Well done."
+        },
+        "ideas": {
+          "fillCheckin": "One change for the new week: fill in the evening check-in every day (days closed so far: {{days}}). Without it we can't see what helps you.",
+          "ruleTrigger": "One change for the new week: for “{{rule}}”, decide in advance what you'll do when “{{trigger}}” shows up.",
+          "rule": "One change for the new week: when you break “{{rule}}”, note what set it off — that's how we find the pattern.",
+          "eveningLighter": "One change for the new week: keep evenings lighter and put your hardest blocks earlier in the day.",
+          "smallerPlan": "One change for the new week: a smaller plan — blocks per day at most: {{count}}. Better a small plan you finish.",
+          "repeatedBlock": "One change for the new week: move “{{title}}” (missed {{count}} times) to another part of the day, or shorten it.",
+          "bedEarlier": "One change for the new week: go to bed 15 minutes earlier than so far.",
+          "fewerMoves": "One change for the new week: plan only what you really have time for (moves: {{count}}).",
+          "keepRhythm": "No new changes — keep the rhythm you have.",
+          "stay": {
+            "checkin": "Stay with the same change: evening check-in every day. A new one comes only once this has lasted two weeks.",
+            "rules": "Stay with the same change around your rules. A new one comes only once this has lasted two weeks.",
+            "plan": "Stay with the same change to your plan. A new one comes only once this has lasted two weeks.",
+            "evening": "Stay with the same change: lighter evenings. A new one comes only once this has lasted two weeks.",
+            "sleep": "Stay with the same change: earlier to bed. A new one comes only once this has lasted two weeks."
+          }
+        }
+      }
     }
   },
   "score": {
