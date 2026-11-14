@@ -2,15 +2,16 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-14 · Sesije 09:43 i 12:43 — tjedna dijagnoza (korak 36) + P2 level-up (PR #21)
-- **P2 Codexa za PR #20** (`level-up-host`): kad `pending` nestane, „prikazano“ se briše, pa ponovni prikaz opet čeka fokus, zatvorene modale i pauzu (`level-up-gate.ts` + test).
-- **Niz boljih tjedana** (`src/core/gamification/better-weeks.ts`): zaključeni tjedni zaredom jednako dobri ili bolji od prethodnog (isti tjedni kao rang: ≥ 4 konačna rezultata; preskočen tjedan prekida niz).
-- **Statistika razdoblja** (`src/core/diagnosis/period-stats.ts`): zbroj zaključenih dana — plan, zabrane po zabrani i okidaču, san, XP, ocjena, najbolji/najslabiji dan, propusti po dobu dana, ponovljeni propusti, kratki san naspram rezultata. Općenita, mjesec (37) je može ponovno koristiti.
-- **Tjedna dijagnoza** (`week-diagnosis.ts`, `local-week-v1`, bez LLM-a): šest sekcija redom iz koncepta; **jedna** promjena tjedno; odbijena se ne nudi 2 tjedna; prihvaćena ostaje jedina 2 tjedna i svaka iduća dijagnoza kaže je li upalila.
-- **Spremanje** (`generateWeekReport`, `answerReportSuggestion` u `src/db/repos/reports.ts`): postojeća tablica `reports`, `period = 'week'`, **bez migracije**. Dostupna kad tjedan prođe ili nedjeljom nakon večernjeg upita. Ponovni poziv bez promjene podataka ništa ne piše (ne dira `updatedAt` / sync).
-- **Tab Tjedan**: kartica „Dijagnoza tjedna“ (trend, „Ukratko“, niz boljih tjedana, stanje prijedloga, oznaka „Novo“) → modal s cijelom dijagnozom i „Probat ću“ / „Ne sada“ (odgovor se može promijeniti). Radi i za prošle tjedne (strelice). HR/EN.
-- Usput: `Translate = ReturnType<typeof useTranslation>['t']` u `badges-card` i `rank-card` zamijenjen s `TFunction` — s više i18n ključeva TypeScript je na tom tipu javljao TS2589.
-- **Nije napravljeno:** tjedna dijagnoza se otvara s taba Tjedan, nije dodana u nedjeljnu dnevnu dijagnozu (pitanje 82); nema obavijesti za nju. Na uređaju neprovjereno.
+## 2026-11-14 · Sesija 12:43 (nastavak) — mjesečna dijagnoza (korak 37, PR u tijeku)
+Plan (provjeren protiv koncepta „Dijagnoze“: isti red sekcija; „najviše 1 nova promjena tjedno, 2 mjesečno“):
+1. **Pragovi po razdoblju**: graditelji redaka tjedne dijagnoze primaju pragove (`WEEK_THRESHOLDS`, `MONTH_THRESHOLDS`), bez promjene tjednog ponašanja (postojeći testovi moraju proći netaknuti).
+2. **Mjesečna dijagnoza** (`month-diagnosis.ts`, `local-month-v1`): trend naspram prošlog mjeseca, rekord mjeseca, uzorak po danu u tjednu, prva naspram druge polovice mjeseca, pregled promjena prihvaćenih u tjednim dijagnozama tog mjeseca. Ideje: **najviše dvije, kao smjer** — bez „Probat ću“; nove promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu, da mjesec ne zaobiđe pravilo „1 tjedno“ (pitanje 83).
+3. **Spremanje**: `generateMonthReport` u `reports` (`period = 'month'`, `periodStart` = prvi dan mjeseca), bez migracije; dostupna kad mjesec prođe ili zadnji dan nakon večernjeg upita. `src/db/**` → HIGH_RISK.
+4. **Prikaz**: zajednički prezentacijski `PeriodDiagnosisView` / kartica (tjedan ga počinje koristiti), kartica „Dijagnoza mjeseca“ na tabu Mjesec. HR/EN.
+
+## 2026-11-14 · Sesije 09:43 i 12:43 — tjedna dijagnoza (korak 36) + P2 level-up (PR #21, `0116a67`)
+- Lokalna tjedna dijagnoza `local-week-v1` (`src/core/diagnosis/week-diagnosis.ts`, statistika u `period-stats.ts`), niz boljih tjedana (`better-weeks.ts`), spremanje u `reports` (`period = 'week'`, bez migracije; `generateWeekReport`, `answerReportSuggestion`), kartica na tabu Tjedan s „Probat ću“ / „Ne sada“. Detalji u arhivi.
+- Nije napravljeno: tjedna nije u nedjeljnoj dnevnoj dijagnozi, nema obavijesti (pitanje 82). Na uređaju neprovjereno.
 
 ## 2026-11-13 · Smjer „Žar“ (odluka Borna 2026-11-12)
 - „Dan izgori u žar“ ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu
@@ -37,4 +38,5 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 80. Otključavanja (32): koncept navodi vrste (tema, okvir avatara, animacija, naslov), ne popis. Odabrano: 5 tema i 6 naslova na razinama 1–15 (gore). Je li raspored u redu i želiš li okvire avatara i nove animacije „Gotovo“ kao nagrade?
 81. Tema boja (38) se pamti samo na uređaju. Treba li se sinkronizirati s računom (stupac u `settings` → remote migracija)?
 82. Tjedna dijagnoza (36) se otvara karticom na tabu Tjedan (nedjeljom nakon večernjeg upita i za svaki prošli tjedan). Koncept kaže „nedjelja → dan + tjedan“: želiš li da se nedjeljom tjedni dio pokaže i odmah ispod dnevne dijagnoze, i treba li za nju obavijest?
+83. Mjesečna dijagnoza (37) daje najviše dvije ideje kao smjer za idući mjesec, bez „Probat ću“ — nove promjene i dalje nudi samo tjedna dijagnoza (jedna tjedno). Je li to u redu, ili mjesec treba sam nuditi do 2 promjene?
 - Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.
