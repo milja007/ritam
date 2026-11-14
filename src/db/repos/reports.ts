@@ -3,18 +3,25 @@ import { and, desc, eq, inArray, lt, lte } from 'drizzle-orm';
 import { betterWeeksStreak, closedWeeks, isEveningCheckinComplete, mainStreak } from '@/core/gamification';
 import {
   buildDayDiagnosis,
+  buildMonthDiagnosis,
   buildWeekDiagnosis,
   dayStats,
   diagnosisSuggestion,
+  earlierMonthAverages,
+  isMonthDiagnosisReady,
   isWeekDiagnosisReady,
   LOCAL_DAY_DIAGNOSIS_VERSION,
+  LOCAL_MONTH_DIAGNOSIS_VERSION,
   LOCAL_WEEK_DIAGNOSIS_VERSION,
+  monthBounds,
+  monthChanges,
   parseDayDiagnosis,
   periodStats,
   statsForAreas,
   type ArchiveEntry,
   type DayDiagnosis,
   type DayStats,
+  type MonthDiagnosis,
   type PeriodDay,
   type WeekDiagnosis,
   type WeekHistoryEntry,
@@ -382,6 +389,108 @@ export function generateWeekReport(
         : existing && existing.suggestion === diagnosis.suggestion && sameIdea(existing.sections, diagnosis)
           ? existing.suggestionAccepted
           : null,
+      helpful: existing?.helpful ?? null,
+      feedbackComment: existing?.feedbackComment ?? null,
+      seenAt: existing?.seenAt ?? null,
+    });
+    const values = { ...report, sections: diagnosis, stats };
+    if (existing) {
+      tx.update(reports).set(values).where(eq(reports.id, existing.id)).run();
+    } else {
+      tx.insert(reports).values(values).run();
+    }
+    return { report, diagnosis };
+  });
+}
+
+export type MonthReportResult = { report: Report; diagnosis: MonthDiagnosis };
+
+/**
+ * Lokalna dijagnoza mjeseca `month` ("YYYY-MM", korak 37): statistika zaključenih dana tog i
+ * prošlog mjeseca → sekcije → upsert u `reports` (period `month`, `periodStart` = prvi dan).
+ * `null` dok nije dostupna (mjesec nije prošao, a upit zadnjeg dana nije ispunjen, ili mjesec
+ * nema nijedan zaključen dan) i za neispravan mjesec.
+ *
+ * Kao tjedna: dani se boduju po snimci područja uz svoj upit (P48), a ponovni poziv bez promjene
+ * ništa ne piše. Mjesec ne nudi prijedlog za prihvaćanje (`suggestion = null`): ideje su smjer,
+ * a promjene po jednu nudi tjedna dijagnoza. Pregled promjena broji odgovore tjednih dijagnoza
+ * čiji tjedan počinje u tom mjesecu.
+ */
+export function generateMonthReport(
+  db: RitamDb,
+  userId: string,
+  month: string,
+  today: LocalDate,
+  deps: RepoDeps = defaultRepoDeps,
+): MonthReportResult | null {
+  const bounds = monthBounds(month);
+  if (bounds === null) return null;
+  const previousEnd = addDays(bounds.start, -1);
+  const previousBounds = previousEnd === null ? null : monthBounds(previousEnd.slice(0, 7));
+  if (previousBounds === null) return null;
+
+  // Dotadašnji rekord: prosjeci ranijih mjeseci (čita se prije transakcije, kao kod tjedna).
+  const earlier = earlierMonthAverages(listDayScores(db, userId, bounds.end).days, month);
+  const previousBest = earlier.length > 0 ? Math.max(...earlier) : null;
+
+  const now = deps.now().toISOString();
+  return db.transaction((tx) => {
+    const eveningRows = tx
+      .select()
+      .from(checkins)
+      .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+      .all()
+      .map((row) => checkinSchema.parse(row));
+    const complete = new Map(
+      eveningRows.filter((row) => row.date <= today && isEveningCheckinComplete(row)).map((row) => [row.date, row]),
+    );
+    if (!isMonthDiagnosisReady(month, today, complete.keys())) return null;
+
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const currentAreas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const closedDays = (start: LocalDate, end: LocalDate): PeriodDay[] =>
+      [...complete.entries()]
+        .filter(([date]) => date >= start && date <= end)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, evening]) => {
+          const full = readDayStats(tx, userId, date, eveningRows);
+          const areas = evening.scoreAreas ?? currentAreas;
+          return { stats: statsForAreas(full, areas), score: dayScore(full, areas).score };
+        });
+    const days = closedDays(bounds.start, bounds.end);
+    const current = periodStats(bounds.start, bounds.end, bounds.length, days);
+    const previousDays = closedDays(previousBounds.start, previousBounds.end);
+    const previous =
+      previousDays.length > 0
+        ? periodStats(previousBounds.start, previousBounds.end, previousBounds.length, previousDays)
+        : null;
+
+    const weekAnswers = tx
+      .select()
+      .from(reports)
+      .where(and(eq(reports.userId, userId), eq(reports.period, 'week')))
+      .all()
+      .map((row) => ({ start: row.periodStart, suggestion: row.suggestion, accepted: row.suggestionAccepted }));
+    const changes = monthChanges(month, weekAnswers);
+
+    const diagnosis = buildMonthDiagnosis(current, previous, days, { previousBest, changes });
+    const stats = { current, previous };
+    const existing = tx.select().from(reports).where(reportOf(userId, 'month', bounds.start)).get();
+    if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
+      return { report: reportSchema.parse(existing), diagnosis };
+    }
+    const report = reportSchema.parse({
+      id: existing?.id ?? deps.newId(),
+      userId,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      period: 'month',
+      periodStart: bounds.start,
+      sections: diagnosis,
+      stats,
+      promptVersion: LOCAL_MONTH_DIAGNOSIS_VERSION,
+      suggestion: null,
+      suggestionAccepted: null,
       helpful: existing?.helpful ?? null,
       feedbackComment: existing?.feedbackComment ?? null,
       seenAt: existing?.seenAt ?? null,
