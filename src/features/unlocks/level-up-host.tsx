@@ -6,6 +6,7 @@ import { LEVEL_UP_DELAY_MS } from '@/core/theme';
 import { useProgress } from '@/features/progress';
 
 import { LevelUpCelebration } from './level-up-celebration';
+import { shownAfterPendingChange } from './level-up-gate';
 import { acknowledgeLevel, useLevelUp } from './level-up-store';
 
 export type LevelUpState = {
@@ -32,7 +33,9 @@ type Props = {
 /**
  * Prikazuje slavlje nove razine kad je ekran u fokusu i ništa drugo nije otvoreno, uz kratku pauzu
  * (iOS ne prikaže novi modal dok se prethodni zatvara). Jednom prikazano ostaje do zatvaranja;
- * zatvaranjem se razina bilježi kao viđena, pa se slavlje ne ponavlja.
+ * zatvaranjem se razina bilježi kao viđena, pa se slavlje ne ponavlja. Ako slavlje nestane samo od
+ * sebe (napredak se ponovno učitava pri promjeni dana), „prikazano“ se briše — kad se isti
+ * level-up vrati, opet čeka fokus, zatvorene modale i pauzu.
  */
 export function LevelUpHost({ state, blocked }: Props) {
   const focused = useIsFocused();
@@ -40,6 +43,9 @@ export function LevelUpHost({ state, blocked }: Props) {
   const key = pending === null ? null : `${pending.from}-${pending.to}`;
   const ready = key !== null && focused && !blocked;
   const [shownKey, setShownKey] = useState<string | null>(null);
+  // Usklađivanje stanja tijekom crtanja (bez efekta): nestali level-up više nije „prikazan“.
+  const kept = shownAfterPendingChange(shownKey, key);
+  if (kept !== shownKey) setShownKey(kept);
 
   useEffect(() => {
     if (!ready) return;
@@ -47,6 +53,6 @@ export function LevelUpHost({ state, blocked }: Props) {
     return () => clearTimeout(id);
   }, [ready, key]);
 
-  if (pending === null || level === null || shownKey !== key) return null;
+  if (pending === null || level === null || kept !== key) return null;
   return <LevelUpCelebration levelUp={pending} level={level} onClose={() => acknowledgeLevel(pending.to)} />;
 }
