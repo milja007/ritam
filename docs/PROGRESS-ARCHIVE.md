@@ -4,6 +4,22 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-14 · Sesija 00:43 — orb-plamen avatar na Profilu (korak 33, dio; PR #19)
+- **Čista logika** `src/core/gamification/orb.ts` (`orbFlame`): veličina jezgre iz ranga, toplina iz prosjeka **konačnih** rezultata zadnjih 7 dana, iskre iz tekućeg niza (3 / 7 / 30 dana), brzina disanja iz topline. Jednom upaljen plamen bez svježih rezultata tinja (`resting`) — ne gasi se i ne smanjuje. Ništa se ne sprema.
+- **UI** `src/ui/orb-flame.tsx`: dva prstena, jezgra (`radial-gradient`), aureola koja diše, žarište koje treperi, iskre koje kruže; bljesak kad se plamen prvi put upali dok je Profil otvoren. Reanimated, bez Skie; uz „smanji kretanje“ sve stoji.
+- **Profil**: orb zamjenjuje medaljon u kartici „Rang i statovi“ (platno „Avatar i rang“); uz njega rang, stanje plamena i prosjek 7 dana. Dodir otvara objašnjenje (veličina, sjaj, iskre, „bez kazni“).
+- 37c označen `[x]`. **Na uređaju neprovjereno** (izgled provjeren samo na CSS skici istih boja). Sesija 21:43 (PR #18: bedževi, animacije niza i „Gotovo“, listanje) je u arhivi.
+
+### Plan sesije 06:43 (2026-11-14)
+Plan (koncept: „svaki level otključava nešto vidljivo: novu temu boja, … novi naslov“; „orb mijenja boju s novim temama“; level up „full-screen: traka se napuni, burst čestica, broj se odbroji“):
+1. **38 — teme boja plamena**: `src/core/theme/flame.ts` — paleta plamena (11 boja) po temi: Žar (zadana), Zora, Modri plamen, Polarna svjetlost, Sumrak; iste svjetline, drugi ton. Akcent, žarovi, traka dana, orb i orb-plamen čitaju paletu teme. Testovi kontrasta za svaku temu i obje sheme.
+2. Odabir teme se pamti **na uređaju** (`expo-sqlite/kv-store`, bez migracije i bez novog paketa); `AppThemeProvider` ga čita.
+3. **32 — otključavanja**: `src/core/gamification/unlocks.ts` — što koja razina otključava (teme i naslovi), `levelUp(zadnjaViđena, trenutna)`. Izvedeno iz XP-a, ništa se ne sprema osim zadnje viđene razine (na uređaju). Testovi.
+4. Profil: „Rang X · Razina N“ i naslov (P35 — broj razine dolazi s otključavanjima), sljedeće otključavanje; kartica „Tema boja“ s uzorcima, zaključane teme pokazuju razinu.
+5. **35 — level-up**: slavlje preko cijelog ekrana kad razina naraste (i ako je narasla dok je app bio zatvoren): traka se napuni, iskre, broj se odbroji, popis otključanog. Uz „smanji kretanje“ mirno. Bez haptike (Ž11).
+6. Bez kazni: razina i otključano nikad ne padaju. Okviri avatara i animacije „Gotovo“ kao otključavanja ostaju za kasnije.
+*Recenzija:* popis otključavanja i razine nisu u konceptu (samo vrste) → pitanje 80, ne blokira. Tema na uređaju, ne u `settings` → ne treba remote migracija; sinkronizacija teme među uređajima ostaje pitanje.
+
 ## 2026-11-13 · Sesija 21:43 — bedževi (34, dio), animacije niza i „Gotovo“ (35, dio), listanje razdoblja (PR #18)
 - **Bedževi** (`src/core/gamification/badges.ts`, kartica `features/ember/badges-card.tsx`): 9 bedževa iz konačnih rezultata i niza, ništa se ne sprema, osvojeno se ne gubi. Prvi tjedan (7 ocijenjenih dana), 7 / 30 dana zaredom, 7 dana bez prekršaja, Dan punog sjaja (≥ 85), Rekord tjedna, 4 dobra tjedna zaredom, 30 / 100 žarova. Osvojeni: puni obrub u boji žara; u tijeku: crtkani obrub + „n/m“; dodir pokaže pravilo.
 - **Animacija niza** (35): žar u piluli niza na Danu bljesne i broj poskoči kad niz naraste (`streakGain`, `useStreakGain`, `ui/flare.tsx`); javlja se čitaču zaslona.

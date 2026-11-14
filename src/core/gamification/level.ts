@@ -1,7 +1,7 @@
 /**
  * Razine (leveli) izvedene iz ukupnog XP-a — samo računanje za XP traku.
  * Krivulja iz koncepta: level 2 = 100 XP, svaki sljedeći korak ~15 % više (raste postupno).
- * Otključavanja, level-up animacija i nagrade su korak 32 (faza 3). Čista logika, bez React importa.
+ * Što razine otključavaju je u `unlocks.ts` (korak 32). Čista logika, bez React importa.
  */
 
 /** XP potreban za prijelaz s razine 1 na 2. */

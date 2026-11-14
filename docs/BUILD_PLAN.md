@@ -74,22 +74,22 @@ Ovi koraci idu ispred koraka 20–22 dok prioritet traje. Numeracija je zasebna 
 - [x] **Ž8. Kartica „Trenutno“** — veliki živi sat sa sekundama u boji plamena, „još mm:ss“ desno, tanki obrub.
 - [x] **Ž9. Paljenje žara** — žar današnjeg dana u zaglavlju Dana: ugašen obrub dok dan traje, pa se nakon večernjeg upita upali na svoju razinu uz jednokratnu animaciju (`todayEmber`, `shouldIgnite`, `EmberIgnite`; poštuje „smanji kretanje“).
 - [x] **Ž10. Godina → dodir mjeseca** — redak mjeseca u Godini otvara taj mjesec u tabu Mjesec, „Ovaj mjesec“ vraća na tekući; budući mjesec nije dodirljiv.
-- [ ] **Ž11. Haptika** *(„+N XP“ animacija je gotova bez haptike; level-up ide uz korak 32)* — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
+- [ ] **Ž11. Haptika** *(„+N XP“ i level-up su gotovi bez haptike)* — dio koraka 35; traži `expo-haptics` (novi paket → `package.json`, visokorizično, samo kroz `npx expo install`).
 - [x] **Ž12. Arhiva dijagnoza** — popis prošlih dnevnih dijagnoza na Profilu, po mjesecima, najnovija prvo; dodir otvara dijagnozu tog dana, „Prikaži još“ dodaje sljedećih deset. Nepročitane su označene točkom. Čita se samo popis (`listDayReportArchive`) — dijagnoza se ne generira dok se red ne otvori.
 
 Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/godine (25, 25b), „[Sustav]“ poruke te rang i statovi (34b), bedževi i otključavanja (32, 34; bedževi gotovi 2026-11-13), listanje prošlih razdoblja strelicama (34b; gotovo 2026-11-13), točkice fiksnih obaveza (24).
 
 ## Faza 3 — Igra i animacije
-- [ ] 32. Leveli + otključavanja
+- [x] 32. Leveli + otključavanja — *gotovo (2026-11-14):* razine otključavaju **teme boja plamena** i **naslove** (`src/core/gamification/unlocks.ts`: razina 2 „Rani ptić“, 3 tema Zora, 4 „Čuvar plamena“, 5 Modri plamen, 6 „Majstor rutine“, 8 Polarna svjetlost, 10 „Kovač navika“, 12 Sumrak, 15 „Vječni plamen“); Profil pokazuje „Razina N · naslov“ i što otključava sljedeća razina. Sve izvedeno iz XP-a. Okviri avatara i nove animacije „Gotovo“ kao otključavanja nisu napravljeni (pitanje 80).
 - [ ] 33. Orb-plamen avatar (Skia) — *dio gotov (2026-11-14):* **avatar bez Skie** na Profilu (`src/core/gamification/orb.ts`, `src/ui/orb-flame.tsx`): veličina jezgre iz ranga, sjaj iz prosjeka konačnih rezultata zadnjih 7 dana, iskre iz niza (3 / 7 / 30 dana), aureola diše, plamen se nikad ne gasi ni ne smanjuje; dodir objašnjava što ga oblikuje. Ostaje nadogradnja na Skiu (pravi plamen, čestice) — novi paket, traži `npx expo install` na Bornovom Macu.
 - [ ] 34. Epski questovi u Profilu (samo dugoročni, sam ih postaviš; bez dnevnih/tjednih — 2026-11-10) + freeze tokeni + bedževi — *dio gotov (2026-11-13):* **bedževi** — 9 bedževa izvedenih iz konačnih rezultata i niza (`src/core/gamification/badges.ts`), kartica „Bedževi“ na Profilu po platnu. Ostaju epski questovi i freeze tokeni (traže tablice).
 - [x] 34b. Rang E–S i statovi (Disciplina, Volja, Energija, Zdravlje, Novac) — lagani Solo Leveling štih, poruke "[Sustav]" — *rang iz „dobrih tjedana“, statovi iz dijelova konačnog rezultata zadnjih 30 dana, kartica na Profilu; Zdravlje i Novac dobivaju vrijednost s trackerima (31b).* *Listanje prošlih tjedana i mjeseci strelicama (`weekNav`, `monthNav`) dodano 2026-11-13.*
-- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Animacija niza (žar u piluli niza bljesne kad niz naraste) i „Gotovo“ (točka na traci dana bljesne kad se aktivnost prijavi kao odrađena) su gotove (2026-11-13). Ostaje haptika → **Ž11** i level-up (uz korak 32).
+- [ ] 35. Animacije (checkbox, +XP, level up, streak) + haptika — *dio gotov u smjeru „Žar“:* klizanje ispune `ProgressBar`-a (tokeni `src/core/theme/motion.ts`) i paljenje žara (Ž9). „+N XP“ uz XP traku na Danu je gotov (2026-11-13). Animacija niza (žar u piluli niza bljesne kad niz naraste) i „Gotovo“ (točka na traci dana bljesne kad se aktivnost prijavi kao odrađena) su gotove (2026-11-13). **Level-up** preko cijelog ekrana (traka se napuni, razina se odbroji, prasak iskri, popis otključanog) je gotov (2026-11-14). Ostaje samo haptika → **Ž11**.
 - [ ] 36. Tjedna dijagnoza (nedjelja: dan + tjedan) + prijedlog jedne promjene + streak boljih tjedana
 - [ ] 37. Mjesečna dijagnoza (zadnji dan u mjesecu: dan + tjedan + mjesec)
 - [ ] 37b. Godišnja dijagnoza (31. 12.: dan + tjedan + mjesec + godina)
 - [x] 37c. Grafovi napretka: 30 dana na Profilu, godišnja toplinska karta, arhiva dijagnoza — gotovo kroz smjer „Žar“: graf 30 dana (Ž6), godišnja karta žarova (Ž5), dodir žara dana otvara dijagnozu tog dana, arhiva dijagnoza (Ž12).
-- [ ] 38. Teme boja
+- [x] 38. Teme boja — *gotovo (2026-11-14):* pet tema plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak; `src/core/theme/flame.ts`); mijenjaju akcent, žarove, traku dana i orb, ne pozadine ni statusne boje. Birač na Profilu, zaključane teme pokazuju razinu. Odabir se pamti **na uređaju** (`expo-sqlite/kv-store`), ne u `settings` — bez migracije; sinkronizacija teme među uređajima je pitanje 81.
 
 ## Faza 4 — Nadogradnje
 - [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget
