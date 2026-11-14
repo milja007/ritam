@@ -25,6 +25,37 @@ export const STABLE_WEEKS = 2;
 /** Koliko se dana odbijeni prijedlog ne nudi ponovo. */
 export const REJECTED_COOLDOWN_DAYS = 14;
 
+/**
+ * Pragovi koji ovise o duljini razdoblja: isti graditelji redaka služe tjednu i mjesecu
+ * (`month-diagnosis.ts`), a razlikuju se samo po tome koliko se puta nešto mora ponoviti.
+ */
+export type PeriodThresholds = {
+  /** Ispod toliko zaključenih dana slika razdoblja je nepotpuna. */
+  minDays: number;
+  /** Prekršaja iste zabrane od kojih se ona spominje u „Što smo primijetili“ i nudi kao ideja. */
+  ruleNoticed: number;
+  /** Prekršaja iste zabrane od kojih je to veliki problem (važna zabrana: `heavyRuleProblem`). */
+  ruleProblem: number;
+  heavyRuleProblem: number;
+  /** Kratkih noći od kojih je san veliki problem. */
+  shortNights: number;
+  /** Propusta istog bloka od kojih se nudi ideja o njemu. */
+  repeatedIdea: number;
+  movedNoticed: number;
+  movedIdea: number;
+};
+
+export const WEEK_THRESHOLDS: PeriodThresholds = {
+  minDays: MIN_WEEK_DIAGNOSIS_DAYS,
+  ruleNoticed: 2,
+  ruleProblem: 3,
+  heavyRuleProblem: 2,
+  shortNights: 3,
+  repeatedIdea: 3,
+  movedNoticed: 3,
+  movedIdea: 4,
+};
+
 const PLAN_STEP = 0.1;
 const PLAN_FOLLOW_UP_STEP = 0.05;
 const SLEEP_FOLLOW_UP_MINUTES = 15;
@@ -192,7 +223,15 @@ function change(value: number, previous: number | null): WeekProgressRow['change
 const goodFor = (direction: WeekProgressRow['change']): boolean | null =>
   direction === null || direction === 'same' ? null : direction === 'up';
 
-function progressRows(current: PeriodStats, previous: PeriodStats | null, trend: Trend, betterWeeks: number): WeekProgressRow[] {
+/**
+ * Retci „Napredak“. `betterWeeks = null` izostavlja redak niza boljih tjedana (mjesec ga nema).
+ */
+export function periodProgressRows(
+  current: PeriodStats,
+  previous: PeriodStats | null,
+  trend: Trend,
+  betterWeeks: number | null,
+): WeekProgressRow[] {
   const rows: WeekProgressRow[] = [];
   if (current.average !== null) {
     const before = previous?.average ?? null;
@@ -257,11 +296,11 @@ function progressRows(current: PeriodStats, previous: PeriodStats | null, trend:
   if (current.best) {
     rows.push({ metric: 'best', value: current.best.score, previous: null, change: null, good: null, date: current.best.date });
   }
-  rows.push({ metric: 'betterWeeks', value: betterWeeks, previous: null, change: null, good: null });
+  if (betterWeeks !== null) rows.push({ metric: 'betterWeeks', value: betterWeeks, previous: null, change: null, good: null });
   return rows;
 }
 
-function summaryLine(current: PeriodStats, previous: PeriodStats | null, trend: Trend): WeekLine {
+export function periodSummaryLine(current: PeriodStats, previous: PeriodStats | null, trend: Trend): WeekLine {
   if (current.average === null) return line('summary.empty', { days: current.recorded });
   const params = { average: current.average, days: current.recorded };
   if (trend === 'first' || previous === null || previous.average === null) return line('summary.first', params);
@@ -272,7 +311,7 @@ function summaryLine(current: PeriodStats, previous: PeriodStats | null, trend: 
   });
 }
 
-function praiseLines(
+export function periodPraiseLines(
   current: PeriodStats,
   previous: PeriodStats | null,
   trend: Trend,
@@ -346,7 +385,11 @@ function dominantPart(misses: PeriodStats['misses']): { part: DayPart; count: nu
   return null;
 }
 
-function noticedLines(current: PeriodStats, followUp: WeekLine | null): WeekLine[] {
+export function periodNoticedLines(
+  current: PeriodStats,
+  followUp: WeekLine | null,
+  thresholds: PeriodThresholds = WEEK_THRESHOLDS,
+): WeekLine[] {
   const noticed: WeekLine[] = [];
   if (followUp !== null) noticed.push(followUp);
   if (current.best && current.worst && current.recorded >= 3 && current.best.score - current.worst.score >= 15) {
@@ -364,7 +407,7 @@ function noticedLines(current: PeriodStats, followUp: WeekLine | null): WeekLine
   const repeated = current.repeatedMisses[0];
   if (repeated) noticed.push(line('noticed.repeated', { title: repeated.title, count: repeated.count }));
   const rule = current.rules.byRule[0];
-  if (rule && rule.broken >= 2) {
+  if (rule && rule.broken >= thresholds.ruleNoticed) {
     const trigger = rule.triggers[0];
     noticed.push(
       trigger !== undefined
@@ -377,7 +420,7 @@ function noticedLines(current: PeriodStats, followUp: WeekLine | null): WeekLine
     noticed.push(line('noticed.shortSleep', { short: sleepEffect.shortAverage, rest: sleepEffect.restAverage }));
   }
   if (current.gaveUpDays > 0) noticed.push(line('noticed.gaveUp', { count: current.gaveUpDays }));
-  if (current.plan.moved >= 3) noticed.push(line('noticed.moved', { count: current.plan.moved }));
+  if (current.plan.moved >= thresholds.movedNoticed) noticed.push(line('noticed.moved', { count: current.plan.moved }));
   for (const comment of current.comments.slice(0, 2)) {
     noticed.push(line('noticed.comment', { commentDate: comment.date, title: comment.title, comment: comment.comment }));
   }
@@ -386,12 +429,18 @@ function noticedLines(current: PeriodStats, followUp: WeekLine | null): WeekLine
 }
 
 const lowPlan = (stats: PeriodStats) => stats.plan.total >= 5 && stats.plan.rate !== null && stats.plan.rate < 0.5;
-const shortSleep = (stats: PeriodStats) =>
-  stats.sleep !== null && (stats.sleep.shortNights >= 3 || stats.sleep.averageMinutes < SHORT_SLEEP_MINUTES);
+const shortSleep = (stats: PeriodStats, thresholds: PeriodThresholds) =>
+  stats.sleep !== null &&
+  (stats.sleep.shortNights >= thresholds.shortNights || stats.sleep.averageMinutes < SHORT_SLEEP_MINUTES);
 
-function problemLines(current: PeriodStats, previous: PeriodStats | null, trend: Trend): WeekLine[] {
+export function periodProblemLines(
+  current: PeriodStats,
+  previous: PeriodStats | null,
+  trend: Trend,
+  thresholds: PeriodThresholds = WEEK_THRESHOLDS,
+): WeekLine[] {
   const problems: WeekLine[] = [];
-  if (current.recorded < MIN_WEEK_DIAGNOSIS_DAYS) {
+  if (current.recorded < thresholds.minDays) {
     problems.push(line('problems.fewDays', { days: current.recorded, length: current.length }));
   }
   if (lowPlan(current) && current.plan.rate !== null) {
@@ -400,10 +449,11 @@ function problemLines(current: PeriodStats, previous: PeriodStats | null, trend:
     );
   }
   for (const rule of current.rules.byRule) {
-    if (rule.weight >= 3 && rule.broken >= 2) problems.push(line('problems.heavyRule', { rule: rule.title, count: rule.broken }));
-    else if (rule.broken >= 3) problems.push(line('problems.rule', { rule: rule.title, count: rule.broken }));
+    if (rule.weight >= 3 && rule.broken >= thresholds.heavyRuleProblem) {
+      problems.push(line('problems.heavyRule', { rule: rule.title, count: rule.broken }));
+    } else if (rule.broken >= thresholds.ruleProblem) problems.push(line('problems.rule', { rule: rule.title, count: rule.broken }));
   }
-  if (shortSleep(current) && current.sleep) {
+  if (shortSleep(current, thresholds) && current.sleep) {
     problems.push(
       line('problems.shortSleep', { nights: current.sleep.shortNights, hours: hours(current.sleep.averageMinutes) }),
     );
@@ -416,12 +466,12 @@ function problemLines(current: PeriodStats, previous: PeriodStats | null, trend:
 }
 
 /** Kandidati za promjenu tjedna, najvažniji prvi; uvijek završava sa „zadrži ritam“. */
-export function weekIdeaCandidates(current: PeriodStats): WeekLine[] {
+export function weekIdeaCandidates(current: PeriodStats, thresholds: PeriodThresholds = WEEK_THRESHOLDS): WeekLine[] {
   const candidates: WeekLine[] = [];
   // Bez podataka nijedan drugi savjet nije pouzdan.
-  if (current.recorded < MIN_WEEK_DIAGNOSIS_DAYS) candidates.push(line('ideas.fillCheckin', { days: current.recorded }));
+  if (current.recorded < thresholds.minDays) candidates.push(line('ideas.fillCheckin', { days: current.recorded }));
   const rule = current.rules.byRule[0];
-  if (rule && rule.broken >= 2) {
+  if (rule && rule.broken >= thresholds.ruleNoticed) {
     const trigger = rule.triggers[0];
     candidates.push(
       trigger !== undefined
@@ -439,11 +489,11 @@ export function weekIdeaCandidates(current: PeriodStats): WeekLine[] {
       candidates.push(line('ideas.smallerPlan', { count: Math.max(1, perDay + 1) }));
     }
   }
-  if (shortSleep(current)) candidates.push(line('ideas.bedEarlier'));
+  if (shortSleep(current, thresholds)) candidates.push(line('ideas.bedEarlier'));
   const repeated = current.repeatedMisses[0];
-  if (repeated && repeated.count >= 3) candidates.push(line('ideas.repeatedBlock', { title: repeated.title, count: repeated.count }));
+  if (repeated && repeated.count >= thresholds.repeatedIdea) candidates.push(line('ideas.repeatedBlock', { title: repeated.title, count: repeated.count }));
   if (part?.part === 'evening') candidates.push(line('ideas.eveningLighter'));
-  if (current.plan.moved >= 4) candidates.push(line('ideas.fewerMoves', { count: current.plan.moved }));
+  if (current.plan.moved >= thresholds.movedIdea) candidates.push(line('ideas.fewerMoves', { count: current.plan.moved }));
   candidates.push(line('ideas.keepRhythm'));
   const seen = new Set<string>();
   return candidates.filter((candidate) => (seen.has(candidate.key) ? false : (seen.add(candidate.key), true)));
@@ -517,11 +567,11 @@ export function buildWeekDiagnosis(
     start: current.start,
     end: current.end,
     trend,
-    summary: summaryLine(current, usablePrevious, trend),
-    progress: progressRows(current, usablePrevious, trend, betterWeeks),
-    praise: praiseLines(current, usablePrevious, trend, betterWeeks, previousBest),
-    noticed: noticedLines(current, followUp),
-    problems: problemLines(current, usablePrevious, trend),
+    summary: periodSummaryLine(current, usablePrevious, trend),
+    progress: periodProgressRows(current, usablePrevious, trend, betterWeeks),
+    praise: periodPraiseLines(current, usablePrevious, trend, betterWeeks, previousBest),
+    noticed: periodNoticedLines(current, followUp),
+    problems: periodProblemLines(current, usablePrevious, trend),
     ideas: [idea],
     suggestion,
     carried: stay,
