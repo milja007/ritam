@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
+- **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
+- **81 Tema boja:** **sinkronizirati s računom** — stupac za temu u `settings` + migracija. Borna odobrava ovu remote migraciju (samo taj stupac); primijeniti tek kad migracija i `npm run test:supabase` prođu lokalno.
+- **82 Tjedna dijagnoza:** **oboje** — nedjeljom se tjedni dio pokaže odmah ispod dnevne dijagnoze nakon večernjeg upita, **i** obavijest kad je tjedna dijagnoza spremna. Kartica na tabu Tjedan ostaje.
+- **83 Mjesečna dijagnoza:** **u redu, smjer** — najviše 2 ideje kao smjer, bez prihvaćanja; nove promjene i dalje jedna po jedna kroz tjednu.
+
 ## 2026-11-14 · Sesije 12:43 i 15:43 — mjesečna dijagnoza (korak 37, PR #22)
 - **Pragovi po razdoblju**: graditelji redaka tjedne dijagnoze primaju `PeriodThresholds` (tjedan isti kao prije).
 - **Logika** (`month-diagnosis.ts`, `local-month-v1`): trend naspram prošlog mjeseca, rekord (raniji mjeseci s ≥ 10 zaključenih dana), najslabiji/najjači dan u tjednu, prva naspram druge polovice, pregled odgovora na tjedne prijedloge tog mjeseca. **Najviše dvije ideje kao smjer**, bez „Probat ću“ — nove promjene i dalje po jedna kroz tjednu (pitanje 83).
@@ -31,10 +37,5 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.
 77. Deploy Edge Functions (20–22): `supabase secrets set ANTHROPIC_API_KEY`, pa `supabase functions deploy parse-input` i `plan-day`. Preporuka: tek nakon testova i Codexova pregleda PR-a #16.
 78. Bedževi (34): popis i pragovi nisu u konceptu, odabrani su ovdje (gore). „7 dana bez prekršaja“ se može osvojiti samo ako su zabrane uključene u područja rezultata. Dodati/maknuti koji? Promjena je mala.
-79. Orb-plamen (33): pravila nisu u konceptu, odabrana su ovdje (gore). Je li u redu da sjaj prati zadnjih 7 dana, a iskre niz (3 / 7 / 30)? Želiš li Skia verziju (pravi plamen) — treba `npx expo install @shopify/react-native-skia` na Macu.
 80. Otključavanja (32): koncept navodi vrste (tema, okvir avatara, animacija, naslov), ne popis. Odabrano: 5 tema i 6 naslova na razinama 1–15 (gore). Je li raspored u redu i želiš li okvire avatara i nove animacije „Gotovo“ kao nagrade?
-81. Tema boja (38) se pamti samo na uređaju. Treba li se sinkronizirati s računom (stupac u `settings` → remote migracija)?
-82. Tjedna dijagnoza (36) se otvara karticom na tabu Tjedan (nedjeljom nakon večernjeg upita i za svaki prošli tjedan). Koncept kaže „nedjelja → dan + tjedan“: želiš li da se nedjeljom tjedni dio pokaže i odmah ispod dnevne dijagnoze, i treba li za nju obavijest?
-83. Mjesečna dijagnoza (37) daje najviše dvije ideje kao smjer za idući mjesec, bez „Probat ću“ — nove promjene i dalje nudi samo tjedna dijagnoza (jedna tjedno). Je li to u redu, ili mjesec treba sam nuditi do 2 promjene?
-83. Mjesečna dijagnoza (37) daje najviše dvije ideje kao **smjer**, bez „Probat ću“, da ne zaobiđe pravilo „1 nova promjena tjedno“ (nove i dalje dolaze kroz tjednu). Želiš li da se mjesečne ideje mogu i prihvatiti (tada bi brojile u „2 mjesečno“)?
 - Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.
