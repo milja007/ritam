@@ -2,6 +2,13 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 15:43 — plan: 37 „zadnjih 7 dana“ + 23 provjera faze 1, grana `wip/korak-37-7-dana-23`
+1. Core: `showsRollingWeek(date)` = zadnji dan mjeseca koji nije nedjelja (koncept, Dijagnoze) + testovi.
+2. DB: `previewRollingWeek(db, user, end, today)` — tjedna dijagnoza za `end−6..end` naspram 7 dana prije; **samo čita** (ne piše `reports`, ne dira tjedne prijedloge ni niz boljih tjedana); spremna kao tjedna (upit za `end` ispunjen, ≥ 1 zaključen dan). Testovi.
+3. UI: na kraju večernjeg upita i u `DiagnosisModal` takav dan pokazuje „Zadnjih 7 dana“ ispred mjesečne; bez prijedloga za prihvaćanje (jedna promjena tjedno ostaje nedjeljom) — kratka napomena. HR/EN, čitač.
+4. Korak 23: README (pokretanje, testovi, kontrole), pregled TODO-ova, `expo-doctor` (ako se sruši na `@expo/env` → problem alata).
+5. Usput: PR opisi i objave više ne pišu „FIXES: <URL #1>“ u tijelu PR-a — GitHub je time zatvorio #1 (PR #26); #1 ponovno otvoren.
+
 ## 2026-11-17 · Sesija 12:43 — P2 za Edge Functions (PR #16), grana `fix/edge-p2`
 - `supabase/functions/_shared/plan-logic.ts` (čisto, bez Denoa; Jest `src/core/schedule/plan-logic.test.ts`): validacija `plan-day` (svaki prioritet/prozor, 99:99, `[null]` → 400) i `parse-input` (`null` → 400); fallback: fiksni blokovi rezerviraju vrijeme (`kind: 'fixed'`), predug zadatak ne troši prozore; model: blok izvan prozora, preklapanje, pomaknut fiksni → lokalni raspored.
 - `llm-provider`: upis u `llm_calls` kroz `EdgeRuntime.waitUntil` (inače `await`), greška inserta se logira; model iz `LLM_MODEL` (zadano i dalje `claude-sonnet-4-5`, povlači se 30. 11. — pitanje 77).
