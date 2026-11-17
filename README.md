@@ -1,6 +1,47 @@
-# Welcome to your Expo app 👋
+# Ritam
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Osobni productivity app (React Native / **Expo SDK 58**, Expo Router, TypeScript strict, HR + EN). Dan se planira ujutro, zaključuje večernjim upitom i „izgori u žar“; tjedan, mjesec i godina dobivaju lokalne dijagnoze. Podaci su lokalno u SQLiteu (Drizzle); prijava i sinkronizacija preko Supabasea su iza feature flaga.
+
+- Koncept: [`docs/CONCEPT.md`](docs/CONCEPT.md) · plan: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) · stanje: [`docs/PROGRESS.md`](docs/PROGRESS.md) · pravila za AI sesije: [`CLAUDE.md`](CLAUDE.md), [`AGENTS.md`](AGENTS.md)
+
+## Pokretanje
+
+```bash
+npm ci
+cp .env.example .env   # samo javne vrijednosti (EXPO_PUBLIC_*); ključ se upisuje lokalno
+npx expo start --dev-client
+```
+
+Ritam koristi nativne pakete (SQLite, obavijesti), pa treba **development build** (ne Expo Go) — vidi „Ritam na iPhoneu“. Android: `npx expo run:android`. Projekt je CNG: `ios/` i `android/` se generiraju i nisu u gitu. Paketi se dodaju samo s `npx expo install <paket>`.
+
+| Varijabla | Značenje |
+| --- | --- |
+| `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY` | Supabase projekt (javni ključ) — za prijavu i sync |
+| `EXPO_PUBLIC_FEATURE_AUTH` | `1` uključuje prijavu e-mailom i sync; zadano `0` (app radi potpuno lokalno) |
+
+LLM ključevi (`ANTHROPIC_API_KEY`, `LLM_MODEL`) nikad nisu u repou — samo u Supabase → Edge Functions → Secrets.
+
+## Testovi i kontrole
+
+```bash
+npx tsc --noEmit                 # TypeScript
+npx expo lint                    # ESLint
+npm test -- --runInBand          # Jest (core logika, SQLite repo, i18n)
+npm run test:supabase            # migracije + RLS na privremenom Postgresu (bez Dockera)
+npx expo install --check         # usklađenost paketa sa SDK-om
+npx expo export --platform ios   # provjera bundla
+```
+
+Na Macu s Homebrewom: `env PG_BIN=/opt/homebrew/opt/postgresql@16/bin npm run test:supabase`. Isto (TypeScript · lint · Jest i Supabase migracije · RLS) vrti GitHub Actions na svakom PR-u (`.github/workflows/ci.yml`). `npx expo-doctor` treba pristup Expo API-ju; bez mreže dvije provjere padaju zbog mreže, ne projekta.
+
+## Struktura
+
+- `src/app/` — rute (Expo Router); samo ekrani i layouti
+- `src/core/` — čista logika bez Reacta (raspored, rezultat dana, XP, niz, dijagnoze, obavijesti, teme) s testovima
+- `src/db/` — SQLite shema, Drizzle migracije i repozitoriji
+- `src/features/` — ekrani i hookovi po područjima; `src/ui/` — zajedničke komponente
+- `src/i18n/` — `hr.json`, `en.json`
+- `supabase/` — migracije, RLS testovi, Edge Functions (`parse-input`, `plan-day`, još nisu deployane)
 
 ## Ritam na iPhoneu (development build, besplatni Apple ID)
 
@@ -18,46 +59,3 @@ Prvi put na iPhoneu: **Postavke → Općenito → VPN i upravljanje uređajem �
 Svakodnevno: `npx expo start --dev-client` na Macu, pa otvori Ritam na iPhoneu (promjene JS koda stižu bez novog builda; novi build samo kad se mijenjaju nativni paketi ili `app.json`).
 
 Besplatni profil vrijedi **7 dana** — nakon toga ponovi `npx expo run:ios --device`. EAS build / TestFlight (`eas.json`, profil `development`) tek uz plaćeni Apple Developer Program: `npx eas-cli login`, `eas device:create`, `eas build --profile development --platform ios`.
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

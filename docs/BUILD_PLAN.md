@@ -44,7 +44,8 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] **22. plan-day** — Edge Function: raspored sutrašnjeg dana + 0–3 pitanja, validacija u appu, fallback pravila. Plan se slaže zajedno s korisnikom (što mora, kada, mogućnosti, što ne može i zašto) i **korisnik ga odobrava** prije nego postane plan za sutra (vidljiv već iste noći).
   - *Koraci 20–22: kod je spojen (PR #16, 2026-11-13); P2 Codexa riješeni i logika pokrivena testovima (2026-11-17, `_shared/plan-logic.ts`). Ostaju `[ ]` dok funkcije nisu deployane (Borna: tajna, model, deploy) i `parse-input` spojen na korak 13.*
 - [x] ~~**22b. Danas kao raspored sati (odluka 2026-11-10)**~~ *(zamijenjeno korakom 17c)* — dashboard dana kao školski raspored dok vrijeme ide: trenutni blok otvoren/istaknut, sljedeće ispod, status "trenutno: …" sa strane.
-- [ ] **23. Provjera faze 1** — expo-doctor, pregled TODO-ova, README s uputama za pokretanje i testiranje.
+- [~] **23. Provjera faze 1** — expo-doctor, pregled TODO-ova, README s uputama za pokretanje i testiranje.
+  - *2026-11-17 (PR #28):* README za Ritam (pokretanje, env, kontrole, struktura); nema TODO/FIXME u `src/`, `supabase/`, `scripts/`; `expo-doctor` 18/20 (dvije provjere traže Expo API, cloud proxy ga blokira — ponoviti na Macu). Ostaje `[~]` dok 20–22 nisu deployani i provjereni.
 
 ## Faza 2 — Pametni planer
 - [ ] 24. Google Calendar OAuth + uvoz fiksnih obaveza
