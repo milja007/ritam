@@ -54,7 +54,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [ ] 26. Tjedni zadaci i ciljevi (tjedan/mjesec/godina) u plan-day
 - [x] 27. "Nešto je iskrslo" flow — *2026-11-17 (PR #29):* gumb na Danu → što + koliko (15 min – do kraja dana) → za svaku pogođenu planiranu aktivnost kasnije danas (prvi slobodan termin iste duljine) / sutra / drugi dan / preskoči; razlog kao bilješka; niz se ne dira; +5 XP najviše jednom dnevno. Lokalno, bez LLM-a; akcija „Iskrslo“ na obavijesti otvara isti flow (PR #33).
 - [ ] 28. Zabrane unutar godišnjeg / mjesečnog / tjednog plana (ne zaseban popis) + streakovi po zabrani
-- [ ] 29. San: wind-down, prilagodba rasporeda lošem snu
+- [~] 29. San: wind-down, prilagodba rasporeda lošem snu — *2026-11-17 (PR #34):* `src/core/sleep` (ocjena noći: kratko = ≥ 1 h manje od cilja, jako kratko ≥ 2 h; postupni krevet po 15 min iz prosjeka zadnjih noći); jutarnji brief nakon kratkog sna nudi „Lakše jutro“ → „Nešto je iskrslo“ s razlogom „Loš san“ (korisnik bira, ništa se ne mijenja samo); kartica „San“ na Profilu (7 noći, cilj, večerašnji krevet). Ostaje: wind-down obavijest po koraku kreveta umjesto cilja (pitanje 87).
 - [ ] 30. Glasovni unos (on-device speech-to-text, HR/EN) — i za plan dana: "danas moram ovo i ono, ovo ujutro, traje sat…" → parse-input → blokovi
 - [ ] 31. LLM dnevna dijagnoza (`write-report`) — struktura i ton iz CONCEPT.md (sekcija Dijagnoze), promptovi verzionirani u repou s testnim primjerima podataka, prethodne dijagnoze u kontekstu, gumbi Pomoglo / Nije pomoglo + komentar
 - [ ] 31b. Opcionalni trackeri: kalorije i novac — postavke (isključeni po defaultu), unos, večernja provjera, ulaze u dnevni rezultat i dijagnozu; upozorenje za neuobičajeno nizak cilj kalorija

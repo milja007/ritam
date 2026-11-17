@@ -2,12 +2,13 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 21:43 — korak 29: san (plan)
+## 2026-11-17 · Sesija 21:43 — korak 29: san, PR #34
 1. Core `src/core/sleep/`: ocjena noći prema cilju (`assessNight`: odmoran / kratko < cilj − 1 h / jako kratko < cilj − 2 h), 7 noći za karticu, korak kreveta: ako je prosječni krevet zadnjih noći (≥ 3) kasniji od cilja > 15 min, večerašnji cilj je 15 min ranije od prosjeka (zaokruženo na 15), nikad ranije od cilja — „postupni pomaci po 15 min“ iz koncepta. Testovi.
 2. DB `listMorningCheckins(from, to)` — samo čitanje.
 3. Jutarnji brief: nakon prijave kratkog sna kartica „Lakše jutro“ (koliko manje od cilja) s gumbom koji otvara „Nešto je iskrslo“ s razlogom „Loš san“ i 1 h — korisnik bira što pomaknuti (raspored se prilagođava, ništa se ne mijenja samo).
 4. Profil: kartica „San“ — 7 noći kao stupci prema ciljanoj liniji (žar boje, ugašen bez prijave), prosjek, prosječni krevet, večerašnji korak kreveta; pristupačnost (svaka noć label), smanji kretanje.
 5. Wind-down obavijest ostaje na cilju (obavijesti se ne diraju u ovom PR-u). Pragovi nisu u konceptu → pitanje 87.
+- Gotovo 1–4; korak `[~]` dok wind-down ne prati korak kreveta.
 
 ## 2026-11-17 · Sesija 18:43 (nastavak) — 27: Iskrslo na obavijesti, PR #33
 - Gumb „Iskrslo“ na podsjetniku bloka sada otvara „Nešto je iskrslo“ na Danu (od trenutka dodira), ne uređivač bloka; blok koji nije danas → samo Dan.
@@ -36,6 +37,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
 
 ## Pitanja za Bornu
+87. **San (29)** — pragovi nisu u konceptu, odabrano: kratka noć = barem 1 h manje od cilja, jako kratka = 2 h; „Lakše jutro“ samo predlaže (otvara „Nešto je iskrslo“ s razlogom „Loš san“, 1 h), ne mijenja plan samo. Krevet: ako zadnjih noći (≥ 3) kasniš > 15 min, večerašnji cilj je ~15 min ranije od navike, korak po korak do cilja. Želiš li da i **wind-down obavijest** prati taj korak (umjesto ciljanog kreveta)?
 85. **Žeravica (freeze tokeni, korak 34)** — pravila nisu u konceptu, odabrano: 1 žeravica za svakih 7 dana zaredom, najviše 2, troši se automatski za propušten dan (dan ne povećava niz); ako rupa ima više dana nego žeravica, niz pukne, a žeravice ostaju. Vrijedi za glavni niz svugdje (Profil, Dan, bedževi, orb, dijagnoze). Naziv u UI-ju „Žeravica“ / „Banked ember“. U redu? Promjena je jedna konstanta.
 84. **Remote migracije `color_theme` (odluka 81) i `quests` (korak 34)** — Claudeov alat ne smije primijeniti. Na Macu: `npx supabase db push` (primijeni `20261117010000_color_theme.sql` i `20261117180000_quests.sql`). Dok nisu primijenjene, sync ne smije biti uključen.
 86. **Epski questovi (34)** — pravila nisu u konceptu, odabrano: quest = naslov, zašto, okvirni rok (neobavezan), do 12 etapa; najviše 3 u tijeku; XP 15 po etapi i 100 za ostvaren quest (bez kazni; poništena etapa vraća XP); arhiva čuva XP. U redu?
