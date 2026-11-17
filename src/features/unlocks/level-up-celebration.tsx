@@ -34,7 +34,8 @@ import {
 import { Button } from '@/ui/button';
 import { FlameSwatch } from '@/ui/flame-swatch';
 import { Text } from '@/ui/text';
-import { setColorTheme, useAppTheme } from '@/ui/theme';
+import { chooseColorTheme } from '@/features/settings';
+import { useAppTheme } from '@/ui/theme';
 
 import { unlockRow } from './unlock-text';
 
@@ -154,7 +155,7 @@ export function LevelUpCelebration({ levelUp, level, onClose }: Props) {
   const sparkColors = [flame.flame300, flame.ember200, flame.flame400] as const;
 
   function tryTheme(theme: ColorThemeId) {
-    setColorTheme(theme);
+    chooseColorTheme(theme);
     onClose();
   }
 
