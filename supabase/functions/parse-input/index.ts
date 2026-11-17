@@ -20,6 +20,7 @@ import {
   withLogging,
   type Message,
 } from '../_shared/llm-provider.ts';
+import { isClock, parseParseInputBody } from '../_shared/plan-logic.ts';
 
 // Supabase Edge Functions rute zahtjeva do Deno.serve() od Deno 2.
 Deno.serve(async (req: Request) => {
@@ -41,17 +42,15 @@ Deno.serve(async (req: Request) => {
   if (authError || !user) return errorResponse('Nevaljan token', 401);
 
   // Tijelo zahtjeva
-  let body: { text?: unknown; locale?: unknown };
+  let raw: unknown;
   try {
-    body = await req.json();
+    raw = await req.json();
   } catch {
     return errorResponse('Neispravan JSON', 400);
   }
-
-  const text = typeof body.text === 'string' ? body.text.trim() : '';
-  const locale = body.locale === 'hr' || body.locale === 'en' ? body.locale : 'hr';
-  if (text.length === 0) return errorResponse('Tekst je prazan', 400);
-  if (text.length > 2000) return errorResponse('Tekst je predugačak (max 2000 znakova)', 400);
+  const input = parseParseInputBody(raw);
+  if ('error' in input) return errorResponse(input.error, 400);
+  const { text, locale } = input;
 
   // LLM poziv
   const provider = withLogging(createClaudeProvider(), user.id, 'parse-input');
@@ -63,14 +62,14 @@ Deno.serve(async (req: Request) => {
     { role: 'user', content: `Tekst: ${text}` },
   ];
 
-  let raw: string;
+  let content: string;
   try {
     const result = await provider.complete(messages, {
       system: systemPrompt,
       maxTokens: 512,
       temperature: 0.1, // deterministično za parsiranje
     });
-    raw = result.content;
+    content = result.content;
   } catch (err) {
     console.error('LLM greška u parse-input:', err);
     return errorResponse('LLM poziv nije uspio', 502);
@@ -80,10 +79,10 @@ Deno.serve(async (req: Request) => {
   let blocks: unknown;
   try {
     // LLM-u dajemo uputu da vraća samo JSON, ali ga može omotati u ```json...```
-    const jsonText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const jsonText = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
     blocks = JSON.parse(jsonText);
   } catch {
-    console.error('LLM nije vratio valjan JSON:', raw);
+    console.error('LLM nije vratio valjan JSON');
     // Fallback: prazan popis — bolje nego greška.
     blocks = [];
   }
@@ -164,5 +163,5 @@ function normalizeBlock(raw: unknown): ParsedBlock | null {
 }
 
 function isHHMM(value: unknown): boolean {
-  return typeof value === 'string' && /^\d{2}:\d{2}$/.test(value);
+  return isClock(value);
 }
