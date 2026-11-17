@@ -13,11 +13,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - **37b**: `local-year-v1` + `generateYearReport` (prije 31. 12. ne čita bazu) + kartica na tabu Godina (u siječnju i prošla godina) + modal s trakom 12 žarova (pale se redom, poštuje „smanji kretanje“) + 31. 12. ispod dnevne. HR/EN.
 - Nije rađeno: koncept kaže da je zadnjeg dana mjeseca (ako nije nedjelja) tjedni dio „zadnjih 7 dana“ — nije napravljeno (tjedna je vezana uz pon–ned).
 
-## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
-- **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
-- **81 Tema boja:** **sinkronizirati s računom** — stupac za temu u `settings` + migracija. Borna odobrava ovu remote migraciju (samo taj stupac); primijeniti tek kad migracija i `npm run test:supabase` prođu lokalno.
-- **82 Tjedna dijagnoza:** **oboje** — nedjeljom se tjedni dio pokaže odmah ispod dnevne dijagnoze nakon večernjeg upita, **i** obavijest kad je tjedna dijagnoza spremna. Kartica na tabu Tjedan ostaje.
-- **83 Mjesečna dijagnoza:** **u redu, smjer** — najviše 2 ideje kao smjer, bez prihvaćanja; nove promjene i dalje jedna po jedna kroz tjednu.
+## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 
 ## 2026-11-13 · Smjer „Žar“ (odluka Borna 2026-11-12)
 - „Dan izgori u žar“ ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu
