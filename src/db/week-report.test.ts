@@ -15,6 +15,7 @@ import {
   createRule,
   generateWeekReport,
   getReport,
+  previewRollingWeek,
   saveEveningCheckin,
   saveSettings,
   type RuleInput,
@@ -223,5 +224,32 @@ describe('reports repo — tjedna dijagnoza', () => {
     expect(generateWeekReport(db, 'drugi', W2, W3, deps)).toBeNull();
     expect(await getReport(db, 'drugi', 'week', W2)).toBeNull();
     expect(answerReportSuggestion(db, 'drugi', 'week', W2, true, deps)).toBe(false);
+  });
+});
+
+describe('reports repo — zadnjih 7 dana (zadnji dan mjeseca koji nije nedjelja)', () => {
+  const END = '2026-11-30'; // ponedjeljak
+
+  it('dostupno nakon upita zadnjeg dana; usporedba sa 7 dana prije; ništa ne sprema', async () => {
+    const { db, closeDay } = await setup();
+    await closeDay('2026-11-18', 1, 4);
+    await closeDay('2026-11-19', 1, 4);
+    await closeDay('2026-11-24', 4, 4);
+    await closeDay('2026-11-26', 4, 4);
+    expect(previewRollingWeek(db, USER, END, END)).toBeNull(); // upit za 30. 11. nije ispunjen
+    await closeDay(END, 4, 4);
+    const diagnosis = previewRollingWeek(db, USER, END, END);
+    expect(diagnosis).toMatchObject({ start: '2026-11-24', end: END, trend: 'better', suggestion: null, ideas: [] });
+    expect(diagnosis?.progress.find((row) => row.metric === 'days')?.value).toBe(3);
+    expect(await db.select().from(reports).all()).toHaveLength(0);
+    // Dan prije kraja razdoblja (upit još nije za `end`) → ništa.
+    expect(previewRollingWeek(db, USER, END, '2026-11-29')).toBeNull();
+    expect(previewRollingWeek(db, USER, 'nije', END)).toBeNull();
+  });
+
+  it('bez dana u prethodnih 7 → prvi pregled bez usporedbe', async () => {
+    const { db, closeDay } = await setup();
+    await closeDay(END, 2, 4);
+    expect(previewRollingWeek(db, USER, END, '2026-12-01')?.trend).toBe('first');
   });
 });

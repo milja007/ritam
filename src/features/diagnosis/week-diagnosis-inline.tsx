@@ -1,11 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import { isWeekLastDay } from '@/core/diagnosis';
+import { isWeekLastDay, showsRollingWeek, type WeekDiagnosis } from '@/core/diagnosis';
 import { weekStart } from '@/core/progress';
 import { addDays } from '@/core/time/local-date';
 import { spacing } from '@/core/theme';
+import { LOCAL_USER_ID } from '@/core/user/local-user';
+import { getDb } from '@/db/open';
+import { previewRollingWeek } from '@/db/repos';
 import { weekRange } from '@/features/ember/format';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -15,7 +18,7 @@ import { WeekDiagnosisView } from './week-diagnosis-view';
 import { useWeekReport } from './week-report';
 
 type WeekDiagnosisInlineProps = {
-  /** Dan čija se dijagnoza gleda; tjedni dio se pokaže samo kad je to nedjelja. */
+  /** Dan čija se dijagnoza gleda; tjedni dio nedjeljom, a zadnji dan mjeseca „zadnjih 7 dana“. */
   date: string;
 };
 
@@ -25,9 +28,64 @@ type WeekDiagnosisInlineProps = {
  * ne stiže obavijest). Drugi dani, tjedan bez dijagnoze ili greška → ništa.
  */
 export function WeekDiagnosisInline({ date }: WeekDiagnosisInlineProps) {
+  if (showsRollingWeek(date)) return <RollingWeekSection date={date} />;
   const start = weekStart(date);
   if (start === null || !isWeekLastDay(date)) return null;
   return <WeekSection start={start} date={date} />;
+}
+
+/**
+ * Koncept (Dijagnoze): zadnji dan mjeseca koji nije nedjelja → tjedni dio = zadnjih 7 dana. Samo
+ * pregled (ne sprema se, nema prijedloga ni „viđeno“); računa se iz lokalnih podataka pri prikazu.
+ */
+function RollingWeekSection({ date }: { date: string }) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useAppTheme();
+  const [loaded, setLoaded] = useState<{ date: string; diagnosis: WeekDiagnosis | null } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    // Čitanje baze odgodi iza crtanja.
+    const handle = setTimeout(() => {
+      let diagnosis: WeekDiagnosis | null = null;
+      try {
+        diagnosis = previewRollingWeek(getDb(), LOCAL_USER_ID, date, date);
+      } catch (error: unknown) {
+        console.error('Building last-7-days diagnosis failed', error);
+      }
+      if (active) setLoaded({ date, diagnosis });
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(handle);
+    };
+  }, [date]);
+
+  const diagnosis = loaded !== null && loaded.date === date ? loaded.diagnosis : null;
+  if (diagnosis === null) return null;
+  const range = weekRange(diagnosis.start, diagnosis.end, i18n.language);
+
+  return (
+    <View style={styles.root}>
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <View style={styles.head}>
+        <Ember size={14} level="bright" />
+        <Text variant="overline" tone="accent">
+          {t('diagnosis.week.rolling.overline')}
+        </Text>
+      </View>
+      <Text variant="title" accessibilityRole="header">
+        {t('diagnosis.week.rolling.title')}
+      </Text>
+      <Text variant="caption" tone="textMuted">
+        {range}
+      </Text>
+      <WeekDiagnosisView diagnosis={diagnosis} accepted={null} onAnswer={() => false} />
+      <Text variant="caption" tone="textMuted">
+        {t('diagnosis.week.rolling.note')}
+      </Text>
+    </View>
+  );
 }
 
 function WeekSection({ start, date }: { start: string; date: string }) {

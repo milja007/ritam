@@ -4,4 +4,5 @@ export * from './day-stats';
 export * from './period-stats';
 export * from './week-diagnosis';
 export * from './month-diagnosis';
+export * from './rolling-week';
 export * from './year-diagnosis';
