@@ -12,11 +12,14 @@ import {
   upcomingTriggers,
   type BlockAction,
 } from '@/core/notifications';
+import { weekDiagnosisNoticeWeek } from '@/core/diagnosis';
+import { isEveningCheckinComplete } from '@/core/gamification';
+import { weekStart } from '@/core/progress';
 import { addDays, localDateOf } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { eveningReminderNeeds, isUnresolved, needsTodayPlan } from '@/core/schedule';
-import { getBlock, getReport, getSettings, listBlocksBetween, setBlockStatus } from '@/db/repos';
+import { getBlock, getReport, getSettings, listBlocksBetween, listEveningCheckins, setBlockStatus } from '@/db/repos';
 import i18n, { languageFor } from '@/i18n';
 
 import {
@@ -31,7 +34,7 @@ import {
 } from './expo-notifications';
 import { registerBackgroundActions } from './background-task';
 import { eveningReminderText } from './evening-text';
-import { morningBody } from './morning-text';
+import { morningText } from './morning-text';
 import {
   notifyBlocksChanged,
   requestEveningCheckin,
@@ -72,8 +75,10 @@ async function syncOnce(): Promise<void> {
   const horizon = await listBlocksBetween(db, LOCAL_USER_ID, today, last);
   const todayReport = await getReport(db, LOCAL_USER_ID, 'day', today);
 
-  // Jutarnja obavijest nosi pregled plana tog dana (mijenja se s blokovima).
+  // Jutarnja obavijest nosi pregled plana tog dana (mijenja se s blokovima), a ponedjeljkom i
+  // tjednu dijagnozu dok nije viđena (odluka 82).
   const texts = dailyTexts(t);
+  const weekReadyOn = await weekDiagnosisMornings(today, last);
   // Večernja (17d): za danas samo ako nešto fali, ležeran tekst prema tome; ostali dani opći tekst.
   const eveningText = (date: string) => {
     if (date !== today) return null;
@@ -90,7 +95,7 @@ async function syncOnce(): Promise<void> {
     settings,
     now,
     texts,
-    (date) => ({ title: texts.morning.title, body: morningBody(t, morningSummary(horizon, date)) }),
+    (date) => morningText(t, morningSummary(horizon, date), weekReadyOn.has(date)),
     eveningText,
   );
 
@@ -99,6 +104,35 @@ async function syncOnce(): Promise<void> {
   const blocks = reminderBlocks(settings, horizon);
   const dailyCount = upcomingTriggers(settings, now)?.length ?? 0;
   await syncBlockReminders(expoScheduler, blocks, now, blockReminderBudget(dailyCount), blockTexts(t));
+}
+
+/**
+ * Ponedjeljci u horizontu `[from, to]` čija jutarnja obavijest javlja da je tjedna dijagnoza
+ * prošlog tjedna spremna i nije viđena. Greška čitanja → prazan skup (obična jutarnja obavijest).
+ */
+async function weekDiagnosisMornings(from: string, to: string): Promise<Set<string>> {
+  const mondays: string[] = [];
+  for (let date: string | null = weekStart(from); date !== null && date <= to; date = addDays(date, 7)) {
+    if (date >= from) mondays.push(date);
+  }
+  if (mondays.length === 0) return new Set();
+  try {
+    const db = getDb();
+    const completed = (await listEveningCheckins(db, LOCAL_USER_ID))
+      .filter(isEveningCheckinComplete)
+      .map((checkin) => checkin.date);
+    const seen = new Set<string>();
+    for (const monday of mondays) {
+      const start = addDays(monday, -7);
+      if (start === null) continue;
+      const report = await getReport(db, LOCAL_USER_ID, 'week', start);
+      if (report?.seenAt != null) seen.add(start);
+    }
+    return new Set(mondays.filter((monday) => weekDiagnosisNoticeWeek(monday, completed, seen) !== null));
+  } catch (error: unknown) {
+    console.error('Loading week diagnosis state for notifications failed', error);
+    return new Set();
+  }
 }
 
 /**
