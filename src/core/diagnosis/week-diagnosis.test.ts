@@ -4,6 +4,8 @@ import {
   buildWeekDiagnosis,
   dayPartOf,
   isWeekDiagnosisReady,
+  isWeekLastDay,
+  weekDiagnosisNoticeWeek,
   parseWeekDiagnosis,
   periodStats,
   WEEK_IDEA_AREA,
@@ -408,5 +410,38 @@ describe('isWeekDiagnosisReady', () => {
   it('tjedan bez ijednog zaključenog dana nema dijagnozu', () => {
     expect(isWeekDiagnosisReady(END, '2026-11-20', ['2026-11-08', '2026-11-16'])).toBe(false);
     expect(isWeekDiagnosisReady('x', '2026-11-20', [])).toBe(false);
+  });
+});
+
+describe('weekDiagnosisNoticeWeek', () => {
+  const MONDAY = '2026-11-16';
+  const LAST_START = '2026-11-09';
+
+  it('ponedjeljkom javlja prošli tjedan koji ima zaključen dan i nije viđen', () => {
+    expect(weekDiagnosisNoticeWeek(MONDAY, ['2026-11-10'], new Set())).toBe(LAST_START);
+    expect(weekDiagnosisNoticeWeek(MONDAY, ['2026-11-15'], new Set(['2026-11-02']))).toBe(LAST_START);
+  });
+
+  it('viđena tjedna (npr. nedjeljom uz dnevnu) se ne javlja', () => {
+    expect(weekDiagnosisNoticeWeek(MONDAY, ['2026-11-10'], new Set([LAST_START]))).toBeNull();
+  });
+
+  it('tjedan bez zaključenog dana nema obavijest', () => {
+    expect(weekDiagnosisNoticeWeek(MONDAY, ['2026-11-08', '2026-11-16'], new Set())).toBeNull();
+  });
+
+  it('samo ponedjeljak; neispravan datum → null', () => {
+    expect(weekDiagnosisNoticeWeek('2026-11-17', ['2026-11-10'], new Set())).toBeNull();
+    expect(weekDiagnosisNoticeWeek('2026-11-15', ['2026-11-10'], new Set())).toBeNull();
+    expect(weekDiagnosisNoticeWeek('x', ['2026-11-10'], new Set())).toBeNull();
+  });
+});
+
+describe('isWeekLastDay', () => {
+  it('nedjelja je zadnji dan tjedna', () => {
+    expect(isWeekLastDay('2026-11-15')).toBe(true);
+    expect(isWeekLastDay('2026-11-16')).toBe(false);
+    expect(isWeekLastDay('2026-11-14')).toBe(false);
+    expect(isWeekLastDay('x')).toBe(false);
   });
 });

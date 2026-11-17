@@ -4,6 +4,7 @@ export { generateDayDiagnosis, useDayReport } from './day-report';
 export { DiagnosisModal } from './diagnosis-modal';
 export { DiagnosisReadyCard, useDiagnosisPickup } from './diagnosis-pickup';
 export { WeekDiagnosisCard } from './week-diagnosis-card';
+export { WeekDiagnosisInline } from './week-diagnosis-inline';
 export { WeekDiagnosisView, weekdayName, weekLineParams } from './week-diagnosis-view';
 export { useWeekReport, type WeekReportState } from './week-report';
 export { MonthDiagnosisCard } from './month-diagnosis-card';

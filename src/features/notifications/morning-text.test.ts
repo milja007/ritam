@@ -4,7 +4,7 @@ import { createInstance } from 'i18next';
 import en from '@/i18n/en.json';
 import hr from '@/i18n/hr.json';
 
-import { morningBody } from './morning-text';
+import { morningBody, morningText } from './morning-text';
 
 async function translator(lng: 'hr' | 'en') {
   const instance = createInstance();
@@ -37,5 +37,27 @@ describe('morningBody', () => {
     expect(morningBody(t, { blocks: 2, tasks: 1, first: { title: 'Work', start: '09:00' } })).toBe(
       'Today: 2 blocks, 1 of them a task. First: Work at 09:00.',
     );
+  });
+});
+
+describe('morningText', () => {
+  const summary = { blocks: 5, tasks: 0, first: { title: 'Posao', start: '09:00' } };
+
+  it('bez tjedne: običan naslov i pregled dana', async () => {
+    const t = await translator('hr');
+    expect(morningText(t, summary, false)).toEqual({
+      title: 'Dobro jutro',
+      body: 'Danas 5 blokova. Prvi: Posao u 09:00.',
+    });
+  });
+
+  it('tjedna spremna: naslov i uputa na tab Tjedan, pa pregled dana (HR/EN)', async () => {
+    const hrT = await translator('hr');
+    expect(morningText(hrT, summary, true)).toEqual({
+      title: 'Tjedna dijagnoza je spremna',
+      body: 'Pogledaj kako ti je prošao tjedan na tabu Tjedan. Danas 5 blokova. Prvi: Posao u 09:00.',
+    });
+    const enT = await translator('en');
+    expect(morningText(enT, { blocks: 0, tasks: 0, first: null }, true).title).toBe('Your week diagnosis is ready');
   });
 });

@@ -4,6 +4,7 @@ import type { WeekDiagnosis } from '@/core/diagnosis';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { answerReportSuggestion, generateWeekReport, markReportSeen } from '@/db/repos';
+import { syncNotificationsNow } from '@/features/notifications';
 
 type Loaded = {
   key: string;
@@ -83,6 +84,7 @@ export function useWeekReport(start: string, today: string, refresh: unknown): W
       console.error('Marking week diagnosis seen failed', error);
       return;
     }
+    void syncNotificationsNow(); // ponedjeljkom jutarnja obavijest više ne javlja tjednu
     setLoaded((current) => (current !== null && current.key === key ? { ...current, seen: true } : current));
   }, [key, start]);
 

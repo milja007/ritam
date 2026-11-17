@@ -10,7 +10,7 @@
  */
 import { z } from 'zod';
 
-import { scoreTrend } from '../progress';
+import { scoreTrend, weekStart } from '../progress';
 import { addDays } from '../time/local-date';
 import { SHORT_SLEEP_MINUTES, TRENDS, type Trend } from './day-diagnosis';
 import type { DayPart, PeriodStats } from './period-stats';
@@ -601,4 +601,28 @@ export function isWeekDiagnosisReady(end: string, today: string, completedDates:
   }
   if (!any) return false;
   return today > end || (today === end && lastDone);
+}
+
+/**
+ * Obavijest „tjedna dijagnoza je spremna“ (odluka 82): na jutro ponedjeljka `date` vrati početak
+ * prošlog tjedna ako je njegova dijagnoza spremna (barem jedan zaključen dan) i još nije viđena
+ * (`seenWeeks` = početci tjedana s viđenom dijagnozom). Drugi dani i neispravan datum → `null`.
+ * Viđena nedjeljom uz dnevnu dijagnozu, obavijest se ne šalje.
+ */
+export function weekDiagnosisNoticeWeek(
+  date: string,
+  completedDates: Iterable<string>,
+  seenWeeks: ReadonlySet<string>,
+): string | null {
+  if (weekStart(date) !== date) return null;
+  const start = addDays(date, -7);
+  const end = addDays(date, -1);
+  if (start === null || end === null || seenWeeks.has(start)) return null;
+  return isWeekDiagnosisReady(end, date, completedDates) ? start : null;
+}
+
+/** Je li `date` nedjelja — zadnji dan tjedna, kad se tjedna dijagnoza pokaže uz dnevnu. */
+export function isWeekLastDay(date: string): boolean {
+  const start = weekStart(date);
+  return start !== null && addDays(start, 6) === date;
 }

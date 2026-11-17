@@ -14,7 +14,7 @@ import {
 } from '@/core/checkin';
 import type { Rule, ScheduleBlock } from '@/core/domain';
 import { spacing } from '@/core/theme';
-import { DayDiagnosisView } from '@/features/diagnosis';
+import { DayDiagnosisView, WeekDiagnosisInline } from '@/features/diagnosis';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -108,6 +108,7 @@ export function EveningCheckinFlow({
                   {result.diagnosis ? (
                     <View style={styles.body}>
                       <DayDiagnosisView diagnosis={result.diagnosis} />
+                      <WeekDiagnosisInline date={date} />
                     </View>
                   ) : (
                     <Text tone="textMuted">{t('evening.done.body')}</Text>
