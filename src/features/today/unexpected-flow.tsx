@@ -32,6 +32,9 @@ type UnexpectedFlowProps = {
   /** Spremi; baca grešku ako spremanje ne uspije. */
   onApply: (input: Omit<UnexpectedInput, 'date'>) => UnexpectedResult;
   onClose: () => void;
+  /** Unaprijed popunjen razlog (npr. „Loš san“ iz jutarnjeg briefa, korak 29). */
+  initialWhat?: string;
+  initialDuration?: UnexpectedDuration;
 };
 
 /**
@@ -39,11 +42,19 @@ type UnexpectedFlowProps = {
  * (s točnim terminom) / sutra / drugi dan / preskoči. Bez osude: niz ostaje, a iskreno
  * preraspoređivanje donosi malo XP-a. Glasovni unos dolazi s korakom 30.
  */
-export function UnexpectedFlow({ date, nowMinutes, blocks, onApply, onClose }: UnexpectedFlowProps) {
+export function UnexpectedFlow({
+  date,
+  nowMinutes,
+  blocks,
+  onApply,
+  onClose,
+  initialWhat = '',
+  initialDuration = 60,
+}: UnexpectedFlowProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useAppTheme();
-  const [what, setWhat] = useState('');
-  const [duration, setDuration] = useState<UnexpectedDuration>(60);
+  const [what, setWhat] = useState(initialWhat);
+  const [duration, setDuration] = useState<UnexpectedDuration>(initialDuration);
   const [answers, setAnswers] = useState<Record<string, UnexpectedAnswer>>({});
   const [failed, setFailed] = useState(false);
   const [done, setDone] = useState<UnexpectedResult | null>(null);

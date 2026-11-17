@@ -106,6 +106,17 @@ export function TodayScreen() {
   const [giveUpOpen, setGiveUpOpen] = useState(false);
   // Nešto je iskrslo (27): minuta otvaranja je početak prozora i ne pomiče se dok je flow otvoren.
   const [unexpectedAt, setUnexpectedAt] = useState<number | null>(null);
+  // Lakše jutro (29): flow se otvara s razlogom „Loš san“.
+  const [unexpectedWhat, setUnexpectedWhat] = useState<string | undefined>(undefined);
+
+  function easeMorning() {
+    closeMorning();
+    const what = t('morning.ease.reason');
+    setTimeout(() => {
+      setUnexpectedWhat(what);
+      setUnexpectedAt(liveMinutes);
+    }, MODAL_SWAP_DELAY_MS);
+  }
 
   function closeEvening() {
     setEveningOpen(false);
@@ -430,6 +441,7 @@ export function TodayScreen() {
           onSave={morning.save}
           onClose={closeMorning}
           onAdjust={closeMorning}
+          onEaseMorning={easeMorning}
         />
       ) : null}
 
@@ -465,8 +477,10 @@ export function TodayScreen() {
           nowMinutes={unexpectedAt}
           blocks={day.blocks}
           onApply={day.unexpected}
+          initialWhat={unexpectedWhat}
           onClose={() => {
             setUnexpectedAt(null);
+            setUnexpectedWhat(undefined);
             consumeBlockRequest();
           }}
         />

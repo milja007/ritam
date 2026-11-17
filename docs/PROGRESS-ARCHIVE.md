@@ -4,6 +4,16 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-17 · Sesija 18:43 (nastavak) — 27: Iskrslo na obavijesti, PR #33
+- Gumb „Iskrslo“ na podsjetniku bloka sada otvara „Nešto je iskrslo“ na Danu (od trenutka dodira), ne uređivač bloka; blok koji nije danas → samo Dan.
+
+## 2026-11-17 · Sesija 18:43 (nastavak) — korak 34: epski questovi, PR #31 (podaci) + #32 (UI)
+- Tablica `quests` (lokalno + Supabase migracija; **remote čeka Bornu, pitanje 84**), etape kao JSON, XP 15/etapa i 100/quest bez duplikata, najviše 3 u tijeku (pitanje 86).
+- Profil: kartica questova (etape = žarovi koji se pale, traka, rok bez kazne, ostvareni, arhiva) + uređivač (rok brzim izborom u mjesecima). Korak 34 `[x]`.
+
+## 2026-11-17 · Sesija 18:43 — korak 34 (dio): žeravica (freeze tokeni), PR #30
+- Izvedeno iz niza (`streak.ts`): 1 za 7 dana zaredom, najviše 2, premošćuje propušten dan; red „Žeravica“ na Profilu. Pitanje 85.
+
 ## 2026-11-17 · Sesija 15:43 (nastavak) — korak 27 „Nešto je iskrslo“, PR #29
 - Core `planUnexpected` (prozor od sada; pogođeni = planirani osim sna koji se preklapaju; kasnije danas = prvi slobodan termin iste duljine, redom, do 23:59). DB `applyUnexpected` (jedna transakcija, ponovno računa iz baze; `moved` + kopija / `skipped` / novi termin; razlog kao bilješka ako je nema; +5 XP najviše jednom dnevno, `sourceId` null).
 - Večernji upit više ne pita blok premješten tijekom dana bez spremljenog odgovora (inače dupla kopija).

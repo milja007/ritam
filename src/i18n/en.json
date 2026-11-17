@@ -396,6 +396,19 @@
       "heading": "How did you sleep?",
       "body": "Log your sleep and see today's plan.",
       "open": "Open brief"
+    },
+    "ease": {
+      "overline": "Easier morning",
+      "title": "You slept {{deficit}} less than your goal",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "body": "The day is still yours. If you need to, push what's in the next hour a little later.",
+      "bodyVeryShort": "That was a short night. Start gently — move what's in the next hour to later and keep the harder things for when you're awake.",
+      "action_one": "Ease the morning (1 activity)",
+      "action_other": "Ease the morning ({{count}} activities)",
+      "actionHint": "Opens “Something came up” with the reason “Poor sleep”; you choose what moves later.",
+      "nothing": "Nothing in the next hour to move — just take it slow.",
+      "reason": "Poor sleep"
     }
   },
   "progress": {
@@ -1321,5 +1334,21 @@
       "deleteMessage": "“{{title}}” and its XP will be deleted. If it's just finished or on hold, archive it instead.",
       "failed": "Saving didn't work. Try again."
     }
+  },
+  "sleepCard": {
+    "overline": "Sleep",
+    "title": "Last 7 nights",
+    "empty": "Log your sleep in the morning brief and your nights will show up here.",
+    "average": "Average {{duration}} · goal {{target}}",
+    "bedtimeLate": "To bed on average {{minutes}} min later than your goal",
+    "bedtimeOnTime": "To bed roughly on time",
+    "tonightTitle": "Tonight",
+    "tonightStep": "In bed by {{time}} — 15 min earlier than usual. We move in 15-minute steps until you reach {{target}}.",
+    "tonightTarget": "In bed by {{time}}.",
+    "nightLabel": "{{day}}: {{duration}}, to bed {{start}}",
+    "nightEmpty": "{{day}}: not logged",
+    "targetLine": "Goal",
+    "error": "Couldn't load your nights.",
+    "rested": "Rested: {{count}} of {{total}} nights"
   }
 }

@@ -25,6 +25,7 @@ import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
 import { QuestsCard } from '@/features/quests';
 import { updateSettings, useSettings } from '@/features/settings';
+import { SleepCard } from '@/features/sleep';
 import { useNow } from '@/features/today';
 import { ThemePickerCard } from '@/features/unlocks';
 import type { SettingsInput } from '@/db/repos';
@@ -78,6 +79,9 @@ export function ProfileScreen() {
           <Section title={t('profile.progress')}>
             <ProgressCard today={now.date} checkinDay={now.eveningDate} />
             <ProfileEmberCards checkinDay={now.eveningDate} />
+            {settings !== null ? (
+              <SleepCard today={now.date} tonightDate={now.eveningDate} settings={settings} />
+            ) : null}
             <DiagnosisArchive
               checkinDay={now.eveningDate}
               dayLabel={(date) => dayLong(date, language)}

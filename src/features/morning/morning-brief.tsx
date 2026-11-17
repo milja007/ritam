@@ -20,6 +20,7 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 
 import { DayCards } from './day-cards';
+import { EaseMorning } from './ease-morning';
 import { SleepCheckin } from './sleep-checkin';
 
 /** Koliko dugo se prikazuje "Dan počinje" prije zatvaranja (prava animacija je korak 35). */
@@ -37,6 +38,8 @@ type MorningBriefProps = {
   onClose: () => void;
   /** Prilagodi: zatvori brief i otvori timeline za uređivanje. */
   onAdjust: () => void;
+  /** Lakše jutro (korak 29): zatvori brief i otvori „Nešto je iskrslo“ s razlogom „Loš san“. */
+  onEaseMorning?: () => void;
 };
 
 /**
@@ -52,6 +55,7 @@ export function MorningBrief({
   onSave,
   onClose,
   onAdjust,
+  onEaseMorning,
 }: MorningBriefProps) {
   const { t, i18n } = useTranslation();
   const [starting, setStarting] = useState(false);
@@ -125,6 +129,13 @@ export function MorningBrief({
                 ) : null}
 
                 <SleepCheckin date={date} settings={settings} saved={saved} onSave={onSave} />
+                <EaseMorning
+                  settings={settings}
+                  saved={saved}
+                  blocks={blocks}
+                  nowMinutes={nowMinutes}
+                  onEase={onEaseMorning}
+                />
 
                 <Text variant="heading" style={styles.sectionTitle}>
                   {t('morning.cards.title')}

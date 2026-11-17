@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, or } from 'drizzle-orm';
+import { and, asc, between, eq, inArray, or } from 'drizzle-orm';
 
 import {
   blockStatusAfterCheckin,
@@ -369,6 +369,22 @@ export async function getMorningCheckin(
 ): Promise<Checkin | null> {
   const row = await db.select().from(checkins).where(morningOf(userId, date)).get();
   return row ? checkinSchema.parse(row) : null;
+}
+
+/** Jutarnje prijave sna u rasponu dana (uključivo), uzlazno po datumu — kartica sna (korak 29). */
+export async function listMorningCheckins(
+  db: RitamDb,
+  userId: string,
+  from: LocalDate,
+  to: LocalDate,
+): Promise<Pick<Checkin, 'date' | 'sleepStart' | 'wakeTime'>[]> {
+  const rows = await db
+    .select({ date: checkins.date, sleepStart: checkins.sleepStart, wakeTime: checkins.wakeTime })
+    .from(checkins)
+    .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'morning'), between(checkins.date, from, to)))
+    .orderBy(asc(checkins.date))
+    .all();
+  return rows.map((row) => checkinSchema.pick({ date: true, sleepStart: true, wakeTime: true }).parse(row));
 }
 
 export type SavedMorningResult = { checkin: Checkin; xpEarned: number };

@@ -401,6 +401,21 @@
       "heading": "Kako si spavao?",
       "body": "Prijavi san i pogledaj današnji plan.",
       "open": "Otvori brief"
+    },
+    "ease": {
+      "overline": "Lakše jutro",
+      "title": "Spavao si {{deficit}} manje od cilja",
+      "hours_one": "{{count}} sat",
+      "hours_few": "{{count}} sata",
+      "hours_other": "{{count}} sati",
+      "body": "Dan ostaje tvoj. Ako treba, pomakni ono što je u sljedećem satu malo kasnije.",
+      "bodyVeryShort": "Bila je kratka noć. Uzmi lakši početak — pomakni ono što je u sljedećem satu na kasnije i ostavi zahtjevnije za kad se razbudiš.",
+      "action_one": "Olakšaj jutro (1 aktivnost)",
+      "action_few": "Olakšaj jutro ({{count}} aktivnosti)",
+      "action_other": "Olakšaj jutro ({{count}} aktivnosti)",
+      "actionHint": "Otvara „Nešto je iskrslo“ s razlogom „Loš san“; sam biraš što ide kasnije.",
+      "nothing": "U sljedećem satu nema ništa za pomaknuti — samo polako.",
+      "reason": "Loš san"
     }
   },
   "progress": {
@@ -1341,5 +1356,21 @@
       "deleteMessage": "„{{title}}“ i njegov XP bit će obrisani. Ako je samo gotov ili odgođen, bolje ga spremi u arhivu.",
       "failed": "Spremanje nije uspjelo. Pokušaj ponovo."
     }
+  },
+  "sleepCard": {
+    "overline": "San",
+    "title": "Zadnjih 7 noći",
+    "empty": "Prijavi san u jutarnjem briefu i ovdje ćeš vidjeti svoje noći.",
+    "average": "Prosjek {{duration}} · cilj {{target}}",
+    "bedtimeLate": "U krevet prosječno {{minutes}} min kasnije od cilja",
+    "bedtimeOnTime": "U krevet otprilike na vrijeme",
+    "tonightTitle": "Večeras",
+    "tonightStep": "U krevet do {{time}} — 15 min ranije nego inače. Pomičemo po 15 min dok ne stigneš do {{target}}.",
+    "tonightTarget": "U krevet do {{time}}.",
+    "nightLabel": "{{day}}: {{duration}}, u krevet {{start}}",
+    "nightEmpty": "{{day}}: bez prijave",
+    "targetLine": "Cilj",
+    "error": "Noći se nisu učitale.",
+    "rested": "Naspavan: {{count}} od {{total}} noći"
   }
 }
