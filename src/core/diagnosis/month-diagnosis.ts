@@ -325,3 +325,9 @@ export function earlierMonthAverages(days: readonly { date: string; score: numbe
     .filter((scores) => scores.size >= MIN_MONTH_DIAGNOSIS_DAYS)
     .map((scores) => roundedMean([...scores.values()]));
 }
+
+/** Je li `date` ("YYYY-MM-DD") zadnji dan svog mjeseca (dan kad mjesečna stiže uz dnevnu). */
+export function isMonthLastDay(date: string): boolean {
+  const bounds = /^\d{4}-\d{2}-\d{2}$/.test(date) ? monthBounds(date.slice(0, 7)) : null;
+  return bounds !== null && bounds.end === date;
+}

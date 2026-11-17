@@ -5,6 +5,8 @@ export { DiagnosisModal } from './diagnosis-modal';
 export { DiagnosisReadyCard, useDiagnosisPickup } from './diagnosis-pickup';
 export { WeekDiagnosisCard } from './week-diagnosis-card';
 export { WeekDiagnosisInline } from './week-diagnosis-inline';
+export { MonthDiagnosisInline, monthTitle } from './month-diagnosis-inline';
+export { PeriodDiagnosesInline } from './period-diagnoses-inline';
 export { WeekDiagnosisView, weekdayName, weekLineParams } from './week-diagnosis-view';
 export { useWeekReport, type WeekReportState } from './week-report';
 export { MonthDiagnosisCard } from './month-diagnosis-card';

@@ -689,6 +689,9 @@
       },
       "previous": "last month {{value}}",
       "ideasNote": "This is a direction, not a new obligation. Changes still come one at a time through the weekly diagnosis.",
+      "inline": {
+        "overline": "Your month"
+      },
       "card": {
         "overline": "Month diagnosis",
         "unseen": "New",

@@ -5,6 +5,7 @@ import {
   earlierMonthAverages,
   halvesPattern,
   isMonthDiagnosisReady,
+  isMonthLastDay,
   MONTH_LINE_KEYS,
   monthBounds,
   monthChanges,
@@ -267,5 +268,17 @@ describe('earlierMonthAverages', () => {
     ];
     expect(earlierMonthAverages(all, '2026-11').sort()).toEqual([60, 71]);
     expect(earlierMonthAverages([], '2026-11')).toEqual([]);
+  });
+});
+
+describe('isMonthLastDay', () => {
+  it('zadnji dan mjeseca, uključujući veljaču i prijestupnu godinu', () => {
+    expect(isMonthLastDay('2026-11-30')).toBe(true);
+    expect(isMonthLastDay('2026-11-29')).toBe(false);
+    expect(isMonthLastDay('2026-12-31')).toBe(true);
+    expect(isMonthLastDay('2027-02-28')).toBe(true);
+    expect(isMonthLastDay('2028-02-28')).toBe(false);
+    expect(isMonthLastDay('2028-02-29')).toBe(true);
+    expect(isMonthLastDay('nije')).toBe(false);
   });
 });

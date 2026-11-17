@@ -695,6 +695,9 @@
       },
       "previous": "prošli mjesec {{value}}",
       "ideasNote": "Ovo je smjer, ne nova obveza. Promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu.",
+      "inline": {
+        "overline": "Tvoj mjesec"
+      },
       "card": {
         "overline": "Dijagnoza mjeseca",
         "unseen": "Novo",

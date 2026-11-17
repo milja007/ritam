@@ -10,7 +10,7 @@ import { useAppTheme } from '@/ui/theme';
 
 import { DayDiagnosisView } from './day-diagnosis-view';
 import { useDayReport } from './day-report';
-import { WeekDiagnosisInline } from './week-diagnosis-inline';
+import { PeriodDiagnosesInline } from './period-diagnoses-inline';
 
 /** Spremljena dijagnoza dana (s kartice večernjeg upita). */
 export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayLabel: string; onClose: () => void }) {
@@ -37,7 +37,7 @@ export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayL
             ) : report.diagnosis ? (
               <>
                 <DayDiagnosisView diagnosis={report.diagnosis} />
-                <WeekDiagnosisInline date={date} />
+                <PeriodDiagnosesInline date={date} />
               </>
             ) : (
               <Text tone="danger">{t('diagnosis.loadError')}</Text>
