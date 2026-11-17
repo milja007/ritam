@@ -189,8 +189,8 @@ function SuggestionAnswer({ carried, accepted, onAnswer }: SuggestionAnswerProps
 
 type ProgressRowProps = {
   row: WeekProgressRow;
-  /** Tjedan: najbolji dan je naziv dana; mjesec: datum. Oznake i „prije“ po razdoblju. */
-  period: 'week' | 'month';
+  /** Tjedan: najbolji dan je naziv dana; mjesec i godina: datum. Oznake i „prije“ po razdoblju. */
+  period: 'week' | 'month' | 'year';
 };
 
 /** Redak napretka tjedne ili mjesečne dijagnoze: oznaka, vrijednost sa strelicom, prethodno razdoblje. */
@@ -228,14 +228,12 @@ export function WeekProgressRowView({ row, period }: ProgressRowProps) {
   const previous =
     previousValue === null
       ? null
-      : period === 'week'
-        ? t('diagnosis.week.previous', { value: previousValue })
-        : t('diagnosis.month.previous', { value: previousValue });
+      : t(`diagnosis.${period}.previous`, { value: previousValue });
   const tone: NonNullable<TextProps['tone']> =
     row.good === true ? 'success' : row.good === false ? 'textMuted' : 'info';
   const label =
-    period === 'month' && row.metric !== 'betterWeeks'
-      ? t(`diagnosis.month.metric.${row.metric}`)
+    period !== 'week' && row.metric !== 'betterWeeks'
+      ? t(`diagnosis.${period}.metric.${row.metric}`)
       : t(`diagnosis.week.metric.${row.metric}`);
 
   return (

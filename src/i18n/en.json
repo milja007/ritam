@@ -767,6 +767,113 @@
           "keepRhythm": "No new direction — keep the rhythm you have."
         }
       }
+    },
+    "year": {
+      "title": "Year diagnosis",
+      "trend": {
+        "better": "Better than last year",
+        "same": "About the same as last year",
+        "worse": "Weaker than last year",
+        "first": "First year to compare"
+      },
+      "metric": {
+        "average": "Year average",
+        "days": "Days closed",
+        "plan": "Plan",
+        "rules": "Rules kept",
+        "sleep": "Average sleep",
+        "xp": "XP",
+        "rating": "Day rating",
+        "best": "Best day"
+      },
+      "previous": "last year {{value}}",
+      "ideasNote": "This is a direction for next year, not a list of obligations. Changes still come one at a time through the weekly diagnosis.",
+      "monthsTitle": "The year by month",
+      "monthsLabel": "{{month}}: average {{average}}",
+      "monthsLabelEmpty": "{{month}}: no score",
+      "inline": {
+        "overline": "Your year"
+      },
+      "card": {
+        "overline": "Year diagnosis",
+        "unseen": "New",
+        "open": "Open diagnosis",
+        "openAgain": "View diagnosis",
+        "openHint": "Opens the year diagnosis",
+        "pending": "The year diagnosis arrives on 31 December, after the evening check-in.",
+        "changes": "Weekly changes: accepted {{accepted}}, skipped {{rejected}}"
+      },
+      "lines": {
+        "summary": {
+          "better": "Year average is {{average}}, {{diff}} more than last year ({{previous}}). Days closed: {{days}}.",
+          "same": "Year average is {{average}}, about the same as last year ({{previous}}). The rhythm holds. Days closed: {{days}}.",
+          "worse": "Year average is {{average}}, {{diff}} less than last year ({{previous}}). That's data, not a verdict — there's a direction for next year below. Days closed: {{days}}.",
+          "first": "Year average is {{average}}. Days closed: {{days}}. From next year on we compare each year with the one before.",
+          "empty": "The year is recorded (days closed: {{days}}), but there isn't enough data for a score yet."
+        },
+        "praise": {
+          "better": "This year beats the one before by {{diff}}. Progress shows.",
+          "record": "Your best year so far: average {{average}}.",
+          "bestDay": "Best day of the year: {{bestDate}} ({{score}}). Remember what was different that day.",
+          "planDone": "{{done}} of {{total}} planned items done. Discipline at work.",
+          "planBetter": "Your plan is going better: {{percent}}% versus {{previous}}% last year.",
+          "rulesClean": "A whole year without a broken rule (kept: {{count}}).",
+          "rulesFewer": "Fewer slips than last year: {{broken}} versus {{previous}}.",
+          "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
+          "allDays": "You closed all {{days}} days of the year. The check-in is part of you now.",
+          "showedUp": "You recorded the year (days closed: {{days}}). Everything starts there."
+        },
+        "noticed": {
+          "bestWorst": "Best day: {{bestDate}} ({{best}}). Weakest: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Misses are mostly in the morning ({{count}} of {{total}}). Mornings may need a gentler start.",
+            "afternoon": "Misses are mostly in the afternoon ({{count}} of {{total}}). The middle of the day may be overpacked.",
+            "evening": "Misses are mostly in the evening ({{count}} of {{total}}). Energy drops late in the day."
+          },
+          "repeated": "“{{title}}” was missed {{count}} times this year.",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "ruleTrigger": "The rule “{{rule}}” was broken {{count}} times, mostly triggered by: {{trigger}}.",
+          "shortSleep": "After short sleep your day average is {{short}}, otherwise {{rest}}. Sleep shows in the score.",
+          "gaveUp": "Days closed with “I give up”: {{count}}.",
+          "moved": "Moves to later: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: “{{comment}}”",
+          "none": "No particular patterns this year.",
+          "weekday": {
+            "weak": "{{weakWeekday}} is your weakest day of the week: average {{average}}, the year {{overall}}. That day may need a lighter plan.",
+            "strong": "{{strongWeekday}} goes best for you: average {{average}}, the year {{overall}}."
+          },
+          "changes": "Weekly changes this year: accepted {{accepted}}, skipped {{rejected}}.",
+          "month": {
+            "strong": "Strongest month: {{strongMonth}} (average {{average}}, the year {{overall}}). What was working then?",
+            "weak": "Weakest month: {{weakMonth}} (average {{average}}, the year {{overall}}). Worth a look at what was going on."
+          },
+          "run": "Longest run of closed days: {{days}}, from {{startDate}}.",
+          "halves": {
+            "up": "The second half of the year was better than the first: {{second}} versus {{first}}.",
+            "down": "The second half of the year was weaker than the first: {{second}} versus {{first}}."
+          }
+        },
+        "problems": {
+          "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the year is incomplete.",
+          "lowPlan": "Less than half of the plan was done ({{done}}/{{total}}, {{percent}}%).",
+          "rule": "The rule “{{rule}}” was broken {{count}} times.",
+          "heavyRule": "The important rule “{{rule}}” was broken {{count}} times.",
+          "shortSleep": "Too little sleep: average {{hours}} h, short nights: {{nights}}.",
+          "worse": "The year is noticeably weaker than the one before (−{{diff}}).",
+          "none": "No big problems. Well done."
+        },
+        "ideas": {
+          "fillCheckin": "Direction for next year: the evening check-in every day (days closed this year: {{days}}). Without it we can't see what helps you.",
+          "ruleTrigger": "Direction for next year: for “{{rule}}”, decide in advance what you'll do when “{{trigger}}” shows up.",
+          "rule": "Direction for next year: when you break “{{rule}}”, note what set it off — that's how we find the pattern.",
+          "eveningLighter": "Direction for next year: lighter evenings, with your hardest blocks earlier in the day.",
+          "smallerPlan": "Direction for next year: a smaller plan — blocks per day at most: {{count}}. Better a small plan you finish.",
+          "repeatedBlock": "Direction for next year: move “{{title}}” (missed {{count}} times) to another part of the day, or shorten it.",
+          "bedEarlier": "Direction for next year: go to bed a little earlier than so far.",
+          "fewerMoves": "Direction for next year: plan only what you really have time for (moves: {{count}}).",
+          "keepRhythm": "No new direction — keep the rhythm you have."
+        }
+      }
     }
   },
   "score": {

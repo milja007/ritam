@@ -70,14 +70,15 @@ type MonthExtraLineKey = (typeof MONTH_EXTRA_LINE_KEYS)[number];
 
 /** Tjedni retci koji u mjesecu nemaju smisla: praćenje jedne promjene i niz boljih tjedana. */
 type WeekOnlyLineKey = Extract<WeekLineKey, `followUp.${string}` | `ideas.stay.${string}` | 'praise.betterWeeks'>;
-type SharedLineKey = Exclude<WeekLineKey, WeekOnlyLineKey>;
+/** Retci zajednički tjednu, mjesecu i godini. */
+export type SharedLineKey = Exclude<WeekLineKey, WeekOnlyLineKey>;
 export type MonthLineKey = SharedLineKey | MonthExtraLineKey;
 
-const isShared = (key: WeekLineKey): key is SharedLineKey =>
+export const isSharedLineKey = (key: WeekLineKey): key is SharedLineKey =>
   !key.startsWith('followUp.') && !key.startsWith('ideas.stay.') && key !== 'praise.betterWeeks';
 
 /** Svi retci mjesečne dijagnoze (i18n `diagnosis.month.lines.<ključ>`). */
-export const MONTH_LINE_KEYS: readonly MonthLineKey[] = [...WEEK_LINE_KEYS.filter(isShared), ...MONTH_EXTRA_LINE_KEYS];
+export const MONTH_LINE_KEYS: readonly MonthLineKey[] = [...WEEK_LINE_KEYS.filter(isSharedLineKey), ...MONTH_EXTRA_LINE_KEYS];
 
 const isMonthLineKey = (key: string): key is MonthLineKey => (MONTH_LINE_KEYS as readonly string[]).includes(key);
 
@@ -152,7 +153,8 @@ export function monthChanges(month: string, weeks: readonly MonthWeekAnswer[]): 
           ? `${week.suggestion}|`
           : own;
     identityByStart.set(week.start, identity);
-    if (week.start.slice(0, 7) !== month || week.accepted === null) continue;
+    // `month` je "YYYY-MM" ili, za godišnju dijagnozu, "YYYY".
+    if (!week.start.startsWith(`${month}-`) || week.accepted === null) continue;
     answers.set(identity, week.accepted || answers.get(identity) === true);
   }
   const accepted = [...answers.values()].filter((value) => value).length;
@@ -171,9 +173,9 @@ const toMonthLines = (lines: readonly WeekLine[]): MonthLine[] => lines.flatMap(
 const roundedMean = (values: readonly number[]): number =>
   Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 
-type Scored = { date: string; score: number };
+export type Scored = { date: string; score: number };
 
-const scoredDays = (stats: PeriodStats, days: readonly PeriodDay[]): Scored[] => {
+export const scoredDays = (stats: PeriodStats, days: readonly PeriodDay[]): Scored[] => {
   const byDate = new Map<string, number>();
   for (const day of days) {
     if (day.score !== null && day.stats.date >= stats.start && day.stats.date <= stats.end) {

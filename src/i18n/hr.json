@@ -773,6 +773,113 @@
           "keepRhythm": "Bez novog smjera — zadrži ritam koji imaš."
         }
       }
+    },
+    "year": {
+      "title": "Dijagnoza godine",
+      "trend": {
+        "better": "Bolje nego prošla godina",
+        "same": "Slično kao prošla godina",
+        "worse": "Slabije nego prošla godina",
+        "first": "Prva godina za usporedbu"
+      },
+      "metric": {
+        "average": "Prosjek godine",
+        "days": "Zaključeni dani",
+        "plan": "Plan",
+        "rules": "Zabrane poštovane",
+        "sleep": "Prosječan san",
+        "xp": "XP",
+        "rating": "Ocjena dana",
+        "best": "Najbolji dan"
+      },
+      "previous": "prošla godina {{value}}",
+      "ideasNote": "Ovo je smjer za iduću godinu, ne popis obveza. Promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu.",
+      "monthsTitle": "Godina po mjesecima",
+      "monthsLabel": "{{month}}: prosjek {{average}}",
+      "monthsLabelEmpty": "{{month}}: bez rezultata",
+      "inline": {
+        "overline": "Tvoja godina"
+      },
+      "card": {
+        "overline": "Dijagnoza godine",
+        "unseen": "Novo",
+        "open": "Otvori dijagnozu",
+        "openAgain": "Pogledaj dijagnozu",
+        "openHint": "Otvara dijagnozu godine",
+        "pending": "Dijagnoza godine stiže 31. prosinca, nakon večernjeg upita.",
+        "changes": "Tjedne promjene: prihvaćeno {{accepted}}, preskočeno {{rejected}}"
+      },
+      "lines": {
+        "summary": {
+          "better": "Prosjek godine je {{average}}, za {{diff}} više nego prošle godine ({{previous}}). Zaključeni dani: {{days}}.",
+          "same": "Prosjek godine je {{average}}, gotovo isto kao prošle godine ({{previous}}). Ritam se drži. Zaključeni dani: {{days}}.",
+          "worse": "Prosjek godine je {{average}}, za {{diff}} manje nego prošle godine ({{previous}}). To je podatak, ne presuda — dolje je smjer za iduću godinu. Zaključeni dani: {{days}}.",
+          "first": "Prosjek godine je {{average}}. Zaključeni dani: {{days}}. Od iduće godine uspoređujemo godinu s prethodnom.",
+          "empty": "Godina je zapisana (zaključeni dani: {{days}}), ali za rezultat još nema dovoljno podataka."
+        },
+        "praise": {
+          "better": "Godina je bolja od prethodne za {{diff}}. Napredak se vidi.",
+          "record": "Najbolja godina dosad: prosjek {{average}}.",
+          "bestDay": "Najbolji dan godine: {{bestDate}} ({{score}}). Zapamti što je taj dan bilo drukčije.",
+          "planDone": "Odrađeno {{done}} od {{total}} iz plana. Disciplina na djelu.",
+          "planBetter": "Plan ide bolje: {{percent}} % naspram {{previous}} % prošle godine.",
+          "rulesClean": "Cijela godina bez prekršene zabrane (poštovano: {{count}}).",
+          "rulesFewer": "Manje prekršaja nego prošle godine: {{broken}} naspram {{previous}}.",
+          "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
+          "allDays": "Zaključio si svih {{days}} dana u godini. Upit je postao dio tebe.",
+          "showedUp": "Zapisao si godinu (zaključeni dani: {{days}}). Od toga sve kreće."
+        },
+        "noticed": {
+          "bestWorst": "Najbolji dan: {{bestDate}} ({{best}}). Najslabiji: {{worstDate}} ({{worst}}).",
+          "misses": {
+            "morning": "Propusti su uglavnom ujutro ({{count}} od {{total}}). Jutro možda treba blaži početak.",
+            "afternoon": "Propusti su uglavnom poslijepodne ({{count}} od {{total}}). Sredina dana je možda prenatrpana.",
+            "evening": "Propusti su uglavnom navečer ({{count}} od {{total}}). Energija pred kraj dana pada."
+          },
+          "repeated": "„{{title}}” je propušteno {{count}} puta u godini.",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "ruleTrigger": "Zabrana „{{rule}}” je prekršena {{count}} puta, najčešće uz okidač: {{trigger}}.",
+          "shortSleep": "Nakon kratkog sna prosjek dana je {{short}}, a inače {{rest}}. San se vidi u rezultatu.",
+          "gaveUp": "Dani zatvoreni s „Odustajem”: {{count}}.",
+          "moved": "Premještanja na kasnije: {{count}}.",
+          "comment": "{{commentDate}}, {{title}}: „{{comment}}”",
+          "none": "U ovoj godini nema posebnih uzoraka.",
+          "weekday": {
+            "weak": "{{weakWeekday}} je najslabiji dan u tjednu: prosjek {{average}}, a godina {{overall}}. Taj dan možda treba lakši plan.",
+            "strong": "{{strongWeekday}} ti najbolje ide: prosjek {{average}}, a godina {{overall}}."
+          },
+          "changes": "Tjedne promjene ove godine: prihvaćeno {{accepted}}, preskočeno {{rejected}}.",
+          "month": {
+            "strong": "Najjači mjesec: {{strongMonth}} (prosjek {{average}}, godina {{overall}}). Što je tada radilo?",
+            "weak": "Najslabiji mjesec: {{weakMonth}} (prosjek {{average}}, godina {{overall}}). Vrijedi pogledati što se tada događalo."
+          },
+          "run": "Najduži niz zaključenih dana: {{days}}, od {{startDate}}.",
+          "halves": {
+            "up": "Druga polovica godine bila je bolja od prve: {{second}} naspram {{first}}.",
+            "down": "Druga polovica godine bila je slabija od prve: {{second}} naspram {{first}}."
+          }
+        },
+        "problems": {
+          "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika godine nepotpuna.",
+          "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}, {{percent}} %).",
+          "rule": "Zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "heavyRule": "Važna zabrana „{{rule}}” je prekršena {{count}} puta.",
+          "shortSleep": "Premalo sna: prosjek {{hours}} h, kratkih noći: {{nights}}.",
+          "worse": "Godina je osjetno slabija od prethodne (−{{diff}}).",
+          "none": "Nema velikih problema. Bravo."
+        },
+        "ideas": {
+          "fillCheckin": "Smjer za iduću godinu: večernji upit svaki dan (ove godine zaključeno dana: {{days}}). Bez toga ne vidimo što ti pomaže.",
+          "ruleTrigger": "Smjer za iduću godinu: za „{{rule}}” unaprijed odluči što ćeš napraviti kad se javi „{{trigger}}”.",
+          "rule": "Smjer za iduću godinu: kad prekršiš „{{rule}}”, zapiši što je to pokrenulo — tako nalazimo uzorak.",
+          "eveningLighter": "Smjer za iduću godinu: lakše večeri, a najzahtjevniji blokovi ranije u danu.",
+          "smallerPlan": "Smjer za iduću godinu: manji plan — najviše blokova dnevno: {{count}}. Bolje manji plan koji odradiš.",
+          "repeatedBlock": "Smjer za iduću godinu: „{{title}}” (propušteno {{count}} puta) premjesti u drugo doba dana ili ga skrati.",
+          "bedEarlier": "Smjer za iduću godinu: u krevet malo ranije nego dosad.",
+          "fewerMoves": "Smjer za iduću godinu: planiraj samo ono za što stvarno imaš vremena (premještanja: {{count}}).",
+          "keepRhythm": "Bez novog smjera — zadrži ritam koji imaš."
+        }
+      }
     }
   },
   "score": {
