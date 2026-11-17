@@ -132,6 +132,10 @@
         "tasks_other": ", od toga {{count}} zadataka",
         "first": "Prvi: {{title}} u {{start}}.",
         "empty": "Za danas još nemaš plan. Otvori Ritam i složi dan."
+      },
+      "weekReady": {
+        "title": "Tjedna dijagnoza je spremna",
+        "body": "Pogledaj kako ti je prošao tjedan na tabu Tjedan."
       }
     },
     "evening": {
@@ -666,6 +670,9 @@
             "sleep": "Ostani na istoj promjeni: ranije u krevet. Nova dolazi tek kad ova potraje dva tjedna."
           }
         }
+      },
+      "inline": {
+        "overline": "Tvoj tjedan"
       }
     },
     "month": {

@@ -2,6 +2,14 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 00:43 — odluka 82 (tjedna uz dnevnu + obavijest)
+Plan (provjeren protiv koncepta: „nedjeljom uz dnevnu“; odluka 82):
+1. Čista logika `weekDiagnosisNoticeWeek` (core/diagnosis): za jutro ponedjeljka vrati početak prošlog tjedna ako ima zaključen dan i dijagnoza nije viđena; testovi.
+2. `WeekDiagnosisInline` (features/diagnosis): za nedjelju ispod dnevne dijagnoze — overline „Tvoj tjedan“, cijela tjedna dijagnoza s odgovorom na prijedlog; označi viđenom.
+3. Ugradnja: kraj večernjeg upita i `DiagnosisModal` (Dan, Mjesec). Kartica na tabu Tjedan ostaje.
+4. Obavijest: ponedjeljkom jutarnja obavijest nosi „Tjedna dijagnoza je spremna“ dok nije viđena (bez nove vrste obavijesti → isti limit iOS-a, isti dodir); `markSeen` tjedne ponovno uskladi obavijesti.
+5. HR/EN, pristupačnost, testovi; HIGH_RISK (obavijesti).
+
 ## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
 - **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
 - **81 Tema boja:** **sinkronizirati s računom** — stupac za temu u `settings` + migracija. Borna odobrava ovu remote migraciju (samo taj stupac); primijeniti tek kad migracija i `npm run test:supabase` prođu lokalno.

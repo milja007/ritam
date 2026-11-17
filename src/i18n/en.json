@@ -130,6 +130,10 @@
         "tasks_other": ", {{count}} of them tasks",
         "first": "First: {{title}} at {{start}}.",
         "empty": "No plan for today yet. Open Ritam and set up your day."
+      },
+      "weekReady": {
+        "title": "Your week diagnosis is ready",
+        "body": "See how your week went on the Week tab."
       }
     },
     "evening": {
@@ -660,6 +664,9 @@
             "sleep": "Stay with the same change: earlier to bed. A new one comes only once this has lasted two weeks."
           }
         }
+      },
+      "inline": {
+        "overline": "Your week"
       }
     },
     "month": {
