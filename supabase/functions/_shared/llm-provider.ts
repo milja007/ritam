@@ -70,7 +70,7 @@ async function logLlmCall(params: LlmCallParams): Promise<void> {
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !key) return; // U lokalu bez Supabasea nema kamo logirati.
   const db = createClient(url, key);
-  await db.from('llm_calls').insert({
+  const { error } = await db.from('llm_calls').insert({
     user_id: params.userId,
     function: params.functionName,
     provider: params.provider,
@@ -80,7 +80,22 @@ async function logLlmCall(params: LlmCallParams): Promise<void> {
     ms: params.ms,
     ok: params.ok,
   });
-  // Greška logginga ne prekida poziv — provider je to već završio.
+  // Greška logginga ne prekida poziv — provider je to već završio — ali se vidi u logu funkcije.
+  if (error) console.error('Upis u llm_calls nije uspio:', error.message);
+}
+
+/**
+ * Zadatak koji mora završiti i nakon što funkcija vrati odgovor. Na Supabase Edge Runtimeu ide
+ * kroz `EdgeRuntime.waitUntil` (https://supabase.com/docs/guides/functions/background-tasks),
+ * inače se čeka — da se upis ne izgubi kad se worker ugasi.
+ */
+async function keepAlive(task: Promise<void>): Promise<void> {
+  const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (promise: Promise<unknown>) => void } }).EdgeRuntime;
+  if (runtime?.waitUntil) {
+    runtime.waitUntil(task);
+    return;
+  }
+  await task;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +105,13 @@ async function logLlmCall(params: LlmCallParams): Promise<void> {
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_VERSION_HEADER = '2023-06-01';
 
-export function createClaudeProvider(model = 'claude-sonnet-4-5'): LLMProvider {
+/**
+ * Zadani model. `claude-sonnet-4-5` se povlači 30. 11. 2026. (Codex, PR #16) — prije deploya ga
+ * zamijeniti tajnom/varijablom `LLM_MODEL` u Supabase secrets (odluka Borne, pitanje 77).
+ */
+const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5';
+
+export function createClaudeProvider(model = Deno.env.get('LLM_MODEL') || DEFAULT_CLAUDE_MODEL): LLMProvider {
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY nije postavljen u Supabase secrets.');
 
@@ -169,8 +190,8 @@ export function withLogging(
         return result;
       } finally {
         const ms = Date.now() - start;
-        // Fire-and-forget — greška logginga ne prekida tok.
-        logLlmCall({
+        // Upis ne smije srušiti poziv, ali ni nestati kad funkcija završi (`waitUntil`).
+        const logging = logLlmCall({
           userId,
           functionName,
           provider: inner.providerName,
@@ -179,7 +200,8 @@ export function withLogging(
           outputTokens,
           ms,
           ok,
-        }).catch(console.error);
+        }).catch((error: unknown) => console.error('Logiranje LLM poziva nije uspjelo:', error));
+        await keepAlive(logging);
       }
     },
   };
