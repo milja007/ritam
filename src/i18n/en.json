@@ -667,6 +667,11 @@
       },
       "inline": {
         "overline": "Your week"
+      },
+      "rolling": {
+        "overline": "Your last 7 days",
+        "title": "Last 7 days",
+        "note": "The month doesn't end on a Sunday, so this is a look at the last 7 days compared with the 7 before. A new change still comes with the weekly diagnosis on Sunday."
       }
     },
     "month": {

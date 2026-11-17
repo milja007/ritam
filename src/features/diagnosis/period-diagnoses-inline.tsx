@@ -4,7 +4,8 @@ import { YearDiagnosisInline } from './year-diagnosis-inline';
 
 /**
  * Dijagnoze razdoblja koja završavaju danom `date`, odmah ispod dnevne (koncept: nedjelja → dan +
- * tjedan; zadnji dan mjeseca → + mjesec; 31. 12. → + godina). Svaki dio sam odlučuje pokazuje li se.
+ * tjedan; zadnji dan mjeseca → + mjesec, a ako nije nedjelja, tjedni dio je „zadnjih 7 dana“;
+ * 31. 12. → + godina). Svaki dio sam odlučuje pokazuje li se.
  */
 export function PeriodDiagnosesInline({ date }: { date: string }) {
   return (

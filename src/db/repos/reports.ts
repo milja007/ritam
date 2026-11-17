@@ -4,6 +4,7 @@ import { betterWeeksStreak, closedWeeks, isEveningCheckinComplete, mainStreak } 
 import {
   buildDayDiagnosis,
   buildMonthDiagnosis,
+  buildRollingWeekDiagnosis,
   buildWeekDiagnosis,
   dayStats,
   diagnosisSuggestion,
@@ -25,6 +26,7 @@ import {
   parseDayDiagnosis,
   parseWeekDiagnosis,
   periodStats,
+  rollingWeekStart,
   statsForAreas,
   type ArchiveEntry,
   type DayDiagnosis,
@@ -408,6 +410,52 @@ export function generateWeekReport(
       tx.insert(reports).values(values).run();
     }
     return { report, diagnosis };
+  });
+}
+
+/**
+ * „Zadnjih 7 dana“ koji završavaju danom `end` (koncept: zadnji dan mjeseca koji nije nedjelja):
+ * statistika zaključenih dana `end−6..end` naspram 7 dana prije → pregled bez prijedloga. **Samo
+ * čita** — ne sprema u `reports` (ključ tjedne dijagnoze je ponedjeljak, a tjedni prijedlozi i niz
+ * boljih tjedana ostaju vezani uz kalendarski tjedan). `null` dok nije dostupno (kao tjedna:
+ * upit za `end` ispunjen ili `end` prošao, barem jedan zaključen dan) i za neispravan datum.
+ */
+export function previewRollingWeek(db: RitamDb, userId: string, end: LocalDate, today: LocalDate): WeekDiagnosis | null {
+  const start = rollingWeekStart(end);
+  const previousStart = addDays(end, -13);
+  const previousEnd = addDays(end, -7);
+  if (start === null || previousStart === null || previousEnd === null) return null;
+
+  return db.transaction((tx) => {
+    const eveningRows = tx
+      .select()
+      .from(checkins)
+      .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+      .all()
+      .map((row) => checkinSchema.parse(row));
+    const complete = new Map(
+      eveningRows.filter((row) => row.date <= today && isEveningCheckinComplete(row)).map((row) => [row.date, row]),
+    );
+    if (!isWeekDiagnosisReady(end, today, complete.keys())) return null;
+
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const currentAreas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const daysFrom = (from: LocalDate): PeriodDay[] => {
+      const days: PeriodDay[] = [];
+      for (let offset = 0; offset < 7; offset += 1) {
+        const date = addDays(from, offset);
+        const evening = date === null ? undefined : complete.get(date);
+        if (date === null || evening === undefined) continue;
+        const full = readDayStats(tx, userId, date, eveningRows);
+        const areas = evening.scoreAreas ?? currentAreas;
+        days.push({ stats: statsForAreas(full, areas), score: dayScore(full, areas).score });
+      }
+      return days;
+    };
+    const current = periodStats(start, end, 7, daysFrom(start));
+    const previousDays = daysFrom(previousStart);
+    const previous = previousDays.length > 0 ? periodStats(previousStart, previousEnd, 7, previousDays) : null;
+    return buildRollingWeekDiagnosis(current, previous);
   });
 }
 

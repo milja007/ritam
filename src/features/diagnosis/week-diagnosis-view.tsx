@@ -71,7 +71,7 @@ type WeekDiagnosisViewProps = {
 /**
  * Prikaz tjedne dijagnoze redom iz koncepta: Ukratko → Napredak → Pohvale → Što smo primijetili →
  * Veliki problemi → Ideje za napredak. Ideja je uvijek jedna („malo po malo“), a ispod nje se
- * odgovara: „Probat ću“ ili „Ne sada“.
+ * odgovara: „Probat ću“ ili „Ne sada“. Prazna sekcija se ne crta (pregled „zadnjih 7 dana“ nema ideja).
  */
 export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnosisViewProps) {
   const { t, i18n } = useTranslation();
@@ -108,7 +108,7 @@ export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnos
         ))}
       </View>
 
-      {LINE_SECTIONS.map((section) => (
+      {LINE_SECTIONS.filter((section) => diagnosis[section].length > 0).map((section) => (
         <View
           key={section}
           style={[card, section === 'ideas' ? { borderColor: colors.accent, borderWidth: 1 } : null]}>

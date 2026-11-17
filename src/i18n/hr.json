@@ -673,6 +673,11 @@
       },
       "inline": {
         "overline": "Tvoj tjedan"
+      },
+      "rolling": {
+        "overline": "Tvojih 7 dana",
+        "title": "Zadnjih 7 dana",
+        "note": "Mjesec ne završava nedjeljom, pa je ovo pregled zadnjih 7 dana naspram 7 prije. Nova promjena i dalje stiže s tjednom dijagnozom u nedjelju."
       }
     },
     "month": {
