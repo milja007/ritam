@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
@@ -14,12 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   isTomorrowPlanValid,
   occupiedSlots,
+  parsedBlocksToDrafts,
   pickKey,
-  typedDraft,
+  typedDrafts,
+  wantsSmartParse,
   type BlockDraft,
   type LearnedPick,
 } from '@/core/schedule';
 import { spacing } from '@/core/theme';
+import { isAuthEnabled } from '@/features/auth';
 import { BlockEditor } from '@/features/today/block-editor';
 import { formatDay } from '@/features/today/format-day';
 import { Chip, DraftRow, ExistingRow } from '@/features/today/plan-parts';
@@ -29,6 +33,7 @@ import { Text } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
 import { useAppTheme } from '@/ui/theme';
 
+import { requestParseInput } from './parse-input-client';
 import { useTomorrowPlan } from './use-tomorrow';
 
 type TomorrowPlanProps = {
@@ -56,17 +61,24 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [savedCount, setSavedCount] = useState<number | null>(null);
+  /** `parse-input` radi — unos i odabiri čekaju da se termini ne slože preko istih mjesta. */
+  const [parsing, setParsing] = useState(false);
 
   const drafts = items.map((item) => item.draft);
   const occupied = occupiedSlots(plan.existing, drafts);
 
   function add(draft: BlockDraft) {
-    const key = nextKey.current++;
-    setItems((current) => [...current, { key, draft }]);
+    addAll([draft]);
+  }
+
+  function addAll(newDrafts: readonly BlockDraft[]) {
+    const entries = newDrafts.map((draft) => ({ key: nextKey.current++, draft }));
+    setItems((current) => [...current, ...entries]);
   }
 
   /** Naučeni odabir dolazi u svom uobičajenom terminu (korisnik ga mijenja u editoru). */
   function addLearned(pick: LearnedPick) {
+    if (parsing) return;
     add({ title: pick.title, kind: pick.kind, start: pick.start, end: pick.end });
   }
 
@@ -74,11 +86,27 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   const added = new Set(drafts.map((draft) => pickKey(draft.title)));
   const learned = plan.learned.filter((pick) => !added.has(pick.key));
 
-  function addTyped() {
-    const draft = typedDraft(typed, occupied, plan.wakeTime);
-    if (!draft) return;
-    add(draft);
+  /**
+   * Tipkani unos → stavke. S oblakom i prijavom unos s više stavki ide kroz `parse-input`
+   * (korak 21); bez toga, na grešku ili istek vremena dijeli se lokalno („Trening 18-19, zubar u 15“).
+   */
+  async function addTyped() {
+    const text = typed;
+    if (text.trim().length === 0 || parsing) return;
+    let newDrafts: BlockDraft[] = [];
+    if (isAuthEnabled && wantsSmartParse(text)) {
+      setParsing(true);
+      const blocks = await requestParseInput(text, i18n.language.startsWith('en') ? 'en' : 'hr');
+      setParsing(false);
+      if (blocks) newDrafts = parsedBlocksToDrafts(blocks, occupied, plan.wakeTime);
+    }
+    if (newDrafts.length === 0) newDrafts = typedDrafts(text, occupied, plan.wakeTime);
+    if (newDrafts.length === 0) return;
+    addAll(newDrafts);
     setTyped('');
+    if (newDrafts.length > 1) {
+      AccessibilityInfo.announceForAccessibility(t('evening.tomorrow.addedCount', { count: newDrafts.length }));
+    }
   }
 
   function replace(key: number, draft: BlockDraft) {
@@ -181,7 +209,8 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                           placeholder={t('evening.tomorrow.typePlaceholder')}
                           value={typed}
                           onChangeText={setTyped}
-                          onSubmitEditing={addTyped}
+                          onSubmitEditing={() => void addTyped()}
+                          editable={!parsing}
                           maxLength={200}
                           returnKeyType="done"
                           submitBehavior="submit"
@@ -189,8 +218,9 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                         <Button
                           variant="secondary"
                           label={t('evening.tomorrow.add')}
-                          onPress={addTyped}
+                          onPress={() => void addTyped()}
                           disabled={typed.trim().length === 0}
+                          loading={parsing}
                         />
                         <Text variant="caption" tone="textMuted">
                           {t('todayPlan.examplesHint')}
@@ -235,7 +265,7 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                       label={t('evening.tomorrow.confirm', {
                         count: items.length,
                       })}
-                      disabled={plan.status !== 'ready' || !isTomorrowPlanValid(drafts)}
+                      disabled={plan.status !== 'ready' || parsing || !isTomorrowPlanValid(drafts)}
                       loading={saving}
                       onPress={confirm}
                       style={styles.primary}

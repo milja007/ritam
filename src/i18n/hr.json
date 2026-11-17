@@ -337,7 +337,7 @@
       "loadError": "Sutrašnji plan se nije učitao.",
       "existing": "Već u planu",
       "typeLabel": "Napiši stavku",
-      "typePlaceholder": "npr. Trening 18-19 ili Zubar u 15",
+      "typePlaceholder": "npr. Trening 18-19, zubar u 15",
       "add": "Dodaj",
       "newItems": "Novo za sutra",
       "empty": "Još ništa — napiši prvu stavku.",
@@ -351,7 +351,10 @@
       "close": "Gotovo",
       "learned": "Ponavlja se",
       "learnedPick": "{{title}} · {{start}}",
-      "learnedHint": "Dodaje blok u uobičajeni termin {{start}}–{{end}}. Možeš ga promijeniti."
+      "learnedHint": "Dodaje blok u uobičajeni termin {{start}}–{{end}}. Možeš ga promijeniti.",
+      "addedCount_one": "Dodana je {{count}} stavka.",
+      "addedCount_few": "Dodane su {{count}} stavke.",
+      "addedCount_other": "Dodano je {{count}} stavki."
     }
   },
   "morning": {
