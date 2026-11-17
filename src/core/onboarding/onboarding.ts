@@ -146,6 +146,7 @@ export function toSettingsInput(draft: OnboardingDraft): SettingsInput {
     windDownNotifEnabled: true,
     blockRemindersEnabled: true,
     theme: 'system',
+    colorTheme: null,
     googleCalendarConnected: false,
     scorePlan: draft.scorePlan,
     scoreRules: draft.scoreRules,

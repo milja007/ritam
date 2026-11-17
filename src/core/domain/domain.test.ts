@@ -39,6 +39,7 @@ const valid = {
     windDownNotifEnabled: true,
     blockRemindersEnabled: true,
     theme: 'system',
+    colorTheme: null,
     googleCalendarConnected: false,
     scorePlan: true,
     scoreRules: false,
@@ -165,8 +166,18 @@ describe('settings', () => {
     ['missing calendar flag', { googleCalendarConnected: undefined }],
     ['plan switched off', { scorePlan: false }],
     ['missing score area flag', { scoreRules: undefined }],
+    ['empty color theme', { colorTheme: '' }],
+    ['too long color theme', { colorTheme: 'x'.repeat(33) }],
   ])('rejects %s', (_name, patch) => {
     expect(settingsSchema.safeParse({ ...valid.settings, ...patch }).success).toBe(false);
+  });
+});
+
+describe('settings colorTheme (odluka 81)', () => {
+  it('bez stupca (stari redak) je null; nepoznata tema prolazi (app je čita kao zadanu)', () => {
+    expect(settingsSchema.parse({ ...valid.settings, colorTheme: undefined }).colorTheme).toBeNull();
+    expect(settingsSchema.parse({ ...valid.settings, colorTheme: 'violet' }).colorTheme).toBe('violet');
+    expect(settingsSchema.parse({ ...valid.settings, colorTheme: 'nova-tema' }).colorTheme).toBe('nova-tema');
   });
 });
 

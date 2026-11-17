@@ -43,6 +43,7 @@ const settingsInput: SettingsInput = {
   windDownNotifEnabled: true,
   blockRemindersEnabled: true,
   theme: 'system',
+  colorTheme: null,
   googleCalendarConnected: false,
       scorePlan: true,
       scoreRules: false,
@@ -146,6 +147,16 @@ describe('settings repo', () => {
     expect(second.updatedAt > first.updatedAt).toBe(true);
     expect((await getSettings(db, USER))?.language).toBe('en');
     expect(raw.prepare('SELECT COUNT(*) AS n FROM settings').get()).toEqual({ n: 1 });
+  });
+
+  it('tema boja plamena (odluka 81): sprema se, čita i mijenja; zadano null', async () => {
+    const { db } = await createTestDb();
+    const deps = testDeps();
+    expect((await saveSettings(db, USER, settingsInput, deps)).colorTheme).toBeNull();
+    await saveSettings(db, USER, { ...settingsInput, colorTheme: 'violet' }, deps);
+    expect((await getSettings(db, USER))?.colorTheme).toBe('violet');
+    await saveSettings(db, USER, { ...settingsInput, colorTheme: 'rose' }, deps);
+    expect((await getSettings(db, USER))?.colorTheme).toBe('rose');
   });
 
   it('postavke su po korisniku', async () => {

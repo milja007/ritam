@@ -39,6 +39,7 @@ const settingsInput: SettingsInput = {
   windDownNotifEnabled: true,
   blockRemindersEnabled: true,
   theme: 'system',
+  colorTheme: null,
   googleCalendarConnected: false,
   scorePlan: true,
   scoreRules: false,
@@ -163,7 +164,7 @@ describe('syncOnce', () => {
   it('prva prijava šalje sve postojeće lokalne podatke pod računom', async () => {
     const { db, remote } = await setup();
     const deps = testDeps();
-    await saveSettings(db, LOCAL, settingsInput, deps);
+    await saveSettings(db, LOCAL, { ...settingsInput, colorTheme: 'rose' }, deps);
     const block = await createBlock(db, LOCAL, blockInput, deps);
     // Kao da su podaci nastali prije koraka 19 (bez reda).
     db.run(sql`DELETE FROM sync_queue`);
@@ -173,7 +174,12 @@ describe('syncOnce', () => {
     expect(remote.rows('schedule_blocks')).toEqual([
       expect.objectContaining({ id: block.id, user_id: UID, title: 'Duboki rad', start: '09:00' }),
     ]);
-    expect(remote.rows('settings')[0]).toMatchObject({ user_id: UID, sleep_hours: 7.5, morning_notif_enabled: true });
+    expect(remote.rows('settings')[0]).toMatchObject({
+      user_id: UID,
+      sleep_hours: 7.5,
+      morning_notif_enabled: true,
+      color_theme: 'rose',
+    });
     expect(countQueue(db)).toBe(0);
 
     // Drugi prolaz bez promjena ništa ne šalje.
@@ -297,6 +303,7 @@ describe('syncOnce', () => {
       wind_down_notif_enabled: true,
       block_reminders_enabled: true,
       theme: 'dark',
+      color_theme: 'violet',
       google_calendar_connected: false,
       score_plan: true,
       score_rules: false,
@@ -304,7 +311,12 @@ describe('syncOnce', () => {
     });
 
     await syncOnce(db, remote, ids);
-    expect(await getSettings(db, LOCAL)).toMatchObject({ id: 'settings-remote', theme: 'dark', language: 'en' });
+    expect(await getSettings(db, LOCAL)).toMatchObject({
+      id: 'settings-remote',
+      theme: 'dark',
+      language: 'en',
+      colorTheme: 'violet',
+    });
     expect(remote.rows('settings').map((row) => row.id)).toEqual(['settings-remote']);
   });
 

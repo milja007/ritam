@@ -43,6 +43,8 @@ export const settings = sqliteTable(
     windDownNotifEnabled: integer('wind_down_notif_enabled', { mode: 'boolean' }).notNull().default(true),
     blockRemindersEnabled: integer('block_reminders_enabled', { mode: 'boolean' }).notNull().default(true),
     theme: text('theme').$type<ThemePreference>().notNull(),
+    // Tema boja plamena (odluka 81); `null` = nije birana na računu.
+    colorTheme: text('color_theme'),
     googleCalendarConnected: integer('google_calendar_connected', { mode: 'boolean' }).notNull(),
     // Područja dnevnog rezultata (korak 16c); zadano samo plan.
     scorePlan: integer('score_plan', { mode: 'boolean' }).notNull().default(true),
