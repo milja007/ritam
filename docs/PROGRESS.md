@@ -9,6 +9,7 @@ Plan (provjeren protiv koncepta: „nedjeljom uz dnevnu“; odluka 82):
 3. Ugradnja: kraj večernjeg upita i `DiagnosisModal` (Dan, Mjesec). Kartica na tabu Tjedan ostaje.
 4. Obavijest: ponedjeljkom jutarnja obavijest nosi „Tjedna dijagnoza je spremna“ dok nije viđena (bez nove vrste obavijesti → isti limit iOS-a, isti dodir); `markSeen` tjedne ponovno uskladi obavijesti.
 5. HR/EN, pristupačnost, testovi; HIGH_RISK (obavijesti).
+- **Gotovo (PR #24):** sve točke. Obavijest nije nova vrsta: ponedjeljkom jutarnja ima naslov „Tjedna dijagnoza je spremna“ + pregled dana; dodir otvara jutarnji brief kao i prije. Na uređaju neprovjereno.
 
 ## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
 - **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
@@ -36,6 +37,7 @@ Plan (provjeren protiv koncepta: „nedjeljom uz dnevnu“; odluka 82):
 - Stanje #1 (2026-11-14 15:45): nema P0/P1; P2 za PR #21 riješen u PR-u #22. P2 nalazi Codexa za PR #16 (plan-day: fiksni blok ne rezervira vrijeme, predug prvi zadatak, blok izvan prozora, vrijeme 99:99; `null` u tijelu → 400; logiranje bez `waitUntil`; Sonnet 4.5 se povlači 30. 11.) rješavaju se uz dovršavanje 20–22.
 
 ## Sljedeće
+0. **Odluka 81** — stupac teme u `settings` + lokalna migracija i sync; remote primjena tek nakon `test:supabase` (Borna odobrio taj stupac).
 1. **Ž11 haptika** — čeka Bornu: `npx expo install expo-haptics` na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API). Isto vrijedi za Skiu (korak 33).
 2. UX/UI dok traje prioritet (do 2026-11-17): okviri avatara / animacije „Gotovo“ kao otključavanja (pitanje 80); **34** epski questovi i freeze tokeni (traže lokalnu tablicu + sync → remote migracija = Borna).
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
