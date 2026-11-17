@@ -53,6 +53,33 @@ const MAX_WINDOWS = 12;
 const MAX_TITLE = 200;
 const MAX_QUESTIONS = 3;
 
+/** Edge Functions koje zovu model. */
+export type LlmFunctionName = 'parse-input' | 'plan-day';
+
+/**
+ * Model po funkciji — odluka Borne 2026-11-09: `plan-day` (i kasnije `write-report`) →
+ * Sonnet 5.5, `parse-input` → Haiku 5.5. `claude-sonnet-4-5` se povlači 30. 11. 2026. (Codex, PR #16).
+ */
+export const LLM_MODELS: Readonly<Record<LlmFunctionName, string>> = {
+  'parse-input': 'claude-haiku-5-5',
+  'plan-day': 'claude-sonnet-5-5',
+};
+
+/** Ime varijable kojom se model jedne funkcije može zamijeniti bez novog koda. */
+export const LLM_MODEL_ENV: Readonly<Record<LlmFunctionName, string>> = {
+  'parse-input': 'LLM_MODEL_PARSE_INPUT',
+  'plan-day': 'LLM_MODEL_PLAN_DAY',
+};
+
+/**
+ * Model za funkciju: varijabla `LLM_MODEL_<FUNKCIJA>` (ako je postavljena i nije prazna), inače
+ * zadani iz `LLM_MODELS`. `read` je `Deno.env.get` u funkciji, a u testu obična mapa.
+ */
+export function llmModelFor(fn: LlmFunctionName, read: (name: string) => string | undefined): string {
+  const override = read(LLM_MODEL_ENV[fn])?.trim();
+  return override ? override : LLM_MODELS[fn];
+}
+
 /** "HH:MM" s valjanim satom (00–23) i minutom (00–59). */
 export function isClock(value: unknown): value is string {
   if (typeof value !== 'string' || !/^\d{2}:\d{2}$/.test(value)) return false;

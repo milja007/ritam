@@ -9,13 +9,15 @@
  * iz repoa ni iz env datoteke.
  *
  * DeepSeek implementacija dolazi kada Borna promijeni provider (korak iz
- * faze 4). Jedina promjena tada: zamijeniti `createClaudeProvider()` s
- * `createDeepSeekProvider()` u svakoj Edge Function koja ovaj modul koristi.
+ * faze 4). Jedina promjena tada: zamijeniti `createClaudeProvider(fn)` s
+ * `createDeepSeekProvider(fn)` u svakoj Edge Function koja ovaj modul koristi.
  */
 
 // deno-lint-ignore-file no-explicit-any
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+import { llmModelFor, type LlmFunctionName } from './plan-logic.ts';
 
 // ---------------------------------------------------------------------------
 // Javno sučelje
@@ -106,12 +108,11 @@ const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_VERSION_HEADER = '2023-06-01';
 
 /**
- * Zadani model. `claude-sonnet-4-5` se povlači 30. 11. 2026. (Codex, PR #16) — prije deploya ga
- * zamijeniti tajnom/varijablom `LLM_MODEL` u Supabase secrets (odluka Borne, pitanje 77).
+ * Claude provider za jednu funkciju. Model je odluka Borne po funkciji (`LLM_MODELS` u
+ * `plan-logic.ts`); mijenja se bez koda varijablom `LLM_MODEL_PARSE_INPUT` / `LLM_MODEL_PLAN_DAY`.
  */
-const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5';
-
-export function createClaudeProvider(model = Deno.env.get('LLM_MODEL') || DEFAULT_CLAUDE_MODEL): LLMProvider {
+export function createClaudeProvider(fn: LlmFunctionName): LLMProvider {
+  const model = llmModelFor(fn, (name) => Deno.env.get(name));
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY nije postavljen u Supabase secrets.');
 
@@ -162,7 +163,7 @@ export function createClaudeProvider(model = Deno.env.get('LLM_MODEL') || DEFAUL
  * Omota provider s logiranjem u `llm_calls`. Koristi se ovako:
  *
  * ```ts
- * const provider = withLogging(createClaudeProvider(), userId, 'parse-input');
+ * const provider = withLogging(createClaudeProvider('parse-input'), userId, 'parse-input');
  * const result = await provider.complete(messages, options);
  * // → logira automatski, neovisno o tome je li poziv uspio
  * ```

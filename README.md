@@ -19,7 +19,7 @@ Ritam koristi nativne pakete (SQLite, obavijesti), pa treba **development build*
 | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY` | Supabase projekt (javni ključ) — za prijavu i sync |
 | `EXPO_PUBLIC_FEATURE_AUTH` | `1` uključuje prijavu e-mailom i sync; zadano `0` (app radi potpuno lokalno) |
 
-LLM ključevi (`ANTHROPIC_API_KEY`, `LLM_MODEL`) nikad nisu u repou — samo u Supabase → Edge Functions → Secrets.
+LLM ključ (`ANTHROPIC_API_KEY`) i neobavezne zamjene modela (`LLM_MODEL_PARSE_INPUT`, `LLM_MODEL_PLAN_DAY`) nikad nisu u repou — samo u Supabase → Edge Functions → Secrets.
 
 ## Testovi i kontrole
 

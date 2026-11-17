@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
   const { text, locale } = input;
 
   // LLM poziv
-  const provider = withLogging(createClaudeProvider(), user.id, 'parse-input');
+  const provider = withLogging(createClaudeProvider('parse-input'), user.id, 'parse-input');
   const systemPrompt = locale === 'hr'
     ? SYSTEM_PROMPT_HR
     : SYSTEM_PROMPT_EN;
