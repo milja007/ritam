@@ -16,6 +16,7 @@ import {
   monthBounds,
   monthChanges,
   parseDayDiagnosis,
+  parseWeekDiagnosis,
   periodStats,
   statsForAreas,
   type ArchiveEntry,
@@ -470,7 +471,16 @@ export function generateMonthReport(
       .from(reports)
       .where(and(eq(reports.userId, userId), eq(reports.period, 'week')))
       .all()
-      .map((row) => ({ start: row.periodStart, suggestion: row.suggestion, accepted: row.suggestionAccepted }));
+      .map((row) => {
+        const week = parseWeekDiagnosis(row.sections);
+        return {
+          start: row.periodStart,
+          suggestion: row.suggestion,
+          accepted: row.suggestionAccepted,
+          idea: week ? JSON.stringify(week.ideas[0] ?? null) : null,
+          carried: week?.carried === true,
+        };
+      });
     const changes = monthChanges(month, weekAnswers);
 
     const diagnosis = buildMonthDiagnosis(current, previous, days, { previousBest, changes });

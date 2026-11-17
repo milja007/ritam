@@ -12,7 +12,7 @@ import { z } from 'zod';
 
 import { daysInMonth } from '../ember/periods';
 import { weekStart } from '../progress/compare';
-import { daysBetween } from '../time/local-date';
+import { addDays, daysBetween } from '../time/local-date';
 import { TRENDS } from './day-diagnosis';
 import type { PeriodDay, PeriodStats } from './period-stats';
 import {
@@ -118,18 +118,42 @@ export type MonthDiagnosis = Omit<z.infer<typeof monthDiagnosisSchema>, 'summary
 
 export type MonthChanges = { accepted: number; rejected: number };
 
-/** Prijedlog i odgovor iz jedne tjedne dijagnoze (za pregled promjena mjeseca). */
-export type MonthWeekAnswer = { start: string; suggestion: string | null; accepted: boolean | null };
+/**
+ * Prijedlog i odgovor iz jedne tjedne dijagnoze (za pregled promjena mjeseca). `idea` je
+ * konkretna ideja (ključ + parametri, npr. koja zabrana i okidač); `carried` znači da je tjedan
+ * samo nosio promjenu prihvaćenu tjedan prije (`ideas.stay.*`), a ne nudio novu.
+ */
+export type MonthWeekAnswer = {
+  start: string;
+  suggestion: string | null;
+  accepted: boolean | null;
+  idea?: string | null;
+  carried?: boolean;
+};
 
 /**
- * Promjene mjeseca: različiti prijedlozi tjednih dijagnoza čiji tjedan počinje u tom mjesecu.
- * Prenesena promjena (isti prijedlog više tjedana) broji se jednom; prihvaćanje ima prednost.
+ * Promjene mjeseca: različite konkretne ideje tjednih dijagnoza čiji tjedan počinje u tom
+ * mjesecu. Dvije različite zabrane pod istim ključem prijedloga su dvije promjene; ista konkretna
+ * ideja (ponovno ponuđena ili prenesena — tjedan s `carried` nastavlja ideju tjedna prije) broji
+ * se jednom, i tad prihvaćanje ima prednost. Tjedan bez `idea` (stariji zapis) ide po ključu.
  */
 export function monthChanges(month: string, weeks: readonly MonthWeekAnswer[]): MonthChanges {
+  const identityByStart = new Map<string, string>();
   const answers = new Map<string, boolean>();
-  for (const week of weeks) {
-    if (week.start.slice(0, 7) !== month || week.suggestion === null || week.accepted === null) continue;
-    answers.set(week.suggestion, week.accepted || answers.get(week.suggestion) === true);
+  for (const week of [...weeks].sort((a, b) => a.start.localeCompare(b.start))) {
+    if (week.suggestion === null) continue;
+    const own = `${week.suggestion}|${week.idea ?? ''}`;
+    const before = addDays(week.start, -7);
+    const inherited = week.carried === true && before !== null ? identityByStart.get(before) : undefined;
+    const identity =
+      inherited !== undefined && inherited.startsWith(`${week.suggestion}|`)
+        ? inherited
+        : week.idea === undefined || week.idea === null
+          ? `${week.suggestion}|`
+          : own;
+    identityByStart.set(week.start, identity);
+    if (week.start.slice(0, 7) !== month || week.accepted === null) continue;
+    answers.set(identity, week.accepted || answers.get(identity) === true);
   }
   const accepted = [...answers.values()].filter((value) => value).length;
   return { accepted, rejected: answers.size - accepted };

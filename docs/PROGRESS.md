@@ -2,6 +2,13 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 12:43 — plan (grana `wip/korak-37-37b`)
+Žar Ž1–Ž10/Ž12 gotovi; Ž11 i Skia čekaju pakete (Borna). Zadnji dan prioriteta → dijagnoze kao doživljaj kraja razdoblja (koncept: zadnji dan mjeseca „dan + tjedan + mjesec“, 31. 12. „+ godina“), lokalno, bez migracije (`reports.period` već dopušta `year`).
+1. **P2 (PR #22)**: `monthChanges` razlikuje konkretne ideje (ključ + parametri), dedup samo iste ideje i prenesene promjene (`carried`). Test.
+2. **Korak 37 dopuna**: zadnji dan mjeseca mjesečna dijagnoza odmah ispod dnevne (i ispod tjedne ako je nedjelja) — kraj večernjeg upita i `DiagnosisModal`, kao odluka 82 za tjedan. Bez nove obavijesti (nije odlučeno).
+3. **Korak 37b**: godišnja dijagnoza `local-year-v1` (core + `generateYearReport` + kartica na tabu Godina + modal + ispod dnevne 31. 12.), HR/EN, pristupačnost. Ista pravila: dostupna kad godina prođe ili 31. 12. nakon upita; ≥ 1 zaključen dan; bez prihvaćanja (smjer, kao mjesec).
+Kriteriji: core testovi, repo testovi (upis, „bez promjene ne piše“), tsc/lint/jest, export.
+
 ## 2026-11-17 · Sesija 00:43 — odluka 82 (PR #24)
 - Nedjeljom tjedna dijagnoza odmah ispod dnevne (kraj večernjeg upita, `DiagnosisModal`), označi se viđenom. Ponedjeljkom jutarnja obavijest ima naslov „Tjedna dijagnoza je spremna“ dok tjedna nije viđena (bez nove vrste obavijesti). Na uređaju neprovjereno.
 

@@ -101,6 +101,50 @@ describe('monthChanges', () => {
   });
 });
 
+describe('monthChanges — konkretne ideje (P2, PR #22)', () => {
+  const rule = (title: string, trigger: string) => JSON.stringify({ key: 'ideas.ruleTrigger', params: { title, trigger } });
+
+  it('dvije različite zabrane pod istim ključem su dvije promjene; prihvaćanje druge ne skriva odbijanje prve', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: false, idea: rule('Mobitel', 'umor') },
+        { start: '2026-11-23', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Slatkiši', 'stres') },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 1 });
+  });
+
+  it('prenesena promjena (carried) broji se jednom i kad se tekst ideje razlikuje', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Mobitel', 'umor') },
+        {
+          start: '2026-11-09',
+          suggestion: 'ideas.ruleTrigger',
+          accepted: true,
+          idea: JSON.stringify({ key: 'ideas.stay.rules' }),
+          carried: true,
+        },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+
+  it('nošenje se nasljeđuje i iz tjedna koji počinje u prošlom mjesecu', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-10-26', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Mobitel', 'umor') },
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: true, idea: 'stay', carried: true },
+        { start: '2026-11-16', suggestion: 'ideas.ruleTrigger', accepted: false, idea: rule('Mobitel', 'umor') },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+
+  it('tjedan s carried bez prethodnog tjedna dobiva svoj identitet', () => {
+    expect(
+      monthChanges(MONTH, [{ start: '2026-11-09', suggestion: 'ideas.bedEarlier', accepted: true, idea: 'stay', carried: true }]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+});
+
 describe('uzorci mjeseca', () => {
   const scored = (input: readonly PeriodDay[]) =>
     input.flatMap((entry) => (entry.score === null ? [] : [{ date: entry.stats.date, score: entry.score }]));
