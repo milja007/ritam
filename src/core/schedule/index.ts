@@ -10,3 +10,4 @@ export * from './day-close';
 export * from './edge-types';
 export * from './unexpected';
 export * from './parsed-input';
+export * from './plan-proposal';
