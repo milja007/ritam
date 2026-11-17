@@ -41,8 +41,7 @@
       "soon": "Uskoro: navike koje gradiš malo po malo, svaka sa svojim streakom."
     },
     "quests": {
-      "title": "Epski questovi",
-      "soon": "Uskoro: dugoročni questovi koje sam postaviš — veliki ciljevi, ne dnevni zadaci."
+      "title": "Epski questovi"
     },
     "account": {
       "title": "Račun",
@@ -1281,6 +1280,66 @@
       "tryTheme": "Isprobaj temu „{{name}}“",
       "continue": "Nastavi",
       "a11y": "Nova razina: {{level}}."
+    }
+  },
+  "quests": {
+    "overline": "Epski quest",
+    "loadError": "Questovi se nisu učitali.",
+    "emptyTitle": "Postavi svoj prvi epski quest",
+    "emptyBody": "Veliki cilj na mjesece, ne dnevni zadatak: polumaraton, nova vještina, projekt. Razbij ga na etape i pali ih jednu po jednu.",
+    "new": "Novi epski quest",
+    "limit": "Najviše 3 questa u tijeku. Ostvari ili spremi jedan u arhivu pa počni novi.",
+    "limitHint": "U tijeku su {{max}} questa — malo po malo. Ostvari ili spremi jedan u arhivu za novi.",
+    "progress": "{{done}} od {{total}} etapa",
+    "noMilestones": "Bez etapa",
+    "daysLeft_one": "Još {{count}} dan · {{date}}",
+    "daysLeft_few": "Još {{count}} dana · {{date}}",
+    "daysLeft_other": "Još {{count}} dana · {{date}}",
+    "pastDeadline": "Rok je bio {{date}} — pomakni ga ili samo nastavi",
+    "edit": "Uredi",
+    "markDone": "Ostvaren",
+    "confirmDoneTitle": "Quest ostvaren?",
+    "confirmDoneMessage": "„{{title}}“ ide među ostvarene (+{{xp}} XP).",
+    "doneA11y": "Quest ostvaren, +{{xp}} XP.",
+    "milestoneDoneA11y": "Etapa ostvarena, +{{xp}} XP.",
+    "milestoneHint": "Označi kao ostvarenu (+{{xp}} XP).",
+    "milestoneUndoHint": "Poništi oznaku.",
+    "milestoneDoneOn": "Ostvareno {{date}} · +{{xp}} XP",
+    "doneHeading": "Ostvareni",
+    "doneOn": "Ostvaren {{date}} · +{{xp}} XP",
+    "archive": "U arhivu",
+    "reopen": "Vrati u tijek",
+    "archiveHeading": "Arhiva ({{count}})",
+    "editor": {
+      "newTitle": "Novi epski quest",
+      "editTitle": "Uredi quest",
+      "body": "Dugoročni cilj koji sam postaviš. Etape su koraci do njega — svaka ostvarena donosi XP.",
+      "titleLabel": "Cilj",
+      "titlePlaceholder": "npr. Istrčati polumaraton",
+      "whyLabel": "Zašto ti je važan",
+      "whyPlaceholder": "Podsjetnik kad bude teško",
+      "deadlineLabel": "Okvirni rok",
+      "deadline": {
+        "keep": "Ostaje {{date}}",
+        "none": "Bez roka",
+        "1m": "Za mjesec dana",
+        "3m": "Za 3 mjeseca",
+        "6m": "Za 6 mjeseci",
+        "1y": "Za godinu dana"
+      },
+      "milestonesLabel": "Etape",
+      "milestonesHint": "Mali koraci redom. Prazne etape se ne spremaju.",
+      "milestoneLabel": "Etapa {{n}}",
+      "milestonePlaceholder": "npr. 5 km bez stajanja",
+      "removeMilestone": "Ukloni etapu {{n}}",
+      "addMilestone": "+ Dodaj etapu",
+      "milestonesMax": "Najviše {{max}} etapa.",
+      "save": "Spremi",
+      "cancel": "Odustani",
+      "delete": "Obriši quest",
+      "deleteTitle": "Obrisati quest?",
+      "deleteMessage": "„{{title}}“ i njegov XP bit će obrisani. Ako je samo gotov ili odgođen, bolje ga spremi u arhivu.",
+      "failed": "Spremanje nije uspjelo. Pokušaj ponovo."
     }
   }
 }

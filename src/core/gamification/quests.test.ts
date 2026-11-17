@@ -6,6 +6,7 @@ import {
   QUEST_MILESTONE_XP,
   canStartQuest,
   questDaysLeft,
+  questDeadlineDate,
   questProgress,
   questXpAwards,
   sortQuests,
@@ -65,5 +66,17 @@ describe('epski questovi', () => {
       q('soon', 'active', '2026-12-01', null),
     ]);
     expect(sorted.map((quest) => quest.id)).toEqual(['soon', 'late', 'free', 'done-new', 'done-old', 'arch']);
+  });
+});
+
+describe('okvirni rok', () => {
+  it('mjeseci od danas, kraj mjeseca se skrati', () => {
+    expect(questDeadlineDate('none', '2026-11-17')).toBeNull();
+    expect(questDeadlineDate('1m', '2026-11-17')).toBe('2026-12-17');
+    expect(questDeadlineDate('3m', '2026-11-17')).toBe('2027-02-17');
+    expect(questDeadlineDate('1y', '2026-11-17')).toBe('2027-11-17');
+    expect(questDeadlineDate('1m', '2027-01-31')).toBe('2027-02-28');
+    expect(questDeadlineDate('1m', '2028-01-31')).toBe('2028-02-29');
+    expect(questDeadlineDate('6m', '2026-08-31')).toBe('2027-02-28');
   });
 });

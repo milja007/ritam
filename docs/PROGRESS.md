@@ -2,8 +2,9 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 18:43 (nastavak) — korak 34: epski questovi
-Plan: (1) PR podataka (HIGH_RISK): domena `quest.ts` (etape kao JSON u retku, stanje active/done/archived), core `quests.ts` (XP 15 po etapi, 100 za ostvaren quest, najviše 3 u tijeku, redoslijed, rok), lokalna tablica `quests` + okidači synca (0011), Supabase migracija `20261117180000_quests.sql` (RLS, `synced_at`, tombstone) — **remote primjena je Bornina (pitanje 84)**, repo s usklađivanjem XP-a bez duplikata, testovi (domena, repo, sync, `test:supabase`). (2) PR UI-ja: kartica „Epski questovi“ na Profilu umjesto „uskoro“ + uređivač, HR/EN.
+## 2026-11-17 · Sesija 18:43 (nastavak) — korak 34: epski questovi, PR #31 (podaci) + #32 (UI)
+- Tablica `quests` (lokalno + Supabase migracija; **remote čeka Bornu, pitanje 84**), etape kao JSON, XP 15/etapa i 100/quest bez duplikata, najviše 3 u tijeku (pitanje 86).
+- Profil: kartica questova (etape = žarovi koji se pale, traka, rok bez kazne, ostvareni, arhiva) + uređivač (rok brzim izborom u mjesecima). Korak 34 `[x]`.
 
 ## 2026-11-17 · Sesija 18:43 — korak 34 (dio): žeravica (freeze tokeni), PR #30
 - Izvedeno iz niza (`streak.ts`): 1 za 7 dana zaredom, najviše 2, premošćuje propušten dan; red „Žeravica“ na Profilu. Pitanje 85.

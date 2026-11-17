@@ -41,8 +41,7 @@
       "soon": "Coming soon: habits you build little by little, each with its own streak."
     },
     "quests": {
-      "title": "Epic quests",
-      "soon": "Coming soon: long-term quests you set yourself — big goals, not daily chores."
+      "title": "Epic quests"
     },
     "account": {
       "title": "Account",
@@ -1262,6 +1261,65 @@
       "tryTheme": "Try the “{{name}}” theme",
       "continue": "Continue",
       "a11y": "New level: {{level}}."
+    }
+  },
+  "quests": {
+    "overline": "Epic quest",
+    "loadError": "Quests couldn't be loaded.",
+    "emptyTitle": "Set your first epic quest",
+    "emptyBody": "A big goal for months, not a daily task: a half marathon, a new skill, a project. Break it into milestones and light them one by one.",
+    "new": "New epic quest",
+    "limit": "At most 3 quests in progress. Complete one or archive it to start a new one.",
+    "limitHint": "{{max}} quests in progress — little by little. Complete one or archive it to start another.",
+    "progress": "{{done}} of {{total}} milestones",
+    "noMilestones": "No milestones",
+    "daysLeft_one": "{{count}} day left · {{date}}",
+    "daysLeft_other": "{{count}} days left · {{date}}",
+    "pastDeadline": "Target was {{date}} — move it or just keep going",
+    "edit": "Edit",
+    "markDone": "Completed",
+    "confirmDoneTitle": "Quest completed?",
+    "confirmDoneMessage": "“{{title}}” moves to completed (+{{xp}} XP).",
+    "doneA11y": "Quest completed, +{{xp}} XP.",
+    "milestoneDoneA11y": "Milestone reached, +{{xp}} XP.",
+    "milestoneHint": "Mark as reached (+{{xp}} XP).",
+    "milestoneUndoHint": "Undo.",
+    "milestoneDoneOn": "Reached {{date}} · +{{xp}} XP",
+    "doneHeading": "Completed",
+    "doneOn": "Completed {{date}} · +{{xp}} XP",
+    "archive": "Archive",
+    "reopen": "Back in progress",
+    "archiveHeading": "Archive ({{count}})",
+    "editor": {
+      "newTitle": "New epic quest",
+      "editTitle": "Edit quest",
+      "body": "A long-term goal you set yourself. Milestones are the steps toward it — each one reached earns XP.",
+      "titleLabel": "Goal",
+      "titlePlaceholder": "e.g. Run a half marathon",
+      "whyLabel": "Why it matters to you",
+      "whyPlaceholder": "A reminder for when it gets hard",
+      "deadlineLabel": "Rough target",
+      "deadline": {
+        "keep": "Keep {{date}}",
+        "none": "No target",
+        "1m": "In a month",
+        "3m": "In 3 months",
+        "6m": "In 6 months",
+        "1y": "In a year"
+      },
+      "milestonesLabel": "Milestones",
+      "milestonesHint": "Small steps in order. Empty milestones aren't saved.",
+      "milestoneLabel": "Milestone {{n}}",
+      "milestonePlaceholder": "e.g. 5 km without stopping",
+      "removeMilestone": "Remove milestone {{n}}",
+      "addMilestone": "+ Add milestone",
+      "milestonesMax": "At most {{max}} milestones.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete quest",
+      "deleteTitle": "Delete quest?",
+      "deleteMessage": "“{{title}}” and its XP will be deleted. If it's just finished or on hold, archive it instead.",
+      "failed": "Saving didn't work. Try again."
     }
   }
 }
