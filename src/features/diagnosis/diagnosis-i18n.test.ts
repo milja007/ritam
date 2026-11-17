@@ -1,10 +1,19 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { DIAGNOSIS_LINE_KEYS, METRICS, MONTH_LINE_KEYS, TRENDS, WEEK_LINE_KEYS, WEEK_METRICS } from '@/core/diagnosis';
+import {
+  DIAGNOSIS_LINE_KEYS,
+  METRICS,
+  MONTH_LINE_KEYS,
+  TRENDS,
+  WEEK_LINE_KEYS,
+  WEEK_METRICS,
+  YEAR_LINE_KEYS,
+} from '@/core/diagnosis';
 import en from '@/i18n/en.json';
 import hr from '@/i18n/hr.json';
 
 import { capitalize, monthLineParams } from './month-diagnosis-view';
+import { yearLineParams } from './year-line-params';
 import { dayMonthName, weekdayName, weekLineParams } from './week-diagnosis-view';
 
 function lookup(dict: unknown, path: string): unknown {
@@ -98,5 +107,47 @@ describe('month diagnosis i18n', () => {
     expect(dayMonthName('nije-datum', 'hr')).toBe('nije-datum');
     expect(capitalize('petak je')).toBe('Petak je');
     expect(capitalize('')).toBe('');
+  });
+});
+
+describe('year diagnosis i18n', () => {
+  it.each([
+    ['hr', hr],
+    ['en', en],
+  ])('%s ima svaki redak, trend, metriku i tekstove kartice godišnje dijagnoze', (_lang, dict) => {
+    for (const key of YEAR_LINE_KEYS) {
+      expect(typeof lookup(dict, `diagnosis.year.lines.${key}`)).toBe('string');
+    }
+    for (const trend of TRENDS) expect(typeof lookup(dict, `diagnosis.year.trend.${trend}`)).toBe('string');
+    for (const metric of WEEK_METRICS.filter((m) => m !== 'betterWeeks')) {
+      expect(typeof lookup(dict, `diagnosis.year.metric.${metric}`)).toBe('string');
+    }
+    for (const key of ['title', 'previous', 'ideasNote', 'monthsTitle', 'monthsLabel', 'monthsLabelEmpty', 'inline.overline', 'card.pending']) {
+      expect(typeof lookup(dict, `diagnosis.year.${key}`)).toBe('string');
+    }
+  });
+
+  it('HR i EN retci traže iste parametre, a godina ne spominje mjesec ili tjedan kao razdoblje', () => {
+    for (const key of YEAR_LINE_KEYS) {
+      const path = `diagnosis.year.lines.${key}`;
+      expect({ key, params: placeholders(lookup(hr, path)) }).toEqual({ key, params: placeholders(lookup(en, path)) });
+      expect(String(lookup(hr, path))).not.toMatch(/prošli mjesec|idući mjesec|ovog mjeseca|u mjesecu|tjedan prije/);
+      expect(String(lookup(en, path))).not.toMatch(/last month|next month|this month|the week before/);
+    }
+  });
+
+  it('`…Month` je naziv mjeseca (HR malim slovom u rečenici)', () => {
+    expect(yearLineParams({ key: 'noticed.month.strong', params: { strongMonth: '2026-03', average: 80, overall: 70 } }, 'hr')).toEqual({
+      strongMonth: 'ožujak',
+      average: 80,
+      overall: 70,
+    });
+    expect(yearLineParams({ key: 'noticed.month.weak', params: { weakMonth: '2026-03', average: 50, overall: 70 } }, 'en')).toMatchObject({
+      weakMonth: 'March',
+    });
+    expect(yearLineParams({ key: 'noticed.run', params: { days: 9, startDate: '2026-01-28' } }, 'hr')).toEqual({
+      days: 9,
+      startDate: '28. siječnja',
+    });
   });
 });

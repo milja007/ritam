@@ -12,3 +12,8 @@ export { useWeekReport, type WeekReportState } from './week-report';
 export { MonthDiagnosisCard } from './month-diagnosis-card';
 export { capitalize, MonthDiagnosisView, monthLineParams } from './month-diagnosis-view';
 export { useMonthReport, type MonthReportState } from './month-report';
+export { YearDiagnosisCard } from './year-diagnosis-card';
+export { YearDiagnosisInline } from './year-diagnosis-inline';
+export { YearDiagnosisView, YearMonthStrip } from './year-diagnosis-view';
+export { yearLineParams } from './year-line-params';
+export { useYearReport, type YearReportState } from './year-report';

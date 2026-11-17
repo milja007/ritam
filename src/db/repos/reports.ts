@@ -539,7 +539,8 @@ export function generateYearReport(
   deps: RepoDeps = defaultRepoDeps,
 ): YearReportResult | null {
   const bounds = yearBounds(year);
-  if (bounds === null) return null;
+  // Prije 31. 12. dijagnoza ne može biti dostupna — bez čitanja cijele godine iz baze.
+  if (bounds === null || today < bounds.end) return null;
   const previousEnd = addDays(bounds.start, -1);
   const previousBounds = previousEnd === null ? null : yearBounds(previousEnd.slice(0, 4));
   if (previousBounds === null) return null;
