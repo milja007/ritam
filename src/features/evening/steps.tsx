@@ -40,7 +40,7 @@ function Empty({ text }: { text: string }) {
 }
 
 /** "2026-11-12" → "čet, 12. 11." / "Thu, Nov 12" (po jeziku appa). */
-function formatShortDay(date: string, language: string): string {
+export function formatShortDay(date: string, language: string): string {
   const [y, m, d] = date.split('-').map(Number);
   const value = new Date(y ?? 2000, (m ?? 1) - 1, d ?? 1);
   try {

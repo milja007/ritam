@@ -48,6 +48,7 @@ import { BlockSheet } from './block-sheet';
 import { DayPills } from './day-pills';
 import { formatDay } from './format-day';
 import { GiveUp } from './give-up';
+import { UnexpectedFlow } from './unexpected-flow';
 import { NowCard } from './now-card';
 import { NowRow } from './now-row';
 import { TodayPlan } from './today-plan';
@@ -103,6 +104,8 @@ export function TodayScreen() {
   const diagnosisOpen = diagnosisFor !== null;
   const pickup = useDiagnosisPickup(now.date);
   const [giveUpOpen, setGiveUpOpen] = useState(false);
+  // Nešto je iskrslo (27): minuta otvaranja je početak prozora i ne pomiče se dok je flow otvoren.
+  const [unexpectedAt, setUnexpectedAt] = useState<number | null>(null);
 
   function closeEvening() {
     setEveningOpen(false);
@@ -170,6 +173,7 @@ export function TodayScreen() {
     tomorrowOpen ||
     diagnosisOpen ||
     giveUpOpen ||
+    unexpectedAt !== null ||
     activeEditing !== null ||
     sheetBlock !== null;
   // Nova razina čeka slavlje (korak 35): prikazuje se tek kad je sve ostalo zatvoreno, a plan dana
@@ -347,6 +351,14 @@ export function TodayScreen() {
           ) : null}
 
           {day.status === 'ready' && !needsPlan && canGiveUp(day.blocks) ? (
+            <Button
+              variant="secondary"
+              label={t('unexpected.action')}
+              onPress={() => setUnexpectedAt(liveMinutes)}
+            />
+          ) : null}
+
+          {day.status === 'ready' && !needsPlan && canGiveUp(day.blocks) ? (
             <Button variant="ghost" label={t('giveUp.action')} onPress={() => setGiveUpOpen(true)} />
           ) : null}
 
@@ -431,6 +443,16 @@ export function TodayScreen() {
           date={diagnosisFor}
           dayLabel={formatDay(diagnosisFor, i18n.language)}
           onClose={() => setDiagnosisFor(null)}
+        />
+      ) : null}
+
+      {unexpectedAt !== null && day.status === 'ready' ? (
+        <UnexpectedFlow
+          date={now.date}
+          nowMinutes={unexpectedAt}
+          blocks={day.blocks}
+          onApply={day.unexpected}
+          onClose={() => setUnexpectedAt(null)}
         />
       ) : null}
 

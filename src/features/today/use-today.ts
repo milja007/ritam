@@ -14,11 +14,14 @@ import { getDb } from '@/db/open';
 import {
   createBlock,
   deleteBlock,
+  applyUnexpected,
   giveUpDay,
   listBlocksForDate,
   setBlockNote,
   setBlockStatus,
   updateBlock,
+  type UnexpectedInput,
+  type UnexpectedResult,
 } from '@/db/repos';
 import { syncNotificationsNow, useBlocksVersion } from '@/features/notifications';
 import { notifyProgressChanged } from '@/features/progress';
@@ -131,5 +134,15 @@ export function useDayBlocks(date: string) {
     [date, changed],
   );
 
-  return { status, blocks, reload, add, edit, remove, setStatus, setNote, giveUp };
+  /** Nešto je iskrslo (27): pogođeni blokovi kasnije danas / sutra / drugi dan / preskoči. */
+  const unexpected = useCallback(
+    (input: Omit<UnexpectedInput, 'date'>): UnexpectedResult => {
+      const result = applyUnexpected(getDb(), LOCAL_USER_ID, { ...input, date });
+      changed(); // termini, statusi, XP, podsjetnici
+      return result;
+    },
+    [date, changed],
+  );
+
+  return { status, blocks, reload, add, edit, remove, setStatus, setNote, giveUp, unexpected };
 }
