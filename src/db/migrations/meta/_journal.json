@@ -78,6 +78,13 @@
       "when": 1794905743629,
       "tag": "0010_color_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1794938329015,
+      "tag": "0011_quests",
+      "breakpoints": true
     }
   ]
 }

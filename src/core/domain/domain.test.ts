@@ -7,6 +7,7 @@ import {
   clockTimeSchema,
   isValidLocalDate,
   localDateSchema,
+  questSchema,
   ruleLogSchema,
   ruleSchema,
   scheduleBlockSchema,
@@ -306,5 +307,37 @@ describe('xp events', () => {
 
   it('allows events without a source id', () => {
     expect(xpEventSchema.safeParse({ ...valid.xp, sourceId: null }).success).toBe(true);
+  });
+});
+
+describe('questSchema (korak 34)', () => {
+  const quest = {
+    ...base,
+    title: 'Polumaraton',
+    why: '',
+    targetDate: '2027-04-12',
+    milestones: [{ id: 'm1', title: '5 km', doneOn: '2026-11-10' }],
+    status: 'active',
+    doneOn: null,
+  };
+
+  it('ispravan quest', () => {
+    expect(questSchema.parse(quest)).toMatchObject({ title: 'Polumaraton' });
+    expect(questSchema.safeParse({ ...quest, status: 'done', doneOn: '2026-11-12' }).success).toBe(true);
+    expect(questSchema.safeParse({ ...quest, status: 'archived', doneOn: '2026-11-12' }).success).toBe(true);
+    expect(questSchema.safeParse({ ...quest, status: 'archived', doneOn: null }).success).toBe(true);
+  });
+
+  it('dan ostvarenja prati stanje', () => {
+    expect(questSchema.safeParse({ ...quest, status: 'done', doneOn: null }).success).toBe(false);
+    expect(questSchema.safeParse({ ...quest, doneOn: '2026-11-12' }).success).toBe(false);
+  });
+
+  it('etape: jedinstveni id, najviše 12, neprazan naslov', () => {
+    const m = (id: string) => ({ id, title: id, doneOn: null });
+    expect(questSchema.safeParse({ ...quest, milestones: [m('a'), m('a')] }).success).toBe(false);
+    expect(questSchema.safeParse({ ...quest, milestones: Array.from({ length: 13 }, (_, i) => m(`m${i}`)) }).success).toBe(false);
+    expect(questSchema.safeParse({ ...quest, milestones: [{ id: 'x', title: ' ', doneOn: null }] }).success).toBe(false);
+    expect(questSchema.safeParse({ ...quest, status: 'paused' }).success).toBe(false);
   });
 });

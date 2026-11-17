@@ -1,7 +1,7 @@
 /**
  * Sync lokalne baze sa Supabaseom (korak 19): pull pa push.
  *
- * - Red promjena (`sync_queue`) pune SQLite okidači pri svakom upisu u 8 tablica.
+ * - Red promjena (`sync_queue`) pune SQLite okidači pri svakom upisu u 9 tablica.
  * - Pull: retci promijenjeni na poslužitelju nakon kursora (`synced_at` postavlja poslužitelj),
  *   primjenjuju se samo kad su noviji od lokalnih (zadnji `updatedAt` pobjeđuje), zatim tombstoni.
  * - Push: brisanja (dijete → roditelj), pa upserti (roditelj → dijete); unos se uklanja iz reda
@@ -58,6 +58,7 @@ const TABLES: Record<SyncTable, SQLiteTable> = {
   rule_logs: schema.ruleLogs,
   xp_events: schema.xpEvents,
   reports: schema.reports,
+  quests: schema.quests,
 };
 
 type IdColumns = { id: ReturnType<typeof getTableColumns>[string]; userId: ReturnType<typeof getTableColumns>[string] };

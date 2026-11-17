@@ -63,7 +63,7 @@ const block = (overrides: Partial<ScheduleBlockInput> = {}): ScheduleBlockInput 
 });
 
 describe('migracije', () => {
-  it('stvaraju svih 8 tablica + red promjena synca', async () => {
+  it('stvaraju svih 9 tablica + red promjena synca', async () => {
     const { raw } = await createTestDb();
     const tables = raw
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE '\\_%' ESCAPE '\\' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -72,6 +72,7 @@ describe('migracije', () => {
     expect(tables).toEqual([
       'checkin_items',
       'checkins',
+      'quests',
       'reports',
       'rule_logs',
       'rules',

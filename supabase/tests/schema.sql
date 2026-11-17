@@ -82,6 +82,10 @@ insert into public.xp_events (date, source, source_id, amount) values
 insert into public.reports (period, period_start, sections, stats, prompt_version, suggestion) values
   ('day', '2026-11-10', '{"summary":[]}', '{"plan":{"total":1}}', 'local-day-v2', 'idea.fewerBlocks');
 
+insert into public.quests (id, title, why, target_date, milestones, status) values
+  ('50000000-0000-0000-0000-000000000001', 'Polumaraton', 'Zdravlje', '2027-04-12',
+   '[{"id":"50000000-0000-0000-0000-0000000000a1","title":"5 km","doneOn":"2026-11-10"}]', 'active');
+
 -- user_id se popuni iz auth.uid()
 select test.expect_count(
   $q$select 1 from public.schedule_blocks where user_id = '00000000-0000-0000-0000-00000000000a'$q$,
@@ -131,6 +135,19 @@ select test.expect_error($q$insert into public.xp_events (date, source, amount) 
   '23514', 'XP bez kazni');
 select test.expect_error($q$insert into public.reports (period, period_start, sections, stats, prompt_version)
   values ('day', '2026-11-10', '{}', '{}', 'v')$q$, '23505', 'jedna dijagnoza po razdoblju');
+-- Epski questovi (korak 34)
+select test.expect_error($q$insert into public.quests (title, milestones, status) values ('X', '[]', 'paused')$q$,
+  '23514', 'quest: nepoznat status');
+select test.expect_error($q$insert into public.quests (title, milestones, status) values ('X', '[]', 'done')$q$,
+  '23514', 'quest: ostvaren traži done_on');
+select test.expect_error($q$insert into public.quests (title, milestones, status, done_on) values ('X', '[]', 'active', '2026-11-10')$q$,
+  '23514', 'quest: done_on samo kad je ostvaren');
+select test.expect_error($q$insert into public.quests (title, milestones, status) values ('X', '{}', 'active')$q$,
+  '23514', 'quest: etape su niz');
+select test.expect_error($q$insert into public.quests (title, milestones, status) values ('', '[]', 'active')$q$,
+  '23514', 'quest: naslov nije prazan');
+select test.expect_count($q$select 1 from public.quests where why = 'Zdravlje' and jsonb_array_length(milestones) = 1$q$,
+  1, 'quest se sprema s etapama');
 select test.expect_error($q$insert into public.schedule_blocks (user_id, date, title, start, "end", kind, source, status)
   values ('00000000-0000-0000-0000-00000000000b', '2026-11-10', 'X', '10:00', '11:00', 'task', 'user', 'planned')$q$,
   '42501', 'ne može pisati u tuđe ime');
@@ -151,6 +168,8 @@ select test.expect_count('select 1 from public.rules', 0, 'B ne vidi A-ove zabra
 select test.expect_count('select 1 from public.rule_logs', 0, 'B ne vidi A-ove zapise zabrana');
 select test.expect_count('select 1 from public.xp_events', 0, 'B ne vidi A-ov XP');
 select test.expect_count('select 1 from public.reports', 0, 'B ne vidi A-ove dijagnoze');
+select test.expect_count('select 1 from public.quests', 0, 'B ne vidi A-ove questove');
+update public.quests set title = 'hack';
 
 update public.schedule_blocks set title = 'hack';
 delete from public.xp_events;
@@ -185,6 +204,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 set role authenticated;
 select test.expect_count('select 1 from public.llm_calls', 1, 'A vidi samo svoje LLM pozive');
 select test.expect_count($q$select 1 from public.schedule_blocks where title = 'hack'$q$, 0, 'B nije promijenio A-ove blokove');
+select test.expect_count($q$select 1 from public.quests where title = 'hack'$q$, 0, 'B nije promijenio A-ov quest');
 select test.expect_count('select 1 from public.xp_events', 2, 'B nije obrisao A-ov XP');
 
 -- Brisanje checkina: stavke idu (cascade), zapis zabrane ostaje bez checkin_id.
@@ -200,6 +220,8 @@ select test.expect_count('select 1 from public.rule_logs', 0, 'zapisi obrisani s
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'checkins'$q$, 1, 'tombstone checkina');
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'checkin_items'$q$, 2, 'tombstoni kaskadno obrisanih stavki');
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'rule_logs'$q$, 1, 'tombstone kaskadno obrisanog zapisa zabrane');
+delete from public.quests;
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'quests'$q$, 1, 'tombstone questa');
 select test.expect_error($q$insert into public.sync_tombstones (user_id, table_name, row_id)
   values ((select auth.uid()), 'rules', gen_random_uuid())$q$, '42501', 'klijent ne piše tombstone');
 -- synced_at postavlja poslužitelj, i kad ga klijent pokuša zadati.

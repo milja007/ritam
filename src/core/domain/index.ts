@@ -5,3 +5,4 @@ export * from './schedule-block';
 export * from './settings';
 export * from './xp-event';
 export * from './report';
+export * from './quest';

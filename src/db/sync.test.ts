@@ -9,6 +9,9 @@ import type { Row, SyncTable } from '@/core/sync';
 import type { RitamDb } from './db';
 import {
   createBlock,
+  createQuest,
+  listQuests,
+  setQuestMilestoneDone,
   deleteBlock,
   getBlock,
   getReport,
@@ -186,6 +189,48 @@ describe('syncOnce', () => {
     const again = await syncOnce(db, remote, ids);
     expect(again.seeded).toBe(false);
     expect(again.upserted).toBe(0);
+  });
+
+  it('epski quest (korak 34): etape kao JSON niz idu na poslužitelj i vraćaju se s drugog uređaja', async () => {
+    const { db, remote } = await setup();
+    const deps = testDeps();
+    const quest = createQuest(
+      db,
+      LOCAL,
+      { title: 'Polumaraton', why: '', targetDate: '2027-04-12', milestones: [{ title: '5 km' }, { title: '10 km' }] },
+      deps,
+    );
+    setQuestMilestoneDone(db, LOCAL, quest.id, quest.milestones[0].id, true, '2026-11-11', deps);
+    await syncOnce(db, remote, ids);
+    expect(remote.rows('quests')).toEqual([
+      expect.objectContaining({
+        id: quest.id,
+        user_id: UID,
+        target_date: '2027-04-12',
+        status: 'active',
+        done_on: null,
+        milestones: [
+          { id: quest.milestones[0].id, title: '5 km', doneOn: '2026-11-11' },
+          { id: quest.milestones[1].id, title: '10 km', doneOn: null },
+        ],
+      }),
+    ]);
+    expect(remote.rows('xp_events')).toEqual([
+      expect.objectContaining({ source: 'quest', source_id: quest.milestones[0].id }),
+    ]);
+
+    const [row] = remote.rows('quests');
+    remote.put('quests', {
+      ...row,
+      updated_at: '2026-11-12T08:00:00+00:00',
+      status: 'done',
+      done_on: '2026-11-12',
+    });
+    await syncOnce(db, remote, ids);
+    expect(listQuests(db, LOCAL)).toEqual([
+      expect.objectContaining({ id: quest.id, userId: LOCAL, status: 'done', doneOn: '2026-11-12' }),
+    ]);
+    expect(countQueue(db)).toBe(0);
   });
 
   it('pull donosi nove retke s drugog uređaja i ne vraća ih u red', async () => {
