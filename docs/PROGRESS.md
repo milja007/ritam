@@ -2,23 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 15:43 — plan: 37 „zadnjih 7 dana“ + 23 provjera faze 1, grana `wip/korak-37-7-dana-23`
-1. Core: `showsRollingWeek(date)` = zadnji dan mjeseca koji nije nedjelja (koncept, Dijagnoze) + testovi.
-2. DB: `previewRollingWeek(db, user, end, today)` — tjedna dijagnoza za `end−6..end` naspram 7 dana prije; **samo čita** (ne piše `reports`, ne dira tjedne prijedloge ni niz boljih tjedana); spremna kao tjedna (upit za `end` ispunjen, ≥ 1 zaključen dan). Testovi.
-3. UI: na kraju večernjeg upita i u `DiagnosisModal` takav dan pokazuje „Zadnjih 7 dana“ ispred mjesečne; bez prijedloga za prihvaćanje (jedna promjena tjedno ostaje nedjeljom) — kratka napomena. HR/EN, čitač.
-4. Korak 23: README (pokretanje, testovi, kontrole), pregled TODO-ova, `expo-doctor` (ako se sruši na `@expo/env` → problem alata).
-5. Usput: PR opisi i objave više ne pišu „FIXES: <URL #1>“ u tijelu PR-a — GitHub je time zatvorio #1 (PR #26); #1 ponovno otvoren.
+## 2026-11-17 · Sesija 15:43 — 37 „zadnjih 7 dana“ + 23 (dio), PR #28
+- **37**: zadnji dan mjeseca koji nije nedjelja → ispod dnevne „Zadnjih 7 dana“ (naspram 7 prije), pa mjesečna. `previewRollingWeek` samo čita (ne sprema, bez prijedloga, bez niza boljih tjedana); napomena da nova promjena stiže nedjeljom.
+- **23 (dio)**: README za Ritam; nema TODO-ova; `expo-doctor` 18/20 (Expo API blokiran u cloudu — ponoviti na Macu). Ostaje `[~]` do deploya 20–22.
+- Issue #1 je zatvorio GitHub jer je opis PR-a #26 imao „FIXES: <URL #1>“ — ponovno otvoren; `FIXES` ide samo u objavu u #1, ne u opis PR-a.
 
-## 2026-11-17 · Sesija 12:43 — P2 za Edge Functions (PR #16), grana `fix/edge-p2`
-- `supabase/functions/_shared/plan-logic.ts` (čisto, bez Denoa; Jest `src/core/schedule/plan-logic.test.ts`): validacija `plan-day` (svaki prioritet/prozor, 99:99, `[null]` → 400) i `parse-input` (`null` → 400); fallback: fiksni blokovi rezerviraju vrijeme (`kind: 'fixed'`), predug zadatak ne troši prozore; model: blok izvan prozora, preklapanje, pomaknut fiksni → lokalni raspored.
-- `llm-provider`: upis u `llm_calls` kroz `EdgeRuntime.waitUntil` (inače `await`), greška inserta se logira; model iz `LLM_MODEL` (zadano i dalje `claude-sonnet-4-5`, povlači se 30. 11. — pitanje 77).
-- `deno check` PASS (lokalni stub za `esm.sh` jer proxy blokira). Funkcije i dalje nedeployane.
-
-## 2026-11-17 · Sesija 12:43 — koraci 37 (dopuna) i 37b, P2 (PR #26)
-- **P2 (PR #22)**: `monthChanges` razlikuje konkretne ideje (ključ + JSON prve ideje); ista ideja i prenesena promjena (`carried`, i preko granice mjeseca) broje se jednom.
-- **37**: zadnji dan mjeseca mjesečna dijagnoza odmah ispod dnevne (`PeriodDiagnosesInline` = tjedan + mjesec + godina; kraj večernjeg upita i `DiagnosisModal`). Bez obavijesti.
-- **37b**: `local-year-v1` + `generateYearReport` (prije 31. 12. ne čita bazu) + kartica na tabu Godina (u siječnju i prošla godina) + modal s trakom 12 žarova (pale se redom, poštuje „smanji kretanje“) + 31. 12. ispod dnevne. HR/EN.
-- Nije rađeno: koncept kaže da je zadnjeg dana mjeseca (ako nije nedjelja) tjedni dio „zadnjih 7 dana“ — nije napravljeno (tjedna je vezana uz pon–ned).
+## 2026-11-17 · Sesija 12:43 — P2 Edge Functions (PR #27), 37 dopuna + 37b (PR #26) — detalji u arhivi.
 
 ## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 
@@ -31,7 +20,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - `main`: koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
 - Remote Supabase `ritam`: 7 migracija (zadnja `20261111103947_sync`), tablice prazne. Auth/sync iza `EXPO_PUBLIC_FEATURE_AUTH` (isključeno).
 - Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna, mjesečna i godišnja dijagnoza, magic link, sync s dva uređaja.
-- Stanje #1 (2026-11-17 12:45): nema P0/P1; P2 za PR #22 riješen u PR-u #26, P2 za PR #16 u `fix/edge-p2` (model: pitanje 77).
+- Stanje #1 (2026-11-17 15:45): nema P0/P1 ni otvorenih P2 (PR #22 → #26, PR #16 → #27; model: pitanje 77).
 
 ## Sljedeće
 0. **Odluka 81** — kod spojen (PR #25); ostaje remote migracija (pitanje 84) — **ne uključivati `EXPO_PUBLIC_FEATURE_AUTH` prije primjene**.
