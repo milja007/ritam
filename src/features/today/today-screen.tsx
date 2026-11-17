@@ -150,7 +150,8 @@ export function TodayScreen() {
   const [planDismissedFor, setPlanDismissedFor] = useState<string | null>(null);
   const needsPlan = day.status === 'ready' && needsTodayPlan(day.blocks);
 
-  // Iskrslo na podsjetniku otvara taj blok u uređivaču (puni "Iskrslo" flow je korak 27).
+  // Iskrslo na podsjetniku otvara flow „Nešto je iskrslo“ (korak 27) od sada; blok podsjetnika je
+  // tada u prozoru jer podsjetnik stiže na njegovom početku.
   const blockRequest = useBlockRequested();
   const requestedBlock =
     blockRequest !== null && day.status === 'ready'
@@ -161,11 +162,23 @@ export function TodayScreen() {
     // Blok nije na današnjem timelineu (npr. sutrašnji) — app se samo otvori na Danas.
     if (blockRequestMissing) consumeBlockRequest();
   }, [blockRequestMissing]);
-  const activeEditing: Editing | null =
-    editing ??
-    (requestedBlock !== null && !showEvening && !showMorning && !tomorrowOpen
-      ? { mode: 'edit', draft: draftFromBlock(requestedBlock), id: requestedBlock.id }
-      : null);
+  const activeEditing: Editing | null = editing;
+  // Minuta otvaranja se zamrzne odmah (usklađivanje stanja u renderu, bez efekta); zahtjev se
+  // briše kad se flow zatvori.
+  if (
+    requestedBlock !== null &&
+    unexpectedAt === null &&
+    editing === null &&
+    sheetBlock === null &&
+    !planOpen &&
+    !diagnosisOpen &&
+    !giveUpOpen &&
+    !showEvening &&
+    !showMorning &&
+    !tomorrowOpen
+  ) {
+    setUnexpectedAt(liveMinutes);
+  }
 
   const otherModalOpen =
     showEvening ||
@@ -452,7 +465,10 @@ export function TodayScreen() {
           nowMinutes={unexpectedAt}
           blocks={day.blocks}
           onApply={day.unexpected}
-          onClose={() => setUnexpectedAt(null)}
+          onClose={() => {
+            setUnexpectedAt(null);
+            consumeBlockRequest();
+          }}
         />
       ) : null}
 

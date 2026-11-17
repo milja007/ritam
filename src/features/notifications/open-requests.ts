@@ -4,7 +4,7 @@ import type { PermissionDecision } from '@/core/notifications';
 
 /**
  * Zahtjevi iz obavijesti prema ekranima (npr. dodir večernje obavijesti → večernji upit, Iskrslo na
- * podsjetniku → uređivač bloka) i signal da su se blokovi promijenili izvan ekrana (Gotovo na obavijesti).
+ * podsjetniku → „Nešto je iskrslo“ na Danu) i signal da su se blokovi promijenili izvan ekrana (Gotovo na obavijesti).
  * Obavijest stiže izvan React stabla, pa se zahtjev pamti dok ga ekran ne preuzme.
  */
 type State = {
@@ -60,7 +60,7 @@ export function useEveningRequested(): boolean {
   return useSyncExternalStore(subscribe, () => state.evening, () => false);
 }
 
-/** Otvori blok u uređivaču na tabu Danas (Iskrslo / dodir podsjetnika). */
+/** Iskrslo na podsjetniku: tab Danas otvara „Nešto je iskrslo“ (ako je blok na današnjem timelineu). */
 export function requestOpenBlock(blockId: string): void {
   set({ blockId });
 }
