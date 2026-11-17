@@ -4,6 +4,14 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-17 · Sesija 21:43 — korak 29: san, PR #34
+1. Core `src/core/sleep/`: ocjena noći prema cilju (`assessNight`: odmoran / kratko < cilj − 1 h / jako kratko < cilj − 2 h), 7 noći za karticu, korak kreveta: ako je prosječni krevet zadnjih noći (≥ 3) kasniji od cilja > 15 min, večerašnji cilj je 15 min ranije od prosjeka (zaokruženo na 15), nikad ranije od cilja — „postupni pomaci po 15 min“ iz koncepta. Testovi.
+2. DB `listMorningCheckins(from, to)` — samo čitanje.
+3. Jutarnji brief: nakon prijave kratkog sna kartica „Lakše jutro“ (koliko manje od cilja) s gumbom koji otvara „Nešto je iskrslo“ s razlogom „Loš san“ i 1 h — korisnik bira što pomaknuti (raspored se prilagođava, ništa se ne mijenja samo).
+4. Profil: kartica „San“ — 7 noći kao stupci prema ciljanoj liniji (žar boje, ugašen bez prijave), prosjek, prosječni krevet, večerašnji korak kreveta; pristupačnost (svaka noć label), smanji kretanje.
+5. Wind-down obavijest ostaje na cilju (obavijesti se ne diraju u ovom PR-u). Pragovi nisu u konceptu → pitanje 87.
+- Gotovo 1–4; korak `[~]` dok wind-down ne prati korak kreveta.
+
 ## 2026-11-17 · Sesija 18:43 (nastavak) — 27: Iskrslo na obavijesti, PR #33
 - Gumb „Iskrslo“ na podsjetniku bloka sada otvara „Nešto je iskrslo“ na Danu (od trenutka dodira), ne uređivač bloka; blok koji nije danas → samo Dan.
 
