@@ -69,3 +69,22 @@ export function sortQuests<T extends Pick<Quest, 'status' | 'targetDate' | 'done
     return aDone > bDone ? -1 : aDone < bDone ? 1 : 0;
   });
 }
+
+/** Brzi izbor okvirnog roka u uređivaču (bez kalendara): mjeseci od danas, `none` = bez roka. */
+export const QUEST_DEADLINES = ['none', '1m', '3m', '6m', '1y'] as const;
+export type QuestDeadline = (typeof QUEST_DEADLINES)[number];
+
+const DEADLINE_MONTHS: Record<Exclude<QuestDeadline, 'none'>, number> = { '1m': 1, '3m': 3, '6m': 6, '1y': 12 };
+
+/** Datum roka za izbor (`today` + mjeseci; 31. 1. + 1 mj = zadnji dan veljače). */
+export function questDeadlineDate(deadline: QuestDeadline, today: string): string | null {
+  if (deadline === 'none') return null;
+  const [y, m, d] = today.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  const total = m - 1 + DEADLINE_MONTHS[deadline];
+  const year = y + Math.floor(total / 12);
+  const month = (total % 12) + 1;
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${year}-${pad(month)}-${pad(Math.min(d, last))}`;
+}

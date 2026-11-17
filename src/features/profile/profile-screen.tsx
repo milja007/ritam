@@ -23,6 +23,7 @@ import { dayLong, monthName, ProfileEmberCards } from '@/features/ember';
 import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
 import { ProgressCard, ScoreAreasPicker } from '@/features/progress';
+import { QuestsCard } from '@/features/quests';
 import { updateSettings, useSettings } from '@/features/settings';
 import { useNow } from '@/features/today';
 import { ThemePickerCard } from '@/features/unlocks';
@@ -44,7 +45,7 @@ const TOGGLES: readonly { kind: NotificationKind; field: keyof Pick<
 ];
 
 /**
- * Profil: napredak (XP, razina, streak), tema boja plamena (korak 38), račun (samo iza feature flaga, korak 18), navike i epski questovi (uskoro), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
+ * Profil: napredak (XP, razina, streak), tema boja plamena (korak 38), račun (samo iza feature flaga, korak 18), navike (uskoro), epski questovi (korak 34), jezik, buđenje (radni dan / vikend) i sati sna, obavijesti (vremena,
  * prekidači dnevnih obavijesti i podsjetnika blokova), područja rezultata. Sve se sprema odmah.
  */
 export function ProfileScreen() {
@@ -93,7 +94,7 @@ export function ProfileScreen() {
           </Section>
 
           <Section title={t('profile.quests.title')}>
-            <SoonCard text={t('profile.quests.soon')} />
+            <QuestsCard today={now.date} />
           </Section>
 
           {session.status !== 'disabled' ? (
