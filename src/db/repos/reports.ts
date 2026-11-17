@@ -9,6 +9,13 @@ import {
   diagnosisSuggestion,
   earlierMonthAverages,
   isMonthDiagnosisReady,
+  isYearDiagnosisReady,
+  buildYearDiagnosis,
+  earlierYearAverages,
+  yearBounds,
+  yearChanges,
+  LOCAL_YEAR_DIAGNOSIS_VERSION,
+  type YearDiagnosis,
   isWeekDiagnosisReady,
   LOCAL_DAY_DIAGNOSIS_VERSION,
   LOCAL_MONTH_DIAGNOSIS_VERSION,
@@ -499,6 +506,113 @@ export function generateMonthReport(
       sections: diagnosis,
       stats,
       promptVersion: LOCAL_MONTH_DIAGNOSIS_VERSION,
+      suggestion: null,
+      suggestionAccepted: null,
+      helpful: existing?.helpful ?? null,
+      feedbackComment: existing?.feedbackComment ?? null,
+      seenAt: existing?.seenAt ?? null,
+    });
+    const values = { ...report, sections: diagnosis, stats };
+    if (existing) {
+      tx.update(reports).set(values).where(eq(reports.id, existing.id)).run();
+    } else {
+      tx.insert(reports).values(values).run();
+    }
+    return { report, diagnosis };
+  });
+}
+
+export type YearReportResult = { report: Report; diagnosis: YearDiagnosis };
+
+/**
+ * Lokalna dijagnoza godine `year` ("YYYY", korak 37b): statistika zaključenih dana te i prošle
+ * godine → sekcije → upsert u `reports` (period `year`, `periodStart` = 1. 1.). `null` dok nije
+ * dostupna (godina nije prošla, a upit 31. 12. nije ispunjen, ili godina nema zaključen dan) i
+ * za neispravnu godinu. Pravila kao mjesečna: dani po snimci područja (P48), bez promjene ne
+ * piše, bez prijedloga za prihvaćanje; pregled promjena broji tjedne dijagnoze godine.
+ */
+export function generateYearReport(
+  db: RitamDb,
+  userId: string,
+  year: string,
+  today: LocalDate,
+  deps: RepoDeps = defaultRepoDeps,
+): YearReportResult | null {
+  const bounds = yearBounds(year);
+  if (bounds === null) return null;
+  const previousEnd = addDays(bounds.start, -1);
+  const previousBounds = previousEnd === null ? null : yearBounds(previousEnd.slice(0, 4));
+  if (previousBounds === null) return null;
+
+  // Dotadašnji rekord: prosjeci ranijih godina (čita se prije transakcije, kao kod tjedna).
+  const earlier = earlierYearAverages(listDayScores(db, userId, bounds.end).days, year);
+  const previousBest = earlier.length > 0 ? Math.max(...earlier) : null;
+
+  const now = deps.now().toISOString();
+  return db.transaction((tx) => {
+    const eveningRows = tx
+      .select()
+      .from(checkins)
+      .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening')))
+      .all()
+      .map((row) => checkinSchema.parse(row));
+    const complete = new Map(
+      eveningRows.filter((row) => row.date <= today && isEveningCheckinComplete(row)).map((row) => [row.date, row]),
+    );
+    if (!isYearDiagnosisReady(year, today, complete.keys())) return null;
+
+    const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
+    const currentAreas = settingsRow ? selectedScoreAreas(settingsSchema.parse(settingsRow)) : (['plan'] as const);
+    const closedDays = (start: LocalDate, end: LocalDate): PeriodDay[] =>
+      [...complete.entries()]
+        .filter(([date]) => date >= start && date <= end)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, evening]) => {
+          const full = readDayStats(tx, userId, date, eveningRows);
+          const areas = evening.scoreAreas ?? currentAreas;
+          return { stats: statsForAreas(full, areas), score: dayScore(full, areas).score };
+        });
+    const days = closedDays(bounds.start, bounds.end);
+    const current = periodStats(bounds.start, bounds.end, bounds.length, days);
+    const previousDays = closedDays(previousBounds.start, previousBounds.end);
+    const previous =
+      previousDays.length > 0
+        ? periodStats(previousBounds.start, previousBounds.end, previousBounds.length, previousDays)
+        : null;
+
+    const weekAnswers = tx
+      .select()
+      .from(reports)
+      .where(and(eq(reports.userId, userId), eq(reports.period, 'week')))
+      .all()
+      .map((row) => {
+        const week = parseWeekDiagnosis(row.sections);
+        return {
+          start: row.periodStart,
+          suggestion: row.suggestion,
+          accepted: row.suggestionAccepted,
+          idea: week ? JSON.stringify(week.ideas[0] ?? null) : null,
+          carried: week?.carried === true,
+        };
+      });
+    const changes = yearChanges(year, weekAnswers);
+
+    const diagnosis = buildYearDiagnosis(current, previous, days, { previousBest, changes });
+    const stats = { current, previous };
+    const existing = tx.select().from(reports).where(reportOf(userId, 'year', bounds.start)).get();
+    if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
+      return { report: reportSchema.parse(existing), diagnosis };
+    }
+    const report = reportSchema.parse({
+      id: existing?.id ?? deps.newId(),
+      userId,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      period: 'year',
+      periodStart: bounds.start,
+      sections: diagnosis,
+      stats,
+      promptVersion: LOCAL_YEAR_DIAGNOSIS_VERSION,
       suggestion: null,
       suggestionAccepted: null,
       helpful: existing?.helpful ?? null,
