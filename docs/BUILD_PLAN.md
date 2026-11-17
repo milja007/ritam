@@ -39,10 +39,10 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 - [x] **17e. Tabovi po novom konceptu (Borna, 2026-11-10)** — Dan · Tjedan · Mjesec · Godina · Profil; tabovi Questovi i Navike se uklanjaju, navike, san i (epski) questovi idu u Profil. Placeholderi za Mjesec i Godina dok ne dođe 25b.
 - [x] **18. Supabase klijent + auth** — `@supabase/supabase-js`, env varijable (`EXPO_PUBLIC_SUPABASE_URL/KEY`), auth ekran (email magic link) iza feature flaga dok nema accounta.
 - [x] **19. Sync** — red promjena lokalno → Supabase, pull pri pokretanju; konflikti: zadnji updatedAt pobjeđuje.
-- [ ] **20. LLM provider** — Edge Function `llm-provider` modul (Claude sada, sučelje za DeepSeek), logiranje u `llm_calls`. Bez ključeva u repou.
-- [ ] **21. parse-input** — Edge Function: slobodan tekst → blokovi (JSON). Spojiti na korak 13.
+- [~] **20. LLM provider** — Edge Function `llm-provider` modul (Claude sada, sučelje za DeepSeek), logiranje u `llm_calls`. Bez ključeva u repou.
+- [~] **21. parse-input** — Edge Function: slobodan tekst → blokovi (JSON). Spojiti na korak 13.
 - [ ] **22. plan-day** — Edge Function: raspored sutrašnjeg dana + 0–3 pitanja, validacija u appu, fallback pravila. Plan se slaže zajedno s korisnikom (što mora, kada, mogućnosti, što ne može i zašto) i **korisnik ga odobrava** prije nego postane plan za sutra (vidljiv već iste noći).
-  - *Koraci 20–22: kod je spojen (PR #16, 2026-11-13); P2 Codexa riješeni i logika pokrivena testovima (2026-11-17, `_shared/plan-logic.ts`). Ostaju `[ ]` dok funkcije nisu deployane (Borna: tajna, model, deploy) i `parse-input` spojen na korak 13.*
+  - *Koraci 20–22: kod je spojen (PR #16, 2026-11-13); P2 Codexa riješeni i logika pokrivena testovima (2026-11-17, `_shared/plan-logic.ts`). *2026-11-18 (PR #35):* model po funkciji (Bornina odluka 2026-11-09: `parse-input` Haiku 5.5, `plan-day` Sonnet 5.5); app provjerava odgovor `parse-input` i spaja ga na „Što imaš sutra?“ (s oblakom; bez njega lokalni unos s više stavki). 20 i 21 su `[~]` do deploya (Borna); 22 čeka klijent i prijedlog plana s odobrenjem.*
 - [x] ~~**22b. Danas kao raspored sati (odluka 2026-11-10)**~~ *(zamijenjeno korakom 17c)* — dashboard dana kao školski raspored dok vrijeme ide: trenutni blok otvoren/istaknut, sljedeće ispod, status "trenutno: …" sa strane.
 - [~] **23. Provjera faze 1** — expo-doctor, pregled TODO-ova, README s uputama za pokretanje i testiranje.
   - *2026-11-17 (PR #28):* README za Ritam (pokretanje, env, kontrole, struktura); nema TODO/FIXME u `src/`, `supabase/`, `scripts/`; `expo-doctor` 18/20 (dvije provjere traže Expo API, cloud proxy ga blokira — ponoviti na Macu). Ostaje `[~]` dok 20–22 nisu deployani i provjereni.

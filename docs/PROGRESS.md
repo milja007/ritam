@@ -2,13 +2,13 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 21:43 — korak 29: san, PR #34
-1. Core `src/core/sleep/`: ocjena noći prema cilju (`assessNight`: odmoran / kratko < cilj − 1 h / jako kratko < cilj − 2 h), 7 noći za karticu, korak kreveta: ako je prosječni krevet zadnjih noći (≥ 3) kasniji od cilja > 15 min, večerašnji cilj je 15 min ranije od prosjeka (zaokruženo na 15), nikad ranije od cilja — „postupni pomaci po 15 min“ iz koncepta. Testovi.
-2. DB `listMorningCheckins(from, to)` — samo čitanje.
-3. Jutarnji brief: nakon prijave kratkog sna kartica „Lakše jutro“ (koliko manje od cilja) s gumbom koji otvara „Nešto je iskrslo“ s razlogom „Loš san“ i 1 h — korisnik bira što pomaknuti (raspored se prilagođava, ništa se ne mijenja samo).
-4. Profil: kartica „San“ — 7 noći kao stupci prema ciljanoj liniji (žar boje, ugašen bez prijave), prosjek, prosječni krevet, večerašnji korak kreveta; pristupačnost (svaka noć label), smanji kretanje.
-5. Wind-down obavijest ostaje na cilju (obavijesti se ne diraju u ovom PR-u). Pragovi nisu u konceptu → pitanje 87.
-- Gotovo 1–4; korak `[~]` dok wind-down ne prati korak kreveta.
+## 2026-11-18 · Sesija 00:43 — koraci 20–22 u appu (prioritet „Žar“ istekao 17. 11.)
+1. **20 — model po funkciji** prema Borninoj odluci 2026-11-09 (arhiva): `parse-input` → `claude-haiku-5-5`, `plan-day` → `claude-sonnet-5-5`; čista funkcija `llmModelFor(fn, env)` u `_shared/plan-logic.ts` (override `LLM_MODEL_PARSE_INPUT` / `LLM_MODEL_PLAN_DAY`), test. Zatvara P2 5 (Sonnet 4.5 se povlači) bez čekanja Borne — model je već odabran; ostaje samo deploy.
+2. **21 — app validira odgovor** `parse-input` (`src/core/schedule/parsed-input.ts`): nevaljani blokovi otpadaju, najviše 20; `parsedBlocksToDrafts` → `BlockDraft` (od–do / početak + trajanje / doba dana / prvi slobodan termin), termini se ne preklapaju s već dodanim. Testovi.
+3. **21 — lokalni višestruki unos**: „Trening 18-19, zubar u 15; kemija 45 min“ → tri stavke bez LLM-a (dijeli se samo na `,` `;` i novi red). Testovi.
+4. **21 — spoj na korak 13**: „Što imaš sutra?“ — kad je oblak uključen i postoji sesija, unos s više stavki ide kroz `parse-input` (timeout 8 s); inače / na grešku lokalno. Gumb pokazuje učitavanje, čitač čuje „Dodano N“. Bez oblaka ponašanje je kao prije (osim višestrukog unosa).
+5. **22 — sljedeći PR**: klijent `plan-day` + prijedlog plana s pitanjima i odobrenjem.
+- Gotovo 1–4 (PR #35). Deploy funkcija ostaje Borni (pitanje 77, sada samo deploy). Sljedeće: 22 u appu.
 
 ## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 
@@ -33,7 +33,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 86. **Epski questovi (34)** — pravila nisu u konceptu, odabrano: quest = naslov, zašto, okvirni rok (neobavezan), do 12 etapa; najviše 3 u tijeku; XP 15 po etapi i 100 za ostvaren quest (bez kazni; poništena etapa vraća XP); arhiva čuva XP. U redu?
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.
-77. Deploy Edge Functions (20–22): `supabase secrets set ANTHROPIC_API_KEY` **i `LLM_MODEL`** (zadani `claude-sonnet-4-5` se povlači 30. 11. 2026. — koji model želiš?), pa `supabase functions deploy parse-input` i `plan-day`.
+77. Deploy Edge Functions (20–22): ključ je već u secrets (2026-11-09), model je tvoja odluka od 2026-11-09 i sada je u kodu (`parse-input` Haiku 5.5, `plan-day` Sonnet 5.5). Ostaje samo na Macu: `npx supabase functions deploy parse-input` i `plan-day` — kad uključiš oblak.
 78. Bedževi (34): popis i pragovi nisu u konceptu, odabrani su ovdje (gore). „7 dana bez prekršaja“ se može osvojiti samo ako su zabrane uključene u područja rezultata. Dodati/maknuti koji? Promjena je mala.
 80. Otključavanja (32): koncept navodi vrste (tema, okvir avatara, animacija, naslov), ne popis. Odabrano: 5 tema i 6 naslova na razinama 1–15 (gore). Je li raspored u redu i želiš li okvire avatara i nove animacije „Gotovo“ kao nagrade?
 - Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.

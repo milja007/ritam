@@ -4,6 +4,8 @@ import {
   acceptModelPlan,
   buildFallbackPlan,
   isClock,
+  LLM_MODELS,
+  llmModelFor,
   parseParseInputBody,
   parsePlanDayRequest,
   type DayPriority,
@@ -149,5 +151,29 @@ describe('acceptModelPlan (P2: model ne smije izaći iz prozora ni dati 99:99)',
   it('nevaljan JSON → null', () => {
     expect(acceptModelPlan('nije json', req)).toBeNull();
     expect(acceptModelPlan('[]', req)).toBeNull();
+  });
+});
+
+describe('llmModelFor (korak 20, odluka Borne 2026-11-09)', () => {
+  const none = () => undefined;
+
+  it('daje model po funkciji: parse-input Haiku 5.5, plan-day Sonnet 5.5', () => {
+    expect(llmModelFor('parse-input', none)).toBe('claude-haiku-5-5');
+    expect(llmModelFor('plan-day', none)).toBe('claude-sonnet-5-5');
+  });
+
+  it('ne koristi model koji se povlači 30. 11. 2026.', () => {
+    expect(Object.values(LLM_MODELS)).not.toContain('claude-sonnet-4-5');
+  });
+
+  it('varijabla funkcije zamjenjuje model samo te funkcije', () => {
+    const env: Record<string, string> = { LLM_MODEL_PLAN_DAY: ' claude-opus-5-5 ' };
+    const read = (name: string) => env[name];
+    expect(llmModelFor('plan-day', read)).toBe('claude-opus-5-5');
+    expect(llmModelFor('parse-input', read)).toBe('claude-haiku-5-5');
+  });
+
+  it('prazna varijabla ne briše model', () => {
+    expect(llmModelFor('parse-input', () => '  ')).toBe('claude-haiku-5-5');
   });
 });

@@ -16,7 +16,7 @@ import {
   type BlockDraft,
   type BlockDraftInput,
 } from './block-draft';
-import { DAY_PART_START, parsePlanEntry } from './plan-entry';
+import { DAY_PART_START, parsePlanEntry, type PlanEntry } from './plan-entry';
 import { nextFreeSlotFrom } from './today-plan';
 
 /** Prvi blok sutra počinje najranije ovoliko nakon buđenja. */
@@ -67,7 +67,11 @@ export function nextFreeSlot(
  */
 export function typedDraft(text: string, occupied: readonly Occupied[], wakeTime: string): BlockDraft | null {
   const entry = parsePlanEntry(text);
-  if (!entry) return null;
+  return entry ? entryDraft(entry, occupied, wakeTime) : null;
+}
+
+/** Nacrt iz već prepoznatog unosa (tipkanje ili `parse-input`) — pravila kao `typedDraft`. */
+export function entryDraft(entry: PlanEntry, occupied: readonly Occupied[], wakeTime: string): BlockDraft {
   const minutes = entry.minutes ?? DEFAULT_BLOCK_MINUTES;
   const start = entry.start === null ? null : parseClock(entry.start);
   if (start !== null) {

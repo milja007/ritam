@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
   // Pokušaj LLM plan; ako ne uspije, koristi fallback.
   let response: PlanDayResponse;
   try {
-    const provider = withLogging(createClaudeProvider(), user.id, 'plan-day');
+    const provider = withLogging(createClaudeProvider('plan-day'), user.id, 'plan-day');
     response = await buildPlanWithLLM(body, provider);
   } catch (err) {
     console.warn('LLM plan-day nije uspio, koristim fallback:', err);
