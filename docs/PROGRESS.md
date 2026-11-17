@@ -40,6 +40,7 @@ Epski questovi (traže tablicu + remote migraciju) — zasebni PR.
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
 
 ## Pitanja za Bornu
+85. **Žeravica (freeze tokeni, korak 34)** — pravila nisu u konceptu, odabrano: 1 žeravica za svakih 7 dana zaredom, najviše 2, troši se automatski za propušten dan (dan ne povećava niz); ako rupa ima više dana nego žeravica, niz pukne, a žeravice ostaju. Vrijedi za glavni niz svugdje (Profil, Dan, bedževi, orb, dijagnoze). Naziv u UI-ju „Žeravica“ / „Banked ember“. U redu? Promjena je jedna konstanta.
 84. **Remote migracija `color_theme` (odluka 81)** — odobrena, ali je Claudeov alat odbio primjenu. Primijeni na Macu: `npx supabase db push` (ili SQL iz `supabase/migrations/20261117010000_color_theme.sql` u SQL editoru, pa `supabase migration repair --status applied 20261117010000`). Dok nije primijenjena, sync ne smije biti uključen.
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.

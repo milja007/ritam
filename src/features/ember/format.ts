@@ -49,3 +49,8 @@ export function weekRange(from: string, to: string, language: string): string {
 export function dayNumber(date: string): string {
   return String(Number(date.slice(8, 10)));
 }
+
+/** "2026-11-12" → "12. studenoga" / "November 12". */
+export function dayMonth(date: string, language: string): string {
+  return format(date, language, { day: 'numeric', month: 'long' }, date);
+}

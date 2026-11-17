@@ -415,12 +415,22 @@
       "hintKeep": "Fill in the evening check-in to grow your streak.",
       "hintStart": "Today's evening check-in starts a new streak.",
       "gainA11y_one": "Streak grew: {{count}} day in a row.",
-      "gainA11y_other": "Streak grew: {{count}} days in a row."
+      "gainA11y_other": "Streak grew: {{count}} days in a row.",
+      "hintFrozen": "A banked ember is keeping your streak — tonight's check-in carries it on."
     },
     "xpTitle": "Experience (XP)",
     "xpGain": "+{{xp}} XP",
     "xpGainA11y": "Gained {{xp}} XP",
-    "toNextLevel": "{{xp}} / {{total}} XP to level {{level}}"
+    "toNextLevel": "{{xp}} / {{total}} XP to level {{level}}",
+    "freeze": {
+      "title": "Banked embers: {{held}} of {{max}}",
+      "nextIn_one": "Next one in {{count}} day in a row.",
+      "nextIn_other": "Next one in {{count}} days in a row.",
+      "full": "You have the most embers you can hold.",
+      "saved": "Kept your streak alive: {{dates}}.",
+      "explain": "Every 7 days in a row earns a banked ember. Miss a day and it bridges the gap, so your streak stays.",
+      "earnedA11y": "New banked ember: it will keep your streak if you miss a day."
+    }
   },
   "diagnosis": {
     "title": "Daily diagnosis",
