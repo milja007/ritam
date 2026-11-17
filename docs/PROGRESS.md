@@ -2,6 +2,9 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 18:43 (nastavak) — korak 34: epski questovi
+Plan: (1) PR podataka (HIGH_RISK): domena `quest.ts` (etape kao JSON u retku, stanje active/done/archived), core `quests.ts` (XP 15 po etapi, 100 za ostvaren quest, najviše 3 u tijeku, redoslijed, rok), lokalna tablica `quests` + okidači synca (0011), Supabase migracija `20261117180000_quests.sql` (RLS, `synced_at`, tombstone) — **remote primjena je Bornina (pitanje 84)**, repo s usklađivanjem XP-a bez duplikata, testovi (domena, repo, sync, `test:supabase`). (2) PR UI-ja: kartica „Epski questovi“ na Profilu umjesto „uskoro“ + uređivač, HR/EN.
+
 ## 2026-11-17 · Sesija 18:43 — korak 34 (dio): freeze tokeni „žeravica“
 Plan (stanje #1: nema P0/P1, nema otvorenih PR-ova ni bug issueja):
 1. Core `streak.ts`: freeze tokeni izvedeni iz povijesti (ne spremaju se, kao XP): 1 žeravica za svakih 7 ubrojenih dana zaredom, najviše 2; propušten dan premošćuje se žeravicom (troši se, dan ne povećava niz); nedovoljno žeravica → niz pukne, žeravice ostaju. Vrijedi svugdje gdje se računa niz (`streakFromDates`).
@@ -41,7 +44,8 @@ Epski questovi (traže tablicu + remote migraciju) — zasebni PR.
 
 ## Pitanja za Bornu
 85. **Žeravica (freeze tokeni, korak 34)** — pravila nisu u konceptu, odabrano: 1 žeravica za svakih 7 dana zaredom, najviše 2, troši se automatski za propušten dan (dan ne povećava niz); ako rupa ima više dana nego žeravica, niz pukne, a žeravice ostaju. Vrijedi za glavni niz svugdje (Profil, Dan, bedževi, orb, dijagnoze). Naziv u UI-ju „Žeravica“ / „Banked ember“. U redu? Promjena je jedna konstanta.
-84. **Remote migracija `color_theme` (odluka 81)** — odobrena, ali je Claudeov alat odbio primjenu. Primijeni na Macu: `npx supabase db push` (ili SQL iz `supabase/migrations/20261117010000_color_theme.sql` u SQL editoru, pa `supabase migration repair --status applied 20261117010000`). Dok nije primijenjena, sync ne smije biti uključen.
+84. **Remote migracije `color_theme` (odluka 81) i `quests` (korak 34)** — Claudeov alat ne smije primijeniti. Na Macu: `npx supabase db push` (primijeni `20261117010000_color_theme.sql` i `20261117180000_quests.sql`). Dok nisu primijenjene, sync ne smije biti uključen.
+86. **Epski questovi (34)** — pravila nisu u konceptu, odabrano: quest = naslov, zašto, okvirni rok (neobavezan), do 12 etapa; najviše 3 u tijeku; XP 15 po etapi i 100 za ostvaren quest (bez kazni; poništena etapa vraća XP); arhiva čuva XP. U redu?
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.
 77. Deploy Edge Functions (20–22): `supabase secrets set ANTHROPIC_API_KEY` **i `LLM_MODEL`** (zadani `claude-sonnet-4-5` se povlači 30. 11. 2026. — koji model želiš?), pa `supabase functions deploy parse-input` i `plan-day`.

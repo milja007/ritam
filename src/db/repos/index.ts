@@ -8,3 +8,4 @@ export * from './settings';
 export * from './reports';
 export * from './day-scores';
 export * from './unexpected';
+export * from './quests';

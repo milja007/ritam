@@ -14,6 +14,8 @@ import type {
   CheckinItemKind,
   CheckinKind,
   CheckinOutcome,
+  QuestMilestone,
+  QuestStatus,
   ReportPeriod,
   ThemePreference,
   XpSource,
@@ -175,4 +177,20 @@ export const reports = sqliteTable(
   },
   // Jedna dijagnoza po razdoblju.
   (table) => [uniqueIndex('reports_user_period_start_unique').on(table.userId, table.period, table.periodStart)],
+);
+
+/** Epski questovi (korak 34): dugoročni ciljevi u Profilu; etape su JSON u retku. */
+export const quests = sqliteTable(
+  'quests',
+  {
+    ...baseColumns(),
+    title: text('title').notNull(),
+    why: text('why').notNull(),
+    targetDate: text('target_date'),
+    /** JSON niz etapa `{ id, title, doneOn }`. */
+    milestones: text('milestones', { mode: 'json' }).$type<QuestMilestone[]>().notNull(),
+    status: text('status').$type<QuestStatus>().notNull(),
+    doneOn: text('done_on'),
+  },
+  (table) => [index('quests_user_idx').on(table.userId)],
 );

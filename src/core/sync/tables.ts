@@ -15,6 +15,7 @@ export const SYNC_TABLES = [
   'rule_logs',
   'xp_events',
   'reports',
+  'quests',
 ] as const;
 
 export type SyncTable = (typeof SYNC_TABLES)[number];
@@ -30,6 +31,7 @@ export const NATURAL_KEYS: Readonly<Record<SyncTable, readonly string[] | null>>
   rule_logs: ['ruleId', 'date'],
   xp_events: null,
   reports: ['period', 'periodStart'],
+  quests: null,
 };
 
 export function isSyncTable(name: string): name is SyncTable {

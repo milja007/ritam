@@ -8,3 +8,4 @@ export * from './badges';
 export * from './orb';
 export * from './unlocks';
 export * from './better-weeks';
+export * from './quests';
