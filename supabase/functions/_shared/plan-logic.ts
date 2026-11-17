@@ -27,6 +27,8 @@ export type TimeWindow = { start: string; end: string };
 
 export type PlanDayRequest = {
   date: string;
+  /** Jezik sažetka i pitanja (stari klijent bez polja → hrvatski). */
+  locale: 'hr' | 'en';
   priorities: DayPriority[];
   freeWindows: TimeWindow[];
   preferences: PlanPreferences | null;
@@ -153,6 +155,7 @@ export function parsePlanDayRequest(body: unknown): PlanDayRequest | null {
   if (preferences === undefined) return null;
   return {
     date: body.date,
+    locale: body.locale === 'en' ? 'en' : 'hr',
     priorities: priorities as DayPriority[],
     freeWindows: (freeWindows as TimeWindow[]).sort((a, b) => clockToMinutes(a.start) - clockToMinutes(b.start)),
     preferences,
@@ -189,15 +192,32 @@ function firstFit(window: Interval, duration: number, busy: readonly Interval[],
  * uz pauzu iz postavki. Prioritet koji nigdje ne stane ne troši prozore sljedećima — samo ide
  * u pitanje „Nije stalo sve“.
  */
+const FALLBACK_TEXT = {
+  hr: {
+    noWindows: 'Kada si slobodan/na sutra? Navedi slobodne prozore (npr. 9:00–13:00).',
+    noPriorities: 'Što imaš sutra? Navedi prioritete.',
+    needMore: 'Trebam više informacija da složim plan.',
+    unscheduled: (titles: string) => `Nije stalo sve: ${titles}. Imaš li više vremena?`,
+    planned: (count: number) => `Plan ima ${count} blok${count === 1 ? '' : 'a'}. Provjeri i odobri.`,
+    impossible: 'Nije moguće složiti plan s danim prozorima.',
+  },
+  en: {
+    noWindows: 'When are you free tomorrow? Give your free windows (e.g. 9:00–13:00).',
+    noPriorities: "What's on tomorrow? List your priorities.",
+    needMore: 'I need a bit more to build the plan.',
+    unscheduled: (titles: string) => `Not everything fit: ${titles}. Do you have more time?`,
+    planned: (count: number) => `The plan has ${count} block${count === 1 ? '' : 's'}. Check it and approve.`,
+    impossible: "The plan doesn't fit into the given windows.",
+  },
+} as const;
+
 export function buildFallbackPlan(req: PlanDayRequest): PlanDayResponse {
+  const text = FALLBACK_TEXT[req.locale];
   if (req.freeWindows.length === 0 || req.priorities.length === 0) {
     return {
       schedule: [],
-      questions:
-        req.freeWindows.length === 0
-          ? ['Kada si slobodan/na sutra? Navedi slobodne prozore (npr. 9:00–13:00).']
-          : ['Što imaš sutra? Navedi prioritete.'],
-      summary: 'Trebam više informacija da složim plan.',
+      questions: [req.freeWindows.length === 0 ? text.noWindows : text.noPriorities],
+      summary: text.needMore,
     };
   }
 
@@ -243,11 +263,8 @@ export function buildFallbackPlan(req: PlanDayRequest): PlanDayResponse {
     .map((entry) => entry.block);
   return {
     schedule,
-    questions: unscheduled.length > 0 ? [`Nije stalo sve: ${unscheduled.join(', ')}. Imaš li više vremena?`] : [],
-    summary:
-      schedule.length > 0
-        ? `Plan ima ${schedule.length} blok${schedule.length === 1 ? '' : 'a'}. Provjeri i odobri.`
-        : 'Nije moguće složiti plan s danim prozorima.',
+    questions: unscheduled.length > 0 ? [text.unscheduled(unscheduled.join(', '))] : [],
+    summary: schedule.length > 0 ? text.planned(schedule.length) : text.impossible,
   };
 }
 

@@ -111,10 +111,11 @@ Vrati SAMO JSON objekt (bez markdowna):
 {
   "schedule": [{"title":"...","start":"HH:MM","end":"HH:MM","kind":"suggestion"}],
   "questions": ["Pitanje za korisnika ako nešto nije jasno (maks 3)"],
-  "summary": "Kratki sažetak plana na jeziku korisnikovih prioriteta (1-2 rečenice)"
+  "summary": "Kratki sažetak plana (1-2 rečenice)"
 }
 
 Ako ne možeš smjestiti sve prioritete, napiši pitanje. Ako su slobodni prozori prazni, traži ih pitanjem.
+Sažetak i pitanja piši na ${req.locale === 'en' ? 'engleskom' : 'hrvatskom'} jeziku.
 `.trim();
 }
 

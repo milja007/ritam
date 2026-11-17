@@ -54,6 +54,8 @@ export type PlanDayRequest = {
    * Obično sutrašnji dan (večernji upit pita "što imaš sutra").
    */
   date: string;
+  /** Jezik sažetka i pitanja. */
+  locale: 'hr' | 'en';
   /** Prioriteti koje korisnik nabroji (ručno ili glasom → parse-input). */
   priorities: DayPriority[];
   /**
