@@ -3,7 +3,14 @@ import { describe, expect, it } from '@jest/globals';
 import { EMBER_LEVELS, emberColor, railColors, segmentColor } from '../ember/ember';
 import { orbFlameColors } from '../gamification/orb';
 import { contrastRatio, parseHex, relativeLuminance } from './contrast';
-import { COLOR_THEMES, colorThemeOr, DEFAULT_COLOR_THEME, flamePalettes, isColorThemeId } from './flame';
+import {
+  COLOR_THEMES,
+  colorThemeOr,
+  DEFAULT_COLOR_THEME,
+  flamePalettes,
+  isColorThemeId,
+  resolveAccountColorTheme,
+} from './flame';
 import { accentOf, palette, themeFor, themes } from './tokens';
 
 const schemes = ['dark', 'light'] as const;
@@ -134,5 +141,21 @@ describe('themeFor', () => {
       expect(railColors(scheme)).toEqual(railColors(scheme, flamePalettes.ember));
       expect(orbFlameColors('bright', scheme)).toEqual(orbFlameColors('bright', scheme, flamePalettes.ember));
     }
+  });
+});
+
+describe('resolveAccountColorTheme (odluka 81)', () => {
+  it('poznata tema s računa vrijedi na uređaju', () => {
+    expect(resolveAccountColorTheme('violet', 'ember')).toEqual({ apply: 'violet', adopt: null });
+    expect(resolveAccountColorTheme('ember', 'rose')).toEqual({ apply: 'ember', adopt: null });
+  });
+
+  it('nepoznata tema s računa ne mijenja uređaj i ne prepisuje se', () => {
+    expect(resolveAccountColorTheme('nova-tema', 'rose')).toEqual({ apply: null, adopt: null });
+  });
+
+  it('račun bez teme preuzme lokalni odabir, osim zadanog', () => {
+    expect(resolveAccountColorTheme(null, 'azure')).toEqual({ apply: null, adopt: 'azure' });
+    expect(resolveAccountColorTheme(null, DEFAULT_COLOR_THEME)).toEqual({ apply: null, adopt: null });
   });
 });

@@ -50,6 +50,12 @@ export const settingsSchema = z.object({
   /** Podsjetnici na početku blokova (odluka P28: zadano uključeni, mogu se isključiti u Profilu). */
   blockRemindersEnabled: z.boolean(),
   theme: z.enum(THEME_PREFERENCES),
+  /**
+   * Tema boja plamena (korak 38), sinkronizirana s računom (odluka 81). `null` = još nije birana
+   * na računu. Namjerno običan tekst, ne popis tema: nepoznatu temu (novija verzija appa na drugom
+   * uređaju) app čita kao zadanu, a sync je ne odbija.
+   */
+  colorTheme: z.string().min(1).max(32).nullable().default(null),
   googleCalendarConnected: z.boolean(),
   /** Područja dnevnog rezultata: plan uvijek (`true`), zabrane i san opcionalni. */
   scorePlan: z.literal(true),

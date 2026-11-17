@@ -112,3 +112,21 @@ export function isColorThemeId(value: unknown): value is ColorThemeId {
 export function colorThemeOr(value: unknown): ColorThemeId {
   return isColorThemeId(value) ? value : DEFAULT_COLOR_THEME;
 }
+
+export type AccountColorTheme = {
+  /** Tema koju treba primijeniti na uređaju (`null` = ostaje lokalna). */
+  apply: ColorThemeId | null;
+  /** Lokalni odabir koji treba prenijeti na račun (`null` = ništa se ne sprema). */
+  adopt: ColorThemeId | null;
+};
+
+/**
+ * Tema boja s računa (odluka 81, `settings.colorTheme`) naspram one na uređaju:
+ * poznata tema s računa vrijedi; nepoznata (novija verzija appa na drugom uređaju) ne mijenja
+ * ništa i ne prepisuje se; račun bez teme preuzme lokalni odabir ako nije zadani (prvo pokretanje
+ * nakon nadogradnje), da se tema birana prije sinkronizacije ne izgubi.
+ */
+export function resolveAccountColorTheme(account: string | null, device: ColorThemeId): AccountColorTheme {
+  if (account !== null) return { apply: isColorThemeId(account) ? account : null, adopt: null };
+  return { apply: null, adopt: device === DEFAULT_COLOR_THEME ? null : device };
+}

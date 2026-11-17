@@ -7,7 +7,8 @@ import { COLOR_THEMES, type ColorThemeId, flamePalettes, radius, spacing } from 
 import { useProgress } from '@/features/progress';
 import { FlameSwatch } from '@/ui/flame-swatch';
 import { Text } from '@/ui/text';
-import { setColorTheme, useAppTheme } from '@/ui/theme';
+import { chooseColorTheme } from '@/features/settings';
+import { useAppTheme } from '@/ui/theme';
 
 const SWATCH = 32;
 /** Najmanja visina retka — dodirna meta od barem 44 pt. */
@@ -55,7 +56,7 @@ export function ThemePickerCard({ today, checkinDay }: { today: string; checkinD
               onPress={() => {
                 if (unlocked) {
                   setLockedInfo(null);
-                  setColorTheme(id);
+                  chooseColorTheme(id);
                 } else {
                   setLockedInfo((current) => (current === id ? null : id));
                 }

@@ -136,6 +136,7 @@ describe('pretvorba', () => {
       sleepHours: 8,
       windDownMinutes: 45,
       theme: 'system',
+      colorTheme: null,
       googleCalendarConnected: false,
       weekendWakeTime: null,
       morningNotifEnabled: true,

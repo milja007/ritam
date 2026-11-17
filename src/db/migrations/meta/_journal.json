@@ -71,6 +71,13 @@
       "when": 1794390870255,
       "tag": "0009_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1794905743629,
+      "tag": "0010_color_theme",
+      "breakpoints": true
     }
   ]
 }

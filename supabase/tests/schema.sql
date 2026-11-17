@@ -103,6 +103,12 @@ select test.expect_error($q$update public.settings set sleep_hours = 7.1$q$, '23
 select test.expect_count($q$select 1 from public.settings where score_plan and not score_rules and not score_sleep$q$,
   1, 'zadano područje rezultata: samo plan');
 select test.expect_error($q$update public.settings set score_plan = false$q$, '23514', 'plan je uvijek u rezultatu');
+-- Tema boja plamena (odluka 81): zadano null, tekst do 32 znaka.
+select test.expect_count($q$select 1 from public.settings where color_theme is null$q$, 1, 'tema boja zadano null');
+update public.settings set color_theme = 'violet';
+select test.expect_count($q$select 1 from public.settings where color_theme = 'violet'$q$, 1, 'tema boja se sprema');
+select test.expect_error($q$update public.settings set color_theme = ''$q$, '23514', 'prazna tema boja');
+select test.expect_error($q$update public.settings set color_theme = repeat('x', 33)$q$, '23514', 'preduga tema boja');
 select test.expect_error($q$insert into public.checkins (date, kind, score_areas) values ('2026-11-01', 'evening', '["sleep"]')$q$,
   '23514', 'snimka područja mora imati plan');
 select test.expect_error($q$insert into public.checkins (date, kind, score_areas) values ('2026-11-01', 'evening', '["plan", "mood"]')$q$,

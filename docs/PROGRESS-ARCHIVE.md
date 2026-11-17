@@ -4,6 +4,14 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-14 · Sesije 12:43 i 15:43 — mjesečna dijagnoza (korak 37, PR #22)
+- **Pragovi po razdoblju**: graditelji redaka tjedne dijagnoze primaju `PeriodThresholds` (tjedan isti kao prije).
+- **Logika** (`month-diagnosis.ts`, `local-month-v1`): trend naspram prošlog mjeseca, rekord (raniji mjeseci s ≥ 10 zaključenih dana), najslabiji/najjači dan u tjednu, prva naspram druge polovice, pregled odgovora na tjedne prijedloge tog mjeseca. **Najviše dvije ideje kao smjer**, bez „Probat ću“ — nove promjene i dalje po jedna kroz tjednu (pitanje 83).
+- **Spremanje**: `generateMonthReport` u `reports` (`period = 'month'`, `periodStart` = 1. u mjesecu, `suggestion = null`), bez migracije; dostupna kad mjesec prođe ili zadnji dan nakon večernjeg upita; bez promjene ništa ne piše.
+- **Tab Mjesec**: kartica „Dijagnoza mjeseca“ ispod usporedbe → modal s cijelom dijagnozom (datumi kao „12. studenoga“, dani u tjednu riječima). HR/EN.
+- **P2 Codexa za PR #21**: odgovor na tjedni prijedlog čuva se samo kad je i konkretna ideja (parametri: zabrana, okidač) ista.
+- Na uređaju neprovjereno.
+
 ## 2026-11-14 · Sesije 09:43 i 12:43 — tjedna dijagnoza (korak 36) + P2 level-up (PR #21)
 - **P2 Codexa za PR #20** (`level-up-host`): kad `pending` nestane, „prikazano“ se briše, pa ponovni prikaz opet čeka fokus, zatvorene modale i pauzu (`level-up-gate.ts` + test).
 - **Niz boljih tjedana** (`src/core/gamification/better-weeks.ts`): zaključeni tjedni zaredom jednako dobri ili bolji od prethodnog (isti tjedni kao rang: ≥ 4 konačna rezultata; preskočen tjedan prekida niz).
