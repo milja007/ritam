@@ -8,6 +8,7 @@ import { mainStreak } from '@/core/gamification';
 import {
   getMorningCheckin,
   InvalidMorningCheckinError,
+  listMorningCheckins,
   listXpEvents,
   saveMorningCheckin,
 } from './repos';
@@ -19,6 +20,19 @@ const DATE = '2026-11-10'; // utorak
 const settings = { wakeTime: '07:00', weekendWakeTime: null, sleepHours: 8 };
 
 describe('morning check-in repo', () => {
+  it('lists morning check-ins in a date range only', async () => {
+    const { db } = await createTestDb();
+    const deps = testDeps('2026-11-10T06:00:00.000Z');
+    for (const date of ['2026-11-01', '2026-11-08', '2026-11-10']) {
+      saveMorningCheckin(db, USER, settings, { date, sleepStart: '23:30', wakeTime: '07:00' }, deps);
+    }
+    saveMorningCheckin(db, 'other-user', settings, { date: '2026-11-09', sleepStart: '23:30', wakeTime: '07:00' }, deps);
+    expect(await listMorningCheckins(db, USER, '2026-11-04', '2026-11-10')).toEqual([
+      { date: '2026-11-08', sleepStart: '23:30', wakeTime: '07:00' },
+      { date: '2026-11-10', sleepStart: '23:30', wakeTime: '07:00' },
+    ]);
+  });
+
   it('returns null before anything is saved', async () => {
     const { db } = await createTestDb();
     expect(await getMorningCheckin(db, USER, DATE)).toBeNull();
