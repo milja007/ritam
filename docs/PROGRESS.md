@@ -2,12 +2,15 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 15:43 (nastavak) — korak 27 „Nešto je iskrslo“, PR #29
+- Core `planUnexpected` (prozor od sada; pogođeni = planirani osim sna koji se preklapaju; kasnije danas = prvi slobodan termin iste duljine, redom, do 23:59). DB `applyUnexpected` (jedna transakcija, ponovno računa iz baze; `moved` + kopija / `skipped` / novi termin; razlog kao bilješka ako je nema; +5 XP najviše jednom dnevno, `sourceId` null).
+- Večernji upit više ne pita blok premješten tijekom dana bez spremljenog odgovora (inače dupla kopija).
+- UI `UnexpectedFlow` (modal) + gumb na Danu; HR/EN. Akcija „Iskrslo“ na obavijesti i dalje otvara uređivač (dira obavijesti — zasebno).
+
 ## 2026-11-17 · Sesija 15:43 — 37 „zadnjih 7 dana“ + 23 (dio), PR #28
 - **37**: zadnji dan mjeseca koji nije nedjelja → ispod dnevne „Zadnjih 7 dana“ (naspram 7 prije), pa mjesečna. `previewRollingWeek` samo čita (ne sprema, bez prijedloga, bez niza boljih tjedana); napomena da nova promjena stiže nedjeljom.
 - **23 (dio)**: README za Ritam; nema TODO-ova; `expo-doctor` 18/20 (Expo API blokiran u cloudu — ponoviti na Macu). Ostaje `[~]` do deploya 20–22.
 - Issue #1 je zatvorio GitHub jer je opis PR-a #26 imao „FIXES: <URL #1>“ — ponovno otvoren; `FIXES` ide samo u objavu u #1, ne u opis PR-a.
-
-## 2026-11-17 · Sesija 12:43 — P2 Edge Functions (PR #27), 37 dopuna + 37b (PR #26) — detalji u arhivi.
 
 ## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 

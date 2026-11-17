@@ -196,6 +196,11 @@ describe('kad kasnije?', () => {
 });
 
 describe('createEveningDraft', () => {
+  it('blok premješten tijekom dana (Nešto je iskrslo) se ne pita; premješten iz spremljenog upita da', () => {
+    const blocks = [block('a', 'task', 'moved'), block('b')];
+    expect(createEveningDraft('2026-11-09', blocks, []).items.map((item) => item.blockId)).toEqual(['b']);
+  });
+
   it('novi upit: gotovi blokovi su unaprijed U redu, ostalo bez odgovora', () => {
     const draft = createEveningDraft(
       '2026-11-09',
@@ -220,9 +225,9 @@ describe('createEveningDraft', () => {
     expect(draft.items).toEqual([
       answer('p', { outcome: 'partial', later: 'skip' }),
       answer('n', { outcome: 'not', later: 'skip' }),
-      answer('m', { outcome: null }),
     ]);
-    expect(isEveningStepValid('checklist', { ...draft, items: draft.items.slice(0, 2) })).toBe(true);
+    // Premješten bez spremljenog upita (Nešto je iskrslo) se ne pita.
+    expect(isEveningStepValid('checklist', draft)).toBe(true);
   });
 
   it('postojeći upit: preuzima odgovore i "kad kasnije?", novi blokovi su bez odgovora', () => {

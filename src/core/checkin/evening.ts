@@ -195,16 +195,21 @@ export function createEveningDraft(
 
   return {
     date,
-    items: checklistBlocks(blocks).map((block) => {
-      const previous = savedItems.get(block.id);
-      if (!previous) return prefilledAnswer(block);
-      return {
-        blockId: block.id,
-        outcome: previous.outcome,
-        comment: previous.comment ?? '',
-        ...laterFromSaved(previous.outcome, previous.laterDate, date),
-      };
-    }),
+    // Blok premješten tijekom dana („Nešto je iskrslo“, korak 27) već ima ishod i kopiju na novom
+    // danu — ne pita se ponovno (inače bi „sutra“ napravio drugu kopiju). Premješten iz ranijeg
+    // spremanja ovog upita ostaje, da se odgovor može promijeniti.
+    items: checklistBlocks(blocks)
+      .filter((block) => block.status !== 'moved' || savedItems.has(block.id))
+      .map((block) => {
+        const previous = savedItems.get(block.id);
+        if (!previous) return prefilledAnswer(block);
+        return {
+          blockId: block.id,
+          outcome: previous.outcome,
+          comment: previous.comment ?? '',
+          ...laterFromSaved(previous.outcome, previous.laterDate, date),
+        };
+      }),
     rules: activeRules.map((rule) => {
       const previous = savedLogs.get(rule.id);
       return previous
