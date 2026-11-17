@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 15:43 (nastavak) — plan: korak 27 „Nešto je iskrslo“, grana `wip/korak-27-iskrslo`
+1. Core `src/core/schedule/unexpected.ts`: prozor od sada (15 / 30 / 60 / 120 min / do kraja dana), pogođeni = planirani blokovi (osim sna) koji se preklapaju s prozorom; „kasnije danas“ = prvi slobodan termin iste duljine nakon prozora (redom, bez preklapanja, do 23:59), inače nije ponuđeno. Testovi.
+2. DB `applyUnexpected` (jedna transakcija, ponovno računa iz baze): kasnije danas → novi termin; sutra / drugi dan → `moved` + novi blok (`movedBlockFields`); preskoči → `skipped`; razlog kao bilješka (ne prepisuje postojeću). XP „preraspoređeno s objašnjenjem“ (5) najviše jednom dnevno, samo kad je nešto preraspoređeno (izvor `task`, `sourceId` null — da ga `syncBlockTaskXp` ne briše). Niz se ne dira. Testovi.
+3. UI: gumb „Nešto je iskrslo“ na Danu → modal: što + koliko dugo → za svaki pogođeni: kasnije danas (u HH:MM) / sutra / drugi dan / preskoči → Spremi. HR/EN, čitač, touch.
+- Bez novog tipa bloka „iskrslo“ (bi ulazio u statistiku plana i upit) i bez LLM-a (planer nije deployan).
+
 ## 2026-11-17 · Sesija 15:43 — 37 „zadnjih 7 dana“ + 23 (dio), PR #28
 - **37**: zadnji dan mjeseca koji nije nedjelja → ispod dnevne „Zadnjih 7 dana“ (naspram 7 prije), pa mjesečna. `previewRollingWeek` samo čita (ne sprema, bez prijedloga, bez niza boljih tjedana); napomena da nova promjena stiže nedjeljom.
 - **23 (dio)**: README za Ritam; nema TODO-ova; `expo-doctor` 18/20 (Expo API blokiran u cloudu — ponoviti na Macu). Ostaje `[~]` do deploya 20–22.
