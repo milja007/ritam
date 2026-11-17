@@ -2,28 +2,19 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 00:43 — odluka 82 (tjedna uz dnevnu + obavijest)
-Plan (provjeren protiv koncepta: „nedjeljom uz dnevnu“; odluka 82):
-1. Čista logika `weekDiagnosisNoticeWeek` (core/diagnosis): za jutro ponedjeljka vrati početak prošlog tjedna ako ima zaključen dan i dijagnoza nije viđena; testovi.
-2. `WeekDiagnosisInline` (features/diagnosis): za nedjelju ispod dnevne dijagnoze — overline „Tvoj tjedan“, cijela tjedna dijagnoza s odgovorom na prijedlog; označi viđenom.
-3. Ugradnja: kraj večernjeg upita i `DiagnosisModal` (Dan, Mjesec). Kartica na tabu Tjedan ostaje.
-4. Obavijest: ponedjeljkom jutarnja obavijest nosi „Tjedna dijagnoza je spremna“ dok nije viđena (bez nove vrste obavijesti → isti limit iOS-a, isti dodir); `markSeen` tjedne ponovno uskladi obavijesti.
-5. HR/EN, pristupačnost, testovi; HIGH_RISK (obavijesti).
-- **Gotovo (PR #24):** sve točke. Obavijest nije nova vrsta: ponedjeljkom jutarnja ima naslov „Tjedna dijagnoza je spremna“ + pregled dana; dodir otvara jutarnji brief kao i prije. Na uređaju neprovjereno.
+## 2026-11-17 · Sesija 00:43 — odluka 82 (PR #24)
+- Nedjeljom tjedna dijagnoza odmah ispod dnevne (kraj večernjeg upita, `DiagnosisModal`), označi se viđenom. Ponedjeljkom jutarnja obavijest ima naslov „Tjedna dijagnoza je spremna“ dok tjedna nije viđena (bez nove vrste obavijesti). Na uređaju neprovjereno.
+
+## 2026-11-17 · Sesija 00:43 — odluka 81 (tema boja s računom, PR #25)
+- `settings.color_theme` (tekst ≤ 32, `null` = nije birana): lokalna migracija `0010_color_theme`, Supabase `20261117010000_color_theme.sql`, domena (`default(null)` za stare retke), sync testovi (push i pull), `supabase/tests/schema.sql`.
+- `resolveAccountColorTheme` (core/theme): poznata tema s računa vrijedi; nepoznata se ne dira; račun bez teme preuzme lokalni odabir (ako nije zadani). `chooseColorTheme` (Profil, slavlje razine) sprema u postavke; učitavanje postavki (i nakon synca) primijeni temu.
+- **Remote migracija NIJE primijenjena**: alat je odbio `apply_migration` (sigurnosna provjera). Dok stupac ne postoji na `ritam`, sync postavki bi pao (PostgREST ne zna `color_theme`) — **ne uključivati `EXPO_PUBLIC_FEATURE_AUTH` prije primjene**. Vidi pitanje 84.
 
 ## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
 - **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
 - **81 Tema boja:** **sinkronizirati s računom** — stupac za temu u `settings` + migracija. Borna odobrava ovu remote migraciju (samo taj stupac); primijeniti tek kad migracija i `npm run test:supabase` prođu lokalno.
 - **82 Tjedna dijagnoza:** **oboje** — nedjeljom se tjedni dio pokaže odmah ispod dnevne dijagnoze nakon večernjeg upita, **i** obavijest kad je tjedna dijagnoza spremna. Kartica na tabu Tjedan ostaje.
 - **83 Mjesečna dijagnoza:** **u redu, smjer** — najviše 2 ideje kao smjer, bez prihvaćanja; nove promjene i dalje jedna po jedna kroz tjednu.
-
-## 2026-11-14 · Sesije 12:43 i 15:43 — mjesečna dijagnoza (korak 37, PR #22)
-- **Pragovi po razdoblju**: graditelji redaka tjedne dijagnoze primaju `PeriodThresholds` (tjedan isti kao prije).
-- **Logika** (`month-diagnosis.ts`, `local-month-v1`): trend naspram prošlog mjeseca, rekord (raniji mjeseci s ≥ 10 zaključenih dana), najslabiji/najjači dan u tjednu, prva naspram druge polovice, pregled odgovora na tjedne prijedloge tog mjeseca. **Najviše dvije ideje kao smjer**, bez „Probat ću“ — nove promjene i dalje po jedna kroz tjednu (pitanje 83).
-- **Spremanje**: `generateMonthReport` u `reports` (`period = 'month'`, `periodStart` = 1. u mjesecu, `suggestion = null`), bez migracije; dostupna kad mjesec prođe ili zadnji dan nakon večernjeg upita; bez promjene ništa ne piše.
-- **Tab Mjesec**: kartica „Dijagnoza mjeseca“ ispod usporedbe → modal s cijelom dijagnozom (datumi kao „12. studenoga“, dani u tjednu riječima). HR/EN.
-- **P2 Codexa za PR #21**: odgovor na tjedni prijedlog čuva se samo kad je i konkretna ideja (parametri: zabrana, okidač) ista.
-- Na uređaju neprovjereno.
 
 ## 2026-11-13 · Smjer „Žar“ (odluka Borna 2026-11-12)
 - „Dan izgori u žar“ ima prednost do 2026-11-17, prije koraka 20–22. Platno: https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu
@@ -37,12 +28,13 @@ Plan (provjeren protiv koncepta: „nedjeljom uz dnevnu“; odluka 82):
 - Stanje #1 (2026-11-14 15:45): nema P0/P1; P2 za PR #21 riješen u PR-u #22. P2 nalazi Codexa za PR #16 (plan-day: fiksni blok ne rezervira vrijeme, predug prvi zadatak, blok izvan prozora, vrijeme 99:99; `null` u tijelu → 400; logiranje bez `waitUntil`; Sonnet 4.5 se povlači 30. 11.) rješavaju se uz dovršavanje 20–22.
 
 ## Sljedeće
-0. **Odluka 81** — stupac teme u `settings` + lokalna migracija i sync; remote primjena tek nakon `test:supabase` (Borna odobrio taj stupac).
+0. **Odluka 81** — kod spojen (PR #25); ostaje remote migracija (pitanje 84).
 1. **Ž11 haptika** — čeka Bornu: `npx expo install expo-haptics` na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API). Isto vrijedi za Skiu (korak 33).
 2. UX/UI dok traje prioritet (do 2026-11-17): okviri avatara / animacije „Gotovo“ kao otključavanja (pitanje 80); **34** epski questovi i freeze tokeni (traže lokalnu tablicu + sync → remote migracija = Borna).
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
 
 ## Pitanja za Bornu
+84. **Remote migracija `color_theme` (odluka 81)** — odobrena, ali je Claudeov alat odbio primjenu. Primijeni na Macu: `npx supabase db push` (ili SQL iz `supabase/migrations/20261117010000_color_theme.sql` u SQL editoru, pa `supabase migration repair --status applied 20261117010000`). Dok nije primijenjena, sync ne smije biti uključen.
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.
 77. Deploy Edge Functions (20–22): `supabase secrets set ANTHROPIC_API_KEY`, pa `supabase functions deploy parse-input` i `plan-day`. Preporuka: tek nakon testova i Codexova pregleda PR-a #16.
