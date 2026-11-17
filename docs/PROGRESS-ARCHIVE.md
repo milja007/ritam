@@ -4,6 +4,14 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-17 · Sesija 00:43 — odluka 82 (PR #24)
+- Nedjeljom tjedna dijagnoza odmah ispod dnevne (kraj večernjeg upita, `DiagnosisModal`), označi se viđenom. Ponedjeljkom jutarnja obavijest ima naslov „Tjedna dijagnoza je spremna“ dok tjedna nije viđena (bez nove vrste obavijesti). Na uređaju neprovjereno.
+
+## 2026-11-17 · Sesija 00:43 — odluka 81 (tema boja s računom, PR #25)
+- `settings.color_theme` (tekst ≤ 32, `null` = nije birana): lokalna migracija `0010_color_theme`, Supabase `20261117010000_color_theme.sql`, domena (`default(null)` za stare retke), sync testovi (push i pull), `supabase/tests/schema.sql`.
+- `resolveAccountColorTheme` (core/theme): poznata tema s računa vrijedi; nepoznata se ne dira; račun bez teme preuzme lokalni odabir (ako nije zadani). `chooseColorTheme` (Profil, slavlje razine) sprema u postavke; učitavanje postavki (i nakon synca) primijeni temu.
+- **Remote migracija NIJE primijenjena**: alat je odbio `apply_migration` (sigurnosna provjera). Dok stupac ne postoji na `ritam`, sync postavki bi pao (PostgREST ne zna `color_theme`) — **ne uključivati `EXPO_PUBLIC_FEATURE_AUTH` prije primjene**. Vidi pitanje 84.
+
 ## 2026-11-14 · Sesije 12:43 i 15:43 — mjesečna dijagnoza (korak 37, PR #22)
 - **Pragovi po razdoblju**: graditelji redaka tjedne dijagnoze primaju `PeriodThresholds` (tjedan isti kao prije).
 - **Logika** (`month-diagnosis.ts`, `local-month-v1`): trend naspram prošlog mjeseca, rekord (raniji mjeseci s ≥ 10 zaključenih dana), najslabiji/najjači dan u tjednu, prva naspram druge polovice, pregled odgovora na tjedne prijedloge tog mjeseca. **Najviše dvije ideje kao smjer**, bez „Probat ću“ — nove promjene i dalje po jedna kroz tjednu (pitanje 83).

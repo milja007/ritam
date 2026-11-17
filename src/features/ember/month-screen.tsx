@@ -17,7 +17,7 @@ import {
   weekDates,
 } from '@/core/ember';
 import { radius, spacing } from '@/core/theme';
-import { DiagnosisModal, MonthDiagnosisCard, useMonthReport } from '@/features/diagnosis';
+import { DiagnosisModal, MonthDiagnosisCard, monthTitle, useMonthReport } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
@@ -190,7 +190,7 @@ export function MonthScreen() {
 
           <MonthDiagnosisCard
             report={report}
-            monthLabel={`${monthName(month, language)} ${month.slice(0, 4)}${language === 'hr' ? '.' : ''}`}
+            monthLabel={monthTitle(month, language)}
             current={header.kind === 'current'}
           />
         </>

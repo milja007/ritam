@@ -5,6 +5,7 @@ import {
   earlierMonthAverages,
   halvesPattern,
   isMonthDiagnosisReady,
+  isMonthLastDay,
   MONTH_LINE_KEYS,
   monthBounds,
   monthChanges,
@@ -97,6 +98,50 @@ describe('monthChanges', () => {
         { start: '2026-11-02', suggestion: 'ideas.rule', accepted: false },
         { start: '2026-11-23', suggestion: 'ideas.rule', accepted: true },
       ]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+});
+
+describe('monthChanges — konkretne ideje (P2, PR #22)', () => {
+  const rule = (title: string, trigger: string) => JSON.stringify({ key: 'ideas.ruleTrigger', params: { title, trigger } });
+
+  it('dvije različite zabrane pod istim ključem su dvije promjene; prihvaćanje druge ne skriva odbijanje prve', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: false, idea: rule('Mobitel', 'umor') },
+        { start: '2026-11-23', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Slatkiši', 'stres') },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 1 });
+  });
+
+  it('prenesena promjena (carried) broji se jednom i kad se tekst ideje razlikuje', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Mobitel', 'umor') },
+        {
+          start: '2026-11-09',
+          suggestion: 'ideas.ruleTrigger',
+          accepted: true,
+          idea: JSON.stringify({ key: 'ideas.stay.rules' }),
+          carried: true,
+        },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+
+  it('nošenje se nasljeđuje i iz tjedna koji počinje u prošlom mjesecu', () => {
+    expect(
+      monthChanges(MONTH, [
+        { start: '2026-10-26', suggestion: 'ideas.ruleTrigger', accepted: true, idea: rule('Mobitel', 'umor') },
+        { start: '2026-11-02', suggestion: 'ideas.ruleTrigger', accepted: true, idea: 'stay', carried: true },
+        { start: '2026-11-16', suggestion: 'ideas.ruleTrigger', accepted: false, idea: rule('Mobitel', 'umor') },
+      ]),
+    ).toEqual({ accepted: 1, rejected: 0 });
+  });
+
+  it('tjedan s carried bez prethodnog tjedna dobiva svoj identitet', () => {
+    expect(
+      monthChanges(MONTH, [{ start: '2026-11-09', suggestion: 'ideas.bedEarlier', accepted: true, idea: 'stay', carried: true }]),
     ).toEqual({ accepted: 1, rejected: 0 });
   });
 });
@@ -223,5 +268,17 @@ describe('earlierMonthAverages', () => {
     ];
     expect(earlierMonthAverages(all, '2026-11').sort()).toEqual([60, 71]);
     expect(earlierMonthAverages([], '2026-11')).toEqual([]);
+  });
+});
+
+describe('isMonthLastDay', () => {
+  it('zadnji dan mjeseca, uključujući veljaču i prijestupnu godinu', () => {
+    expect(isMonthLastDay('2026-11-30')).toBe(true);
+    expect(isMonthLastDay('2026-11-29')).toBe(false);
+    expect(isMonthLastDay('2026-12-31')).toBe(true);
+    expect(isMonthLastDay('2027-02-28')).toBe(true);
+    expect(isMonthLastDay('2028-02-28')).toBe(false);
+    expect(isMonthLastDay('2028-02-29')).toBe(true);
+    expect(isMonthLastDay('nije')).toBe(false);
   });
 });

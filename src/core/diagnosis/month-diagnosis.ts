@@ -12,7 +12,7 @@ import { z } from 'zod';
 
 import { daysInMonth } from '../ember/periods';
 import { weekStart } from '../progress/compare';
-import { daysBetween } from '../time/local-date';
+import { addDays, daysBetween } from '../time/local-date';
 import { TRENDS } from './day-diagnosis';
 import type { PeriodDay, PeriodStats } from './period-stats';
 import {
@@ -70,14 +70,15 @@ type MonthExtraLineKey = (typeof MONTH_EXTRA_LINE_KEYS)[number];
 
 /** Tjedni retci koji u mjesecu nemaju smisla: praćenje jedne promjene i niz boljih tjedana. */
 type WeekOnlyLineKey = Extract<WeekLineKey, `followUp.${string}` | `ideas.stay.${string}` | 'praise.betterWeeks'>;
-type SharedLineKey = Exclude<WeekLineKey, WeekOnlyLineKey>;
+/** Retci zajednički tjednu, mjesecu i godini. */
+export type SharedLineKey = Exclude<WeekLineKey, WeekOnlyLineKey>;
 export type MonthLineKey = SharedLineKey | MonthExtraLineKey;
 
-const isShared = (key: WeekLineKey): key is SharedLineKey =>
+export const isSharedLineKey = (key: WeekLineKey): key is SharedLineKey =>
   !key.startsWith('followUp.') && !key.startsWith('ideas.stay.') && key !== 'praise.betterWeeks';
 
 /** Svi retci mjesečne dijagnoze (i18n `diagnosis.month.lines.<ključ>`). */
-export const MONTH_LINE_KEYS: readonly MonthLineKey[] = [...WEEK_LINE_KEYS.filter(isShared), ...MONTH_EXTRA_LINE_KEYS];
+export const MONTH_LINE_KEYS: readonly MonthLineKey[] = [...WEEK_LINE_KEYS.filter(isSharedLineKey), ...MONTH_EXTRA_LINE_KEYS];
 
 const isMonthLineKey = (key: string): key is MonthLineKey => (MONTH_LINE_KEYS as readonly string[]).includes(key);
 
@@ -118,18 +119,43 @@ export type MonthDiagnosis = Omit<z.infer<typeof monthDiagnosisSchema>, 'summary
 
 export type MonthChanges = { accepted: number; rejected: number };
 
-/** Prijedlog i odgovor iz jedne tjedne dijagnoze (za pregled promjena mjeseca). */
-export type MonthWeekAnswer = { start: string; suggestion: string | null; accepted: boolean | null };
+/**
+ * Prijedlog i odgovor iz jedne tjedne dijagnoze (za pregled promjena mjeseca). `idea` je
+ * konkretna ideja (ključ + parametri, npr. koja zabrana i okidač); `carried` znači da je tjedan
+ * samo nosio promjenu prihvaćenu tjedan prije (`ideas.stay.*`), a ne nudio novu.
+ */
+export type MonthWeekAnswer = {
+  start: string;
+  suggestion: string | null;
+  accepted: boolean | null;
+  idea?: string | null;
+  carried?: boolean;
+};
 
 /**
- * Promjene mjeseca: različiti prijedlozi tjednih dijagnoza čiji tjedan počinje u tom mjesecu.
- * Prenesena promjena (isti prijedlog više tjedana) broji se jednom; prihvaćanje ima prednost.
+ * Promjene mjeseca: različite konkretne ideje tjednih dijagnoza čiji tjedan počinje u tom
+ * mjesecu. Dvije različite zabrane pod istim ključem prijedloga su dvije promjene; ista konkretna
+ * ideja (ponovno ponuđena ili prenesena — tjedan s `carried` nastavlja ideju tjedna prije) broji
+ * se jednom, i tad prihvaćanje ima prednost. Tjedan bez `idea` (stariji zapis) ide po ključu.
  */
 export function monthChanges(month: string, weeks: readonly MonthWeekAnswer[]): MonthChanges {
+  const identityByStart = new Map<string, string>();
   const answers = new Map<string, boolean>();
-  for (const week of weeks) {
-    if (week.start.slice(0, 7) !== month || week.suggestion === null || week.accepted === null) continue;
-    answers.set(week.suggestion, week.accepted || answers.get(week.suggestion) === true);
+  for (const week of [...weeks].sort((a, b) => a.start.localeCompare(b.start))) {
+    if (week.suggestion === null) continue;
+    const own = `${week.suggestion}|${week.idea ?? ''}`;
+    const before = addDays(week.start, -7);
+    const inherited = week.carried === true && before !== null ? identityByStart.get(before) : undefined;
+    const identity =
+      inherited !== undefined && inherited.startsWith(`${week.suggestion}|`)
+        ? inherited
+        : week.idea === undefined || week.idea === null
+          ? `${week.suggestion}|`
+          : own;
+    identityByStart.set(week.start, identity);
+    // `month` je "YYYY-MM" ili, za godišnju dijagnozu, "YYYY".
+    if (!week.start.startsWith(`${month}-`) || week.accepted === null) continue;
+    answers.set(identity, week.accepted || answers.get(identity) === true);
   }
   const accepted = [...answers.values()].filter((value) => value).length;
   return { accepted, rejected: answers.size - accepted };
@@ -147,9 +173,9 @@ const toMonthLines = (lines: readonly WeekLine[]): MonthLine[] => lines.flatMap(
 const roundedMean = (values: readonly number[]): number =>
   Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 
-type Scored = { date: string; score: number };
+export type Scored = { date: string; score: number };
 
-const scoredDays = (stats: PeriodStats, days: readonly PeriodDay[]): Scored[] => {
+export const scoredDays = (stats: PeriodStats, days: readonly PeriodDay[]): Scored[] => {
   const byDate = new Map<string, number>();
   for (const day of days) {
     if (day.score !== null && day.stats.date >= stats.start && day.stats.date <= stats.end) {
@@ -300,4 +326,10 @@ export function earlierMonthAverages(days: readonly { date: string; score: numbe
   return [...byMonth.values()]
     .filter((scores) => scores.size >= MIN_MONTH_DIAGNOSIS_DAYS)
     .map((scores) => roundedMean([...scores.values()]));
+}
+
+/** Je li `date` ("YYYY-MM-DD") zadnji dan svog mjeseca (dan kad mjesečna stiže uz dnevnu). */
+export function isMonthLastDay(date: string): boolean {
+  const bounds = /^\d{4}-\d{2}-\d{2}$/.test(date) ? monthBounds(date.slice(0, 7)) : null;
+  return bounds !== null && bounds.end === date;
 }

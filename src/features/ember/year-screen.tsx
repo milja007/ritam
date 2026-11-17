@@ -12,6 +12,7 @@ import {
 } from '@/core/ember';
 import { daysBetween } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
+import { useYearReport, YearDiagnosisCard } from '@/features/diagnosis';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -46,6 +47,11 @@ export function YearScreen() {
   const behind = daysBetween(`${year}-01-01`, now.date) ?? 0;
   const months = yearMonths(year);
   const scores = state.data?.scores ?? null;
+  // Dijagnoza tekuće godine (31. 12. nakon upita); u siječnju i ona prošle godine, dok je svježa.
+  const report = useYearReport(year, now.date, state.data);
+  const lastYear = String(Number(year) - 1);
+  const january = now.date.slice(5, 7) === '01';
+  const lastYearReport = useYearReport(lastYear, now.date, state.data, january);
 
   // 31 točkica mora stati u red i na najužem ekranu.
   const room = width - SCREEN_PADDING - LABEL_WIDTH - spacing.sm - 30 * DOT_GAP;
@@ -148,6 +154,11 @@ export function YearScreen() {
             />
             <Record value={String(scored)} label={t('ember.year.scoredDays')} />
           </View>
+
+          {lastYearReport.diagnosis !== null && report.diagnosis === null ? (
+            <YearDiagnosisCard report={lastYearReport} yearLabel={`${lastYear}.`} current={false} />
+          ) : null}
+          <YearDiagnosisCard report={report} yearLabel={`${year}.`} current />
         </>
       ) : null}
     </PeriodScreen>
