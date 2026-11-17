@@ -2,20 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-17 · Sesija 12:43 — plan (grana `wip/korak-37-37b`)
-Žar Ž1–Ž10/Ž12 gotovi; Ž11 i Skia čekaju pakete (Borna). Zadnji dan prioriteta → dijagnoze kao doživljaj kraja razdoblja (koncept: zadnji dan mjeseca „dan + tjedan + mjesec“, 31. 12. „+ godina“), lokalno, bez migracije (`reports.period` već dopušta `year`).
-1. **P2 (PR #22)**: `monthChanges` razlikuje konkretne ideje (ključ + parametri), dedup samo iste ideje i prenesene promjene (`carried`). Test.
-2. **Korak 37 dopuna**: zadnji dan mjeseca mjesečna dijagnoza odmah ispod dnevne (i ispod tjedne ako je nedjelja) — kraj večernjeg upita i `DiagnosisModal`, kao odluka 82 za tjedan. Bez nove obavijesti (nije odlučeno).
-3. **Korak 37b**: godišnja dijagnoza `local-year-v1` (core + `generateYearReport` + kartica na tabu Godina + modal + ispod dnevne 31. 12.), HR/EN, pristupačnost. Ista pravila: dostupna kad godina prođe ili 31. 12. nakon upita; ≥ 1 zaključen dan; bez prihvaćanja (smjer, kao mjesec).
-Kriteriji: core testovi, repo testovi (upis, „bez promjene ne piše“), tsc/lint/jest, export.
-
-## 2026-11-17 · Sesija 00:43 — odluka 82 (PR #24)
-- Nedjeljom tjedna dijagnoza odmah ispod dnevne (kraj večernjeg upita, `DiagnosisModal`), označi se viđenom. Ponedjeljkom jutarnja obavijest ima naslov „Tjedna dijagnoza je spremna“ dok tjedna nije viđena (bez nove vrste obavijesti). Na uređaju neprovjereno.
-
-## 2026-11-17 · Sesija 00:43 — odluka 81 (tema boja s računom, PR #25)
-- `settings.color_theme` (tekst ≤ 32, `null` = nije birana): lokalna migracija `0010_color_theme`, Supabase `20261117010000_color_theme.sql`, domena (`default(null)` za stare retke), sync testovi (push i pull), `supabase/tests/schema.sql`.
-- `resolveAccountColorTheme` (core/theme): poznata tema s računa vrijedi; nepoznata se ne dira; račun bez teme preuzme lokalni odabir (ako nije zadani). `chooseColorTheme` (Profil, slavlje razine) sprema u postavke; učitavanje postavki (i nakon synca) primijeni temu.
-- **Remote migracija NIJE primijenjena**: alat je odbio `apply_migration` (sigurnosna provjera). Dok stupac ne postoji na `ritam`, sync postavki bi pao (PostgREST ne zna `color_theme`) — **ne uključivati `EXPO_PUBLIC_FEATURE_AUTH` prije primjene**. Vidi pitanje 84.
+## 2026-11-17 · Sesija 12:43 — koraci 37 (dopuna) i 37b, P2 (PR #26)
+- **P2 (PR #22)**: `monthChanges` razlikuje konkretne ideje (ključ + JSON prve ideje); ista ideja i prenesena promjena (`carried`, i preko granice mjeseca) broje se jednom.
+- **37**: zadnji dan mjeseca mjesečna dijagnoza odmah ispod dnevne (`PeriodDiagnosesInline` = tjedan + mjesec + godina; kraj večernjeg upita i `DiagnosisModal`). Bez obavijesti.
+- **37b**: `local-year-v1` + `generateYearReport` (prije 31. 12. ne čita bazu) + kartica na tabu Godina (u siječnju i prošla godina) + modal s trakom 12 žarova (pale se redom, poštuje „smanji kretanje“) + 31. 12. ispod dnevne. HR/EN.
+- Nije rađeno: koncept kaže da je zadnjeg dana mjeseca (ako nije nedjelja) tjedni dio „zadnjih 7 dana“ — nije napravljeno (tjedna je vezana uz pon–ned).
 
 ## Odluke (Borna, 2026-11-15, chat) — pitanja 79, 81, 82, 83
 - **79 Orb-plamen:** pravila u redu (sjaj = prosjek zadnjih 7 dana, iskre = niz 3 / 7 / 30). **Skia: da** — pravi plamen. Paket instalira Borna na Macu (`npx expo install @shopify/react-native-skia`, zajedno s `expo-haptics` za Ž11) i radi novi development build; dok paket nije u `package.json`, orb bez Skie ostaje.
@@ -29,13 +20,13 @@ Kriteriji: core testovi, repo testovi (upis, „bez promjene ne piše“), tsc/l
 - Sve na lokalnim podacima; žar pali samo konačni rezultat.
 
 ## Stanje
-- `main`: koraci 0–19, 32, 34b, 36 i 37 (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
+- `main`: koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
 - Remote Supabase `ritam`: 7 migracija (zadnja `20261111103947_sync`), tablice prazne. Auth/sync iza `EXPO_PUBLIC_FEATURE_AUTH` (isključeno).
-- Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna i mjesečna dijagnoza, magic link, sync s dva uređaja.
-- Stanje #1 (2026-11-14 15:45): nema P0/P1; P2 za PR #21 riješen u PR-u #22. P2 nalazi Codexa za PR #16 (plan-day: fiksni blok ne rezervira vrijeme, predug prvi zadatak, blok izvan prozora, vrijeme 99:99; `null` u tijelu → 400; logiranje bez `waitUntil`; Sonnet 4.5 se povlači 30. 11.) rješavaju se uz dovršavanje 20–22.
+- Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna, mjesečna i godišnja dijagnoza, magic link, sync s dva uređaja.
+- Stanje #1 (2026-11-17 12:45): nema P0/P1; P2 za PR #22 riješen u PR-u #26. P2 nalazi Codexa za PR #16 (plan-day: fiksni blok ne rezervira vrijeme, predug prvi zadatak, blok izvan prozora, vrijeme 99:99; `null` u tijelu → 400; logiranje bez `waitUntil`; Sonnet 4.5 se povlači 30. 11.) rješavaju se uz dovršavanje 20–22.
 
 ## Sljedeće
-0. **Odluka 81** — kod spojen (PR #25); ostaje remote migracija (pitanje 84).
+0. **Odluka 81** — kod spojen (PR #25); ostaje remote migracija (pitanje 84) — **ne uključivati `EXPO_PUBLIC_FEATURE_AUTH` prije primjene**.
 1. **Ž11 haptika** — čeka Bornu: `npx expo install expo-haptics` na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API). Isto vrijedi za Skiu (korak 33).
 2. UX/UI dok traje prioritet (do 2026-11-17): okviri avatara / animacije „Gotovo“ kao otključavanja (pitanje 80); **34** epski questovi i freeze tokeni (traže lokalnu tablicu + sync → remote migracija = Borna).
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
