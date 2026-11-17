@@ -135,7 +135,7 @@ export type BlockActionEffect =
 
 /**
  * Učinak akcije. Obrisan blok → ništa. Gotovo i Odgodi vrijede samo dok je blok planiran
- * (ako je u međuvremenu riješen, ništa se ne mijenja). Iskrslo otvara blok u appu.
+ * (ako je u međuvremenu riješen, ništa se ne mijenja). Iskrslo otvara app („Nešto je iskrslo“ na Danu).
  */
 export function blockActionEffect(
   block: Pick<ScheduleBlock, 'kind' | 'status'> | null,

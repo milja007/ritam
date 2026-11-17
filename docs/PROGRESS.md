@@ -2,6 +2,9 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 18:43 (nastavak) — 27: Iskrslo na obavijesti, PR #33
+- Gumb „Iskrslo“ na podsjetniku bloka sada otvara „Nešto je iskrslo“ na Danu (od trenutka dodira), ne uređivač bloka; blok koji nije danas → samo Dan.
+
 ## 2026-11-17 · Sesija 18:43 (nastavak) — korak 34: epski questovi, PR #31 (podaci) + #32 (UI)
 - Tablica `quests` (lokalno + Supabase migracija; **remote čeka Bornu, pitanje 84**), etape kao JSON, XP 15/etapa i 100/quest bez duplikata, najviše 3 u tijeku (pitanje 86).
 - Profil: kartica questova (etape = žarovi koji se pale, traka, rok bez kazne, ostvareni, arhiva) + uređivač (rok brzim izborom u mjesecima). Korak 34 `[x]`.
