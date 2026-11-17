@@ -9,6 +9,7 @@ import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { FreezeRow } from './freeze-row';
 import { streakHintKey } from './streak-hint';
 import { useProgress } from './use-progress';
 
@@ -18,7 +19,7 @@ const ORB = 44;
 /**
  * Kartica napretka na Profilu (smjer „Žar“): orb-plamen u prstenovima, uz njega razina s naslovom,
  * ukupni XP i traka do sljedeće razine; ispod XP danas, trenutni i najduži niz te što otključava
- * sljedeća razina (korak 32).
+ * sljedeća razina (korak 32). Ispod niza su žeravice koje ga čuvaju (korak 34).
  */
 export function ProgressCard({ today, checkinDay }: { today: string; checkinDay: string }) {
   const { t, i18n } = useTranslation();
@@ -95,6 +96,9 @@ export function ProgressCard({ today, checkinDay }: { today: string; checkinDay:
       <Text variant="caption" tone="textMuted">
         {t(streakHintKey(streak))}
       </Text>
+      <View style={[styles.freeze, { borderColor: colors.border }]}>
+        <FreezeRow freezes={streak.freezes} />
+      </View>
       <Text variant="caption" tone="textMuted">
         {nextUnlockText(t, nextUnlocks(level.level))}
       </Text>
@@ -152,4 +156,5 @@ const styles = StyleSheet.create({
   },
   stat: { flex: 1, alignItems: 'center', gap: spacing.xxs },
   statLabel: { textAlign: 'center' },
+  freeze: { paddingVertical: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
 });

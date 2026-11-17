@@ -421,12 +421,23 @@
       "hintStart": "Večernji upit danas pokreće novi niz.",
       "gainA11y_one": "Niz je narastao: {{count}} dan zaredom.",
       "gainA11y_few": "Niz je narastao: {{count}} dana zaredom.",
-      "gainA11y_other": "Niz je narastao: {{count}} dana zaredom."
+      "gainA11y_other": "Niz je narastao: {{count}} dana zaredom.",
+      "hintFrozen": "Žeravica čuva tvoj niz — večernji upit danas ga nastavlja."
     },
     "xpTitle": "Iskustvo (XP)",
     "xpGain": "+{{xp}} XP",
     "xpGainA11y": "Dobiveno {{xp}} XP",
-    "toNextLevel": "{{xp}} / {{total}} XP do razine {{level}}"
+    "toNextLevel": "{{xp}} / {{total}} XP do razine {{level}}",
+    "freeze": {
+      "title": "Žeravica: {{held}} od {{max}}",
+      "nextIn_one": "Sljedeća za {{count}} dan zaredom.",
+      "nextIn_few": "Sljedeća za {{count}} dana zaredom.",
+      "nextIn_other": "Sljedeća za {{count}} dana zaredom.",
+      "full": "Imaš najviše žeravica.",
+      "saved": "Sačuvala je niz: {{dates}}.",
+      "explain": "Svakih 7 dana zaredom dobiješ žeravicu. Ako propustiš dan, ona premosti rupu i niz ostaje.",
+      "earnedA11y": "Nova žeravica: čuvat će niz ako propustiš dan."
+    }
   },
   "diagnosis": {
     "title": "Dijagnoza dana",

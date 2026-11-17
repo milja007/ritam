@@ -2,6 +2,14 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-17 · Sesija 18:43 — korak 34 (dio): freeze tokeni „žeravica“
+Plan (stanje #1: nema P0/P1, nema otvorenih PR-ova ni bug issueja):
+1. Core `streak.ts`: freeze tokeni izvedeni iz povijesti (ne spremaju se, kao XP): 1 žeravica za svakih 7 ubrojenih dana zaredom, najviše 2; propušten dan premošćuje se žeravicom (troši se, dan ne povećava niz); nedovoljno žeravica → niz pukne, žeravice ostaju. Vrijedi svugdje gdje se računa niz (`streakFromDates`).
+2. `Streak.freezes`: `held`, `nextIn`, `savedDates` (premošteni dani trenutnog niza, uključivo dane do danas koje žeravica čuva). Testovi za rubove.
+3. UI Profil: red „Žeravica“ ispod niza (2 utora, upaljena/ugašena, sljedeća za N dana, „sačuvala niz: datumi“), bljesak kad se zaradi nova; poruka uz niz kad ga žeravica drži. HR/EN, VoiceOver, smanji kretanje.
+4. Pragovi (7 dana, max 2) nisu u konceptu → pitanje 85 za Bornu (ne blokira).
+Epski questovi (traže tablicu + remote migraciju) — zasebni PR.
+
 ## 2026-11-17 · Sesija 15:43 (nastavak) — korak 27 „Nešto je iskrslo“, PR #29
 - Core `planUnexpected` (prozor od sada; pogođeni = planirani osim sna koji se preklapaju; kasnije danas = prvi slobodan termin iste duljine, redom, do 23:59). DB `applyUnexpected` (jedna transakcija, ponovno računa iz baze; `moved` + kopija / `skipped` / novi termin; razlog kao bilješka ako je nema; +5 XP najviše jednom dnevno, `sourceId` null).
 - Večernji upit više ne pita blok premješten tijekom dana bez spremljenog odgovora (inače dupla kopija).
@@ -32,6 +40,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 3. Dovršiti 20–22 (P2 nalazi Codexa, testovi, spajanje na korak 13), pa 23.
 
 ## Pitanja za Bornu
+85. **Žeravica (freeze tokeni, korak 34)** — pravila nisu u konceptu, odabrano: 1 žeravica za svakih 7 dana zaredom, najviše 2, troši se automatski za propušten dan (dan ne povećava niz); ako rupa ima više dana nego žeravica, niz pukne, a žeravice ostaju. Vrijedi za glavni niz svugdje (Profil, Dan, bedževi, orb, dijagnoze). Naziv u UI-ju „Žeravica“ / „Banked ember“. U redu? Promjena je jedna konstanta.
 84. **Remote migracija `color_theme` (odluka 81)** — odobrena, ali je Claudeov alat odbio primjenu. Primijeni na Macu: `npx supabase db push` (ili SQL iz `supabase/migrations/20261117010000_color_theme.sql` u SQL editoru, pa `supabase migration repair --status applied 20261117010000`). Dok nije primijenjena, sync ne smije biti uključen.
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.
