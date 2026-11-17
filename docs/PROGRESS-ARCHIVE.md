@@ -4,6 +4,16 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-17 · Sesija 15:43 (nastavak) — korak 27 „Nešto je iskrslo“, PR #29
+- Core `planUnexpected` (prozor od sada; pogođeni = planirani osim sna koji se preklapaju; kasnije danas = prvi slobodan termin iste duljine, redom, do 23:59). DB `applyUnexpected` (jedna transakcija, ponovno računa iz baze; `moved` + kopija / `skipped` / novi termin; razlog kao bilješka ako je nema; +5 XP najviše jednom dnevno, `sourceId` null).
+- Večernji upit više ne pita blok premješten tijekom dana bez spremljenog odgovora (inače dupla kopija).
+- UI `UnexpectedFlow` (modal) + gumb na Danu; HR/EN. Akcija „Iskrslo“ na obavijesti i dalje otvara uređivač (dira obavijesti — zasebno).
+
+## 2026-11-17 · Sesija 15:43 — 37 „zadnjih 7 dana“ + 23 (dio), PR #28
+- **37**: zadnji dan mjeseca koji nije nedjelja → ispod dnevne „Zadnjih 7 dana“ (naspram 7 prije), pa mjesečna. `previewRollingWeek` samo čita (ne sprema, bez prijedloga, bez niza boljih tjedana); napomena da nova promjena stiže nedjeljom.
+- **23 (dio)**: README za Ritam; nema TODO-ova; `expo-doctor` 18/20 (Expo API blokiran u cloudu — ponoviti na Macu). Ostaje `[~]` do deploya 20–22.
+- Issue #1 je zatvorio GitHub jer je opis PR-a #26 imao „FIXES: <URL #1>“ — ponovno otvoren; `FIXES` ide samo u objavu u #1, ne u opis PR-a.
+
 ## 2026-11-17 · Sesija 12:43 — P2 za Edge Functions (PR #16), grana `fix/edge-p2`
 - `supabase/functions/_shared/plan-logic.ts` (čisto, bez Denoa; Jest `src/core/schedule/plan-logic.test.ts`): validacija `plan-day` (svaki prioritet/prozor, 99:99, `[null]` → 400) i `parse-input` (`null` → 400); fallback: fiksni blokovi rezerviraju vrijeme (`kind: 'fixed'`), predug zadatak ne troši prozore; model: blok izvan prozora, preklapanje, pomaknut fiksni → lokalni raspored.
 - `llm-provider`: upis u `llm_calls` kroz `EdgeRuntime.waitUntil` (inače `await`), greška inserta se logira; model iz `LLM_MODEL` (zadano i dalje `claude-sonnet-4-5`, povlači se 30. 11. — pitanje 77).
