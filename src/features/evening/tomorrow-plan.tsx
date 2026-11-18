@@ -40,6 +40,7 @@ import { useAppTheme } from '@/ui/theme';
 
 import { requestParseInput } from './parse-input-client';
 import { requestPlanDay } from './plan-day-client';
+import { loadPlanContext } from './plan-context';
 import { PlanProposalView } from './plan-proposal-view';
 import { useTomorrowPlan } from './use-tomorrow';
 
@@ -151,15 +152,17 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
     const snapshot = items;
     setPlanError(false);
     setPlanning(true);
+    // Korak 26: model dobiva i ciljeve, tjedne zadatke kojima fale termini i zabrane tog dana.
+    const { context, tasks } = await loadPlanContext(date);
     const response = await requestPlanDay(
-      planDayRequest(date, snapshot, plan.existing, plan.wakeTime, plan.bedtime, locale),
+      planDayRequest(date, snapshot, plan.existing, plan.wakeTime, plan.bedtime, locale, context),
     );
     setPlanning(false);
     if (!response) {
       setPlanError(true);
       return;
     }
-    setProposal(planProposal(response, snapshot));
+    setProposal(planProposal(response, snapshot, tasks));
   }
 
   function acceptProposal() {
@@ -177,7 +180,14 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
 
   function replace(key: number, draft: BlockDraft) {
     // Vrijeme iz uređivača je korisnikov izbor.
-    setItems((current) => current.map((item) => (item.key === key ? { key, draft, pinned: true } : item)));
+    // Termin tjednog zadatka ostaje vezan dok mu se naslov ne promijeni.
+    setItems((current) =>
+      current.map((item) => {
+        if (item.key !== key) return item;
+        const taskId = item.draft.taskId && item.draft.title.trim() === draft.title.trim() ? item.draft.taskId : null;
+        return { key, draft: taskId ? { ...draft, taskId } : draft, pinned: true };
+      }),
+    );
   }
 
   function remove(key: number) {
