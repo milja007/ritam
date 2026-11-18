@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-18 · Sesija 12:43 — korak 28: zabrane unutar planova
+- Prioritet „Žar“ istekao 2026-11-17; 20–22 čekaju deploy (Borna), pa ide faza 2 redom: 26 traži deploy `plan-day` za provjeru → prvo 28.
+- Plan (provjeren protiv koncepta „zabrane se postavljaju unutar planova godine/mjeseca/tjedna; naziv, kad vrijedi, razlog, težina 1–3; svaka ima streak i lagano Držao sam se / Prekršio“): (1) zabrana dobiva razdoblje `period` + `period_start` (oba `null` = stalna, kao zabrane iz onboardinga); lokalna migracija 0014 + Supabase migracija (remote = Borna, pitanje 84). (2) Core: `isRuleActiveOn` (dan u tjednu + unutar razdoblja), `rulesActiveOn` ga koristi → večernji upit pita samo zabrane koje taj dan vrijede; `ruleStreak` (dani zaredom kad je vrijedila i držao si se; današnji neodgovoren dan ne prekida, neodgovoren prošli prekida, dani kad ne vrijedi se preskaču) + najbolji niz. (3) Repo: `createRule` s razdobljem, `listRuleLogs`, `deleteRule` samo bez povijesti. (4) UI: kartica „Zabrane“ na Tjednu/Mjesecu/Godini — zabrane koje vrijede u tom razdoblju (i šire: godina/mjesec/stalne, s oznakom izvora), niz žarom po zabrani, dodavanje za to razdoblje (naziv, zašto, težina, dani), prošlo razdoblje samo čitanje.
+- Nije u konceptu (konstante, pitanje 88): pravila niza; brisanje samo bez povijesti; najviše 5 zabrana po razdoblju.
+
 ## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
 - Plan (provjeren protiv koncepta „pitanja kod unosa … LLM ih smješta, pravila su tvrda“): (1–2) podaci `tasks` (tjedan, naslov, trajanje 5–480, koliko puta 1–7, rok u tjednu, doba dana, energija, što treba; najviše 10 — konstanta, nije u konceptu), (3) lokalno smještanje `placeWeekTasks` po tvrdim pravilima (LLM = 26), (4) kartica „Zadaci tjedna“ na Tjednu s pitanjima kao čipovima i prijedlogom koji korisnik odobrava. Bez XP-a za sam zadatak (XP ide kroz blokove).
 - Gotovo: 1–2 (PR #41, remote migracija = Borna, pitanje 84), 3–4 (PR #42). Korak 25 `[x]`.
