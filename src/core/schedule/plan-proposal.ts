@@ -7,7 +7,7 @@
 import type { ScheduleBlock } from '../domain';
 import { formatClock, parseClock } from '../time/clock';
 import { LAST_END, type BlockDraft } from './block-draft';
-import type { DayPriority, PlanDayRequest, PlanDayResponse, PlannedBlock } from './edge-types';
+import type { DayPriority, PlanContext, PlanDayRequest, PlanDayResponse, PlannedBlock } from './edge-types';
 import { planStartMinutes } from './tomorrow';
 
 type Occupied = Pick<ScheduleBlock, 'start' | 'end' | 'kind'>;
@@ -74,7 +74,10 @@ export function priorityOf(item: PlanItem): DayPriority {
   };
 }
 
-/** Zahtjev za `plan-day` (najviše 30 stavki). */
+/** Bez ciljeva, zadataka i zabrana. */
+export const EMPTY_PLAN_CONTEXT: PlanContext = { goals: [], tasks: [], rules: [] };
+
+/** Zahtjev za `plan-day` (najviše 30 stavki) s kontekstom dana (korak 26). */
 export function planDayRequest(
   date: string,
   items: readonly PlanItem[],
@@ -82,6 +85,7 @@ export function planDayRequest(
   wakeTime: string,
   bedtime: string | null,
   locale: 'hr' | 'en',
+  context: PlanContext = EMPTY_PLAN_CONTEXT,
 ): PlanDayRequest {
   return {
     date,
@@ -89,6 +93,7 @@ export function planDayRequest(
     priorities: items.slice(0, PLAN_MAX_PRIORITIES).map(priorityOf),
     freeWindows: freeWindows(existing, wakeTime, bedtime),
     preferences: null,
+    context,
   };
 }
 
@@ -148,17 +153,36 @@ export type PlanProposal<T extends PlanItem = PlanItem> = {
 
 const titleKey = (title: string) => title.trim().toLocaleLowerCase();
 
+/** Tjedni zadatak iz konteksta: blok istog naslova postaje njegov termin (`taskId`). */
+export type ProposalTask = { id: string; title: string };
+
 /**
  * Prijedlog za prikaz: svaki blok rasporeda se veže na prvu još nevezanu stavku istog naslova
- * (pa dvije „Kemije“ ostaju dvije); stavke bez bloka su „nije stalo“.
+ * (pa dvije „Kemije“ ostaju dvije); stavke bez bloka su „nije stalo“. Blok koji nije stavka, a
+ * nosi naslov tjednog zadatka iz konteksta, postaje termin tog zadatka (najviše jedan po
+ * zadatku — zadatak se ne ponavlja isti dan).
  */
-export function planProposal<T extends PlanItem>(response: PlanDayResponse, items: readonly T[]): PlanProposal<T> {
+export function planProposal<T extends PlanItem>(
+  response: PlanDayResponse,
+  items: readonly T[],
+  tasks: readonly ProposalTask[] = [],
+): PlanProposal<T> {
   const used = new Set<number>();
-  const drafts = response.schedule.map((block) => {
+  const usedTasks = new Set<string>();
+  const drafts = response.schedule.map((block): BlockDraft => {
     const index = items.findIndex((item, i) => !used.has(i) && titleKey(item.draft.title) === titleKey(block.title));
-    if (index >= 0) used.add(index);
-    const kind = index >= 0 ? (items[index] as T).draft.kind : 'task';
-    return { title: block.title, kind, start: block.start, end: block.end };
+    if (index >= 0) {
+      used.add(index);
+      const item = items[index] as T;
+      const draft: BlockDraft = { title: block.title, kind: item.draft.kind, start: block.start, end: block.end };
+      return item.draft.taskId ? { ...draft, taskId: item.draft.taskId } : draft;
+    }
+    const task = tasks.find((entry) => !usedTasks.has(entry.id) && titleKey(entry.title) === titleKey(block.title));
+    if (task) {
+      usedTasks.add(task.id);
+      return { title: task.title, kind: 'task', start: block.start, end: block.end, taskId: task.id };
+    }
+    return { title: block.title, kind: 'task', start: block.start, end: block.end };
   });
   return {
     drafts,

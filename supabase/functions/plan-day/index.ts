@@ -30,6 +30,7 @@ import {
   acceptModelPlan,
   buildFallbackPlan,
   parsePlanDayRequest,
+  planContextLines,
   type PlanDayRequest,
   type PlanDayResponse,
 } from '../_shared/plan-logic.ts';
@@ -114,6 +115,8 @@ Vrati SAMO JSON objekt (bez markdowna):
   "summary": "Kratki sažetak plana (1-2 rečenice)"
 }
 
+Ako dobiješ ciljeve, tjedne zadatke ili zabrane: ciljevi su kontekst za sažetak i redoslijed; tjedni zadatak smjesti samo ako stane uz prioritete (prioriteti imaju prednost), u njegovo doba dana i prije roka; ništa u planu ne smije kršiti zabranu.
+
 Ako ne možeš smjestiti sve prioritete, napiši pitanje. Ako su slobodni prozori prazni, traži ih pitanjem.
 Sažetak i pitanja piši na ${req.locale === 'en' ? 'engleskom' : 'hrvatskom'} jeziku.
 `.trim();
@@ -141,6 +144,8 @@ function buildUserMessage(req: PlanDayRequest): string {
   } else {
     lines.push('Prioriteti: nisu navedeni');
   }
+
+  lines.push(...planContextLines(req.context, req.locale));
 
   return lines.join('\n');
 }

@@ -69,6 +69,26 @@ export type PlanDayRequest = {
    * Za MVP: `null` → LLM koristi razumne zadane vrijednosti.
    */
   preferences: PlanPreferences | null;
+  /** Ciljevi, tjedni zadaci i zabrane za taj dan (korak 26); server ga smije i ne dobiti. */
+  context: PlanContext;
+};
+
+/** Tjedni zadatak kojem još fale termini (korak 26). */
+export type PlanContextTask = {
+  title: string;
+  durationMinutes: number;
+  timesLeft: number;
+  partOfDay: 'any' | 'morning' | 'afternoon' | 'evening';
+  energy: 'low' | 'medium' | 'high';
+  deadline: string | null;
+  needs: string;
+};
+
+/** Kontekst plana dana (korak 26) — isti oblik kao `PlanContext` u `plan-logic.ts`. */
+export type PlanContext = {
+  goals: { period: 'week' | 'month' | 'year'; title: string; done: boolean }[];
+  tasks: PlanContextTask[];
+  rules: { title: string; why: string }[];
 };
 
 export type PlanPreferences = {
