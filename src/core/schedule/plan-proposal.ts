@@ -137,11 +137,11 @@ export function readPlanDayResponse(raw: unknown, request: PlanDayRequest): Plan
   return { schedule, questions, summary };
 }
 
-export type PlanProposal = {
+export type PlanProposal<T extends PlanItem = PlanItem> = {
   /** Nacrti predloženog rasporeda (vrsta iz odgovarajuće stavke, inače Zadatak). */
   drafts: BlockDraft[];
   /** Stavke koje model nije smjestio — ostaju na popisu ako se prijedlog prihvati. */
-  leftOut: PlanItem[];
+  leftOut: T[];
   questions: string[];
   summary: string;
 };
@@ -152,12 +152,12 @@ const titleKey = (title: string) => title.trim().toLocaleLowerCase();
  * Prijedlog za prikaz: svaki blok rasporeda se veže na prvu još nevezanu stavku istog naslova
  * (pa dvije „Kemije“ ostaju dvije); stavke bez bloka su „nije stalo“.
  */
-export function planProposal(response: PlanDayResponse, items: readonly PlanItem[]): PlanProposal {
+export function planProposal<T extends PlanItem>(response: PlanDayResponse, items: readonly T[]): PlanProposal<T> {
   const used = new Set<number>();
   const drafts = response.schedule.map((block) => {
     const index = items.findIndex((item, i) => !used.has(i) && titleKey(item.draft.title) === titleKey(block.title));
     if (index >= 0) used.add(index);
-    const kind = index >= 0 ? (items[index] as PlanItem).draft.kind : 'task';
+    const kind = index >= 0 ? (items[index] as T).draft.kind : 'task';
     return { title: block.title, kind, start: block.start, end: block.end };
   });
   return {

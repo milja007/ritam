@@ -9,6 +9,7 @@ import {
   type BlockDraft,
   type LearnedPick,
 } from '@/core/schedule';
+import { bedtimeFor } from '@/core/onboarding/onboarding';
 import { addDays } from '@/core/time/local-date';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
@@ -25,6 +26,8 @@ type Loaded = {
   /** Blokovi koji se ponavljaju u zadnja 4 tjedna, u svom uobičajenom terminu. */
   learned: LearnedPick[];
   wakeTime: string;
+  /** Odlazak u krevet sutra navečer (prema buđenju dan poslije) — kraj slobodnih prozora. */
+  bedtime: string | null;
 };
 
 /**
@@ -59,6 +62,9 @@ export function useTomorrowPlan(date: string) {
             ),
             // Sutrašnje buđenje (vikendom vikend vrijeme).
             wakeTime: settings ? wakeTimeFor(settings, date) : FALLBACK_WAKE_TIME,
+            bedtime: settings
+              ? bedtimeFor(wakeTimeFor(settings, addDays(date, 1) ?? date), settings.sleepHours)
+              : null,
           });
         }
       })
@@ -71,6 +77,7 @@ export function useTomorrowPlan(date: string) {
             existing: [],
             learned: [],
             wakeTime: FALLBACK_WAKE_TIME,
+            bedtime: null,
           });
       });
     return () => {
@@ -96,6 +103,7 @@ export function useTomorrowPlan(date: string) {
     existing: current?.existing ?? [],
     learned: current?.learned ?? [],
     wakeTime: current?.wakeTime ?? FALLBACK_WAKE_TIME,
+    bedtime: current?.bedtime ?? null,
     reload,
     confirm,
   };

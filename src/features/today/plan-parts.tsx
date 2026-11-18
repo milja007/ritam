@@ -30,7 +30,7 @@ export function Chip({ label, hint, onPress }: { label: string; hint: string; on
   );
 }
 
-export function ExistingRow({ block }: { block: ScheduleBlock }) {
+export function ExistingRow({ block }: { block: Pick<ScheduleBlock, 'title' | 'start' | 'end' | 'kind'> }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   return (

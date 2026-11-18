@@ -7,8 +7,9 @@ import type { ScheduleBlock } from '../domain';
 import { parseClock } from '../time/clock';
 import type { BlockDraft } from './block-draft';
 import type { ParsedBlock } from './edge-types';
-import { MAX_ENTRY_MINUTES, MIN_ENTRY_MINUTES, type DayPart, type PlanEntry } from './plan-entry';
-import { entryDraft, typedDraft } from './tomorrow';
+import { MAX_ENTRY_MINUTES, MIN_ENTRY_MINUTES, parsePlanEntry, type DayPart, type PlanEntry } from './plan-entry';
+import type { PlanItem } from './plan-proposal';
+import { entryDraft } from './tomorrow';
 
 type Occupied = Pick<ScheduleBlock, 'start' | 'end' | 'kind'>;
 
@@ -87,11 +88,18 @@ export function parsedBlocksToDrafts(
   occupied: readonly Occupied[],
   wakeTime: string,
 ): BlockDraft[] {
-  const drafts: BlockDraft[] = [];
+  return parsedItems(blocks, occupied, wakeTime).map((item) => item.draft);
+}
+
+/** Kao `parsedBlocksToDrafts`, uz oznaku je li vrijeme izričito zadano (za „Složi mi dan“). */
+export function parsedItems(blocks: readonly ParsedBlock[], occupied: readonly Occupied[], wakeTime: string): PlanItem[] {
+  const items: PlanItem[] = [];
   for (const block of blocks) {
-    drafts.push(entryDraft(parsedBlockToEntry(block), [...occupied, ...drafts], wakeTime));
+    const entry = parsedBlockToEntry(block);
+    const draft = entryDraft(entry, [...occupied, ...items.map((item) => item.draft)], wakeTime);
+    items.push({ draft, pinned: entry.start !== null && draft.start === entry.start });
   }
-  return drafts;
+  return items;
 }
 
 /**
@@ -108,12 +116,19 @@ export function splitEntries(text: string): string[] {
 
 /** Lokalni nacrti za unos s jednom ili više stavki (bez oblaka ili kad `parse-input` ne uspije). */
 export function typedDrafts(text: string, occupied: readonly Occupied[], wakeTime: string): BlockDraft[] {
-  const drafts: BlockDraft[] = [];
+  return typedItems(text, occupied, wakeTime).map((item) => item.draft);
+}
+
+/** Kao `typedDrafts`, uz oznaku je li vrijeme izričito upisano („Zubar u 16“). */
+export function typedItems(text: string, occupied: readonly Occupied[], wakeTime: string): PlanItem[] {
+  const items: PlanItem[] = [];
   for (const part of splitEntries(text)) {
-    const draft = typedDraft(part, [...occupied, ...drafts], wakeTime);
-    if (draft) drafts.push(draft);
+    const entry = parsePlanEntry(part);
+    if (!entry) continue;
+    const draft = entryDraft(entry, [...occupied, ...items.map((item) => item.draft)], wakeTime);
+    items.push({ draft, pinned: entry.start !== null && draft.start === entry.start });
   }
-  return drafts;
+  return items;
 }
 
 /** Riječi koje spajaju više aktivnosti u jednoj rečenici („…, pa…“, „… and then …“). */
