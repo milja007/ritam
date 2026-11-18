@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { scoreTrend, weekStart } from '../progress';
 import { addDays } from '../time/local-date';
 import { SHORT_SLEEP_MINUTES, TRENDS, type Trend } from './day-diagnosis';
+import { llmWeekTextSchema } from './llm-week';
 import type { DayPart, PeriodStats } from './period-stats';
 
 /** Verzija pravila (sprema se kao `reports.prompt_version`). */
@@ -200,6 +201,12 @@ export const weekDiagnosisSchema = z.object({
   carried: z.boolean(),
   /** Niz boljih tjedana zaključno s ovim tjednom. */
   betterWeeks: z.number(),
+  /**
+   * Riječi modela (korak 31c, `write-report` tjedni način): zamjenjuju retke Ukratko, Pohvale,
+   * Uočeno i Problemi; brojke, trend i promjena tjedna ostaju lokalni. Pokvaren tekst ne ruši
+   * lokalnu dijagnozu.
+   */
+  llm: llmWeekTextSchema.optional().catch(undefined),
 });
 export type WeekDiagnosis = z.infer<typeof weekDiagnosisSchema>;
 

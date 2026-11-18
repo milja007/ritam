@@ -117,7 +117,12 @@ function WeekSection({ start, date }: { start: string; date: string }) {
       <Text variant="caption" tone="textMuted">
         {range}
       </Text>
-      <WeekDiagnosisView diagnosis={diagnosis} accepted={report.accepted} onAnswer={report.answer} />
+      <WeekDiagnosisView
+        diagnosis={diagnosis}
+        accepted={report.accepted}
+        onAnswer={report.answer}
+        writing={report.writing}
+      />
       <DiagnosisFeedback period="week" periodStart={start} />
     </View>
   );

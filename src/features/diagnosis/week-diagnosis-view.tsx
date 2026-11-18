@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import type { Trend, WeekDiagnosis, WeekLine, WeekProgressRow } from '@/core/diagnosis';
 import { radius, spacing } from '@/core/theme';
@@ -83,6 +83,8 @@ type WeekDiagnosisViewProps = {
   accepted: boolean | null;
   /** Spremi odgovor; vraća je li uspjelo. */
   onAnswer: (accepted: boolean) => boolean;
+  /** Čekaju se riječi modela (korak 31c). */
+  writing?: boolean;
 };
 
 /**
@@ -90,12 +92,21 @@ type WeekDiagnosisViewProps = {
  * Veliki problemi → Ideje za napredak. Ideja je uvijek jedna („malo po malo“), a ispod nje se
  * odgovara: „Probat ću“ ili „Ne sada“. Prazna sekcija se ne crta (pregled „zadnjih 7 dana“ nema ideja).
  */
-export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnosisViewProps) {
+export function WeekDiagnosisView({ diagnosis, accepted, onAnswer, writing = false }: WeekDiagnosisViewProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useAppTheme();
   const lineText = (line: WeekLine) => t(`diagnosis.week.lines.${line.key}`, weekLineParams(line, i18n.language));
   const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
   const trendLabel = t(`diagnosis.week.trend.${diagnosis.trend}`);
+  // Korak 31c: riječi modela zamjenjuju lokalne retke; brojke, trend i promjena tjedna ostaju lokalni.
+  const { llm } = diagnosis;
+  const summaryText = llm ? llm.summary : lineText(diagnosis.summary);
+  const sectionLines = (section: LineSection): string[] =>
+    llm && section !== 'ideas' ? llm[section] : diagnosis[section].map(lineText);
+  // Model smije ostaviti sekciju praznom (npr. bez velikih problema) — tada se ne prikazuje.
+  const sections = LINE_SECTIONS.map((section) => ({ section, lines: sectionLines(section) })).filter(
+    ({ lines }) => lines.length > 0,
+  );
 
   return (
     <View style={styles.root}>
@@ -103,7 +114,7 @@ export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnos
         <Text variant="overline" tone="textMuted" accessibilityRole="header">
           {t('diagnosis.sections.summary')}
         </Text>
-        <View style={styles.summaryRow} accessible accessibilityLabel={`${trendLabel}. ${lineText(diagnosis.summary)}`}>
+        <View style={styles.summaryRow} accessible accessibilityLabel={`${trendLabel}. ${summaryText}`}>
           <Text variant="title" tone={WEEK_TREND_TONE[diagnosis.trend]}>
             {WEEK_TREND_ARROW[diagnosis.trend]}
           </Text>
@@ -111,9 +122,17 @@ export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnos
             <Text variant="bodyStrong" tone={WEEK_TREND_TONE[diagnosis.trend]}>
               {trendLabel}
             </Text>
-            <Text>{lineText(diagnosis.summary)}</Text>
+            <Text>{summaryText}</Text>
           </View>
         </View>
+        {writing ? (
+          <View style={styles.writingRow} accessibilityLiveRegion="polite">
+            <ActivityIndicator size="small" color={colors.accent} />
+            <Text variant="caption" tone="textMuted">
+              {t('diagnosis.writing')}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={card}>
@@ -125,21 +144,26 @@ export function WeekDiagnosisView({ diagnosis, accepted, onAnswer }: WeekDiagnos
         ))}
       </View>
 
-      {LINE_SECTIONS.filter((section) => diagnosis[section].length > 0).map((section) => (
+      {sections.map(({ section, lines }) => (
         <View
           key={section}
           style={[card, section === 'ideas' ? { borderColor: colors.accent, borderWidth: 1 } : null]}>
           <Text variant="overline" tone={section === 'ideas' ? 'accent' : 'textMuted'} accessibilityRole="header">
             {t(`diagnosis.sections.${section}`)}
           </Text>
-          {diagnosis[section].map((line, index) => (
-            <View key={`${line.key}-${index}`} style={styles.bulletRow}>
+          {lines.map((text, index) => (
+            <View key={`${section}-${index}`} style={styles.bulletRow}>
               <Text tone={section === 'ideas' ? 'accent' : 'textMuted'} importantForAccessibility="no">
                 •
               </Text>
-              <Text style={styles.flex}>{lineText(line)}</Text>
+              <Text style={styles.flex}>{text}</Text>
             </View>
           ))}
+          {section === 'ideas' && llm?.ideaWhy ? (
+            <Text variant="caption" tone="textMuted">
+              {llm.ideaWhy}
+            </Text>
+          ) : null}
           {section === 'ideas' && diagnosis.suggestion !== null ? (
             <SuggestionAnswer carried={diagnosis.carried} accepted={accepted} onAnswer={onAnswer} />
           ) : null}
@@ -292,6 +316,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  writingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   bulletRow: { flexDirection: 'row', gap: spacing.sm },
   metricRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   metricValues: { alignItems: 'flex-end' },

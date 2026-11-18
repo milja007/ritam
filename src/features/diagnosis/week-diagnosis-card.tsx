@@ -42,7 +42,9 @@ export function WeekDiagnosisCard({ report, rangeLabel, current }: WeekDiagnosis
     ) : null;
   }
 
-  const summary = t(`diagnosis.week.lines.${diagnosis.summary.key}`, weekLineParams(diagnosis.summary, i18n.language));
+  const summary =
+    diagnosis.llm?.summary ??
+    t(`diagnosis.week.lines.${diagnosis.summary.key}`, weekLineParams(diagnosis.summary, i18n.language));
   const trendLabel = t(`diagnosis.week.trend.${diagnosis.trend}`);
   const suggestionState =
     diagnosis.suggestion === null
@@ -129,7 +131,12 @@ export function WeekDiagnosisCard({ report, rangeLabel, current }: WeekDiagnosis
                 <Text variant="title" accessibilityRole="header">
                   {t('diagnosis.week.title')}
                 </Text>
-                <WeekDiagnosisView diagnosis={diagnosis} accepted={report.accepted} onAnswer={report.answer} />
+                <WeekDiagnosisView
+                  diagnosis={diagnosis}
+                  accepted={report.accepted}
+                  onAnswer={report.answer}
+                  writing={report.writing}
+                />
                 <DiagnosisFeedback period="week" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>
