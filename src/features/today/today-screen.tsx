@@ -24,6 +24,7 @@ import {
 } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { DiagnosisModal, DiagnosisReadyCard, useDiagnosisPickup } from '@/features/diagnosis';
+import { TrackersCard } from '@/features/trackers';
 import { EveningCard, EveningCheckinFlow, TomorrowPlan, useEveningCheckin } from '@/features/evening';
 import { MorningBrief, MorningCard, useMorningCheckin } from '@/features/morning';
 import {
@@ -282,7 +283,10 @@ export function TodayScreen() {
   return (
     <GradientBackground>
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <View style={styles.headerText}>
               <Text variant="caption" tone="textMuted" numberOfLines={1}>
@@ -389,6 +393,8 @@ export function TodayScreen() {
           <XpStreakBar today={now.date} checkinDay={now.eveningDate} />
 
           <DayScoreCard checkinDay={now.eveningDate} />
+
+          <TrackersCard date={now.date} />
 
           {day.status === 'ready' && evening.status !== 'error' ? (
             <EveningCard

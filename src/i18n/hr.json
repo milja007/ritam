@@ -1623,5 +1623,79 @@
       "cancel": "Odustani",
       "failed": "Zabrana nije spremljena. Pokušaj ponovo."
     }
+  },
+  "trackers": {
+    "kcal": "{{value}} kcal",
+    "kcalOf": "{{value}} / {{goal}} kcal",
+    "remove": "Ukloni: {{label}}, {{amount}}",
+    "addFailed": "Spremanje nije uspjelo. Pokušaj ponovo.",
+    "card": {
+      "overline": "Kalorije i novac",
+      "eveningOverline": "Kalorije i novac danas",
+      "loadError": "Unosi se nisu mogli učitati."
+    },
+    "calories": {
+      "title": "Kalorije",
+      "noGoal": "Postavi dnevni cilj u Profilu → Trackeri.",
+      "empty": "Još ništa uneseno danas.",
+      "within": "Unutar cilja (± {{diff}} kcal).",
+      "over": "Iznad cilja za {{diff}} kcal.",
+      "under": "Ispod cilja za {{diff}} kcal.",
+      "left": "Još {{diff}} kcal do cilja.",
+      "unnamed": "Obrok",
+      "amountLabel": "kcal",
+      "amountPlaceholder": "650",
+      "noteLabel": "Obrok (neobavezno)",
+      "notePlaceholder": "Npr. ručak",
+      "add": "Dodaj kalorije",
+      "added": "Kalorije su dodane.",
+      "invalid": "Upiši cijeli broj od 1 do 10 000."
+    },
+    "money": {
+      "title": "Novac",
+      "left": "Ostalo {{value}}",
+      "overLimit": "Preko limita {{value}}",
+      "today": "Danas {{value}}",
+      "limit": {
+        "day": "Potrošeno {{spent}} od {{limit}} danas.",
+        "week": "Potrošeno {{spent}} od {{limit}} ovaj tjedan.",
+        "month": "Potrošeno {{spent}} od {{limit}} ovaj mjesec."
+      },
+      "noLimit": "Bez limita — postavi ga u Profilu → Trackeri.",
+      "totals": "Tjedan {{week}} · mjesec {{month}}",
+      "balance": "stanje {{value}}",
+      "unnamed": "Potrošnja",
+      "amountLabel": "€",
+      "amountPlaceholder": "12,50",
+      "noteLabel": "Za što? (neobavezno)",
+      "notePlaceholder": "Npr. kava",
+      "add": "Dodaj potrošnju",
+      "added": "Potrošnja je dodana.",
+      "invalid": "Upiši iznos, npr. 12,50."
+    },
+    "settings": {
+      "title": "Trackeri",
+      "calories": "Kalorije",
+      "caloriesDetail": "Dnevni cilj, unos po obroku i večernja provjera.",
+      "goal": "Dnevni cilj (kcal)",
+      "lowGoal": "Cilj ispod 1 200 kcal je neuobičajeno nizak. Ako ga nije preporučio liječnik ili nutricionist, razmisli o višem cilju.",
+      "goalInvalid": "Cilj mora biti između {{min}} i {{max}} kcal.",
+      "saveGoal": "Spremi cilj",
+      "money": "Novac",
+      "moneyDetail": "Limit potrošnje za dan, tjedan ili mjesec i unos potrošnje.",
+      "limit": "Limit potrošnje (€, prazno = bez limita)",
+      "period": "Razdoblje limita",
+      "periods": {
+        "day": "Dan",
+        "week": "Tjedan",
+        "month": "Mjesec"
+      },
+      "saveLimit": "Spremi limit",
+      "balance": "Trenutno stanje (€, neobavezno)",
+      "balancePlaceholder": "Npr. 500,00",
+      "balanceSince": "Stanje {{value}} od {{date}} — potrošnja od tog dana se oduzima.",
+      "saveBalance": "Spremi stanje",
+      "amountInvalid": "Upiši iznos, npr. 100,00."
+    }
   }
 }

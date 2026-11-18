@@ -1595,5 +1595,79 @@
       "cancel": "Cancel",
       "failed": "The rule wasn't saved. Try again."
     }
+  },
+  "trackers": {
+    "kcal": "{{value}} kcal",
+    "kcalOf": "{{value}} / {{goal}} kcal",
+    "remove": "Remove: {{label}}, {{amount}}",
+    "addFailed": "Saving failed. Try again.",
+    "card": {
+      "overline": "Calories and money",
+      "eveningOverline": "Calories and money today",
+      "loadError": "Entries could not be loaded."
+    },
+    "calories": {
+      "title": "Calories",
+      "noGoal": "Set a daily goal in Profile → Trackers.",
+      "empty": "Nothing logged today yet.",
+      "within": "Within your goal (± {{diff}} kcal).",
+      "over": "Over your goal by {{diff}} kcal.",
+      "under": "Under your goal by {{diff}} kcal.",
+      "left": "{{diff}} kcal left to your goal.",
+      "unnamed": "Meal",
+      "amountLabel": "kcal",
+      "amountPlaceholder": "650",
+      "noteLabel": "Meal (optional)",
+      "notePlaceholder": "E.g. lunch",
+      "add": "Add calories",
+      "added": "Calories added.",
+      "invalid": "Enter a whole number from 1 to 10,000."
+    },
+    "money": {
+      "title": "Money",
+      "left": "{{value}} left",
+      "overLimit": "Over limit by {{value}}",
+      "today": "Today {{value}}",
+      "limit": {
+        "day": "Spent {{spent}} of {{limit}} today.",
+        "week": "Spent {{spent}} of {{limit}} this week.",
+        "month": "Spent {{spent}} of {{limit}} this month."
+      },
+      "noLimit": "No limit — set one in Profile → Trackers.",
+      "totals": "Week {{week}} · month {{month}}",
+      "balance": "balance {{value}}",
+      "unnamed": "Spending",
+      "amountLabel": "€",
+      "amountPlaceholder": "12.50",
+      "noteLabel": "What for? (optional)",
+      "notePlaceholder": "E.g. coffee",
+      "add": "Add spending",
+      "added": "Spending added.",
+      "invalid": "Enter an amount, e.g. 12.50."
+    },
+    "settings": {
+      "title": "Trackers",
+      "calories": "Calories",
+      "caloriesDetail": "Daily goal, logging per meal and an evening check.",
+      "goal": "Daily goal (kcal)",
+      "lowGoal": "A goal under 1,200 kcal is unusually low. Unless a doctor or dietitian recommended it, consider a higher goal.",
+      "goalInvalid": "The goal must be between {{min}} and {{max}} kcal.",
+      "saveGoal": "Save goal",
+      "money": "Money",
+      "moneyDetail": "A spending limit for a day, week or month, and logging what you spend.",
+      "limit": "Spending limit (€, empty = no limit)",
+      "period": "Limit period",
+      "periods": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "saveLimit": "Save limit",
+      "balance": "Current balance (€, optional)",
+      "balancePlaceholder": "E.g. 500.00",
+      "balanceSince": "Balance {{value}} since {{date}} — spending from that day is subtracted.",
+      "saveBalance": "Save balance",
+      "amountInvalid": "Enter an amount, e.g. 100.00."
+    }
   }
 }
