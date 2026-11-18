@@ -371,6 +371,14 @@
       "arrange": "Složi mi dan",
       "arrangeHint": "Prijedlog rasporeda u tvoje slobodno vrijeme — ti odlučuješ.",
       "error": "Slaganje nije uspjelo. Tvoj popis je ostao kakav jest."
+    },
+    "dayPlan": {
+      "overline": "Plan dana · {{day}}",
+      "title": "Što imaš u {{day}}?",
+      "subtitle": "Upiši što već znaš — ne mora sve odmah. Od–do ili koliko traje; termini se slažu od jutra, dodirni stavku da ih promijeniš.",
+      "newItems": "Novo za taj dan",
+      "doneTitle": "Spremljeno za {{day}}",
+      "doneBody": "Novih blokova: {{count}}. Uvijek ih možeš promijeniti."
     }
   },
   "morning": {
@@ -1127,10 +1135,18 @@
       "legendMissed": "nije",
       "legendPlan": "plan",
       "legendFixed": "fiksno",
-      "empty": "Ovaj tjedan još nema aktivnosti. Dodaješ ih na Danu.",
+      "empty": "Ovaj tjedan još nema aktivnosti. Dodirni dan koji dolazi ili dodaj na Danu.",
       "backToThis": "Ovaj tjedan",
       "backToThisHint": "Vraća na tekući tjedan",
-      "emptyPast": "Taj tjedan nema zabilježenih aktivnosti."
+      "emptyPast": "Taj tjedan nema zabilježenih aktivnosti.",
+      "daysLeft_one": "Ostao je još {{count}} dan ovog tjedna",
+      "daysLeft_few": "Ostala su još {{count}} dana ovog tjedna",
+      "daysLeft_other": "Ostalo je još {{count}} dana ovog tjedna",
+      "planHint": "Dodirni dan koji dolazi da upišeš što znaš. Ne mora sve odmah.",
+      "nextWeek": "Sljedeći tjedan · planiraj unaprijed",
+      "planDayHint": "Otvara plan tog dana",
+      "todayHint": "Otvara Dan",
+      "emptyNext": "Sljedeći tjedan je prazan. Upiši ono što već znaš — ostalo kasnije."
     },
     "month": {
       "daysLeft_one": "još {{count}} dan",

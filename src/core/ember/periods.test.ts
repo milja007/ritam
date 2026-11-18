@@ -9,6 +9,9 @@ import {
   hasDiagnosis,
   isMonthOpenable,
   isWeekOpenable,
+  PLAN_AHEAD_WEEKS,
+  weekDayAction,
+  weekDaysLeft,
   isoWeek,
   monthNav,
   nextMonth,
@@ -399,6 +402,37 @@ describe('listanje razdoblja', () => {
   it('weekNav: bez rezultata ili s neispravnim danom nema listanja unatrag', () => {
     expect(weekNav(TODAY, TODAY, null)).toEqual({ previous: null, next: null, current: true });
     expect(weekNav('x', TODAY, '2026-01-01')).toEqual({ previous: null, next: null, current: true });
+  });
+
+  it('weekNav s `ahead`: sljedeći tjedan se otvara za planiranje, dalje ne; iz njega natrag i bez rezultata', () => {
+    expect(weekNav(TODAY, TODAY, null, 1)).toEqual({ previous: null, next: '2026-11-16', current: true });
+    expect(weekNav('2026-11-16', TODAY, null, 1)).toEqual({ previous: '2026-11-09', next: null, current: false });
+    expect(weekNav('2026-11-18', TODAY, '2026-10-28', 1).next).toBeNull();
+    // Negativan ili razlomljen `ahead` ne otvara budućnost.
+    expect(weekNav(TODAY, TODAY, null, -2).next).toBeNull();
+    expect(weekNav(TODAY, TODAY, null, 0.5).next).toBeNull();
+  });
+
+  it('isWeekOpenable s `ahead`: najviše toliko tjedana unaprijed', () => {
+    expect(isWeekOpenable('2026-11-16', TODAY, 1)).toBe(true);
+    expect(isWeekOpenable('2026-11-23', TODAY, 1)).toBe(false);
+    expect(isWeekOpenable('2026-11-17', TODAY, 1)).toBe(false);
+    expect(isWeekOpenable('2026-11-16', TODAY, PLAN_AHEAD_WEEKS)).toBe(true);
+  });
+
+  it('weekDaysLeft: tekući tjedan od danas do nedjelje, budući 7, prošli 0', () => {
+    expect(weekDaysLeft(weekDates(TODAY), TODAY)).toBe(3);
+    expect(weekDaysLeft(weekDates('2026-11-16'), TODAY)).toBe(7);
+    expect(weekDaysLeft(weekDates('2026-11-02'), TODAY)).toBe(0);
+    expect(weekDaysLeft(weekDates(TODAY), 'x')).toBe(0);
+  });
+
+  it('weekDayAction: prošlost samo čitanje, danas na Dan, budućnost planiranje', () => {
+    expect(weekDayAction('2026-11-10', TODAY)).toBe('past');
+    expect(weekDayAction(TODAY, TODAY)).toBe('today');
+    expect(weekDayAction('2026-11-14', TODAY)).toBe('plan');
+    expect(weekDayAction('2026-11-20', TODAY)).toBe('plan');
+    expect(weekDayAction('x', TODAY)).toBe('past');
   });
 
   it('isWeekOpenable: samo ponedjeljak koji nije nakon tekućeg tjedna', () => {

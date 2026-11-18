@@ -365,6 +365,14 @@
       "arrange": "Arrange my day",
       "arrangeHint": "A proposed schedule in your free time — you decide.",
       "error": "Arranging didn't work. Your list is unchanged."
+    },
+    "dayPlan": {
+      "overline": "Day plan · {{day}}",
+      "title": "What's on {{day}}?",
+      "subtitle": "Add what you already know — it doesn't all have to be now. From–to or how long; times are placed from the morning, tap an item to change them.",
+      "newItems": "New for that day",
+      "doneTitle": "Saved for {{day}}",
+      "doneBody": "New blocks: {{count}}. You can always change them."
     }
   },
   "morning": {
@@ -1109,10 +1117,17 @@
       "legendMissed": "not done",
       "legendPlan": "plan",
       "legendFixed": "fixed",
-      "empty": "No activities this week yet. You add them on the Day tab.",
+      "empty": "No activities this week yet. Tap an upcoming day or add them on the Day tab.",
       "backToThis": "This week",
       "backToThisHint": "Back to the current week",
-      "emptyPast": "That week has no recorded activities."
+      "emptyPast": "That week has no recorded activities.",
+      "daysLeft_one": "{{count}} day left this week",
+      "daysLeft_other": "{{count}} days left this week",
+      "planHint": "Tap an upcoming day to add what you know. It doesn't all have to be now.",
+      "nextWeek": "Next week · plan ahead",
+      "planDayHint": "Opens that day's plan",
+      "todayHint": "Opens the Day tab",
+      "emptyNext": "Next week is empty. Add what you already know — the rest later."
     },
     "month": {
       "daysLeft_one": "{{count}} day left",

@@ -49,7 +49,7 @@ Status: `[ ]` čeka · `[~]` u tijeku · `[x]` gotovo
 
 ## Faza 2 — Pametni planer
 - [ ] 24. Google Calendar OAuth + uvoz fiksnih obaveza
-- [ ] 25. Tjedni plan kao kalendar (7 dana; fiksan, uvijek promjenjiv, ne mora se sve ispuniti) + ciljevi tjedna + tjedni zadaci s pitanjima *(P54: planiranje nedjeljom za sljedeći tjedan; mjesečno/godišnje na kraju razdoblja za novo; ulazak usred razdoblja → plan odmah, uz jasno "ostalo je manje dana/tjedana/mjeseci")*
+- [~] 25. Tjedni plan kao kalendar (7 dana; fiksan, uvijek promjenjiv, ne mora se sve ispuniti) + ciljevi tjedna + tjedni zadaci s pitanjima *(P54: planiranje nedjeljom za sljedeći tjedan; mjesečno/godišnje na kraju razdoblja za novo; ulazak usred razdoblja → plan odmah, uz jasno "ostalo je manje dana/tjedana/mjeseci")* — *2026-11-18 (PR #37):* Tjedan lista i sljedeći tjedan; dodir dana koji dolazi otvara plan tog dana (tok „Što imaš sutra?“), danas vodi na Dan; „ostalo je još N dana“. Ostaje: ciljevi tjedna, tjedni zadaci s pitanjima.
 - [ ] 25b. Mjesečni i godišnji plan, svaki kao kalendar u svom tabu + ciljevi (kontekst za tjedan i dan)
 - [ ] 26. Tjedni zadaci i ciljevi (tjedan/mjesec/godina) u plan-day
 - [x] 27. "Nešto je iskrslo" flow — *2026-11-17 (PR #29):* gumb na Danu → što + koliko (15 min – do kraja dana) → za svaku pogođenu planiranu aktivnost kasnije danas (prvi slobodan termin iste duljine) / sutra / drugi dan / preskoči; razlog kao bilješka; niz se ne dira; +5 XP najviše jednom dnevno. Lokalno, bez LLM-a; akcija „Iskrslo“ na obavijesti otvara isti flow (PR #33).

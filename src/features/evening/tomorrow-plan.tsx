@@ -49,6 +49,11 @@ type TomorrowPlanProps = {
   /** Pozove se nakon spremanja (osvježi timeline). */
   onSaved: () => void;
   onClose: () => void;
+  /**
+   * `tomorrow` (zadano) = večernje „Što imaš sutra?“; `day` = planiranje bilo kojeg dana koji tek
+   * dolazi s Tjedna (korak 25) — isti tok, tekstovi s imenom dana umjesto „sutra“.
+   */
+  variant?: 'tomorrow' | 'day';
 };
 
 /** Stavka popisa; `pinned` = vrijeme je izričito zadano (za „Složi mi dan“ je fiksno). */
@@ -58,8 +63,11 @@ type Item = PlanItem & { key: number };
  * "Što imaš sutra?": tipkanje i naučeni odabiri dodaju blokove za sutra (termini se slažu iza
  * zadnjeg bloka od buđenja), pregled s uređivanjem, Potvrdi sprema sve odjednom.
  */
-export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
+export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: TomorrowPlanProps) {
   const { t, i18n } = useTranslation();
+  // Tekstovi koji spominju „sutra“ imaju inačicu s imenom dana; ostali su zajednički.
+  const copy = variant === 'day' ? 'evening.dayPlan' : 'evening.tomorrow';
+  const dayName = formatDay(date, i18n.language);
   const { colors } = useAppTheme();
   const plan = useTomorrowPlan(date);
   const [items, setItems] = useState<Item[]>([]);
@@ -204,9 +212,9 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
             {savedCount !== null ? (
               <View style={styles.done}>
                 <Text variant="title" accessibilityRole="header" accessibilityLiveRegion="polite">
-                  {t('evening.tomorrow.doneTitle')}
+                  {t(`${copy}.doneTitle`, { day: dayName })}
                 </Text>
-                <Text tone="textMuted">{t('evening.tomorrow.doneBody', { count: savedCount })}</Text>
+                <Text tone="textMuted">{t(`${copy}.doneBody`, { count: savedCount })}</Text>
                 <Button label={t('evening.tomorrow.close')} onPress={onClose} style={styles.primary} />
               </View>
             ) : (
@@ -214,16 +222,14 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                   <View style={styles.topRow}>
                     <Text variant="overline" tone="textMuted">
-                      {t('evening.tomorrow.overline', {
-                        day: formatDay(date, i18n.language),
-                      })}
+                      {t(`${copy}.overline`, { day: dayName })}
                     </Text>
                     <Button variant="ghost" label={t('evening.close')} onPress={onClose} disabled={saving} />
                   </View>
                   <Text variant="title" accessibilityRole="header">
-                    {t('evening.tomorrow.title')}
+                    {t(`${copy}.title`, { day: dayName })}
                   </Text>
-                  <Text tone="textMuted">{t('evening.tomorrow.subtitle')}</Text>
+                  <Text tone="textMuted">{t(`${copy}.subtitle`)}</Text>
 
                   {plan.status === 'loading' ? (
                     <ActivityIndicator color={colors.accent} style={styles.section} />
@@ -301,7 +307,7 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
 
                       <View style={styles.section}>
                         <Text variant="caption" tone="textMuted">
-                          {t('evening.tomorrow.newItems')}
+                          {t(`${copy}.newItems`, { day: dayName })}
                         </Text>
                         {sortedItems.length === 0 ? (
                           <Text tone="textMuted">{t('evening.tomorrow.empty')}</Text>
