@@ -5,8 +5,10 @@ import {
   isLowCalorieGoal,
   moneySummary,
   moneyWindow,
+  trackerDay,
   trackerTotal,
   type MoneySettings,
+  type TrackerSettings,
 } from './index';
 
 const money = (date: string, amount: number) => ({ date, kind: 'money' as const, amount });
@@ -79,5 +81,35 @@ describe('novac (korak 31b)', () => {
 
   it('stanje postavljeno za budući dan se ne umanjuje', () => {
     expect(moneySummary(entries, { ...settings, moneyBalanceOn: '2026-11-20' }, '2026-11-18').balance).toBe(50000);
+  });
+});
+
+describe('trackerDay (rezultat dana, korak 31b)', () => {
+  const on: TrackerSettings = {
+    trackCalories: true,
+    calorieGoal: 2000,
+    trackMoney: true,
+    moneyLimitCents: 7000,
+    moneyPeriod: 'week',
+    moneyBalanceCents: null,
+    moneyBalanceOn: null,
+  };
+  const entries = [kcal('2026-11-18', 900), kcal('2026-11-18', 1000), money('2026-11-18', 1500), money('2026-11-17', 500)];
+
+  it('uključeni trackeri s unosima tog dana; dnevni dio limita = limit / dani razdoblja', () => {
+    expect(trackerDay(entries, on, '2026-11-18')).toEqual({
+      calories: { total: 1900, goal: 2000 },
+      money: { spent: 1500, dailyBudget: 1000 },
+    });
+    expect(trackerDay(entries, { ...on, moneyPeriod: 'month' }, '2026-11-18').money?.dailyBudget).toBe(233);
+    expect(trackerDay(entries, { ...on, moneyPeriod: 'day' }, '2026-11-18').money?.dailyBudget).toBe(7000);
+  });
+
+  it('isključen tracker, bez cilja/limita ili bez unosa tog dana → ne ulazi', () => {
+    expect(trackerDay(entries, { ...on, trackCalories: false, trackMoney: false }, '2026-11-18')).toEqual({ calories: null, money: null });
+    expect(trackerDay(entries, { ...on, calorieGoal: null, moneyLimitCents: null }, '2026-11-18')).toEqual({ calories: null, money: null });
+    expect(trackerDay(entries, on, '2026-11-17').calories).toBeNull();
+    expect(trackerDay(entries, on, '2026-11-16')).toEqual({ calories: null, money: null });
+    expect(trackerDay(entries, null, '2026-11-18')).toEqual({ calories: null, money: null });
   });
 });

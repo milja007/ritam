@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { progressOverview, scoreHeadline, scorePill, scoreTrend, weekStart, type ScoredDay } from './compare';
-import { dayScore, scoreWeights, sleepPart, type ScoreInput } from './score';
+import { caloriePart, dayScore, moneyPart, scoreWeights, sleepPart, type ScoreInput } from './score';
 
 const input = (over: Partial<ScoreInput> = {}): ScoreInput => ({
   plan: { total: 0, done: 0, partial: 0 },
@@ -12,7 +12,7 @@ const input = (over: Partial<ScoreInput> = {}): ScoreInput => ({
 
 describe('dayScore', () => {
   it('bez ijednog dijela nema rezultata', () => {
-    expect(dayScore(input())).toEqual({ score: null, parts: { plan: null, rules: null, sleep: null } });
+    expect(dayScore(input())).toEqual({ score: null, parts: { plan: null, rules: null, sleep: null, calories: null, money: null } });
   });
 
   it('samo plan: djelomično = pola', () => {
@@ -26,7 +26,7 @@ describe('dayScore', () => {
         rules: { activeWeight: 4, keptWeight: 1 },
       }),
     );
-    expect(result.parts).toEqual({ plan: 1, rules: 0.25, sleep: null });
+    expect(result.parts).toEqual({ plan: 1, rules: 0.25, sleep: null, calories: null, money: null });
     // (1 × 50 + 0,25 × 30) / 80 = 0,71875
     expect(result.score).toBe(72);
   });
@@ -37,7 +37,7 @@ describe('dayScore', () => {
       rules: { activeWeight: 3, keptWeight: 0 },
       sleep: { deviationMinutes: 0 },
     };
-    expect(dayScore(all, ['plan'])).toEqual({ score: 50, parts: { plan: 0.5, rules: null, sleep: null } });
+    expect(dayScore(all, ['plan'])).toEqual({ score: 50, parts: { plan: 0.5, rules: null, sleep: null, calories: null, money: null } });
     expect(dayScore(all, ['rules']).score).toBe(0);
     expect(dayScore(all, ['sleep']).score).toBe(100);
     // plan+san 50/20: (0,5 × 50 + 1 × 20) / 70 = 0,643
@@ -52,12 +52,35 @@ describe('dayScore', () => {
   });
 
   it('scoreWeights: razmjerna preraspodjela (odluka P39), zbroj 100', () => {
-    expect(scoreWeights(['plan', 'rules', 'sleep'])).toEqual({ plan: 50, rules: 30, sleep: 20 });
-    expect(scoreWeights(['plan', 'sleep'])).toEqual({ plan: 71, rules: 0, sleep: 29 });
-    expect(scoreWeights(['plan', 'rules'])).toEqual({ plan: 62, rules: 38, sleep: 0 });
-    expect(scoreWeights(['rules', 'sleep'])).toEqual({ plan: 0, rules: 60, sleep: 40 });
-    expect(scoreWeights(['sleep'])).toEqual({ plan: 0, rules: 0, sleep: 100 });
-    expect(scoreWeights([])).toEqual({ plan: 0, rules: 0, sleep: 0 });
+    expect(scoreWeights(['plan', 'rules', 'sleep'])).toEqual({ plan: 50, rules: 30, sleep: 20, calories: 0, money: 0 });
+    expect(scoreWeights(['plan', 'sleep'])).toEqual({ plan: 71, rules: 0, sleep: 29, calories: 0, money: 0 });
+    expect(scoreWeights(['plan', 'rules'])).toEqual({ plan: 62, rules: 38, sleep: 0, calories: 0, money: 0 });
+    expect(scoreWeights(['rules', 'sleep'])).toEqual({ plan: 0, rules: 60, sleep: 40, calories: 0, money: 0 });
+    expect(scoreWeights(['sleep'])).toEqual({ plan: 0, rules: 0, sleep: 100, calories: 0, money: 0 });
+    expect(scoreWeights([])).toEqual({ plan: 0, rules: 0, sleep: 0, calories: 0, money: 0 });
+  });
+
+  it('trackeri (31b): ulaze kad dan ima podatke (tracker uključen), po 15, neovisno o područjima', () => {
+    const base = { plan: { total: 2, done: 2, partial: 0 }, rules: { activeWeight: 0, keptWeight: 0 }, sleep: null };
+    const tracked = { ...base, calories: { total: 2600, goal: 2000 }, money: { spent: 1500, dailyBudget: 1000 } };
+    // kalorije 30 % iznad → (0,5 − 0,3) / 0,4 = 0,5; novac 1,5 × dnevni dio → 0,5
+    expect(dayScore(tracked, ['plan']).parts).toMatchObject({ plan: 1, calories: 0.5, money: 0.5 });
+    // (1 × 50 + 0,5 × 15 + 0,5 × 15) / 80 = 0,8125
+    expect(dayScore(tracked, ['plan']).score).toBe(81);
+    // Tracker isključen ili dan bez unosa (pozivatelj ne da podatke) → ne ulazi.
+    expect(dayScore({ ...base, calories: null, money: null }, ['plan']).score).toBe(100);
+    expect(scoreWeights(['plan', 'calories', 'money'])).toEqual({ plan: 62, rules: 0, sleep: 0, calories: 19, money: 19 });
+  });
+
+  it('dio kalorija i novca', () => {
+    expect(caloriePart(2100, 2000)).toBe(1);
+    expect(caloriePart(1800, 2000)).toBe(1);
+    expect(caloriePart(1000, 2000)).toBe(0);
+    expect(caloriePart(2600, 2000)).toBeCloseTo(0.5);
+    expect(moneyPart(800, 1000)).toBe(1);
+    expect(moneyPart(2000, 1000)).toBe(0);
+    expect(moneyPart(0, 0)).toBe(1);
+    expect(moneyPart(5, 0)).toBe(0);
   });
 
   it('zabrane po težini: prekršena teška zabrana više vuče dolje', () => {

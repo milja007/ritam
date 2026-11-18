@@ -29,6 +29,8 @@ export const EXAMPLE_TIRED_TUESDAY = {
     streak: 6,
     gaveUp: false,
     gaveUpNote: null,
+    calories: { total: 2650, goal: 2200 },
+    money: { spentCents: 1850, dailyBudgetCents: 1430 },
   },
   yesterday: {
     date: '2026-11-16',

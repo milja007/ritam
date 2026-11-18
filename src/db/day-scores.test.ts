@@ -8,6 +8,7 @@ import type { ChecklistAnswer, EveningDraft } from '@/core/checkin';
 import { createDefaultDraft, toSettingsInput } from '@/core/onboarding';
 
 import {
+  addTrackerEntry,
   createBlock,
   createRule,
   listDayScores,
@@ -150,6 +151,27 @@ describe('listDayScores', () => {
     saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok'), ans(y2.id, 'not')], rule.id, true), deps);
 
     const [day] = listDayScores(db, USER, YESTERDAY).days;
-    expect(day?.parts).toEqual({ plan: 0.5, rules: 1, sleep: null });
+    expect(day?.parts).toEqual({ plan: 0.5, rules: 1, sleep: null, calories: null, money: null });
+  });
+
+  it('trackeri (31b): uključen tracker s unosima ulazi u rezultat i dijelove; isključen ne', async () => {
+    const { db, deps, block, rule } = await setup();
+    const y1 = await block(YESTERDAY, 'Učenje', '09:00', '10:00');
+    const base = toSettingsInput(createDefaultDraft('hr'));
+    const tracked = { ...base, trackCalories: true, calorieGoal: 2000, trackMoney: true, moneyLimitCents: 7000, moneyPeriod: 'week' as const };
+    await saveSettings(db, USER, tracked, deps);
+    addTrackerEntry(db, USER, { date: YESTERDAY, kind: 'calories', amount: 2600, note: '' }, deps);
+    addTrackerEntry(db, USER, { date: YESTERDAY, kind: 'money', amount: 1500, note: '' }, deps);
+    saveEveningCheckin(db, USER, draft(YESTERDAY, [ans(y1.id, 'ok')], rule.id, true), deps);
+
+    const [day] = listDayScores(db, USER, YESTERDAY).days;
+    // kalorije 30 % iznad → 0,5; novac 15 € naspram 10 €/dan → 0,5; (50 + 7,5 + 7,5) / 80 → 81
+    expect(day?.parts).toMatchObject({ plan: 1, calories: 0.5, money: 0.5 });
+    expect(day?.score).toBe(81);
+
+    await saveSettings(db, USER, { ...tracked, trackCalories: false, trackMoney: false }, deps);
+    const [off] = listDayScores(db, USER, YESTERDAY).days;
+    expect(off?.parts).toMatchObject({ calories: null, money: null });
+    expect(off?.score).toBe(100);
   });
 });

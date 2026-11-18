@@ -505,7 +505,9 @@
       "xp": "XP",
       "rating": "Ocjena dana",
       "streak": "Niz",
-      "score": "Rezultat dana"
+      "score": "Rezultat dana",
+      "calories": "Kalorije",
+      "money": "Potrošnja"
     },
     "value": {
       "ofTotal": "{{value}}/{{total}}",
@@ -513,7 +515,9 @@
       "xp": "+{{xp}} XP",
       "rating": "{{rating}}/5",
       "days": "{{days}} d.",
-      "score": "{{score}}/100"
+      "score": "{{score}}/100",
+      "kcal": "{{value}} / {{goal}} kcal",
+      "money": "{{value}} / {{budget}}"
     },
     "yesterday": "jučer {{value}}",
     "lines": {
@@ -535,7 +539,9 @@
         "streak": "{{days}} dana zaredom ispunjavaš upit. Navika se gradi.",
         "goodRating": "Dan si ocijenio s {{rating}}/5 — zapamti što je pomoglo.",
         "showedUp": "Odvojio si minutu da zapišeš dan. Upravo tako se gradi navika.",
-        "gaveUpHonest": "Zatvorio si dan iskreno umjesto da ga samo pustiš. I to je dio ritma — sutra kreće ispočetka."
+        "gaveUpHonest": "Zatvorio si dan iskreno umjesto da ga samo pustiš. I to je dio ritma — sutra kreće ispočetka.",
+        "caloriesWithin": "Kalorije unutar cilja — dobar osjećaj za mjeru.",
+        "moneyWithin": "Potrošnja unutar dnevnog dijela limita."
       },
       "noticed": {
         "comment": {
@@ -552,7 +558,10 @@
         "goodRatingDespitePlan": "Plan nije odrađen, a dan je bio dobar — možda plan nije odgovarao danu.",
         "none": "Danas nema posebnih uzoraka.",
         "gaveUp": "Danas si odustao od ostatka plana. Što se dogodilo: „{{note}}”",
-        "gaveUpNoNote": "Danas si odustao od ostatka plana (bez zapisa što se dogodilo)."
+        "gaveUpNoNote": "Danas si odustao od ostatka plana (bez zapisa što se dogodilo).",
+        "caloriesOver": "Kalorije {{diff}} kcal iznad cilja.",
+        "caloriesUnder": "Kalorije {{diff}} kcal ispod cilja — jesi li stigao normalno jesti?",
+        "moneyOver": "Potrošnja {{diff}} iznad dnevnog dijela limita."
       },
       "problems": {
         "lowPlan": "Odrađeno je manje od pola plana ({{done}}/{{total}}).",
@@ -999,7 +1008,8 @@
     "weight": "{{weight}} % rezultata",
     "a11y": "{{area}}, {{weight}} % rezultata",
     "always": "Uvijek",
-    "note": "Plan je uvijek u rezultatu i nosi najviše. Promjena vrijedi od danas — prošli dani zadržavaju bodovanje kakvo je tada bilo. Dijagnoza dana govori samo o odabranim područjima."
+    "note": "Plan je uvijek u rezultatu i nosi najviše. Promjena vrijedi od danas — prošli dani zadržavaju bodovanje kakvo je tada bilo. Dijagnoza dana govori samo o odabranim područjima.",
+    "trackers": "Uključeni trackeri (kalorije, novac) ulaze u rezultat dana kad taj dan ima unosa, s težinom 15 svaki — tada se ostali udjeli razmjerno smanje. Isključen tracker ne ulazi ni u prošle dane."
   },
   "todayPlan": {
     "overline": "Danas · {{day}}",
@@ -1242,8 +1252,8 @@
         "energy": "još nema ocijenjenog sna"
       },
       "tracker": {
-        "health": "dolazi s trackerom kalorija",
-        "money": "dolazi s trackerom novca"
+        "health": "uključi tracker kalorija u Profilu",
+        "money": "uključi tracker novca u Profilu"
       },
       "valueA11y": "{{stat}}: {{value}} od 100",
       "emptyA11y": "{{stat}}: {{reason}}",
@@ -1676,13 +1686,13 @@
     "settings": {
       "title": "Trackeri",
       "calories": "Kalorije",
-      "caloriesDetail": "Dnevni cilj, unos po obroku i večernja provjera.",
+      "caloriesDetail": "Dnevni cilj, unos po obroku i večernja provjera. Ulazi u rezultat dana i dijagnozu samo kad je uključeno.",
       "goal": "Dnevni cilj (kcal)",
       "lowGoal": "Cilj ispod 1 200 kcal je neuobičajeno nizak. Ako ga nije preporučio liječnik ili nutricionist, razmisli o višem cilju.",
       "goalInvalid": "Cilj mora biti između {{min}} i {{max}} kcal.",
       "saveGoal": "Spremi cilj",
       "money": "Novac",
-      "moneyDetail": "Limit potrošnje za dan, tjedan ili mjesec i unos potrošnje.",
+      "moneyDetail": "Limit potrošnje za dan, tjedan ili mjesec i unos potrošnje. Ulazi u rezultat dana i dijagnozu samo kad je uključeno.",
       "limit": "Limit potrošnje (€, prazno = bez limita)",
       "period": "Razdoblje limita",
       "periods": {

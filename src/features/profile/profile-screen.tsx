@@ -149,7 +149,7 @@ export function ProfileScreen() {
               </Section>
 
               <Section title={t('profile.score.title')}>
-                <ScoreAreasPicker value={settings} onChange={save} />
+                <ScoreAreasPicker value={settings} onChange={save} trackers={settings.trackCalories || settings.trackMoney} />
               </Section>
 
               <Section title={t('trackers.settings.title')}>

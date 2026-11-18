@@ -113,6 +113,8 @@ function reportDay(stats: DayStats, areas: readonly ScorePart[]): ReportDay {
     streak: stats.streak,
     gaveUp: stats.gaveUp === true,
     gaveUpNote: stats.gaveUpNote ?? null,
+    calories: stats.calories ?? null,
+    money: stats.money ? { spentCents: stats.money.spent, dailyBudgetCents: stats.money.dailyBudget } : null,
   };
 }
 

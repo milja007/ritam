@@ -20,7 +20,7 @@ export type ScoredDay = {
   date: string;
   score: number;
   final: boolean;
-  parts?: Readonly<Record<ScorePart, number | null>>;
+  parts?: Readonly<Partial<Record<ScorePart, number | null>>>;
 };
 
 export type ScoreComparison = { previous: number; diff: number; trend: ScoreTrend };

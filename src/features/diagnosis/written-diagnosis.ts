@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { isFreshForWriting, type DayDiagnosis } from '@/core/diagnosis';
 import { localDateOf } from '@/core/time/local-date';
 
+import { diagnosisLineText } from './line-text';
 import { canWriteReport, refineDayDiagnosis } from './write-report-client';
 
 type Result = { date: string; diagnosis: DayDiagnosis | null };
@@ -23,7 +24,7 @@ export function useWrittenDiagnosis(date: string, base: DayDiagnosis | null) {
   useEffect(() => {
     if (!wanted) return;
     let active = true;
-    void refineDayDiagnosis(date, locale, (line) => t(`diagnosis.lines.${line.key}`, line.params ?? {})).then(
+    void refineDayDiagnosis(date, locale, (line) => diagnosisLineText(t, line, locale)).then(
       (diagnosis) => {
         if (active) setResult({ date, diagnosis });
       },

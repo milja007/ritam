@@ -373,3 +373,25 @@ describe('buildDayDiagnosis', () => {
     expect(parseDayDiagnosis(null)).toBeNull();
   });
 });
+
+describe('dnevna dijagnoza — trackeri (korak 31b)', () => {
+  it('kalorije i novac u Napretku, pohvala unutar cilja, uočeno izvan', () => {
+    const within = stats({ trackers: { calories: { total: 2100, goal: 2000 }, money: { spent: 800, dailyBudget: 1000 } } });
+    const d1 = buildDayDiagnosis(within, null);
+    expect(d1.progress.find((row) => row.metric === 'calories')).toMatchObject({ value: 2100, total: 2000, good: true });
+    expect(d1.progress.find((row) => row.metric === 'money')).toMatchObject({ value: 800, total: 1000, good: true });
+    expect(d1.praise.map((line) => line.key)).toEqual(expect.arrayContaining(['praise.caloriesWithin']));
+
+    const over = stats({ trackers: { calories: { total: 1200, goal: 2000 }, money: { spent: 2500, dailyBudget: 1000 } } });
+    const d2 = buildDayDiagnosis(over, null);
+    expect(d2.noticed).toContainEqual({ key: 'noticed.caloriesUnder', params: { diff: 800 } });
+    expect(d2.noticed).toContainEqual({ key: 'noticed.moneyOver', params: { diffCents: 1500 } });
+    expect(d2.progress.find((row) => row.metric === 'money')?.good).toBe(false);
+  });
+
+  it('bez trackera nema redaka ni teksta o njima', () => {
+    const d = buildDayDiagnosis(stats(), null);
+    expect(d.progress.some((row) => row.metric === 'calories' || row.metric === 'money')).toBe(false);
+    expect(JSON.stringify(d)).not.toMatch(/calories|money/);
+  });
+});

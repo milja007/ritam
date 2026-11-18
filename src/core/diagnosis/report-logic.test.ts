@@ -100,6 +100,8 @@ describe('write-report — prompt llm-day-v1', () => {
     expect(message).toContain('korisnik: Nije pomoglo — "ujutro ne mogu, radim od 7"');
     expect(message).toContain('San: 6 h 20 min, u krevet 50 min od cilja');
     expect(message).toContain('JUČER (2026-11-16)');
+    expect(message).toContain('Kalorije: 2650 kcal (cilj 2200)');
+    expect(message).toContain('Potrošnja: 18.50 € (dnevni dio limita 14.30 €)');
   });
 
   it('dan s odustajanjem: bilješka ide modelu, bez jučer i povijesti', () => {
