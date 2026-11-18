@@ -9,6 +9,7 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { YearDiagnosisView, YearMonthStrip } from './year-diagnosis-view';
 import { useYearLineText } from './year-line-params';
 import type { YearReportState } from './year-report';
@@ -110,6 +111,7 @@ export function YearDiagnosisCard({ report, yearLabel, current }: YearDiagnosisC
                   {t('diagnosis.year.title')}
                 </Text>
                 <YearDiagnosisView diagnosis={diagnosis} />
+                <DiagnosisFeedback period="year" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>
           </GradientBackground>

@@ -8,6 +8,7 @@ import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { YearDiagnosisView } from './year-diagnosis-view';
 import { useYearReport } from './year-report';
 
@@ -48,6 +49,7 @@ function YearSection({ year, date }: { year: string; date: string }) {
         {`${year}.`}
       </Text>
       <YearDiagnosisView diagnosis={diagnosis} />
+      <DiagnosisFeedback period="year" periodStart={diagnosis.start} />
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, lte } from 'drizzle-orm';
 
 import { betterWeeksStreak, closedWeeks, isEveningCheckinComplete, mainStreak } from '@/core/gamification';
 import {
@@ -18,6 +18,7 @@ import {
   LOCAL_YEAR_DIAGNOSIS_VERSION,
   type YearDiagnosis,
   isWeekDiagnosisReady,
+  llmDayTextSchema,
   LOCAL_DAY_DIAGNOSIS_VERSION,
   LOCAL_MONTH_DIAGNOSIS_VERSION,
   LOCAL_WEEK_DIAGNOSIS_VERSION,
@@ -31,6 +32,8 @@ import {
   type ArchiveEntry,
   type DayDiagnosis,
   type DayStats,
+  type LlmDayText,
+  type LlmPreviousReport,
   type MonthDiagnosis,
   type PeriodDay,
   type WeekDiagnosis,
@@ -39,6 +42,7 @@ import {
 import {
   checkinItemSchema,
   checkinSchema,
+  noteSchema,
   reportSchema,
   ruleLogSchema,
   ruleSchema,
@@ -50,7 +54,7 @@ import {
   type Report,
   type ReportPeriod,
 } from '@/core/domain';
-import { dayScore, weekStart } from '@/core/progress';
+import { dayScore, weekStart, type ScorePart } from '@/core/progress';
 import { addDays } from '@/core/time/local-date';
 
 import type { RitamDb } from '../db';
@@ -67,6 +71,8 @@ import {
 import type { RitamTx } from './block-xp';
 import { listDayScores } from './day-scores';
 import { defaultRepoDeps, type RepoDeps } from './deps';
+
+const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 const reportOf = (userId: string, period: ReportPeriod, periodStart: LocalDate) =>
   and(eq(reports.userId, userId), eq(reports.period, period), eq(reports.periodStart, periodStart));
@@ -239,8 +245,11 @@ export function generateDayReport(
       areas: areasOf(date),
       yesterdayAreas: areasOf(yesterdayDate),
     });
-    const suggestion = diagnosisSuggestion(diagnosis);
     const existing = tx.select().from(reports).where(reportOf(userId, 'day', date)).get();
+    // Riječi modela (korak 31) ostaju samo dok se činjenice dana nisu promijenile.
+    const existingLlm = existing ? parseDayDiagnosis(existing.sections)?.llm : undefined;
+    if (existingLlm && sameJson(existing?.stats, { today, yesterday })) diagnosis.llm = existingLlm;
+    const suggestion = diagnosisSuggestion(diagnosis);
     const report = reportSchema.parse({
       id: existing?.id ?? deps.newId(),
       userId,
@@ -293,7 +302,6 @@ export function markReportSeen(
 
 export type WeekReportResult = { report: Report; diagnosis: WeekDiagnosis };
 
-const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Prva ideja spremljenih sekcija i nove dijagnoze je ista (ključ i parametri). */
 const sameIdea = (stored: unknown, next: { ideas: readonly unknown[] }): boolean => {
@@ -700,5 +708,163 @@ export function answerReportSuggestion(
         .run();
     }
     return true;
+  });
+}
+
+export type ReportFeedback = {
+  /** Pomoglo (`true`) / Nije pomoglo (`false`); `null` = bez odgovora. */
+  helpful: boolean | null;
+  /** Slobodan komentar; prazan tekst se sprema kao `null`. */
+  comment: string | null;
+};
+
+/**
+ * Povratna informacija ispod dijagnoze (korak 31: „Pomoglo / Nije pomoglo“ + komentar). Vraća
+ * `false` kad dijagnoze nema. Ista vrijednost ne piše (nema praznog synca); promjena pomakne
+ * `updatedAt`, da je sync prenese. Ponovno generiranje dijagnoze odgovor čuva.
+ */
+export function setReportFeedback(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+  feedback: ReportFeedback,
+  deps: RepoDeps = defaultRepoDeps,
+): boolean {
+  const parsed = noteSchema.nullable().parse(feedback.comment);
+  const comment = parsed === null || parsed === '' ? null : parsed;
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+    if (!row) return false;
+    if (row.helpful !== feedback.helpful || row.feedbackComment !== comment) {
+      tx.update(reports)
+        .set({ helpful: feedback.helpful, feedbackComment: comment, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return true;
+  });
+}
+
+/** Spremljena statistika dnevne dijagnoze (`reports.stats`), ili `null` za neočekivan oblik. */
+function storedDayStats(stats: unknown): { today: DayStats; yesterday: DayStats | null } | null {
+  if (typeof stats !== 'object' || stats === null) return null;
+  const { today, yesterday } = stats as { today?: unknown; yesterday?: unknown };
+  const isStats = (value: unknown): value is DayStats =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as DayStats).date === 'string' &&
+    typeof (value as DayStats).plan === 'object' &&
+    typeof (value as DayStats).rules === 'object' &&
+    Array.isArray((value as DayStats).comments) &&
+    Array.isArray((value as DayStats).misses);
+  if (!isStats(today)) return null;
+  return { today, yesterday: isStats(yesterday) ? yesterday : null };
+}
+
+/** Koliko dana unatrag ide u povijest za `write-report` (uzorci po danu u tjednu). */
+const LLM_HISTORY_DAYS = 28;
+
+export type WriteReportData = {
+  diagnosis: DayDiagnosis;
+  today: DayStats;
+  yesterday: DayStats | null;
+  history: DayStats[];
+  previous: LlmPreviousReport[];
+  areas: ScorePart[];
+  /** Snimka statistike iz koje je zahtjev nastao — odgovor se sprema samo ako je ista. */
+  basis: string;
+};
+
+/**
+ * Sve što `write-report` treba za dan `date` (korak 31), iz već spremljenih dijagnoza: danas i
+ * jučer iz statistike dijagnoze dana, raniji dani iz statistike njihovih dijagnoza (do 28 dana),
+ * zadnje dijagnoze s odgovorom Pomoglo / Nije pomoglo. `null` kad dijagnoze dana nema.
+ */
+export async function loadWriteReportData(db: RitamDb, userId: string, date: LocalDate): Promise<WriteReportData | null> {
+  const row = await db.select().from(reports).where(reportOf(userId, 'day', date)).get();
+  if (!row) return null;
+  const diagnosis = parseDayDiagnosis(row.sections);
+  const stats = storedDayStats(row.stats);
+  if (diagnosis === null || stats === null) return null;
+  const from = addDays(date, -LLM_HISTORY_DAYS) ?? date;
+  const earlier = await db
+    .select()
+    .from(reports)
+    .where(
+      and(
+        eq(reports.userId, userId),
+        eq(reports.period, 'day'),
+        gte(reports.periodStart, from),
+        lt(reports.periodStart, date),
+      ),
+    )
+    .orderBy(desc(reports.periodStart))
+    .all();
+  const history: DayStats[] = [];
+  const previous: LlmPreviousReport[] = [];
+  for (const report of earlier) {
+    const earlierStats = storedDayStats(report.stats);
+    if (earlierStats) history.push(earlierStats.today);
+    const earlierDiagnosis = parseDayDiagnosis(report.sections);
+    if (earlierDiagnosis) {
+      previous.push({
+        date: report.periodStart,
+        diagnosis: earlierDiagnosis,
+        helpful: report.helpful,
+        comment: report.feedbackComment,
+        suggestionAccepted: report.suggestionAccepted,
+      });
+    }
+  }
+  const settingsRow = await db.select().from(settings).where(eq(settings.userId, userId)).get();
+  const evening = await db
+    .select()
+    .from(checkins)
+    .where(and(eq(checkins.userId, userId), eq(checkins.kind, 'evening'), eq(checkins.date, date)))
+    .get();
+  const eveningAreas = evening ? checkinSchema.parse(evening).scoreAreas : null;
+  const areas: ScorePart[] = eveningAreas
+    ? [...eveningAreas]
+    : settingsRow
+      ? [...selectedScoreAreas(settingsSchema.parse(settingsRow))]
+      : ['plan'];
+  return {
+    diagnosis,
+    today: stats.today,
+    yesterday: stats.yesterday,
+    history,
+    previous,
+    areas,
+    basis: JSON.stringify(row.stats),
+  };
+}
+
+/**
+ * Spremi riječi modela uz dijagnozu dana (`sections.llm`). Ne sprema ako se dijagnoza u
+ * međuvremenu promijenila (`basis` ≠ trenutna statistika — npr. uređen večernji upit) ili je
+ * nema. Vraća dijagnozu s tekstom ili `null`.
+ */
+export function saveDayReportText(
+  db: RitamDb,
+  userId: string,
+  date: LocalDate,
+  text: LlmDayText,
+  basis: string,
+  deps: RepoDeps = defaultRepoDeps,
+): DayDiagnosis | null {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, 'day', date)).get();
+    if (!row || JSON.stringify(row.stats) !== basis) return null;
+    const diagnosis = parseDayDiagnosis(row.sections);
+    if (diagnosis === null) return null;
+    const next: DayDiagnosis = { ...diagnosis, llm: llmDayTextSchema.parse(text) };
+    if (!sameJson(diagnosis.llm, next.llm)) {
+      tx.update(reports)
+        .set({ sections: next, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return next;
   });
 }

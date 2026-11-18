@@ -8,8 +8,10 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { DayDiagnosisView } from './day-diagnosis-view';
 import { useDayReport } from './day-report';
+import { useWrittenDiagnosis } from './written-diagnosis';
 import { PeriodDiagnosesInline } from './period-diagnoses-inline';
 
 /** Spremljena dijagnoza dana (s kartice večernjeg upita). */
@@ -17,6 +19,7 @@ export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayL
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const report = useDayReport(date);
+  const written = useWrittenDiagnosis(date, report.diagnosis);
 
   return (
     <Modal animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -34,9 +37,10 @@ export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayL
             </Text>
             {report.status === 'loading' ? (
               <ActivityIndicator color={colors.accent} />
-            ) : report.diagnosis ? (
+            ) : written.diagnosis ? (
               <>
-                <DayDiagnosisView diagnosis={report.diagnosis} />
+                <DayDiagnosisView diagnosis={written.diagnosis} writing={written.writing} />
+                <DiagnosisFeedback period="day" periodStart={date} />
                 <PeriodDiagnosesInline date={date} />
               </>
             ) : (

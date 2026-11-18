@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import type { DayDiagnosis, DiagnosisLine, ProgressRow, Trend } from '@/core/diagnosis';
 import { radius, spacing } from '@/core/theme';
@@ -23,10 +23,24 @@ const LINE_SECTIONS: readonly LineSection[] = ['praise', 'noticed', 'problems', 
  * Prikaz dnevne dijagnoze redom iz koncepta: Ukratko → Napredak → Pohvale → Što smo primijetili →
  * Veliki problemi → Ideje za napredak. Retci su i18n ključevi, pa se prikazuju na jeziku appa.
  */
-export function DayDiagnosisView({ diagnosis }: { diagnosis: DayDiagnosis }) {
+export function DayDiagnosisView({ diagnosis, writing = false }: { diagnosis: DayDiagnosis; writing?: boolean }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const lineText = (line: DiagnosisLine) => t(`diagnosis.lines.${line.key}`, line.params ?? {});
+  // Korak 31: riječi modela zamjenjuju lokalne retke; brojke i trend ostaju lokalni.
+  const { llm } = diagnosis;
+  const summaryText = llm ? llm.summary : lineText(diagnosis.summary);
+  const sectionLines = (section: LineSection): { text: string; repeatedDays: number | null }[] =>
+    llm
+      ? llm[section].map((text) => ({ text, repeatedDays: null }))
+      : diagnosis[section].map((line) => ({
+          text: lineText(line),
+          repeatedDays: typeof line.params?.repeatedDays === 'number' ? line.params.repeatedDays : null,
+        }));
+  // Model smije ostaviti sekciju praznom (npr. bez velikih problema) — tada se ne prikazuje.
+  const sections = LINE_SECTIONS.map((section) => ({ section, lines: sectionLines(section) })).filter(
+    ({ lines }) => lines.length > 0 || !llm,
+  );
 
   return (
     <View style={styles.root}>
@@ -34,7 +48,7 @@ export function DayDiagnosisView({ diagnosis }: { diagnosis: DayDiagnosis }) {
         <Text variant="overline" tone="textMuted" accessibilityRole="header">
           {t('diagnosis.sections.summary')}
         </Text>
-        <View style={styles.summaryRow} accessible accessibilityLabel={`${t(`diagnosis.trend.${diagnosis.trend}`)}. ${lineText(diagnosis.summary)}`}>
+        <View style={styles.summaryRow} accessible accessibilityLabel={`${t(`diagnosis.trend.${diagnosis.trend}`)}. ${summaryText}`}>
           <Text variant="title" tone={TREND_TONE[diagnosis.trend]}>
             {TREND_ARROW[diagnosis.trend]}
           </Text>
@@ -42,9 +56,17 @@ export function DayDiagnosisView({ diagnosis }: { diagnosis: DayDiagnosis }) {
             <Text variant="bodyStrong" tone={TREND_TONE[diagnosis.trend]}>
               {t(`diagnosis.trend.${diagnosis.trend}`)}
             </Text>
-            <Text>{lineText(diagnosis.summary)}</Text>
+            <Text>{summaryText}</Text>
           </View>
         </View>
+        {writing ? (
+          <View style={styles.writingRow} accessibilityLiveRegion="polite">
+            <ActivityIndicator size="small" color={colors.accent} />
+            <Text variant="caption" tone="textMuted">
+              {t('diagnosis.writing')}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -56,23 +78,23 @@ export function DayDiagnosisView({ diagnosis }: { diagnosis: DayDiagnosis }) {
         ))}
       </View>
 
-      {LINE_SECTIONS.map((section) => (
+      {sections.map(({ section, lines }) => (
         <View
           key={section}
           style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text variant="overline" tone={section === 'ideas' ? 'accent' : 'textMuted'} accessibilityRole="header">
             {t(`diagnosis.sections.${section}`)}
           </Text>
-          {diagnosis[section].map((line, index) => (
-            <View key={`${line.key}-${index}`} style={styles.bulletRow}>
+          {lines.map((line, index) => (
+            <View key={`${section}-${index}`} style={styles.bulletRow}>
               <Text tone={section === 'ideas' ? 'accent' : 'textMuted'} importantForAccessibility="no">
                 •
               </Text>
               <View style={styles.flex}>
-                <Text>{lineText(line)}</Text>
-                {typeof line.params?.repeatedDays === 'number' ? (
+                <Text>{line.text}</Text>
+                {line.repeatedDays !== null ? (
                   <Text variant="caption" tone="textMuted">
-                    {t('diagnosis.repeated', { count: line.params.repeatedDays })}
+                    {t('diagnosis.repeated', { count: line.repeatedDays })}
                   </Text>
                 ) : null}
               </View>
@@ -146,6 +168,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  writingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   bulletRow: { flexDirection: 'row', gap: spacing.sm },
   metricRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   metricValues: { alignItems: 'flex-end' },

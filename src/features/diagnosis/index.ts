@@ -1,5 +1,6 @@
 export { DayDiagnosisView } from './day-diagnosis-view';
 export { DiagnosisArchive } from './diagnosis-archive';
+export { DiagnosisFeedback } from './diagnosis-feedback';
 export { generateDayDiagnosis, useDayReport } from './day-report';
 export { DiagnosisModal } from './diagnosis-modal';
 export { DiagnosisReadyCard, useDiagnosisPickup } from './diagnosis-pickup';
@@ -17,3 +18,4 @@ export { YearDiagnosisInline } from './year-diagnosis-inline';
 export { YearDiagnosisView, YearMonthStrip } from './year-diagnosis-view';
 export { yearLineParams } from './year-line-params';
 export { useYearReport, type YearReportState } from './year-report';
+export { useWrittenDiagnosis } from './written-diagnosis';

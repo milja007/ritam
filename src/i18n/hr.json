@@ -937,7 +937,24 @@
           "keepRhythm": "Bez novog smjera — zadrži ritam koji imaš."
         }
       }
-    }
+    },
+    "feedback": {
+      "overline": "Tvoje mišljenje",
+      "question": "Je li ti ova dijagnoza pomogla?",
+      "yes": "Pomoglo",
+      "no": "Nije pomoglo",
+      "thanksYes": "Drago nam je. Ako želiš, napiši što je pogodilo.",
+      "thanksNo": "Hvala na iskrenosti. Što je falilo?",
+      "commentYes": "Što je pogodilo? (neobavezno)",
+      "commentNo": "Što je falilo? (neobavezno)",
+      "placeholder": "Npr. ideja s ranijim treningom je upalila",
+      "saveComment": "Spremi komentar",
+      "commentSaved": "Komentar je spremljen.",
+      "savedYes": "Spremljeno: pomoglo.",
+      "savedNo": "Spremljeno: nije pomoglo.",
+      "error": "Spremanje nije uspjelo. Pokušaj ponovo."
+    },
+    "writing": "Pišem ti dijagnozu riječima…"
   },
   "score": {
     "title": "Rezultat dana",
