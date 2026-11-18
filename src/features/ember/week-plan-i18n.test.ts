@@ -55,3 +55,34 @@ describe('tekstovi ciljeva razdoblja (korak 25)', () => {
     }
   });
 });
+
+describe('tekstovi tjednih zadataka (korak 25)', () => {
+  it('pitanja, sažetak i prijedlog u oba jezika, množina HR one/few/other', () => {
+    for (const lng of ['hr', 'en'] as const) {
+      const t = i18n.getFixedT(lng);
+      for (const key of ['heading', 'intro', 'introNext', 'emptyPast', 'add', 'place', 'placeHint', 'allPlaced', 'loadError'] as const) {
+        expect(t(`tasks.${key}`)).not.toContain('tasks.');
+      }
+      for (const key of ['durationLabel', 'timesLabel', 'deadlineLabel', 'noDeadline', 'partLabel', 'energyLabel', 'needsLabel'] as const) {
+        expect(t(`tasks.editor.${key}`)).not.toContain('tasks.');
+      }
+      for (const part of ['any', 'morning', 'afternoon', 'evening'] as const) {
+        expect(t(`tasks.part.${part}`)).not.toContain('tasks.');
+        expect(t(`tasks.editor.part.${part}`)).not.toContain('tasks.');
+      }
+      for (const energy of ['low', 'medium', 'high'] as const) {
+        expect(t(`tasks.energy.${energy}`)).not.toContain('tasks.');
+        expect(t(`tasks.editor.energy.${energy}`)).not.toContain('tasks.');
+      }
+      expect(t('tasks.proposal.noDays', { title: 'T', count: 2 })).toMatch(/T.*2/);
+      expect(t('tasks.proposal.noTime', { title: 'T', count: 2 })).toMatch(/T.*2/);
+      expect(t('tasks.progress', { done: 1, target: 3 })).toMatch(/1.*3/);
+      expect(t('tasks.limit', { max: 10 })).toContain('10');
+    }
+    const hrT = i18n.getFixedT('hr');
+    expect(hrT('tasks.proposal.accept', { count: 1 })).toBe('Dodaj 1 termin u plan');
+    expect(hrT('tasks.proposal.accept', { count: 3 })).toBe('Dodaj 3 termina u plan');
+    expect(hrT('tasks.proposal.added', { count: 5 })).toBe('Dodano je 5 termina.');
+    expect(i18n.getFixedT('en')('tasks.times', { count: 1 })).toBe('once a week');
+  });
+});

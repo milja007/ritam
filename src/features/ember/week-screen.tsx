@@ -23,6 +23,7 @@ import { radius, spacing } from '@/core/theme';
 import { useWeekReport, WeekDiagnosisCard } from '@/features/diagnosis';
 import { TomorrowPlan } from '@/features/evening';
 import { GoalsCard } from '@/features/goals';
+import { TasksCard } from '@/features/tasks';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -249,6 +250,15 @@ export function WeekScreen() {
           ) : null}
 
           <GoalsCard period="week" periodStart={from} periodEnd={to} today={now.date} />
+
+          <TasksCard
+            weekStart={from}
+            dates={dates}
+            today={now.date}
+            nowMinutes={now.minutes}
+            blocks={state.data.blocks}
+            onBlocksChanged={state.reload}
+          />
 
           {future ? null : (
             <WeekDiagnosisCard report={report} rangeLabel={weekRange(from, to, language)} current={nav.current} />

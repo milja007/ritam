@@ -4,6 +4,11 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-18 · Sesija 06:43 — korak 25 (dio)
+- Gotovo: Tjedan kao kalendar + sljedeći tjedan (PR #37), ciljevi razdoblja — podaci `goals` 0012 + Supabase (PR #38, remote = Borna, pitanje 84), kartica ciljeva na Tjednu/Mjesecu/Godini (PR #39), tipkovnica (PR #40).
+
+## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
+
 ## 2026-11-18 · Sesija 00:43 (2) — korak 22 u appu, PR #36
 1. `plan-day` dobiva `locale` (stari klijent → hr); lokalni raspored i prompt pišu sažetak/pitanja na tom jeziku. Test.
 2. Core `src/core/schedule/plan-day-client.ts`: zahtjev iz stavki (stavka s izričitim vremenom ili naučena = `fixedStart`, ostale fleksibilne s trajanjem), slobodni prozori = od buđenja + 30 min do odlaska u krevet minus postojeći blokovi (≥ 15 min, najviše 12), provjera odgovora u appu (HH:MM, bez preklapanja, unutar prozora ili točno fiksna stavka; ≤ 3 pitanja), prijedlog → nacrti (vrsta iz stavke) + popis stavki koje nisu stale. Testovi.
