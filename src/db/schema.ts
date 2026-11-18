@@ -128,6 +128,10 @@ export const rules = sqliteTable(
     activeHours: text('active_hours', { mode: 'json' }).$type<ActiveHours>(),
     why: text('why').notNull(),
     weight: integer('weight').notNull(),
+    /** Razdoblje plana (`week` / `month` / `year`); NULL = stalna zabrana. */
+    period: text('period', { enum: ['week', 'month', 'year'] }),
+    /** Prvi dan razdoblja; NULL točno kad je `period` NULL. */
+    periodStart: text('period_start'),
   },
   (table) => [index('rules_user_idx').on(table.userId)],
 );

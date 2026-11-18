@@ -139,12 +139,8 @@ export function weekdayOf(date: string): number | null {
   return new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, d ?? 1)).getUTCDay();
 }
 
-/** Zabrane koje vrijede na zadani dan (po `activeDays`). */
-export function rulesActiveOn<T extends Pick<Rule, 'activeDays'>>(rules: readonly T[], date: string): T[] {
-  const weekday = weekdayOf(date);
-  if (weekday === null) return [];
-  return rules.filter((rule) => rule.activeDays.includes(weekday));
-}
+/** Zabrane koje vrijede na zadani dan (dan u tjednu i razdoblje plana) — vidi `core/rules`. */
+export { rulesActiveOn } from '../rules/rules';
 
 /** Koraci upita za ovaj nacrt: korak zabrana se preskače ako danas nijedna ne vrijedi. */
 export function eveningSteps(draft: Pick<EveningDraft, 'rules'>): EveningStep[] {

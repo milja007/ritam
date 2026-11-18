@@ -154,6 +154,17 @@ select test.expect_error($q$insert into public.quests (title, milestones, status
   '23514', 'quest: naslov nije prazan');
 select test.expect_count($q$select 1 from public.quests where why = 'Zdravlje' and jsonb_array_length(milestones) = 1$q$,
   1, 'quest se sprema s etapama');
+-- Zabrane unutar planova (korak 28)
+select test.expect_error($q$insert into public.rules (title, active_days, why, weight, period, period_start) values ('X', '[1]', '', 1, 'week', '2026-11-17')$q$,
+  '23514', 'zabrana: tjedan počinje ponedjeljkom');
+select test.expect_error($q$insert into public.rules (title, active_days, why, weight, period, period_start) values ('X', '[1]', '', 1, 'month', null)$q$,
+  '23514', 'zabrana: razdoblje traži početak');
+select test.expect_error($q$insert into public.rules (title, active_days, why, weight, period, period_start) values ('X', '[1]', '', 1, null, '2026-11-16')$q$,
+  '23514', 'zabrana: početak bez razdoblja');
+select test.expect_error($q$insert into public.rules (title, active_days, why, weight, period, period_start) values ('X', '[1]', '', 1, 'day', '2026-11-16')$q$,
+  '23514', 'zabrana: nepoznato razdoblje');
+insert into public.rules (title, active_days, why, weight, period, period_start) values ('Bez slatkiša', '[1,2,3]', 'Zdravlje', 2, 'month', '2026-11-01');
+select test.expect_count($q$select 1 from public.rules where period = 'month' and title = 'Bez slatkiša'$q$, 1, 'zabrana razdoblja se sprema');
 -- Ciljevi razdoblja (korak 25)
 select test.expect_error($q$insert into public.goals (period, period_start, title) values ('day', '2026-11-16', 'X')$q$,
   '23514', 'cilj: nepoznato razdoblje');

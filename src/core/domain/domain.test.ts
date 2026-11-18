@@ -86,6 +86,8 @@ const valid = {
     activeHours: { start: '22:30', end: '06:00' },
     why: 'Bolji san.',
     weight: 2,
+    period: null,
+    periodStart: null,
   },
   ruleLog: {
     ...base,
@@ -285,6 +287,19 @@ describe('rules', () => {
     ['empty title', { title: '' }],
   ])('rejects %s', (_name, patch) => {
     expect(ruleSchema.safeParse({ ...valid.rule, ...patch }).success).toBe(false);
+  });
+
+  it('rules belong to a period that starts on its first day, or to none', () => {
+    const ok = (patch: object) => ruleSchema.safeParse({ ...valid.rule, ...patch }).success;
+    expect(ok({ period: 'week', periodStart: '2026-11-16' })).toBe(true);
+    expect(ok({ period: 'month', periodStart: '2026-11-01' })).toBe(true);
+    expect(ok({ period: 'year', periodStart: '2026-01-01' })).toBe(true);
+    expect(ok({ period: 'week', periodStart: '2026-11-18' })).toBe(false);
+    expect(ok({ period: 'month', periodStart: '2026-11-02' })).toBe(false);
+    expect(ok({ period: 'year', periodStart: '2026-02-01' })).toBe(false);
+    expect(ok({ period: 'week', periodStart: null })).toBe(false);
+    expect(ok({ period: null, periodStart: '2026-11-16' })).toBe(false);
+    expect(ok({ period: 'day', periodStart: '2026-11-16' })).toBe(false);
   });
 
   it('rule logs record a trigger only for broken rules', () => {
