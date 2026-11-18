@@ -176,12 +176,26 @@ export function monthGrid(month: string): (string | null)[] {
 }
 
 /**
- * Može li se mjesec otvoriti iz Godine (Ž10): samo mjesec koji je počeo. Budući mjesec nema što
- * pokazati (svi dani su tek ocrtani), pa ostaje običan, nedodirljiv redak. Neispravan mjesec ne.
+ * Može li se mjesec otvoriti (Godina Ž10, strelice): mjesec koji je počeo i najviše `ahead`
+ * mjeseci nakon tekućeg (planiranje unaprijed, P54). Neispravan mjesec ne.
  */
-export function isMonthOpenable(month: string, today: string): boolean {
+export function isMonthOpenable(month: string, today: string, ahead = 0): boolean {
   if (daysInMonth(month) === 0 || today.length !== 10) return false;
-  return month <= today.slice(0, 7);
+  let last: string | null = today.slice(0, 7);
+  for (let step = 0; step < Math.max(0, Math.floor(ahead)) && last !== null; step += 1) last = nextMonth(last);
+  return last !== null && month <= last;
+}
+
+/** Koliko se mjeseci unaprijed Mjesec može otvoriti za planiranje (P54: na kraju mjeseca za novi). */
+export const PLAN_AHEAD_MONTHS = 1;
+
+/**
+ * Godina za koju se već planiraju ciljevi (P54: na kraju razdoblja za novo): u prosincu sljedeća
+ * godina ("YYYY"), inače `null`.
+ */
+export function upcomingYear(today: string): string | null {
+  if (!isValidLocalDate(today) || today.slice(5, 7) !== '12') return null;
+  return String(Number(today.slice(0, 4)) + 1).padStart(4, '0');
 }
 
 /**
@@ -237,16 +251,20 @@ export type PeriodNav = { previous: string | null; next: string | null; current:
 
 const NO_NAV: PeriodNav = { previous: null, next: null, current: true };
 
-/** Listanje mjeseci ("YYYY-MM"). `earliest` je najraniji dan s rezultatom ili `null`. */
-export function monthNav(month: string, today: string, earliest: string | null): PeriodNav {
+/**
+ * Listanje mjeseci ("YYYY-MM"). `earliest` je najraniji dan s rezultatom ili `null`; `ahead` je
+ * koliko mjeseci nakon tekućeg se smije otvoriti (zadano 0).
+ */
+export function monthNav(month: string, today: string, earliest: string | null, ahead = 0): PeriodNav {
   if (daysInMonth(month) === 0 || !isValidLocalDate(today)) return NO_NAV;
   const thisMonth = today.slice(0, 7);
   const before = previousMonth(month);
   const after = nextMonth(month);
   const first = earliest !== null && isValidLocalDate(earliest) ? earliest.slice(0, 7) : null;
   return {
-    previous: before !== null && first !== null && before >= first ? before : null,
-    next: after !== null && after <= thisMonth ? after : null,
+    // Iz mjeseca unaprijed se uvijek može natrag do tekućeg, i bez ijednog rezultata.
+    previous: before !== null && ((first !== null && before >= first) || before >= thisMonth) ? before : null,
+    next: after !== null && isMonthOpenable(after, today, ahead) ? after : null,
     current: month === thisMonth,
   };
 }
@@ -395,4 +413,21 @@ export function trend(end: string, scores: ReadonlyMap<string, number>, count = 
     previous: averageScore(previousDates, scores),
     scored: bars.filter((bar) => bar.score !== null).length,
   };
+}
+
+/**
+ * Dani od `today` nadalje koji već imaju plan (blok koji nije san, premješten ni preskočen) — točka
+ * ispod dana u kalendaru Mjeseca kad se planira unaprijed.
+ */
+export function datesWithPlan(
+  blocks: readonly Pick<ScheduleBlock, 'date' | 'kind' | 'status'>[],
+  today: string,
+): Set<string> {
+  const out = new Set<string>();
+  for (const block of blocks) {
+    if (block.date < today || block.kind === 'sleep') continue;
+    if (block.status === 'moved' || block.status === 'skipped') continue;
+    out.add(block.date);
+  }
+  return out;
 }

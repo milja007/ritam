@@ -5,11 +5,12 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
 - Plan (provjeren protiv koncepta „pitanja kod unosa … LLM ih smješta, pravila su tvrda“): (1–2) podaci `tasks` (tjedan, naslov, trajanje 5–480, koliko puta 1–7, rok u tjednu, doba dana, energija, što treba; najviše 10 — konstanta, nije u konceptu), (3) lokalno smještanje `placeWeekTasks` po tvrdim pravilima (LLM = 26), (4) kartica „Zadaci tjedna“ na Tjednu s pitanjima kao čipovima i prijedlogom koji korisnik odobrava. Bez XP-a za sam zadatak (XP ide kroz blokove).
 - Gotovo: 1–2 (PR #41, remote migracija = Borna, pitanje 84), 3–4 (PR #42). Korak 25 `[x]`.
+- 25b (PR #43): Mjesec kao kalendar za planiranje (sljedeći mjesec, dodir dana → plan dana, točka za dane s planom; usporedba i dijagnoza skrivene za budući mjesec); Godina otvara i sljedeći mjesec, u prosincu „Ciljevi za <sljedeću godinu>“. Korak 25b `[x]`.
 
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
 ## Stanje
-- `main`: korak 25 (Tjedan kao kalendar, ciljevi razdoblja, tjedni zadaci), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
+- `main`: koraci 25 i 25b (kalendari tjedna/mjeseca za planiranje, ciljevi razdoblja, tjedni zadaci), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
 - Remote Supabase `ritam`: 7 migracija (zadnja `20261111103947_sync`), tablice prazne. Auth/sync iza `EXPO_PUBLIC_FEATURE_AUTH` (isključeno).
 - Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna, mjesečna i godišnja dijagnoza, magic link, sync s dva uređaja.
 - Stanje #1 (2026-11-18 09:45): nema Codexovih zahtjeva od 2026-11-17 15:45; nema P0/P1 ni otvorenih P2.
@@ -17,7 +18,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Sljedeće
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. **Ž11 haptika / Skia (33)** — čeka Bornu: `npx expo install expo-haptics` (i Skia) na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API).
-2. 20–22 su u appu (čekaju deploy, pitanje 77). Dalje: 25b (planiranje unaprijed u mjesecu/godini), 26 (zadaci i ciljevi u `plan-day`), 28 (zabrane unutar planova).
+2. 20–22 su u appu (čekaju deploy, pitanje 77). Dalje: 26 (zadaci i ciljevi u `plan-day`), 28 (zabrane unutar planova).
 
 ## Pitanja za Bornu
 87. **San (29)** — pragovi nisu u konceptu, odabrano: kratka noć = barem 1 h manje od cilja, jako kratka = 2 h; „Lakše jutro“ samo predlaže (otvara „Nešto je iskrslo“ s razlogom „Loš san“, 1 h), ne mijenja plan samo. Krevet: ako zadnjih noći (≥ 3) kasniš > 15 min, večerašnji cilj je ~15 min ranije od navike, korak po korak do cilja. Želiš li da i **wind-down obavijest** prati taj korak (umjesto ciljanog kreveta)?

@@ -86,3 +86,17 @@ describe('tekstovi tjednih zadataka (korak 25)', () => {
     expect(i18n.getFixedT('en')('tasks.times', { count: 1 })).toBe('once a week');
   });
 });
+
+describe('tekstovi planiranja mjeseca i godine unaprijed (korak 25b)', () => {
+  it('Mjesec i ciljevi sljedeće godine u oba jezika', () => {
+    for (const lng of ['hr', 'en'] as const) {
+      const t = i18n.getFixedT(lng);
+      for (const key of ['nextMonth', 'planHint', 'emptyNext'] as const) {
+        expect(t(`ember.month.${key}`)).not.toContain('ember.');
+      }
+      expect(t('ember.month.withPlan', { label: 'L' })).toContain('L');
+      expect(t('goals.year.headingFor', { year: '2027' })).toContain('2027');
+      expect(t('goals.year.emptyFor', { year: '2027' })).toContain('2027');
+    }
+  });
+});

@@ -1167,7 +1167,11 @@
       "finished": "završen",
       "backToThis": "Ovaj mjesec",
       "backToThisHint": "Vraća na tekući mjesec",
-      "emptyPast": "Taj mjesec nema ocijenjenih dana."
+      "emptyPast": "Taj mjesec nema ocijenjenih dana.",
+      "nextMonth": "Sljedeći mjesec · planiraj unaprijed",
+      "planHint": "Dodirni dan koji dolazi da upišeš što znaš. Ne mora sve odmah.",
+      "withPlan": "{{label}}, ima plan",
+      "emptyNext": "Sljedeći mjesec je još prazan. Upiši ono što već znaš — ciljeve i dane s obavezama."
     },
     "year": {
       "behind_one": "{{count}} dan iza tebe",
@@ -1425,7 +1429,9 @@
       "heading": "Ciljevi godine",
       "empty": "Što želiš da ova godina donese? Upiši nekoliko velikih ciljeva.",
       "emptyPast": "Za tu godinu nisu bili zapisani ciljevi.",
-      "placeholder": "npr. Polumaraton"
+      "placeholder": "npr. Polumaraton",
+      "headingFor": "Ciljevi za {{year}}.",
+      "emptyFor": "Godina završava — što želiš da {{year}}. donese? Upiši nekoliko velikih ciljeva."
     },
     "progress": "{{done}} od {{total}}",
     "addLabel": "Novi cilj",

@@ -14,6 +14,8 @@ import {
   weekDaysLeft,
   isoWeek,
   monthNav,
+  upcomingYear,
+  datesWithPlan,
   nextMonth,
   weekNav,
   monthGrid,
@@ -330,6 +332,44 @@ describe('isMonthOpenable', () => {
     expect(isMonthOpenable('2026-13', TODAY)).toBe(false);
     expect(isMonthOpenable('', TODAY)).toBe(false);
     expect(isMonthOpenable('2026-10', '2026-11')).toBe(false);
+  });
+});
+
+describe('planiranje unaprijed (25b, P54)', () => {
+  it('isMonthOpenable s `ahead`: sljedeći mjesec da, dalje ne; preko Nove godine', () => {
+    expect(isMonthOpenable('2026-12', TODAY, 1)).toBe(true);
+    expect(isMonthOpenable('2027-01', TODAY, 1)).toBe(false);
+    expect(isMonthOpenable('2027-01', '2026-12-20', 1)).toBe(true);
+    expect(isMonthOpenable('2026-12', TODAY, -1)).toBe(false);
+  });
+
+  it('monthNav s `ahead`: tekući vodi na sljedeći, sljedeći natrag na tekući i bez rezultata', () => {
+    expect(monthNav('2026-11', TODAY, null, 1)).toEqual({ previous: null, next: '2026-12', current: true });
+    expect(monthNav('2026-12', TODAY, null, 1)).toEqual({ previous: '2026-11', next: null, current: false });
+    expect(monthNav('2026-12', TODAY, '2026-09-01', 1)).toEqual({ previous: '2026-11', next: null, current: false });
+  });
+
+  it('datesWithPlan: od danas, bez sna, premještenih i preskočenih', () => {
+    const b = (date: string, kind: 'task' | 'sleep', status: 'planned' | 'moved' | 'skipped' | 'done') => ({ date, kind, status });
+    const set = datesWithPlan(
+      [
+        b('2026-11-11', 'task', 'planned'),
+        b('2026-11-12', 'task', 'done'),
+        b('2026-11-13', 'sleep', 'planned'),
+        b('2026-11-14', 'task', 'moved'),
+        b('2026-11-15', 'task', 'skipped'),
+        b('2026-11-16', 'task', 'planned'),
+      ],
+      TODAY,
+    );
+    expect([...set]).toEqual(['2026-11-12', '2026-11-16']);
+  });
+
+  it('upcomingYear: samo u prosincu', () => {
+    expect(upcomingYear('2026-12-01')).toBe('2027');
+    expect(upcomingYear('2026-12-31')).toBe('2027');
+    expect(upcomingYear(TODAY)).toBeNull();
+    expect(upcomingYear('nope')).toBeNull();
   });
 });
 

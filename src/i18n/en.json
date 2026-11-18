@@ -1147,7 +1147,11 @@
       "finished": "finished",
       "backToThis": "This month",
       "backToThisHint": "Back to the current month",
-      "emptyPast": "That month has no scored days."
+      "emptyPast": "That month has no scored days.",
+      "nextMonth": "Next month · plan ahead",
+      "planHint": "Tap a day ahead to note what you already know. No need to fill it all now.",
+      "withPlan": "{{label}}, has a plan",
+      "emptyNext": "Next month is still empty. Note what you already know — goals and days with commitments."
     },
     "year": {
       "behind_one": "{{count}} day behind you",
@@ -1401,7 +1405,9 @@
       "heading": "Goals this year",
       "empty": "What do you want this year to bring? Add a few big goals.",
       "emptyPast": "No goals were written down for that year.",
-      "placeholder": "e.g. Half marathon"
+      "placeholder": "e.g. Half marathon",
+      "headingFor": "Goals for {{year}}",
+      "emptyFor": "The year is ending — what do you want {{year}} to bring? Write down a few big goals."
     },
     "progress": "{{done}} of {{total}}",
     "addLabel": "New goal",
