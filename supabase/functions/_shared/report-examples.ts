@@ -219,3 +219,55 @@ export const EXAMPLE_MONTH_THURSDAYS = {
   changes: { accepted: 2, rejected: 1 },
   previous: [],
 } as const;
+
+/**
+ * Godišnja dijagnoza (korak 31e): bolja godina s padom ljeti, trackeri novca, tjedne promjene
+ * većinom prihvaćene; prošla godišnja dijagnoza je „Nije pomoglo“.
+ */
+export const EXAMPLE_YEAR_SUMMER_DIP = {
+  period: 'year',
+  start: '2026-01-01',
+  locale: 'hr',
+  trend: 'better',
+  year: {
+    start: '2026-01-01',
+    end: '2026-12-31',
+    recorded: 281,
+    average: 69,
+    best: { date: '2026-10-14', score: 98 },
+    worst: { date: '2026-07-21', score: 22 },
+    plan: { total: 5820, done: 4010, partial: 420, missed: 1390, moved: 610 },
+    rules: {
+      active: 560,
+      kept: 498,
+      broken: 62,
+      byRule: [{ title: 'Bez mobitela u krevetu', weight: 2, broken: 41, triggers: ['stres', 'dosada', 'umor'] }],
+    },
+    sleep: { nights: 281, averageMinutes: 425, shortNights: 64, onTarget: 170, withTarget: 281 },
+    xp: 15800,
+    rating: 3.5,
+    gaveUpDays: 9,
+    misses: { morning: 260, afternoon: 340, evening: 790 },
+    repeatedMisses: [{ title: 'Trening', count: 74 }],
+    calories: null,
+    money: { days: 190, spentCents: 410000, budgetCents: 380000, overDays: 52 },
+  },
+  previousYear: null,
+  months: [
+    { month: '2026-01', average: 64, summary: 'Mirniji početak, večeri su padale.' },
+    { month: '2026-07', average: 51, summary: 'Ljeto bez ritma — puno premještenih dana.' },
+    { month: '2026-10', average: 82, summary: 'Najbolji mjesec: jutarnji trening drži.' },
+  ],
+  ideas: ['Ljeti planiraj manje, ali svaki dan.', 'Trening ostavi ujutro i iduće godine.'],
+  changes: { accepted: 31, rejected: 12 },
+  previous: [
+    {
+      date: '2025-01-01',
+      summary: 'Godina s puno početaka.',
+      ideas: ['Manje stvari dnevno.'],
+      helpful: false,
+      comment: 'Preopćenito.',
+      suggestionAccepted: null,
+    },
+  ],
+} as const;
