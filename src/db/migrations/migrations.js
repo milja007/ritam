@@ -13,6 +13,7 @@ import m0008 from './0008_day_close.sql';
 import m0009 from './0009_sync.sql';
 import m0010 from './0010_color_theme.sql';
 import m0011 from './0011_quests.sql';
+import m0012 from './0012_goals.sql';
 
   export default {
     journal,
@@ -28,7 +29,8 @@ m0007,
 m0008,
 m0009,
 m0010,
-m0011
+m0011,
+m0012
     }
   }
   

@@ -9,3 +9,4 @@ export * from './reports';
 export * from './day-scores';
 export * from './unexpected';
 export * from './quests';
+export * from './goals';

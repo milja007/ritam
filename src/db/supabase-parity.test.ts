@@ -54,6 +54,7 @@ describe('Supabase shema prati lokalnu', () => {
     expect(localTables.map((table) => table.name).sort()).toEqual([
       'checkin_items',
       'checkins',
+      'goals',
       'quests',
       'reports',
       'rule_logs',
