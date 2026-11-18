@@ -28,6 +28,9 @@ type GoalsCardProps = {
   /** Zadnji dan prikazanog razdoblja — razdoblje koje je prošlo je samo za čitanje. */
   periodEnd: string;
   today: string;
+  /** Naslov i prazno stanje umjesto zadanih (npr. ciljevi sljedeće godine u prosincu). */
+  heading?: string;
+  emptyText?: string;
 };
 
 /**
@@ -35,7 +38,7 @@ type GoalsCardProps = {
  * žarom koji se upali kad je cilj ostvaren. Najviše `MAX_GOALS_PER_PERIOD`; ne mora se sve
  * ispuniti. Prošlo razdoblje je samo za čitanje; buduće se može puniti, ali ne i označavati.
  */
-export function GoalsCard({ period, periodStart, periodEnd, today }: GoalsCardProps) {
+export function GoalsCard({ period, periodStart, periodEnd, today, heading, emptyText }: GoalsCardProps) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const state = useGoals(period, periodStart);
@@ -107,7 +110,7 @@ export function GoalsCard({ period, periodStart, periodEnd, today }: GoalsCardPr
     <View style={cardStyle}>
       <View style={styles.head}>
         <Text variant="overline" tone="textMuted" accessibilityRole="header" style={styles.flex}>
-          {t(k('heading'))}
+          {heading ?? t(k('heading'))}
         </Text>
         {goals.length > 0 ? (
           <Text variant="caption" tone="textMuted" style={styles.tabular}>
@@ -119,12 +122,12 @@ export function GoalsCard({ period, periodStart, periodEnd, today }: GoalsCardPr
       {goals.length > 0 ? (
         <ProgressBar
           fraction={progress.done / progress.total}
-          accessibilityLabel={t(k('heading'))}
+          accessibilityLabel={heading ?? t(k('heading'))}
           valueText={t('goals.progress', { done: progress.done, total: progress.total })}
           height={6}
         />
       ) : (
-        <Text tone="textMuted">{t(past ? k('emptyPast') : k('empty'))}</Text>
+        <Text tone="textMuted">{past ? t(k('emptyPast')) : (emptyText ?? t(k('empty')))}</Text>
       )}
 
       {goals.length > 0 ? (

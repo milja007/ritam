@@ -6,6 +6,8 @@ import {
   averageScore,
   dayEmber,
   isMonthOpenable,
+  PLAN_AHEAD_MONTHS,
+  upcomingYear,
   longestStreakInYear,
   strongestMonth,
   yearMonths,
@@ -45,6 +47,7 @@ export function YearScreen() {
   const state = useEmberData(now.eveningDate);
   const language = i18n.language;
   const year = now.date.slice(0, 4);
+  const upcoming = upcomingYear(now.date);
   const behind = daysBetween(`${year}-01-01`, now.date) ?? 0;
   const months = yearMonths(year);
   const scores = state.data?.scores ?? null;
@@ -79,8 +82,8 @@ export function YearScreen() {
                 average === null
                   ? t('ember.year.monthLabelEmpty', { month: name })
                   : t('ember.year.monthLabel', { month: name, scored: count, average });
-              // Mjesec koji je počeo otvara svoj kalendar u tabu Mjesec; budući nema što pokazati.
-              const openable = isMonthOpenable(month, now.date);
+              // Mjesec koji je počeo (i sljedeći, za planiranje unaprijed) otvara svoj kalendar u tabu Mjesec.
+              const openable = isMonthOpenable(month, now.date, PLAN_AHEAD_MONTHS);
               const body = (
                 <>
                   <Text
@@ -157,6 +160,17 @@ export function YearScreen() {
           </View>
 
           <GoalsCard period="year" periodStart={`${year}-01-01`} periodEnd={`${year}-12-31`} today={now.date} />
+          {upcoming !== null ? (
+            // P54: na kraju godine planira se nova — ciljevi sljedeće godine već u prosincu.
+            <GoalsCard
+              period="year"
+              periodStart={`${upcoming}-01-01`}
+              periodEnd={`${upcoming}-12-31`}
+              today={now.date}
+              heading={t('goals.year.headingFor', { year: upcoming })}
+              emptyText={t('goals.year.emptyFor', { year: upcoming })}
+            />
+          ) : null}
 
           {lastYearReport.diagnosis !== null && report.diagnosis === null ? (
             <YearDiagnosisCard report={lastYearReport} yearLabel={`${lastYear}.`} current={false} />
