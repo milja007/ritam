@@ -31,6 +31,11 @@
       "blocks": "Podsjetnici blokova",
       "blocksDetail": "Na početku svakog bloka, s gumbima Gotovo / Odgodi / Iskrslo"
     },
+    "haptics": {
+      "title": "Haptika",
+      "label": "Vibracija uz potvrde",
+      "detail": "Kratak osjet uz Gotovo, rast niza, zarađeno i novu razinu"
+    },
     "saveError": "Promjena se nije spremila. Pokušaj ponovo.",
     "progress": "Napredak",
     "score": {

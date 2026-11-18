@@ -1,3 +1,5 @@
+import type { BlockStatus } from '../domain';
+
 /**
  * Haptika (Ž11, dio koraka 35): koji osjet ide uz koji trenutak u appu. Čista logika — poziv
  * uređaja je u `src/ui/haptics.ts`.
@@ -99,4 +101,12 @@ export function levelUpHaptics(
   const burstAt = Math.max(0, timing.fillMs + (ticks - 1) * timing.stepMs);
   cues.push({ at: burstAt, event: 'levelUp' });
   return cues;
+}
+
+/**
+ * Osjet uz promjenu statusa aktivnosti: „odrađeno“ je potvrda (srednji udar), sve ostalo —
+ * djelomično, preskočeno, pomaknuto, vraćeno na planirano — lagani dodir.
+ */
+export function blockStatusHaptic(next: BlockStatus): HapticEvent {
+  return next === 'done' ? 'done' : 'skip';
 }

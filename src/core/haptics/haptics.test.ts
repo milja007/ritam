@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { HAPTIC_COALESCE_MS, levelUpHaptics, nextHaptic, type HapticState } from './haptics';
+import { blockStatusHaptic, HAPTIC_COALESCE_MS, levelUpHaptics, nextHaptic, type HapticState } from './haptics';
 
 describe('nextHaptic', () => {
   it('prvi povod uvijek svira', () => {
@@ -56,5 +56,13 @@ describe('levelUpHaptics', () => {
 
   it('smanji kretanje: jedan uspjeh odmah', () => {
     expect(levelUpHaptics([2, 3, 4], timing, true)).toEqual([{ at: 0, event: 'levelUp' }]);
+  });
+});
+
+describe('blockStatusHaptic', () => {
+  it('odrađeno je potvrda, ostalo lagani dodir', () => {
+    expect(blockStatusHaptic('done')).toBe('done');
+    expect(blockStatusHaptic('skipped')).toBe('skip');
+    expect(blockStatusHaptic('planned')).toBe('skip');
   });
 });
