@@ -8,6 +8,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - 85 (žeravica), 76 (rang), 75 (drugi račun ostaje blokiran), 78 (bedževi): **u redu, ostaje**.
 - 86 (questovi): **„samo badge“** — tumačenje: ostvaren quest daje bedž, **bez XP-a** za etape i quest. → korak 34c.
 - 80 (otključavanja): **dodati okvire avatara i animacije „Gotovo“** kao nagrade po razini. → korak 32b.
+- Modeli (korak 40): **bez DeepSeeka**; „najjeftiniji, ali dobar za ovo“ → `parse-input` i `plan-day` Haiku 5.5, `write-report` Sonnet 5.5. `plan-day` treba ponovni deploy.
 - 88 (zabrane) i 87 (wind-down po koraku): bez odgovora → ostaje kako je; wind-down i dalje prati ciljani krevet.
 
 ## 2026-11-18 · Sesija 21:43 — korak 31e: godišnja dijagnoza riječima
@@ -35,5 +36,5 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 
 ## Pitanja za Bornu
 84. **Remote migracije** (`color_theme`, `quests`, `goals`, `tasks`, `rule_periods`, `trackers`) — Claudeov alat ne smije primijeniti. Na Macu `npx supabase db push`. Dok nisu primijenjene, sync ne smije biti uključen.
-77. Deploy Edge Functions (20–22, 26, 31): ključ je već u secrets (2026-11-09), model je tvoja odluka od 2026-11-09 i sada je u kodu (`parse-input` Haiku 5.5, `plan-day` i `write-report` Sonnet 5.5). Ostaje samo na Macu: `npx supabase functions deploy parse-input`, `plan-day` i `write-report` — kad uključiš oblak. Primjeri za probu `write-report`: `supabase/functions/_shared/report-examples.ts`.
+77. ~~Deploy Edge Functions~~ — **deployano 2026-11-18 (Codex)**. Nakon PR-a s modelom `plan-day` treba ponovo deployati (`npx supabase functions deploy plan-day`). Živi probni poziv čeka prijavljenog korisnika (migracije, pitanje 84).
 - Pitanja 75–91 odgovorena 2026-11-18 (gore, „Odluke Borne“); 87 i 88 bez odgovora → ostaje kako je. Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.

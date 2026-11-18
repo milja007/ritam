@@ -67,10 +67,10 @@ Savršen tjedan/mjesec gotovo nitko nikad neće imati — mjeri se jesi li bolji
 - Kalorije i novac ulaze u dnevni rezultat i dijagnoze samo kad su uključeni; ciljeve postavlja korisnik.
 
 ## Tehnika (odluke)
-Expo (SDK iz package.json) + TypeScript, Expo Router, Zustand + TanStack Query, Supabase cloud (Auth, Postgres, Edge Functions, RLS) — account stiže kasnije, do tada lokalno; expo-sqlite kao offline cache; LLM preko Edge Functiona iza `LLMProvider` sučelja (Claude sada, DeepSeek kasnije); Google Calendar (read-only); expo-notifications (lokalne) s akcijama; Reanimated + Skia + Lottie; i18next (HR/EN).
+Expo (SDK iz package.json) + TypeScript, Expo Router, Zustand + TanStack Query, Supabase cloud (Auth, Postgres, Edge Functions, RLS) — account stiže kasnije, do tada lokalno; expo-sqlite kao offline cache; LLM preko Edge Functiona iza `LLMProvider` sučelja (Claude; Borna 2026-11-18: bez DeepSeeka, najjeftiniji model koji je dobar za posao); Google Calendar (read-only); expo-notifications (lokalne) s akcijama; Reanimated + Skia + Lottie; i18next (HR/EN).
 
 ## Faze
 1. **Jezgra (MVP)**: jutarnja obavijest, večernji upit + checklist s komentarom, dnevna dijagnoza, timeline + uređivanje, Supabase + HR/EN, osnovni XP + streak + dnevni rezultat i usporedba s prošlošću. Gotovo kad: 7 dana zaredom ispunjen upit.
 2. **Pametni planer**: LLM raspoređivač, Google Calendar, tjedni zadaci, "Nešto je iskrslo", zabrane + san, glasovni unos, LLM dnevna dijagnoza, trackeri kalorija i novca.
 3. **Igra i animacije**: leveli, orb-plamen, epski questovi + freeze, animacije i haptika, bedževi + rang E–S i statovi, tjedna/mjesečna/godišnja dijagnoza, grafovi napretka.
-4. **Nadogradnje**: Health sync, prelazak na DeepSeek, home-screen widget.
+4. **Nadogradnje**: Health sync, home-screen widget. (DeepSeek odbačen 2026-11-18 — Borna.)
