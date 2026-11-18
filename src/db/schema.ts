@@ -16,6 +16,8 @@ import type {
   CheckinOutcome,
   GoalPeriod,
   QuestMilestone,
+  TaskEnergy,
+  TaskPartOfDay,
   QuestStatus,
   ReportPeriod,
   ThemePreference,
@@ -208,4 +210,21 @@ export const goals = sqliteTable(
     doneOn: text('done_on'),
   },
   (table) => [index('goals_user_period_idx').on(table.userId, table.period, table.periodStart)],
+);
+
+/** Tjedni zadaci (korak 25): odgovori na pitanja kod unosa; smještaju se kao blokovi s `task_id`. */
+export const tasks = sqliteTable(
+  'tasks',
+  {
+    ...baseColumns(),
+    weekStart: text('week_start').notNull(),
+    title: text('title').notNull(),
+    durationMinutes: integer('duration_minutes').notNull(),
+    timesPerWeek: integer('times_per_week').notNull(),
+    deadline: text('deadline'),
+    partOfDay: text('part_of_day').$type<TaskPartOfDay>().notNull(),
+    energy: text('energy').$type<TaskEnergy>().notNull(),
+    needs: text('needs').notNull().default(''),
+  },
+  (table) => [index('tasks_user_week_idx').on(table.userId, table.weekStart)],
 );
