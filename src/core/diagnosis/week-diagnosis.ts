@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { scoreTrend, weekStart } from '../progress';
 import { addDays } from '../time/local-date';
 import { SHORT_SLEEP_MINUTES, TRENDS, type Trend } from './day-diagnosis';
+import { llmWeekTextSchema } from './llm-week';
 import type { DayPart, PeriodStats } from './period-stats';
 
 /** Verzija pravila (sprema se kao `reports.prompt_version`). */
@@ -57,6 +58,10 @@ export const WEEK_THRESHOLDS: PeriodThresholds = {
 };
 
 const PLAN_STEP = 0.1;
+/** Trackeri u razdoblju (korak 31c): pohvala kad je barem toliki udio dana s unosom unutar cilja. */
+const CALORIES_PRAISE_RATE = 0.7;
+/** Najmanje dana s unosom da bi se o trackeru išta reklo (jedan dan je dnevna dijagnoza). */
+const TRACKER_MIN_DAYS = 2;
 const PLAN_FOLLOW_UP_STEP = 0.05;
 const SLEEP_FOLLOW_UP_MINUTES = 15;
 const MAX_PRAISE = 4;
@@ -107,6 +112,8 @@ export const WEEK_LINE_KEYS = [
   'praise.rulesClean',
   'praise.rulesFewer',
   'praise.sleepOnTarget',
+  'praise.caloriesWithin',
+  'praise.moneyWithin',
   'praise.allDays',
   'praise.showedUp',
   ...IDEA_AREAS.flatMap((area) => [`followUp.${area}.worked`, `followUp.${area}.notYet`] as const),
@@ -116,6 +123,9 @@ export const WEEK_LINE_KEYS = [
   'noticed.rule',
   'noticed.ruleTrigger',
   'noticed.shortSleep',
+  'noticed.caloriesOver',
+  'noticed.caloriesUnder',
+  'noticed.moneyOver',
   'noticed.gaveUp',
   'noticed.moved',
   'noticed.comment',
@@ -132,7 +142,19 @@ export const WEEK_LINE_KEYS = [
 ] as const;
 export type WeekLineKey = (typeof WEEK_LINE_KEYS)[number];
 
-export const WEEK_METRICS = ['average', 'days', 'plan', 'rules', 'sleep', 'xp', 'rating', 'best', 'betterWeeks'] as const;
+export const WEEK_METRICS = [
+  'average',
+  'days',
+  'plan',
+  'rules',
+  'sleep',
+  'calories',
+  'money',
+  'xp',
+  'rating',
+  'best',
+  'betterWeeks',
+] as const;
 export type WeekMetric = (typeof WEEK_METRICS)[number];
 
 const paramsSchema = z.record(z.string(), z.union([z.string(), z.number()]));
@@ -179,6 +201,12 @@ export const weekDiagnosisSchema = z.object({
   carried: z.boolean(),
   /** Niz boljih tjedana zaključno s ovim tjednom. */
   betterWeeks: z.number(),
+  /**
+   * Riječi modela (korak 31c, `write-report` tjedni način): zamjenjuju retke Ukratko, Pohvale,
+   * Uočeno i Problemi; brojke, trend i promjena tjedna ostaju lokalni. Pokvaren tekst ne ruši
+   * lokalnu dijagnozu.
+   */
+  llm: llmWeekTextSchema.optional().catch(undefined),
 });
 export type WeekDiagnosis = z.infer<typeof weekDiagnosisSchema>;
 
@@ -286,6 +314,34 @@ export function periodProgressRows(
       good: null,
     });
   }
+  if (current.calories) {
+    const now = current.calories;
+    const before = previous?.calories ?? null;
+    const direction = before ? change(now.within / now.days, before.within / before.days) : null;
+    rows.push({
+      metric: 'calories',
+      value: now.within,
+      total: now.days,
+      previous: before ? before.within : null,
+      ...(before ? { previousTotal: before.days } : {}),
+      change: direction,
+      good: goodFor(direction),
+    });
+  }
+  if (current.money) {
+    const now = current.money;
+    const before = previous?.money ?? null;
+    rows.push({
+      metric: 'money',
+      value: now.spentCents,
+      total: now.budgetCents,
+      previous: before ? before.spentCents : null,
+      ...(before ? { previousTotal: before.budgetCents } : {}),
+      change: before ? change(now.spentCents, before.spentCents) : null,
+      // Dobro je ostati unutar zbroja dnevnih dijelova limita, bez obzira na smjer.
+      good: now.spentCents <= now.budgetCents,
+    });
+  }
   const xpDir = change(current.xp, previous ? previous.xp : null);
   rows.push({ metric: 'xp', value: current.xp, previous: previous ? previous.xp : null, change: xpDir, good: goodFor(xpDir) });
   if (current.rating) {
@@ -341,6 +397,14 @@ export function periodPraiseLines(
   }
   if (current.sleep && current.sleep.withTarget >= 2 && current.sleep.onTarget / current.sleep.withTarget >= 0.7) {
     praise.push(line('praise.sleepOnTarget', { count: current.sleep.onTarget, total: current.sleep.withTarget }));
+  }
+  const calories = current.calories;
+  if (calories && calories.days >= TRACKER_MIN_DAYS && calories.within / calories.days >= CALORIES_PRAISE_RATE) {
+    praise.push(line('praise.caloriesWithin', { count: calories.within, total: calories.days }));
+  }
+  const money = current.money;
+  if (money && money.days >= TRACKER_MIN_DAYS && money.spentCents <= money.budgetCents) {
+    praise.push(line('praise.moneyWithin', { spentCents: money.spentCents, budgetCents: money.budgetCents }));
   }
   if (current.recorded === current.length) praise.push(line('praise.allDays', { days: current.recorded }));
   if (current.best && current.recorded >= 2 && praise.length < MAX_PRAISE) {
@@ -418,6 +482,19 @@ export function periodNoticedLines(
   const sleepEffect = current.shortSleepEffect;
   if (sleepEffect && sleepEffect.restAverage - sleepEffect.shortAverage >= 10) {
     noticed.push(line('noticed.shortSleep', { short: sleepEffect.shortAverage, rest: sleepEffect.restAverage }));
+  }
+  const calories = current.calories;
+  if (calories && calories.days >= TRACKER_MIN_DAYS) {
+    // Ponavljanje, ne jedan dan: barem dva dana na istu stranu cilja.
+    if (calories.over >= TRACKER_MIN_DAYS && calories.over >= calories.under) {
+      noticed.push(line('noticed.caloriesOver', { count: calories.over, total: calories.days }));
+    } else if (calories.under >= TRACKER_MIN_DAYS) {
+      noticed.push(line('noticed.caloriesUnder', { count: calories.under, total: calories.days }));
+    }
+  }
+  const money = current.money;
+  if (money && money.days >= TRACKER_MIN_DAYS && money.spentCents > money.budgetCents) {
+    noticed.push(line('noticed.moneyOver', { diffCents: money.spentCents - money.budgetCents, days: money.overDays }));
   }
   if (current.gaveUpDays > 0) noticed.push(line('noticed.gaveUp', { count: current.gaveUpDays }));
   if (current.plan.moved >= thresholds.movedNoticed) noticed.push(line('noticed.moved', { count: current.plan.moved }));

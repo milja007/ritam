@@ -19,6 +19,7 @@ import {
   type YearDiagnosis,
   isWeekDiagnosisReady,
   llmDayTextSchema,
+  llmWeekTextSchema,
   LOCAL_DAY_DIAGNOSIS_VERSION,
   LOCAL_MONTH_DIAGNOSIS_VERSION,
   LOCAL_WEEK_DIAGNOSIS_VERSION,
@@ -34,6 +35,10 @@ import {
   type DayStats,
   type LlmDayText,
   type LlmPreviousReport,
+  type LlmPreviousWeekReport,
+  type LlmWeekDay,
+  type LlmWeekText,
+  type PeriodStats,
   type MonthDiagnosis,
   type PeriodDay,
   type WeekDiagnosis,
@@ -397,6 +402,16 @@ export function generateWeekReport(
     const diagnosis = buildWeekDiagnosis(current, previous, { history, betterWeeks, previousBest });
     const stats = { current, previous };
     const existing = tx.select().from(reports).where(reportOf(userId, 'week', start)).get();
+    // Riječi modela (korak 31c) ostaju dok su statistika tjedna i promjena tjedna iste.
+    const existingDiagnosis = existing ? parseWeekDiagnosis(existing.sections) : null;
+    if (
+      existingDiagnosis?.llm &&
+      sameJson(existing?.stats, stats) &&
+      existingDiagnosis.suggestion === diagnosis.suggestion &&
+      sameJson(existingDiagnosis.ideas, diagnosis.ideas)
+    ) {
+      diagnosis.llm = existingDiagnosis.llm;
+    }
     if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
       return { report: reportSchema.parse(existing), diagnosis };
     }
@@ -870,6 +885,129 @@ export function saveDayReportText(
     const diagnosis = parseDayDiagnosis(row.sections);
     if (diagnosis === null) return null;
     const next: DayDiagnosis = { ...diagnosis, llm: llmDayTextSchema.parse(text) };
+    if (!sameJson(diagnosis.llm, next.llm)) {
+      tx.update(reports)
+        .set({ sections: next, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return next;
+  });
+}
+
+/** Spremljena statistika tjedne dijagnoze (`reports.stats`), ili `null` za neočekivan oblik. */
+function storedWeekStats(stats: unknown): { current: PeriodStats; previous: PeriodStats | null } | null {
+  if (typeof stats !== 'object' || stats === null) return null;
+  const { current, previous } = stats as { current?: unknown; previous?: unknown };
+  const isStats = (value: unknown): value is PeriodStats =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as PeriodStats).start === 'string' &&
+    typeof (value as PeriodStats).end === 'string' &&
+    typeof (value as PeriodStats).plan === 'object' &&
+    typeof (value as PeriodStats).rules === 'object' &&
+    typeof (value as PeriodStats).misses === 'object' &&
+    Array.isArray((value as PeriodStats).rules.byRule) &&
+    Array.isArray((value as PeriodStats).repeatedMisses);
+  if (!isStats(current)) return null;
+  return { current, previous: isStats(previous) ? previous : null };
+}
+
+/** Koliko ranijih tjednih dijagnoza ide modelu (prati je li savjet upalio). */
+const LLM_PREVIOUS_WEEKS = 4;
+
+export type WriteWeekReportData = {
+  diagnosis: WeekDiagnosis;
+  current: PeriodStats;
+  previous: PeriodStats | null;
+  days: LlmWeekDay[];
+  previousReports: LlmPreviousWeekReport[];
+  /** Snimka statistike i promjene tjedna iz koje je zahtjev nastao — odgovor se sprema samo ako je ista. */
+  basis: string;
+};
+
+const weekBasis = (stats: unknown, diagnosis: WeekDiagnosis) =>
+  JSON.stringify({ stats, suggestion: diagnosis.suggestion, ideas: diagnosis.ideas });
+
+/**
+ * Sve što `write-report` treba za tjedan koji počinje ponedjeljkom `start` (korak 31c), iz već
+ * spremljenih dijagnoza: statistika tjedna i prošlog iz tjedne dijagnoze, dani tjedna iz dnevnih
+ * dijagnoza (rezultat koji je korisnik vidio), do 4 ranije tjedne dijagnoze s odgovorom.
+ * `null` kad tjedne dijagnoze nema.
+ */
+export async function loadWeekWriteReportData(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+): Promise<WriteWeekReportData | null> {
+  const row = await db.select().from(reports).where(reportOf(userId, 'week', start)).get();
+  if (!row) return null;
+  const diagnosis = parseWeekDiagnosis(row.sections);
+  const stats = storedWeekStats(row.stats);
+  const end = addDays(start, 6);
+  if (diagnosis === null || stats === null || end === null) return null;
+  const dayRows = await db
+    .select()
+    .from(reports)
+    .where(
+      and(eq(reports.userId, userId), eq(reports.period, 'day'), gte(reports.periodStart, start), lte(reports.periodStart, end)),
+    )
+    .all();
+  const days: LlmWeekDay[] = [];
+  for (const dayRow of dayRows) {
+    const dayStatsStored = storedDayStats(dayRow.stats);
+    if (!dayStatsStored) continue;
+    const scoreRow = parseDayDiagnosis(dayRow.sections)?.progress.find((progress) => progress.metric === 'score');
+    days.push({ stats: dayStatsStored.today, score: scoreRow ? scoreRow.value : null });
+  }
+  const earlier = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), eq(reports.period, 'week'), lt(reports.periodStart, start)))
+    .orderBy(desc(reports.periodStart))
+    .limit(LLM_PREVIOUS_WEEKS)
+    .all();
+  const previousReports: LlmPreviousWeekReport[] = [];
+  for (const report of earlier) {
+    const earlierDiagnosis = parseWeekDiagnosis(report.sections);
+    if (!earlierDiagnosis) continue;
+    previousReports.push({
+      start: report.periodStart,
+      diagnosis: earlierDiagnosis,
+      helpful: report.helpful,
+      comment: report.feedbackComment,
+      suggestionAccepted: report.suggestionAccepted,
+    });
+  }
+  return {
+    diagnosis,
+    current: stats.current,
+    previous: stats.previous,
+    days,
+    previousReports,
+    basis: weekBasis(row.stats, diagnosis),
+  };
+}
+
+/**
+ * Spremi riječi modela uz tjednu dijagnozu (`sections.llm`). Ne sprema ako su se statistika ili
+ * promjena tjedna u međuvremenu promijenile (`basis`) ili dijagnoze nema. Vraća dijagnozu s
+ * tekstom ili `null`.
+ */
+export function saveWeekReportText(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+  text: LlmWeekText,
+  basis: string,
+  deps: RepoDeps = defaultRepoDeps,
+): WeekDiagnosis | null {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, 'week', start)).get();
+    if (!row) return null;
+    const diagnosis = parseWeekDiagnosis(row.sections);
+    if (diagnosis === null || weekBasis(row.stats, diagnosis) !== basis) return null;
+    const next: WeekDiagnosis = { ...diagnosis, llm: llmWeekTextSchema.parse(text) };
     if (!sameJson(diagnosis.llm, next.llm)) {
       tx.update(reports)
         .set({ sections: next, updatedAt: deps.now().toISOString() })

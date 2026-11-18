@@ -6,7 +6,7 @@ import { radius, spacing } from '@/core/theme';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
-import { dayMonthName, WEEK_TREND_ARROW, WEEK_TREND_TONE, WeekProgressRowView, weekdayName } from './week-diagnosis-view';
+import { dayMonthName, WEEK_TREND_ARROW, WEEK_TREND_TONE, WeekProgressRowView, weekdayName, withEuroParams } from './week-diagnosis-view';
 
 type LineSection = 'praise' | 'noticed' | 'problems' | 'ideas';
 const LINE_SECTIONS: readonly LineSection[] = ['praise', 'noticed', 'problems', 'ideas'];
@@ -22,7 +22,7 @@ export function monthLineParams(line: MonthLine, language: string): Record<strin
     else if (typeof value === 'string' && name.endsWith('Weekday')) params[name] = weekdayName(value, language);
     else params[name] = value;
   }
-  return params;
+  return withEuroParams(params, language);
 }
 
 /** Prvo slovo veliko (HR nazivi dana na početku rečenice). */

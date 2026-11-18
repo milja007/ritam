@@ -37,6 +37,8 @@ type DayIn = {
   gaveUp?: boolean;
   misses?: { title: string; start: string }[];
   comments?: DayStats['comments'];
+  calories?: DayStats['calories'];
+  money?: DayStats['money'];
 };
 
 function day(date: string, input: DayIn = {}): PeriodDay {
@@ -71,6 +73,8 @@ function day(date: string, input: DayIn = {}): PeriodDay {
     gaveUp: input.gaveUp ?? false,
     gaveUpNote: null,
     misses: input.misses ?? [],
+    ...(input.calories !== undefined ? { calories: input.calories } : {}),
+    ...(input.money !== undefined ? { money: input.money } : {}),
   };
   return { stats, score: input.score === undefined ? 70 : input.score };
 }
@@ -443,5 +447,66 @@ describe('isWeekLastDay', () => {
     expect(isWeekLastDay('2026-11-16')).toBe(false);
     expect(isWeekLastDay('2026-11-14')).toBe(false);
     expect(isWeekLastDay('x')).toBe(false);
+  });
+});
+
+describe('trackeri u tjednoj dijagnozi (korak 31c)', () => {
+  it('periodStats broji samo dane s unosom: kalorije unutar/iznad/ispod, potrošnja naspram dijela limita', () => {
+    const stats = week([
+      day('2026-11-09', { calories: { total: 2100, goal: 2000 }, money: { spent: 800, dailyBudget: 1000 } }),
+      day('2026-11-10', { calories: { total: 2600, goal: 2000 }, money: { spent: 1500, dailyBudget: 1000 } }),
+      day('2026-11-11', { calories: { total: 1500, goal: 2000 } }),
+      day('2026-11-12'),
+    ]);
+    expect(stats.calories).toEqual({ days: 3, within: 1, over: 1, under: 1 });
+    expect(stats.money).toEqual({ days: 2, spentCents: 2300, budgetCents: 2000, overDays: 1 });
+    expect(week([day('2026-11-09')]).calories).toBeNull();
+    expect(week([day('2026-11-09')]).money).toBeNull();
+  });
+
+  it('Napredak ima retke kalorija i potrošnje; pohvala kad je većina dana unutar cilja i potrošnja unutar limita', () => {
+    const current = week(
+      dates(START, 4).map((date) => day(date, { calories: { total: 2050, goal: 2000 }, money: { spent: 500, dailyBudget: 1000 } })),
+    );
+    const previous = week(
+      dates(PREV_START, 4).map((date) => day(date, { calories: { total: 2600, goal: 2000 } })),
+      PREV_START,
+      PREV_END,
+    );
+    const diagnosis = buildWeekDiagnosis(current, previous);
+    expect(diagnosis.progress.find((row) => row.metric === 'calories')).toMatchObject({
+      value: 4,
+      total: 4,
+      previous: 0,
+      previousTotal: 4,
+      change: 'up',
+      good: true,
+    });
+    expect(diagnosis.progress.find((row) => row.metric === 'money')).toMatchObject({
+      value: 2000,
+      total: 4000,
+      previous: null,
+      good: true,
+    });
+    const praise = diagnosis.praise.map((line) => line.key);
+    expect(praise).toContain('praise.caloriesWithin');
+    expect(praise).toContain('praise.moneyWithin');
+    expect(parseWeekDiagnosis(JSON.parse(JSON.stringify(diagnosis)))).not.toBeNull();
+  });
+
+  it('Što smo primijetili: kalorije iznad cilja barem dva dana, potrošnja iznad dijela limita s razlikom u centima', () => {
+    const current = week([
+      day('2026-11-09', { calories: { total: 2600, goal: 2000 }, money: { spent: 3000, dailyBudget: 1000 } }),
+      day('2026-11-10', { calories: { total: 2500, goal: 2000 }, money: { spent: 500, dailyBudget: 1000 } }),
+    ]);
+    const noticed = buildWeekDiagnosis(current, null).noticed;
+    expect(noticed).toContainEqual({ key: 'noticed.caloriesOver', params: { count: 2, total: 2 } });
+    expect(noticed).toContainEqual({ key: 'noticed.moneyOver', params: { diffCents: 1500, days: 1 } });
+  });
+
+  it('jedan dan s unosom nije uzorak — bez pohvale i bez uočenog', () => {
+    const current = week([day('2026-11-09', { calories: { total: 3000, goal: 2000 }, money: { spent: 100, dailyBudget: 1000 } })]);
+    const keys = [...buildWeekDiagnosis(current, null).praise, ...buildWeekDiagnosis(current, null).noticed].map((l) => l.key);
+    expect(keys.some((key) => key.includes('calories') || key.includes('money'))).toBe(false);
   });
 });

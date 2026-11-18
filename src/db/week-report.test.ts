@@ -5,7 +5,9 @@ import { describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
 import type { ChecklistAnswer, EveningDraft } from '@/core/checkin';
-import { parseWeekDiagnosis } from '@/core/diagnosis';
+import { parseWeekDiagnosis, writeWeekReportRequest, type LlmWeekText } from '@/core/diagnosis';
+
+import { parseWriteWeekReportRequest } from '../../supabase/functions/_shared/report-logic';
 import { createDefaultDraft, toSettingsInput } from '@/core/onboarding';
 import { addDays } from '@/core/time/local-date';
 
@@ -13,7 +15,10 @@ import {
   answerReportSuggestion,
   createBlock,
   createRule,
+  generateDayReport,
   generateWeekReport,
+  loadWeekWriteReportData,
+  saveWeekReportText,
   getReport,
   previewRollingWeek,
   saveEveningCheckin,
@@ -253,5 +258,70 @@ describe('reports repo — zadnjih 7 dana (zadnji dan mjeseca koji nije nedjelja
     const { db, closeDay } = await setup();
     await closeDay(END, 2, 4);
     expect(previewRollingWeek(db, USER, END, '2026-12-01')?.trend).toBe('first');
+  });
+});
+
+describe('reports repo — tjedna dijagnoza riječima (korak 31c)', () => {
+  const text: LlmWeekText = {
+    version: 'llm-week-v1',
+    summary: 'Tjedan je bio stabilan.',
+    praise: ['Zabrane su držale.'],
+    noticed: [],
+    problems: [],
+    ideaWhy: 'Ritam je dobar, zadrži ga.',
+  };
+
+  it('bez tjedne dijagnoze nema podataka ni spremanja', async () => {
+    const { db, deps } = await setup();
+    expect(await loadWeekWriteReportData(db, USER, W3)).toBeNull();
+    expect(saveWeekReportText(db, USER, W3, text, '{}', deps)).toBeNull();
+  });
+
+  it('podaci: statistika tjedna, dani iz dnevnih dijagnoza s rezultatom, ranije tjedne dijagnoze; zahtjev prolazi provjeru', async () => {
+    const { db, deps, closeWeek } = await setup();
+    await closeWeek(W2, 5, 2, 2);
+    await closeWeek(W3, 5, 1, 2, false);
+    generateDayReport(db, USER, day(W3, 0), deps);
+    generateDayReport(db, USER, day(W3, 1), deps);
+    expect(generateWeekReport(db, USER, W2, W4, deps)).not.toBeNull();
+    expect(generateWeekReport(db, USER, W3, W4, deps)).not.toBeNull();
+
+    const data = await loadWeekWriteReportData(db, USER, W3);
+    expect(data?.current.recorded).toBe(5);
+    expect(data?.previous?.recorded).toBe(5);
+    expect(data?.days.map((d) => d.stats.date).sort()).toEqual([day(W3, 0), day(W3, 1)]);
+    expect(typeof data?.days[0]?.score).toBe('number');
+    expect(data?.previousReports.map((r) => r.start)).toEqual([W2]);
+
+    const request = writeWeekReportRequest({
+      locale: 'hr',
+      diagnosis: data!.diagnosis,
+      current: data!.current,
+      previous: data!.previous,
+      days: data!.days,
+      previousReports: data!.previousReports,
+      renderLine: (line) => line.key,
+    });
+    const parsed = parseWriteWeekReportRequest(JSON.parse(JSON.stringify(request)));
+    expect(parsed?.days).toHaveLength(2);
+    expect(parsed?.previous).toHaveLength(1);
+    expect(parsed?.week.rules.byRule[0]).toMatchObject({ title: 'Bez slatkiša', broken: 5, triggers: ['stres'] });
+  });
+
+  it('tekst se sprema, preživi ponovno generiranje bez promjene, a otpada kad se tjedan promijeni', async () => {
+    const { db, deps, closeDay, closeWeek } = await setup();
+    await closeWeek(W3, 5, 2, 2);
+    generateWeekReport(db, USER, W3, W4, deps);
+    const data = await loadWeekWriteReportData(db, USER, W3);
+    const saved = saveWeekReportText(db, USER, W3, text, data?.basis ?? '', deps);
+    expect(saved?.llm).toEqual(text);
+    expect(parseWeekDiagnosis((await getReport(db, USER, 'week', W3))?.sections)?.llm).toEqual(text);
+
+    expect(generateWeekReport(db, USER, W3, W4, deps)?.diagnosis.llm).toEqual(text);
+
+    await closeDay(day(W3, 5), 0, 2);
+    expect(generateWeekReport(db, USER, W3, W4, deps)?.diagnosis.llm).toBeUndefined();
+    // Zahtjev nastao prije promjene se ne sprema.
+    expect(saveWeekReportText(db, USER, W3, text, data?.basis ?? '', deps)).toBeNull();
   });
 });

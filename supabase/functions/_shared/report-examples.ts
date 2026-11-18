@@ -110,3 +110,72 @@ export const EXAMPLE_MODEL_RESPONSE = `\`\`\`json
   "ideas": ["Utorkom zamijeni trening laganom šetnjom od 20 min, a pravi trening stavi u srijedu."]
 }
 \`\`\``;
+
+/**
+ * Primjer za prompt `llm-week-v1` (korak 31c): tjedan s padom navečer radnim danima, kalorije
+ * iznad cilja, ranija tjedna promjena „Nije pomoglo“; lokalna promjena tjedna je zadana.
+ */
+export const EXAMPLE_WEEK_EVENINGS = {
+  period: 'week',
+  start: '2026-11-09',
+  locale: 'hr',
+  trend: 'same',
+  betterWeeks: 0,
+  week: {
+    start: '2026-11-09',
+    end: '2026-11-15',
+    recorded: 6,
+    average: 66,
+    best: { date: '2026-11-14', score: 88 },
+    worst: { date: '2026-11-11', score: 41 },
+    plan: { total: 28, done: 18, partial: 2, missed: 8, moved: 3 },
+    rules: {
+      active: 12,
+      kept: 10,
+      broken: 2,
+      byRule: [{ title: 'Bez mobitela u krevetu', weight: 2, broken: 2, triggers: ['stres'] }],
+    },
+    sleep: { nights: 6, averageMinutes: 395, shortNights: 3, onTarget: 2, withTarget: 6 },
+    xp: 310,
+    rating: 3.2,
+    gaveUpDays: 0,
+    misses: { morning: 1, afternoon: 1, evening: 6 },
+    repeatedMisses: [{ title: 'Trening', count: 3 }],
+    calories: { days: 5, within: 2, over: 3, under: 0 },
+    money: { days: 4, spentCents: 6200, budgetCents: 5714, overDays: 2 },
+  },
+  previousWeek: {
+    start: '2026-11-02',
+    end: '2026-11-08',
+    recorded: 5,
+    average: 65,
+    best: { date: '2026-11-07', score: 80 },
+    worst: null,
+    plan: { total: 22, done: 15, partial: 1, missed: 6, moved: 2 },
+    rules: { active: 10, kept: 9, broken: 1, byRule: [] },
+    sleep: null,
+    xp: 260,
+    rating: 3,
+    gaveUpDays: 1,
+    misses: { morning: 0, afternoon: 2, evening: 4 },
+    repeatedMisses: [],
+    calories: null,
+    money: null,
+  },
+  days: [
+    { date: '2026-11-10', score: 58, rating: 2, comments: [{ title: 'Trening', outcome: 'not', comment: 'umoran nakon posla' }], broken: [] },
+    { date: '2026-11-11', score: 41, rating: 2, comments: [], broken: [{ title: 'Bez mobitela u krevetu', weight: 2, trigger: 'stres' }] },
+    { date: '2026-11-14', score: 88, rating: 5, comments: [], broken: [] },
+  ],
+  idea: { text: 'Prebaci jednu večernju aktivnost na jutro ili popodne.', carried: false },
+  previous: [
+    {
+      date: '2026-11-02',
+      summary: 'Tjedan je bio stabilan, a večeri su ti najteže.',
+      ideas: ['Večernji plan neka bude lakši: najviše jedna zahtjevna stvar poslije 18 h.'],
+      helpful: false,
+      comment: 'Nije išlo, navečer sam ionako mrtav.',
+      suggestionAccepted: true,
+    },
+  ],
+} as const;

@@ -67,6 +67,12 @@ describe('prikaz retka tjedne dijagnoze', () => {
     expect(weekLineParams({ key: 'noticed.none' }, 'hr')).toEqual({});
   });
 
+  it('parametar `…Cents` dobiva i formatirani euro bez nastavka', () => {
+    const params = weekLineParams({ key: 'noticed.moneyOver', params: { diffCents: 1500, days: 1 } }, 'hr');
+    expect(params).toMatchObject({ diffCents: 1500, days: 1 });
+    expect(String(params.diff)).toContain('15,00');
+  });
+
   it('neispravan datum ostaje kakav je', () => {
     expect(weekdayName('nije-datum', 'hr')).toBe('nije-datum');
     expect(weekdayName('', 'en')).toBe('');

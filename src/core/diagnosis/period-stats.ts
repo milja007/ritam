@@ -5,6 +5,7 @@
  * nisu potvrđeni.
  */
 import { parseClock } from '../time/clock';
+import { CALORIE_TOLERANCE } from '../trackers/trackers';
 import { SHORT_SLEEP_MINUTES } from './day-diagnosis';
 import type { DayStats } from './day-stats';
 
@@ -61,6 +62,17 @@ export type PeriodStats = {
   comments: PeriodComment[];
   /** Prosjek rezultata nakon kratkog sna naspram ostalih dana; `null` bez obje skupine. */
   shortSleepEffect: { shortAverage: number; restAverage: number } | null;
+  /**
+   * Kalorije (korak 31c): samo dani s unosom (uključen tracker s ciljem) — koliko ih je bilo
+   * unutar cilja (±10 %), iznad i ispod. `null` kad nijedan dan nema unosa. Stara spremljena
+   * statistika nema polje.
+   */
+  calories?: { days: number; within: number; over: number; under: number } | null;
+  /**
+   * Potrošnja dana s unosom naspram zbroja dnevnih dijelova limita tih dana (centi) i koliko je
+   * dana bilo iznad svog dijela. `null` bez ijednog dana s unosom.
+   */
+  money?: { days: number; spentCents: number; budgetCents: number; overDays: number } | null;
 };
 
 const mean = (values: readonly number[]): number | null =>
@@ -157,6 +169,11 @@ export function periodStats(start: string, end: string, length: number, input: r
   const shortAverage = roundedMean(withSleepAndScore.filter(isShort).map((day) => day.score ?? 0));
   const restAverage = roundedMean(withSleepAndScore.filter((day) => !isShort(day)).map((day) => day.score ?? 0));
 
+  const calorieDays = days.flatMap((day) => (day.stats.calories ? [day.stats.calories] : []));
+  const calorieStatus = (c: { total: number; goal: number }) =>
+    Math.abs(c.total - c.goal) <= c.goal * CALORIE_TOLERANCE ? 'within' : c.total > c.goal ? 'over' : 'under';
+  const moneyDays = days.flatMap((day) => (day.stats.money ? [day.stats.money] : []));
+
   return {
     start,
     end,
@@ -200,5 +217,23 @@ export function periodStats(start: string, end: string, length: number, input: r
     comments,
     shortSleepEffect:
       shortAverage === null || restAverage === null ? null : { shortAverage, restAverage },
+    calories:
+      calorieDays.length === 0
+        ? null
+        : {
+            days: calorieDays.length,
+            within: calorieDays.filter((c) => calorieStatus(c) === 'within').length,
+            over: calorieDays.filter((c) => calorieStatus(c) === 'over').length,
+            under: calorieDays.filter((c) => calorieStatus(c) === 'under').length,
+          },
+    money:
+      moneyDays.length === 0
+        ? null
+        : {
+            days: moneyDays.length,
+            spentCents: moneyDays.reduce((total, m) => total + m.spent, 0),
+            budgetCents: moneyDays.reduce((total, m) => total + m.dailyBudget, 0),
+            overDays: moneyDays.filter((m) => m.spent > m.dailyBudget).length,
+          },
   };
 }
