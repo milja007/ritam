@@ -4,6 +4,14 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
+- Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
+  (1) Trackeri u lokalnoj tjednoj/mjesečnoj/godišnjoj dijagnozi: statistika razdoblja broji dane s unosom kalorija (unutar/iznad/ispod) i potrošnju naspram zbroja dnevnih dijelova limita; Napredak „Kalorije: dani unutar cilja“, „Potrošnja“; pohvala/uočeno. i18n HR/EN.
+  (2) `write-report` tjedni način (prompt `llm-week-v1`, čista logika `_shared/week-report-logic.ts`, primjer, testovi): tjedan, dani ukratko, prošli tjedan, lokalni prijedlog tjedna, ranije tjedne dijagnoze s Pomoglo/Nije. Model piše Ukratko, Pohvale, Što smo primijetili, Velike probleme i jednu rečenicu „zašto baš ova promjena“ — **promjenu tjedna i dalje bira lokalna logika** (Probat ću / Ne sada, pauza 2 tjedna), model je ne mijenja.
+  (3) App: `sections.llm` uz tjednu dijagnozu (otpada kad se statistika tjedna promijeni), poziv samo za svjež tjedan (nedjelja ili ponedjeljak; arhiva ne troši pozive), bez oblaka lokalna kao dosad. `[~]` do deploya (pitanje 77).
+- Nije u konceptu (pitanje 91): pragovi pohvale/uočenog za trackere u tjednu; da model ne bira promjenu.
+- Gotovo (PR #52): 1–3. Korak 31c `[~]` do deploya `write-report` (pitanje 77). Mjesečna/godišnja riječima nisu rađene (sljedeći kandidat, isti obrazac).
+
 ## Otvorena pitanja (premještena iz PROGRESS 2026-11-18 18:43, još bez odgovora)
 88. **Zabrane u planovima (28)** — nije u konceptu, odabrano: zabrana pripada tjednu, mjesecu ili godini (zabrane iz onboardinga su „stalne“); u tjednu se vide i zabrane mjeseca/godine/stalne; najviše 5 po razdoblju; niz = dani zaredom kad vrijedi i držao si se (dan kad ne vrijedi se preskače, prošli dan bez odgovora prekida, današnji ne); zabrana s poviješću se ne briše (povijest ulazi u rezultate). U redu?
 87. **San (29)** — pragovi nisu u konceptu, odabrano: kratka noć = barem 1 h manje od cilja, jako kratka = 2 h; „Lakše jutro“ samo predlaže (otvara „Nešto je iskrslo“ s razlogom „Loš san“, 1 h), ne mijenja plan samo. Krevet: ako zadnjih noći (≥ 3) kasniš > 15 min, večerašnji cilj je ~15 min ranije od navike, korak po korak do cilja. Želiš li da i **wind-down obavijest** prati taj korak (umjesto ciljanog kreveta)?

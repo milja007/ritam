@@ -2,19 +2,17 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-18 · Sesija 21:43 — korak 31e: godišnja dijagnoza riječima
+- Plan (isti obrazac kao 31c/31d; koncept: godišnja = dan + tjedan + mjesec + godina, smjer najviše 2 ideje):
+  (1) `write-report` godišnji način (`llm-year-v1`): statistika godine i prošle (s trackerima), prosjek po mjesecima (12), sažeci mjesečnih dijagnoza te godine (bez 365 dana — previše), lokalni smjer, tjedne promjene godine, do 2 ranije godišnje s Pomoglo/Nije. Granice brojeva skaliraju s duljinom razdoblja (godina ima > 5000 blokova). Model piše riječi + jednu rečenicu uz smjer; smjer ne mijenja.
+  (2) App: `sections.llm` uz godišnju (otpada kad se statistika ili smjer promijene), poziv samo za svježu godinu (31. 12. ili 1. 1.), bez oblaka lokalna; kartica Godine koristi `llm.summary`.
+- Pitanje 91 vrijedi i za godinu.
+
 ## 2026-11-18 · Sesija 18:43 (nastavak) — korak 31d: mjesečna dijagnoza riječima
 - Plan (isti obrazac kao 31c; koncept: mjesečna = dan + tjedan + mjesec, najviše 2 ideje kao smjer):
   (1) `write-report` mjesečni način (`llm-month-v1`): statistika mjeseca i prošlog (s trackerima), dani mjeseca ukratko (uzorci po danu u tjednu i polovicama), lokalne ideje-smjer, odgovori na tjedne promjene, ranije mjesečne dijagnoze s Pomoglo/Nije. Model piše riječi + jednu rečenicu uz smjer; ideje ne mijenja.
   (2) App: `sections.llm` uz mjesečnu dijagnozu (otpada kad se statistika ili ideje promijene), poziv samo za svjež mjesec (zadnji dan ili dan poslije), bez oblaka lokalna.
 - Gotovo (PR #53): 1–2. Korak 31d `[~]` do deploya (pitanje 77). Pitanje 91 vrijedi i za mjesec (model ne mijenja smjer, samo svjež mjesec).
-
-## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
-- Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
-  (1) Trackeri u lokalnoj tjednoj/mjesečnoj/godišnjoj dijagnozi: statistika razdoblja broji dane s unosom kalorija (unutar/iznad/ispod) i potrošnju naspram zbroja dnevnih dijelova limita; Napredak „Kalorije: dani unutar cilja“, „Potrošnja“; pohvala/uočeno. i18n HR/EN.
-  (2) `write-report` tjedni način (prompt `llm-week-v1`, čista logika `_shared/week-report-logic.ts`, primjer, testovi): tjedan, dani ukratko, prošli tjedan, lokalni prijedlog tjedna, ranije tjedne dijagnoze s Pomoglo/Nije. Model piše Ukratko, Pohvale, Što smo primijetili, Velike probleme i jednu rečenicu „zašto baš ova promjena“ — **promjenu tjedna i dalje bira lokalna logika** (Probat ću / Ne sada, pauza 2 tjedna), model je ne mijenja.
-  (3) App: `sections.llm` uz tjednu dijagnozu (otpada kad se statistika tjedna promijeni), poziv samo za svjež tjedan (nedjelja ili ponedjeljak; arhiva ne troši pozive), bez oblaka lokalna kao dosad. `[~]` do deploya (pitanje 77).
-- Nije u konceptu (pitanje 91): pragovi pohvale/uočenog za trackere u tjednu; da model ne bira promjenu.
-- Gotovo (PR #52): 1–3. Korak 31c `[~]` do deploya `write-report` (pitanje 77). Mjesečna/godišnja riječima nisu rađene (sljedeći kandidat, isti obrazac).
 
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
