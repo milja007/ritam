@@ -39,6 +39,7 @@ import {
 import {
   checkinItemSchema,
   checkinSchema,
+  noteSchema,
   reportSchema,
   ruleLogSchema,
   ruleSchema,
@@ -696,6 +697,41 @@ export function answerReportSuggestion(
     if (row.suggestionAccepted !== accepted) {
       tx.update(reports)
         .set({ suggestionAccepted: accepted, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return true;
+  });
+}
+
+export type ReportFeedback = {
+  /** Pomoglo (`true`) / Nije pomoglo (`false`); `null` = bez odgovora. */
+  helpful: boolean | null;
+  /** Slobodan komentar; prazan tekst se sprema kao `null`. */
+  comment: string | null;
+};
+
+/**
+ * Povratna informacija ispod dijagnoze (korak 31: „Pomoglo / Nije pomoglo“ + komentar). Vraća
+ * `false` kad dijagnoze nema. Ista vrijednost ne piše (nema praznog synca); promjena pomakne
+ * `updatedAt`, da je sync prenese. Ponovno generiranje dijagnoze odgovor čuva.
+ */
+export function setReportFeedback(
+  db: RitamDb,
+  userId: string,
+  period: ReportPeriod,
+  periodStart: LocalDate,
+  feedback: ReportFeedback,
+  deps: RepoDeps = defaultRepoDeps,
+): boolean {
+  const parsed = noteSchema.nullable().parse(feedback.comment);
+  const comment = parsed === null || parsed === '' ? null : parsed;
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, period, periodStart)).get();
+    if (!row) return false;
+    if (row.helpful !== feedback.helpful || row.feedbackComment !== comment) {
+      tx.update(reports)
+        .set({ helpful: feedback.helpful, feedbackComment: comment, updatedAt: deps.now().toISOString() })
         .where(eq(reports.id, row.id))
         .run();
     }

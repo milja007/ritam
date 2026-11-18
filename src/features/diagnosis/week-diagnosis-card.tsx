@@ -10,6 +10,7 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { WEEK_TREND_ARROW, WEEK_TREND_TONE, WeekDiagnosisView, weekLineParams } from './week-diagnosis-view';
 import type { WeekReportState } from './week-report';
 
@@ -126,6 +127,7 @@ export function WeekDiagnosisCard({ report, rangeLabel, current }: WeekDiagnosis
                   {t('diagnosis.week.title')}
                 </Text>
                 <WeekDiagnosisView diagnosis={diagnosis} accepted={report.accepted} onAnswer={report.answer} />
+                <DiagnosisFeedback period="week" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>
           </GradientBackground>

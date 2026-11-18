@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-18 · Sesija 15:43 — korak 31: dijagnoza s LLM-om
+- Plan (provjeren protiv koncepta „Dijagnoze“: isti red sekcija, LLM dobiva sve iz razdoblja i prethodne dijagnoze — prati je li savjet upalio; promptovi verzionirani i testirani na primjerima; ispod svake dijagnoze Pomoglo / Nije pomoglo + komentar):
+  (1) Pomoglo / Nije pomoglo + komentar ispod dnevne, tjedne, mjesečne i godišnje dijagnoze — polja `helpful` / `feedback_comment` već postoje lokalno i u Supabaseu (bez migracije).
+  (2) `write-report` Edge Function: prompt `llm-day-v1` u repou, čista logika u `_shared/report-logic.ts` (zahtjev, poruka modelu, provjera odgovora: ista struktura i granice), testovi s primjerom dana. Kontekst: statistika dana i jučer, komentari checkliste, zabrane, san, XP, zadnje dijagnoze s odgovorom Pomoglo/Nije i komentarom.
+  (3) App: s oblakom i sesijom nakon večernjeg upita traži tekst modela i sprema ga uz lokalnu dijagnozu (brojke „Napretka“ ostaju lokalne); greška ili bez oblaka → lokalna kao dosad. `[~]` do deploya (Borna).
+
 ## 2026-11-18 · Sesija 12:43 — korak 28: zabrane unutar planova
 - Prioritet „Žar“ istekao 2026-11-17; 20–22 čekaju deploy (Borna), pa ide faza 2 redom: 26 traži deploy `plan-day` za provjeru → prvo 28.
 - Plan (provjeren protiv koncepta „zabrane se postavljaju unutar planova godine/mjeseca/tjedna; naziv, kad vrijedi, razlog, težina 1–3; svaka ima streak i lagano Držao sam se / Prekršio“): (1) zabrana dobiva razdoblje `period` + `period_start` (oba `null` = stalna, kao zabrane iz onboardinga); lokalna migracija 0014 + Supabase migracija (remote = Borna, pitanje 84). (2) Core: `isRuleActiveOn` (dan u tjednu + unutar razdoblja), `rulesActiveOn` ga koristi → večernji upit pita samo zabrane koje taj dan vrijede; `ruleStreak` (dani zaredom kad je vrijedila i držao si se; današnji neodgovoren dan ne prekida, neodgovoren prošli prekida, dani kad ne vrijedi se preskaču) + najbolji niz. (3) Repo: `createRule` s razdobljem, `listRuleLogs`, `deleteRule` samo bez povijesti. (4) UI: kartica „Zabrane“ na Tjednu/Mjesecu/Godini — zabrane koje vrijede u tom razdoblju (i šire: godina/mjesec/stalne, s oznakom izvora), niz žarom po zabrani, dodavanje za to razdoblje (naziv, zašto, težina, dani), prošlo razdoblje samo čitanje.

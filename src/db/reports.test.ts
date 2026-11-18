@@ -17,6 +17,7 @@ import {
   markReportSeen,
   saveEveningCheckin,
   saveSettings,
+  setReportFeedback,
   type RuleInput,
 } from './repos';
 import { reports } from './schema';
@@ -227,5 +228,65 @@ describe('listDayReportArchive', () => {
   it('bez ijedne dijagnoze arhiva je prazna', async () => {
     const { db } = await setup();
     expect(await listDayReportArchive(db, USER, DATE, 10)).toEqual([]);
+  });
+});
+
+describe('reports repo — povratna informacija (korak 31)', () => {
+  async function withDay() {
+    const { db, deps, block, rule } = await setup();
+    const a = await block(DATE, 'Učenje', '09:00', '10:00');
+    saveEveningCheckin(db, USER, draft(DATE, [ans(a.id, 'ok')], rule.id, true, 4), deps);
+    generateDayReport(db, USER, DATE, deps);
+    return { db, deps, block, rule, a };
+  }
+
+  it('bez dijagnoze vraća false i ništa ne piše', async () => {
+    const { db, deps } = await setup();
+    expect(setReportFeedback(db, USER, 'day', DATE, { helpful: true, comment: null }, deps)).toBe(false);
+    expect(await db.select().from(reports).all()).toHaveLength(0);
+  });
+
+  it('sprema Pomoglo i komentar (trim, prazno = null), pomiče updatedAt', async () => {
+    const { db, deps } = await withDay();
+    const before = await getReport(db, USER, 'day', DATE);
+    expect(setReportFeedback(db, USER, 'day', DATE, { helpful: true, comment: '  pogodilo  ' }, deps)).toBe(true);
+    const after = await getReport(db, USER, 'day', DATE);
+    expect(after).toMatchObject({ helpful: true, feedbackComment: 'pogodilo' });
+    expect((after?.updatedAt ?? '') > (before?.updatedAt ?? '')).toBe(true);
+
+    setReportFeedback(db, USER, 'day', DATE, { helpful: false, comment: '   ' }, deps);
+    expect(await getReport(db, USER, 'day', DATE)).toMatchObject({ helpful: false, feedbackComment: null });
+  });
+
+  it('ista vrijednost ne mijenja updatedAt (nema praznog synca)', async () => {
+    const { db, deps } = await withDay();
+    setReportFeedback(db, USER, 'day', DATE, { helpful: true, comment: 'x' }, deps);
+    const first = await getReport(db, USER, 'day', DATE);
+    setReportFeedback(db, USER, 'day', DATE, { helpful: true, comment: ' x ' }, deps);
+    expect((await getReport(db, USER, 'day', DATE))?.updatedAt).toBe(first?.updatedAt);
+  });
+
+  it('ponovno generiranje dijagnoze čuva odgovor', async () => {
+    const { db, deps, rule, a } = await withDay();
+    setReportFeedback(db, USER, 'day', DATE, { helpful: false, comment: 'previše općenito' }, deps);
+    saveEveningCheckin(db, USER, draft(DATE, [ans(a.id, 'not')], rule.id, true, 2), deps);
+    expect(generateDayReport(db, USER, DATE, deps).report).toMatchObject({
+      helpful: false,
+      feedbackComment: 'previše općenito',
+    });
+  });
+
+  it('predug komentar se odbija', async () => {
+    const { db, deps } = await withDay();
+    expect(() =>
+      setReportFeedback(db, USER, 'day', DATE, { helpful: true, comment: 'a'.repeat(2001) }, deps),
+    ).toThrow();
+    expect((await getReport(db, USER, 'day', DATE))?.helpful).toBeNull();
+  });
+
+  it('ne dira tuđu dijagnozu', async () => {
+    const { db, deps } = await withDay();
+    expect(setReportFeedback(db, 'user-2', 'day', DATE, { helpful: true, comment: null }, deps)).toBe(false);
+    expect((await getReport(db, USER, 'day', DATE))?.helpful).toBeNull();
   });
 });

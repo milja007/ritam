@@ -9,6 +9,7 @@ import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { MonthDiagnosisView } from './month-diagnosis-view';
 import { useMonthReport } from './month-report';
 
@@ -54,6 +55,7 @@ function MonthSection({ month, date }: { month: string; date: string }) {
         {monthTitle(month, i18n.language)}
       </Text>
       <MonthDiagnosisView diagnosis={diagnosis} />
+      <DiagnosisFeedback period="month" periodStart={diagnosis.start} />
     </View>
   );
 }

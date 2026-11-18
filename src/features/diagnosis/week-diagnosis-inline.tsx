@@ -14,6 +14,7 @@ import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { WeekDiagnosisView } from './week-diagnosis-view';
 import { useWeekReport } from './week-report';
 
@@ -117,6 +118,7 @@ function WeekSection({ start, date }: { start: string; date: string }) {
         {range}
       </Text>
       <WeekDiagnosisView diagnosis={diagnosis} accepted={report.accepted} onAnswer={report.answer} />
+      <DiagnosisFeedback period="week" periodStart={start} />
     </View>
   );
 }

@@ -927,6 +927,22 @@
           "keepRhythm": "No new direction — keep the rhythm you have."
         }
       }
+    },
+    "feedback": {
+      "overline": "Your take",
+      "question": "Did this diagnosis help?",
+      "yes": "Helped",
+      "no": "Didn't help",
+      "thanksYes": "Glad to hear it. If you like, write what hit the mark.",
+      "thanksNo": "Thanks for being honest. What was missing?",
+      "commentYes": "What hit the mark? (optional)",
+      "commentNo": "What was missing? (optional)",
+      "placeholder": "E.g. the earlier workout idea worked",
+      "saveComment": "Save comment",
+      "commentSaved": "Comment saved.",
+      "savedYes": "Saved: helped.",
+      "savedNo": "Saved: didn't help.",
+      "error": "Saving failed. Try again."
     }
   },
   "score": {

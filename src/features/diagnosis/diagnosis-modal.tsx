@@ -8,6 +8,7 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { DayDiagnosisView } from './day-diagnosis-view';
 import { useDayReport } from './day-report';
 import { PeriodDiagnosesInline } from './period-diagnoses-inline';
@@ -37,6 +38,7 @@ export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayL
             ) : report.diagnosis ? (
               <>
                 <DayDiagnosisView diagnosis={report.diagnosis} />
+                <DiagnosisFeedback period="day" periodStart={date} />
                 <PeriodDiagnosesInline date={date} />
               </>
             ) : (

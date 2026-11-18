@@ -150,4 +150,16 @@ describe('year diagnosis i18n', () => {
       startDate: '28. siječnja',
     });
   });
+
+  it.each([
+    ['hr', hr],
+    ['en', en],
+  ])('%s ima tekstove povratne informacije (korak 31)', (_lang, dict) => {
+    const keys = ['overline', 'question', 'yes', 'no', 'thanksYes', 'thanksNo', 'commentYes', 'commentNo',
+      'placeholder', 'saveComment', 'commentSaved', 'savedYes', 'savedNo', 'error'];
+    for (const key of keys) {
+      const value = lookup(dict, `diagnosis.feedback.${key}`);
+      expect(typeof value === 'string' && value.length > 0).toBe(true);
+    }
+  });
 });

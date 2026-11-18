@@ -9,6 +9,7 @@ import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
+import { DiagnosisFeedback } from './diagnosis-feedback';
 import { MonthDiagnosisView, useMonthLineText } from './month-diagnosis-view';
 import type { MonthReportState } from './month-report';
 import { WEEK_TREND_ARROW, WEEK_TREND_TONE } from './week-diagnosis-view';
@@ -108,6 +109,7 @@ export function MonthDiagnosisCard({ report, monthLabel, current }: MonthDiagnos
                   {t('diagnosis.month.title')}
                 </Text>
                 <MonthDiagnosisView diagnosis={diagnosis} />
+                <DiagnosisFeedback period="month" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>
           </GradientBackground>
