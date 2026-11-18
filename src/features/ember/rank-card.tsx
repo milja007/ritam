@@ -1,3 +1,4 @@
+import { useIsFocused } from 'expo-router';
 import { useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,8 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const [explained, setExplained] = useState(false);
+  // Profil ostaje montiran kad se ode na drugi tab; plamen tada stoji i ne troši sličice.
+  const focused = useIsFocused();
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 
   if (state.status === 'loading') {
@@ -72,7 +75,7 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
         accessibilityState={{ expanded: explained }}
         accessibilityLabel={`${t('rank.a11y', { rank: progress.rank, message })} ${heat}. ${detail}`}
         accessibilityHint={t('orb.hint')}>
-        <OrbFlame flame={flame} size={ORB} />
+        <OrbFlame flame={flame} size={ORB} active={focused} />
         <View style={styles.heroText}>
           <Text variant="overline" tone="accent">
             {t('rank.label', { rank: progress.rank })}

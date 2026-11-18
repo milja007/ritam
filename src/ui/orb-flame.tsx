@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -12,9 +12,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { shouldIgnite, type EmberLevel } from '@/core/ember';
-import { ORB_DASHED_INSET, orbFlameColors, type OrbFlame as OrbFlameState } from '@/core/gamification';
+import { ORB_DASHED_INSET, orbFireMotion, orbFlameColors, type OrbFlame as OrbFlameState } from '@/core/gamification';
 import { IGNITE_DURATION_MS, IGNITE_SWELL_MS, ORB_FLICKER_RATIO, ORB_ORBIT_MS } from '@/core/theme';
 
+import { OrbFire } from './orb-fire';
+import { orbFireEffect } from './orb-fire-shader';
 import { useAppTheme } from './theme';
 
 /** Promjer iskre kao udio promjera avatara. */
@@ -24,21 +26,27 @@ type OrbFlameProps = {
   flame: OrbFlameState;
   /** Promjer cijelog avatara (s prstenovima). */
   size?: number;
+  /** `false` dok ekran nije vidljiv (tab ostaje montiran): plamen stoji i ne troši sličice. */
+  active?: boolean;
 };
 
 /**
  * Orb-plamen avatar (korak 33, platno „Profil“): dva prstena, jezgra čija veličina prati rang i
  * svjetlina zadnjih 7 dana, aureola koja diše i iskre koje kruže po crtkanom prstenu dok traje niz.
- * Ugašen plamen je samo obrub jezgre; kad se prvi put upali dok je ekran otvoren, aureola bljesne
+ * U jezgri gori pravi plamen na Skii (`OrbFire`: jezici, žar, žeravice); bez Skie (web) gradijent
+ * sa žarištem koje treperi. Ugašen plamen je samo obrub jezgre; kad se prvi put upali dok je ekran otvoren, aureola bljesne
  * (isto pravilo kao paljenje žara dana, `shouldIgnite`). Uz „smanji kretanje“ sve stoji. Čisto ukrasno — značenje
  * (rang, toplina, niz) nosi tekst uz avatar.
  */
-export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
+export function OrbFlame({ flame, size = 116, active = true }: OrbFlameProps) {
   const { scheme, flame: palette } = useAppTheme();
   const colors = orbFlameColors(flame.heat, scheme, palette);
   const reduceMotion = useReducedMotion();
   const lit = flame.heat !== 'unlit';
   const { pulseMs, sparks } = flame;
+  // Pravi plamen na Skii (korak 33); bez nje (web, shader se ne prevede) ostaje gradijent koji treperi.
+  const fire = useMemo(() => (Platform.OS === 'web' ? null : orbFireEffect()), []);
+  const motion = orbFireMotion(flame.heat);
 
   const breath = useSharedValue(0.5);
   const flicker = useSharedValue(0.5);
@@ -53,16 +61,19 @@ export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
     breath.value = 0;
     flicker.value = 0;
     breath.value = withRepeat(withTiming(1, { duration: pulseMs, easing: Easing.inOut(Easing.quad) }), -1, true);
-    flicker.value = withRepeat(
-      withTiming(1, { duration: Math.round(pulseMs * ORB_FLICKER_RATIO), easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true,
-    );
+    // Žarište treperi samo u prikazu bez Skie; pravi plamen se giba sam.
+    if (fire === null) {
+      flicker.value = withRepeat(
+        withTiming(1, { duration: Math.round(pulseMs * ORB_FLICKER_RATIO), easing: Easing.inOut(Easing.sin) }),
+        -1,
+        true,
+      );
+    }
     return () => {
       cancelAnimation(breath);
       cancelAnimation(flicker);
     };
-  }, [breath, flicker, pulseMs, reduceMotion]);
+  }, [breath, fire, flicker, pulseMs, reduceMotion]);
 
   useEffect(() => {
     if (reduceMotion || sparks <= 0) {
@@ -138,7 +149,11 @@ export function OrbFlame({ flame, size = 116 }: OrbFlameProps) {
         />
       ) : null}
 
-      {lit ? (
+      {lit && fire !== null && motion !== null ? (
+        <Animated.View style={[{ width: core, height: core, overflow: 'hidden' }, round, coreStyle]}>
+          <OrbFire effect={fire} size={core} motion={motion} colors={colors} still={reduceMotion || !active} />
+        </Animated.View>
+      ) : lit ? (
         <Animated.View
           style={[
             { width: core, height: core, overflow: 'hidden' },
