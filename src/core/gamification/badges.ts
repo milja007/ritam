@@ -46,7 +46,7 @@ export type BadgeDay = {
   score: number;
   final: boolean;
   /** Dijelovi rezultata 0–1; `rules` = 1 znači dan bez prekršaja. */
-  parts?: Readonly<Record<ScorePart, number | null>>;
+  parts?: Readonly<Partial<Record<ScorePart, number | null>>>;
 };
 
 export type BadgeProgress = {

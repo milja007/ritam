@@ -3,8 +3,11 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import type { DayDiagnosis, DiagnosisLine, ProgressRow, Trend } from '@/core/diagnosis';
 import { radius, spacing } from '@/core/theme';
+import { formatEuro, formatKcal } from '@/features/trackers/format';
 import { Text, type TextProps } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
+
+import { diagnosisLineText } from './line-text';
 
 const TREND_ARROW: Record<Trend, string> = { better: '↑', same: '→', worse: '↓', first: '✦' };
 // Bez crvenog: "lošije" je informacija, ne kazna.
@@ -24,9 +27,9 @@ const LINE_SECTIONS: readonly LineSection[] = ['praise', 'noticed', 'problems', 
  * Veliki problemi → Ideje za napredak. Retci su i18n ključevi, pa se prikazuju na jeziku appa.
  */
 export function DayDiagnosisView({ diagnosis, writing = false }: { diagnosis: DayDiagnosis; writing?: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useAppTheme();
-  const lineText = (line: DiagnosisLine) => t(`diagnosis.lines.${line.key}`, line.params ?? {});
+  const lineText = (line: DiagnosisLine) => diagnosisLineText(t, line, i18n.language);
   // Korak 31: riječi modela zamjenjuju lokalne retke; brojke i trend ostaju lokalni.
   const { llm } = diagnosis;
   const summaryText = llm ? llm.summary : lineText(diagnosis.summary);
@@ -119,6 +122,13 @@ function ProgressRowView({ row }: { row: ProgressRow }) {
         return t('diagnosis.value.ofTotal', { value: number(value), total: number(total ?? 0) });
       case 'sleep':
         return t('diagnosis.value.duration', { hours: Math.floor(value / 60), minutes: value % 60 });
+      case 'calories':
+        return t('diagnosis.value.kcal', { value: formatKcal(value, i18n.language), goal: formatKcal(total ?? 0, i18n.language) });
+      case 'money':
+        return t('diagnosis.value.money', {
+          value: formatEuro(value, i18n.language),
+          budget: formatEuro(total ?? 0, i18n.language),
+        });
       case 'xp':
         return t('diagnosis.value.xp', { xp: number(value) });
       case 'rating':

@@ -495,7 +495,9 @@
       "xp": "XP",
       "rating": "Day rating",
       "streak": "Streak",
-      "score": "Day score"
+      "score": "Day score",
+      "calories": "Calories",
+      "money": "Spending"
     },
     "value": {
       "ofTotal": "{{value}}/{{total}}",
@@ -503,7 +505,9 @@
       "xp": "+{{xp}} XP",
       "rating": "{{rating}}/5",
       "days": "{{days}} d",
-      "score": "{{score}}/100"
+      "score": "{{score}}/100",
+      "kcal": "{{value}} / {{goal}} kcal",
+      "money": "{{value}} / {{budget}}"
     },
     "yesterday": "yesterday {{value}}",
     "lines": {
@@ -525,7 +529,9 @@
         "streak": "{{days}} days in a row of check-ins. The habit is forming.",
         "goodRating": "You rated the day {{rating}}/5 — remember what helped.",
         "showedUp": "You took a minute to log your day. That's exactly how habits are built.",
-        "gaveUpHonest": "You closed the day honestly instead of letting it slip. That is part of the rhythm too — tomorrow starts fresh."
+        "gaveUpHonest": "You closed the day honestly instead of letting it slip. That is part of the rhythm too — tomorrow starts fresh.",
+        "caloriesWithin": "Calories within your goal — a good sense of balance.",
+        "moneyWithin": "Spending within the daily share of your limit."
       },
       "noticed": {
         "comment": {
@@ -542,7 +548,10 @@
         "goodRatingDespitePlan": "The plan didn't get done, yet the day felt good — maybe the plan didn't fit the day.",
         "none": "No particular patterns today.",
         "gaveUp": "You gave up on the rest of today's plan. What happened: “{{note}}”",
-        "gaveUpNoNote": "You gave up on the rest of today's plan (no note on what happened)."
+        "gaveUpNoNote": "You gave up on the rest of today's plan (no note on what happened).",
+        "caloriesOver": "Calories {{diff}} kcal over your goal.",
+        "caloriesUnder": "Calories {{diff}} kcal under your goal — did you get to eat properly?",
+        "moneyOver": "Spending {{diff}} over the daily share of your limit."
       },
       "problems": {
         "lowPlan": "Less than half of the plan got done ({{done}}/{{total}}).",
@@ -989,7 +998,8 @@
     "weight": "{{weight}}% of the score",
     "a11y": "{{area}}, {{weight}}% of the score",
     "always": "Always",
-    "note": "Your plan is always part of the score and counts the most. Changes apply from today — past days keep the scoring they had. The day diagnosis only covers the selected areas."
+    "note": "Your plan is always part of the score and counts the most. Changes apply from today — past days keep the scoring they had. The day diagnosis only covers the selected areas.",
+    "trackers": "Trackers that are on (calories, money) count toward a day's score when that day has entries, with a weight of 15 each — the other shares shrink proportionally. A tracker turned off no longer counts, past days included."
   },
   "todayPlan": {
     "overline": "Today · {{day}}",
@@ -1220,8 +1230,8 @@
         "energy": "no scored sleep yet"
       },
       "tracker": {
-        "health": "comes with the calorie tracker",
-        "money": "comes with the money tracker"
+        "health": "turn on the calorie tracker in Profile",
+        "money": "turn on the money tracker in Profile"
       },
       "valueA11y": "{{stat}}: {{value}} out of 100",
       "emptyA11y": "{{stat}}: {{reason}}",
@@ -1648,13 +1658,13 @@
     "settings": {
       "title": "Trackers",
       "calories": "Calories",
-      "caloriesDetail": "Daily goal, logging per meal and an evening check.",
+      "caloriesDetail": "Daily goal, logging per meal and an evening check. Counts toward your daily score and diagnosis only when on.",
       "goal": "Daily goal (kcal)",
       "lowGoal": "A goal under 1,200 kcal is unusually low. Unless a doctor or dietitian recommended it, consider a higher goal.",
       "goalInvalid": "The goal must be between {{min}} and {{max}} kcal.",
       "saveGoal": "Save goal",
       "money": "Money",
-      "moneyDetail": "A spending limit for a day, week or month, and logging what you spend.",
+      "moneyDetail": "A spending limit for a day, week or month, and logging what you spend. Counts toward your daily score and diagnosis only when on.",
       "limit": "Spending limit (€, empty = no limit)",
       "period": "Limit period",
       "periods": {

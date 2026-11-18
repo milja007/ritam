@@ -8,13 +8,15 @@ import {
   scheduleBlockSchema,
   selectedScoreAreas,
   settingsSchema,
+  trackerEntrySchema,
   type LocalDate,
 } from '@/core/domain';
 import { isEveningCheckinComplete, mainStreak } from '@/core/gamification';
 import { dayScore, type ScoredDay } from '@/core/progress';
+import { trackerDay } from '@/core/trackers';
 
 import type { RitamDb } from '../db';
-import { checkins, ruleLogs, rules, scheduleBlocks, settings } from '../schema';
+import { checkins, ruleLogs, rules, scheduleBlocks, settings, trackerEntries } from '../schema';
 
 export type DayScoreHistory = {
   /** Ocijenjeni dani uzlazno (dani bez ijednog dijela rezultata se izostavljaju). */
@@ -85,6 +87,15 @@ export function listDayScores(db: RitamDb, userId: string, through: LocalDate): 
         : [],
     );
     const checkinsByDate = groupByDate(userCheckins.filter((checkin) => dates.has(checkin.date)));
+    const entriesByDate = groupByDate(
+      tx
+        .select()
+        .from(trackerEntries)
+        .where(eq(trackerEntries.userId, userId))
+        .all()
+        .map((row) => trackerEntrySchema.parse(row))
+        .filter((entry) => dates.has(entry.date)),
+    );
     const settingsRow = tx.select().from(settings).where(eq(settings.userId, userId)).get();
     const sleepSettings = settingsRow ? settingsSchema.parse(settingsRow) : null;
     // Trenutni odabir (prije onboardinga samo plan) vrijedi za dan u tijeku i za upite bez snimke.
@@ -104,6 +115,7 @@ export function listDayScores(db: RitamDb, userId: string, through: LocalDate): 
         sleepSettings,
         xpEvents: [],
         streak: 0,
+        trackers: trackerDay(entriesByDate.get(date) ?? [], sleepSettings, date),
       });
       // Zaključen dan zadrži područja koja su tada vrijedila (P48).
       const evening = dayCheckins.find((checkin) => checkin.kind === 'evening');

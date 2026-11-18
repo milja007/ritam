@@ -6,6 +6,7 @@ import { sleepDurationMinutes, targetBedtimeFor, type MorningSleepSettings } fro
 import type { Checkin, CheckinItem, Rule, RuleLog, ScheduleBlock, XpEvent } from '../domain';
 import { bedtimeDeviationMinutes, BEDTIME_TOLERANCE_MINUTES, xpForDate } from '../gamification/xp';
 import { parseClock } from '../time/clock';
+import type { TrackerDay } from '../trackers';
 
 export type DayStatsInput = {
   date: string;
@@ -22,6 +23,8 @@ export type DayStatsInput = {
   xpEvents: readonly Pick<XpEvent, 'date' | 'amount'>[];
   /** Glavni streak na kraju tog dana. */
   streak: number;
+  /** Podaci trackera tog dana (`trackerDay`); bez polja = trackeri ne ulaze. */
+  trackers?: TrackerDay;
 };
 
 export type PlanStats = {
@@ -76,6 +79,9 @@ export type DayStats = {
   gaveUpNote?: string | null;
   /** Djelomično / nije odrađeni blokovi (za uzorke po dobu dana). */
   misses: MissedBlock[];
+  /** Trackeri (korak 31b): samo uključeni, s ciljem/limitom i unosima tog dana; stara statistika bez polja. */
+  calories?: { total: number; goal: number } | null;
+  money?: { spent: number; dailyBudget: number } | null;
 };
 
 function planStats(blocks: DayStatsInput['blocks']): PlanStats {
@@ -162,5 +168,7 @@ export function dayStats(input: DayStatsInput): DayStats {
     gaveUp: input.evening?.gaveUp === true,
     gaveUpNote: gaveUpNote.length > 0 ? gaveUpNote : null,
     misses,
+    calories: input.trackers?.calories ?? null,
+    money: input.trackers?.money ?? null,
   };
 }

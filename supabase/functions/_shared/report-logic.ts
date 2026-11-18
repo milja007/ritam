@@ -35,6 +35,10 @@ export type ReportDay = {
   streak: number;
   gaveUp: boolean;
   gaveUpNote: string | null;
+  /** Trackeri (korak 31b): samo uključeni i s unosima tog dana; stari klijent bez polja → `null`. */
+  calories: { total: number; goal: number } | null;
+  /** Potrošnja dana i dnevni dio limita, u centima. */
+  money: { spentCents: number; dailyBudgetCents: number } | null;
 };
 
 /** Kratak trag ranijeg dana — za uzorke („tri utorka zaredom umoran“). */
@@ -188,6 +192,16 @@ function parseDay(raw: unknown): ReportDay | null {
     streak: raw.streak,
     gaveUp: raw.gaveUp === true,
     gaveUpNote: clip(raw.gaveUpNote, REPORT_LIMITS.note),
+    calories:
+      isRecord(raw.calories) && isInt(raw.calories.total, 0, 100_000) && isInt(raw.calories.goal, 1, 10_000)
+        ? { total: raw.calories.total, goal: raw.calories.goal }
+        : null,
+    money:
+      isRecord(raw.money) &&
+      isInt(raw.money.spentCents, 0, 1_000_000_000) &&
+      isInt(raw.money.dailyBudgetCents, 0, 1_000_000_000)
+        ? { spentCents: raw.money.spentCents, dailyBudgetCents: raw.money.dailyBudgetCents }
+        : null,
   };
 }
 
@@ -318,6 +332,11 @@ function dayLines(day: ReportDay): string[] {
     lines.push(`San: ${minutesText(day.sleep.minutes)}${target}`);
   } else {
     lines.push('San: nije zapisan');
+  }
+  if (day.calories !== null) lines.push(`Kalorije: ${day.calories.total} kcal (cilj ${day.calories.goal})`);
+  if (day.money !== null) {
+    const euro = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+    lines.push(`Potrošnja: ${euro(day.money.spentCents)} (dnevni dio limita ${euro(day.money.dailyBudgetCents)})`);
   }
   lines.push(`XP: ${day.xp} · niz: ${day.streak} dana · ocjena dana: ${day.rating === null ? '—' : `${day.rating}/5`}`);
   if (day.note !== null) lines.push(`Bilješka korisnika: ${quote(day.note)}`);

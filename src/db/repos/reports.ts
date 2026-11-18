@@ -49,6 +49,7 @@ import {
   scheduleBlockSchema,
   selectedScoreAreas,
   settingsSchema,
+  trackerEntrySchema,
   xpEventSchema,
   type LocalDate,
   type Report,
@@ -56,6 +57,7 @@ import {
 } from '@/core/domain';
 import { dayScore, weekStart, type ScorePart } from '@/core/progress';
 import { addDays } from '@/core/time/local-date';
+import { trackerDay } from '@/core/trackers';
 
 import type { RitamDb } from '../db';
 import {
@@ -66,6 +68,7 @@ import {
   rules,
   scheduleBlocks,
   settings,
+  trackerEntries,
   xpEvents,
 } from '../schema';
 import type { RitamTx } from './block-xp';
@@ -187,6 +190,13 @@ function readDayStats(
     .where(and(eq(xpEvents.userId, userId), eq(xpEvents.date, date)))
     .all()
     .map((row) => xpEventSchema.parse(row));
+  // Trackeri (korak 31b): unosi tog dana; ulaze samo uključeni (`trackerDay`).
+  const entries = tx
+    .select()
+    .from(trackerEntries)
+    .where(and(eq(trackerEntries.userId, userId), eq(trackerEntries.date, date)))
+    .all()
+    .map((row) => trackerEntrySchema.parse(row));
 
   return dayStats({
     date,
@@ -198,6 +208,7 @@ function readDayStats(
     morning,
     sleepSettings,
     xpEvents: xp,
+    trackers: trackerDay(entries, sleepSettings, date),
     streak: mainStreak(eveningRows, date).current,
   });
 }

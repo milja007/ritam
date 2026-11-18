@@ -11,6 +11,7 @@ import { dayScore, SCORE_PARTS, scoreTrend, type ScorePart } from '../progress';
 import { parseClock } from '../time/clock';
 import type { DayStats } from './day-stats';
 import { llmDayTextSchema } from './llm-day';
+import { CALORIE_TOLERANCE } from '../trackers/trackers';
 
 /** Verzija pravila (sprema se kao `reports.prompt_version`; LLM dijagnoza ima svoju). */
 export const LOCAL_DAY_DIAGNOSIS_VERSION = 'local-day-v2';
@@ -28,7 +29,7 @@ const MAX_PRAISE = 3;
 export const TRENDS = ['better', 'same', 'worse', 'first'] as const;
 export type Trend = (typeof TRENDS)[number];
 
-export const METRICS = ['score', 'plan', 'rules', 'sleep', 'xp', 'rating', 'streak'] as const;
+export const METRICS = ['score', 'plan', 'rules', 'sleep', 'calories', 'money', 'xp', 'rating', 'streak'] as const;
 export type Metric = (typeof METRICS)[number];
 
 /** Svi retci lokalne dijagnoze (i18n `diagnosis.lines.<ključ>`). */
@@ -42,6 +43,8 @@ export const DIAGNOSIS_LINE_KEYS = [
   'praise.goodRating',
   'praise.showedUp',
   'praise.gaveUpHonest',
+  'praise.caloriesWithin',
+  'praise.moneyWithin',
   'noticed.gaveUp',
   'noticed.gaveUpNoNote',
   'noticed.comment.partial',
@@ -53,6 +56,9 @@ export const DIAGNOSIS_LINE_KEYS = [
   'noticed.lowRatingDespitePlan',
   'noticed.goodRatingDespitePlan',
   'noticed.none',
+  'noticed.caloriesOver',
+  'noticed.caloriesUnder',
+  'noticed.moneyOver',
   'problems.lowPlan',
   'problems.heavyRule',
   'problems.ruleBroken',
@@ -202,6 +208,28 @@ function progressRows(
       good: null,
     });
   }
+  // Trackeri (31b): samo dani s unosima; „dobro“ = unutar cilja / dnevnog dijela limita.
+  if (today.calories) {
+    const within = caloriesWithin(today.calories);
+    rows.push({
+      metric: 'calories',
+      value: today.calories.total,
+      total: today.calories.goal,
+      previous: yesterday?.calories?.total ?? null,
+      change: null,
+      good: within,
+    });
+  }
+  if (today.money) {
+    rows.push({
+      metric: 'money',
+      value: today.money.spent,
+      total: today.money.dailyBudget,
+      previous: yesterday?.money?.spent ?? null,
+      change: null,
+      good: today.money.spent <= today.money.dailyBudget,
+    });
+  }
   const xpDir = change(today.xp, yesterday ? yesterday.xp : null);
   rows.push({ metric: 'xp', value: today.xp, previous: yesterday ? yesterday.xp : null, change: xpDir, good: goodFor(xpDir) });
   if (today.rating !== null) {
@@ -211,6 +239,11 @@ function progressRows(
   }
   rows.push({ metric: 'streak', value: today.streak, previous: null, change: null, good: null });
   return rows;
+}
+
+/** Kalorije unutar ±10 % cilja (isto kao večernja provjera, `CALORIE_TOLERANCE`). */
+function caloriesWithin(calories: { total: number; goal: number }): boolean {
+  return Math.abs(calories.total - calories.goal) <= calories.goal * CALORIE_TOLERANCE;
 }
 
 function summaryLine(today: DayStats, trend: Trend): DiagnosisLine {
@@ -234,6 +267,8 @@ function praiseLines(today: DayStats, yesterday: DayStats | null): DiagnosisLine
     praise.push(line('praise.rulesKept', { count: today.rules.kept }));
   }
   if (today.sleep?.onTarget === true) praise.push(line('praise.bedtime'));
+  if (today.calories && caloriesWithin(today.calories)) praise.push(line('praise.caloriesWithin'));
+  if (today.money && today.money.spent <= today.money.dailyBudget) praise.push(line('praise.moneyWithin'));
   if (today.streak >= 3) praise.push(line('praise.streak', { days: today.streak }));
   if (today.rating !== null && today.rating >= 4) praise.push(line('praise.goodRating', { rating: today.rating }));
   // Odustajem (17d): bez osude — iskreno zatvoren dan je informacija, ne neuspjeh.
@@ -268,6 +303,13 @@ function noticedLines(today: DayStats): DiagnosisLine[] {
   const pattern = missPattern(today);
   if (pattern !== null) noticed.push(line(`noticed.misses.${pattern}`, { count: today.misses.length }));
   if (today.plan.moved > 0) noticed.push(line('noticed.moved', { count: today.plan.moved }));
+  if (today.calories && !caloriesWithin(today.calories)) {
+    const diff = today.calories.total - today.calories.goal;
+    noticed.push(line(diff > 0 ? 'noticed.caloriesOver' : 'noticed.caloriesUnder', { diff: Math.abs(diff) }));
+  }
+  if (today.money && today.money.spent > today.money.dailyBudget) {
+    noticed.push(line('noticed.moneyOver', { diffCents: today.money.spent - today.money.dailyBudget }));
+  }
   if (today.rating !== null && today.plan.rate !== null) {
     if (today.rating <= 2 && today.plan.rate >= 0.8) noticed.push(line('noticed.lowRatingDespitePlan'));
     else if (today.rating >= 4 && today.plan.rate < 0.5) noticed.push(line('noticed.goodRatingDespitePlan'));

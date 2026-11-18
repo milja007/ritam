@@ -23,9 +23,12 @@ const FIELD: Record<ScoreArea, keyof ScoreAreaFlags> = {
 export function ScoreAreasPicker({
   value,
   onChange,
+  trackers = false,
 }: {
   value: ScoreAreaFlags;
   onChange: (patch: Partial<Omit<ScoreAreaFlags, 'scorePlan'>>) => void;
+  /** Uključen barem jedan tracker (korak 31b) — objasni kako ulazi u rezultat. */
+  trackers?: boolean;
 }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -73,6 +76,11 @@ export function ScoreAreasPicker({
       <Text variant="caption" tone="textMuted">
         {t('scoreAreas.note')}
       </Text>
+      {trackers ? (
+        <Text variant="caption" tone="textMuted">
+          {t('scoreAreas.trackers')}
+        </Text>
+      ) : null}
     </View>
   );
 }

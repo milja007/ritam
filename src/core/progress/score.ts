@@ -3,7 +3,9 @@
  * plana, poštovane zabrane i san na vrijeme. Boduju se samo područja koja je korisnik odabrao
  * (korak 16c, odluka P39), s težinama plan 50 / zabrane 30 / san 20 razmjerno preraspodijeljenima
  * na odabrana područja. Odabrano područje koje se taj dan ne bilježi ne ulazi.
- * Trackeri (kalorije, novac) dolaze u koraku 31b. Čista logika: bez React importa.
+ * Trackeri (korak 31b): kalorije i novac ulaze kad su uključeni i taj dan ima unosa (koncept: „što
+ * se ne bilježi, ne ulazi“) — `input.calories` / `input.money` su tada postavljeni.
+ * Čista logika: bez React importa.
  */
 import { SCORE_AREAS, type ScoreArea } from '../domain/settings';
 import { BEDTIME_TOLERANCE_MINUTES } from '../gamification/xp';
@@ -11,11 +13,42 @@ import { BEDTIME_TOLERANCE_MINUTES } from '../gamification/xp';
 /** Odstupanje kreveta od cilja na kojem san više ne donosi bodove (2 h). */
 export const SLEEP_ZERO_AT_MINUTES = 120;
 
-export const SCORE_PARTS = SCORE_AREAS;
-export type ScorePart = ScoreArea;
+/** Dijelovi koje mjere trackeri (korak 31b); ne biraju se kao područja, nego uključivanjem trackera. */
+export const TRACKER_PARTS = ['calories', 'money'] as const;
+export type TrackerPart = (typeof TRACKER_PARTS)[number];
 
-/** Osnovne težine područja (odluka P39): plan 50, zabrane 30, san 20. */
-export const SCORE_WEIGHTS: Readonly<Record<ScorePart, number>> = { plan: 50, rules: 30, sleep: 20 };
+export const SCORE_PARTS = [...SCORE_AREAS, ...TRACKER_PARTS] as const;
+export type ScorePart = ScoreArea | TrackerPart;
+
+/**
+ * Osnovne težine (odluka P39): plan 50, zabrane 30, san 20; trackeri po 15 (31b, pitanje 90 —
+ * koncept ne daje broj). Razmjerno se preraspodjeljuju na dijelove koji taj dan ulaze.
+ */
+export const SCORE_WEIGHTS: Readonly<Record<ScorePart, number>> = { plan: 50, rules: 30, sleep: 20, calories: 15, money: 15 };
+
+/** Kalorije unutar ±10 % cilja = puni dio, zatim linearno do 0 na ±50 %. */
+export const CALORIE_FULL_WITHIN = 0.1;
+export const CALORIE_ZERO_AT = 0.5;
+
+/** Dio kalorija 0–1 iz zbroja dana i cilja. */
+export function caloriePart(total: number, goal: number): number {
+  if (goal <= 0) return 0;
+  const off = Math.abs(total - goal) / goal;
+  if (off <= CALORIE_FULL_WITHIN) return 1;
+  if (off >= CALORIE_ZERO_AT) return 0;
+  return (CALORIE_ZERO_AT - off) / (CALORIE_ZERO_AT - CALORIE_FULL_WITHIN);
+}
+
+/**
+ * Dio novca 0–1: potrošnja dana naspram dnevnog dijela limita (limit / dani razdoblja). Do
+ * dnevnog dijela = puni dio, zatim linearno do 0 na dvostrukom.
+ */
+export function moneyPart(spent: number, dailyBudget: number): number {
+  if (dailyBudget <= 0) return spent > 0 ? 0 : 1;
+  if (spent <= dailyBudget) return 1;
+  if (spent >= dailyBudget * 2) return 0;
+  return (dailyBudget * 2 - spent) / dailyBudget;
+}
 
 /**
  * Težine odabranih područja razmjerno preraspodijeljene na 100 (plan+san = 71/29, plan+zabrane =
@@ -25,7 +58,7 @@ export const SCORE_WEIGHTS: Readonly<Record<ScorePart, number>> = { plan: 50, ru
 export function scoreWeights(areas: readonly ScorePart[]): Record<ScorePart, number> {
   const selected = SCORE_PARTS.filter((part) => areas.includes(part));
   const total = selected.reduce((sum, part) => sum + SCORE_WEIGHTS[part], 0);
-  const weights: Record<ScorePart, number> = { plan: 0, rules: 0, sleep: 0 };
+  const weights: Record<ScorePart, number> = { plan: 0, rules: 0, sleep: 0, calories: 0, money: 0 };
   if (total === 0) return weights;
   for (const part of selected) weights[part] = Math.round((SCORE_WEIGHTS[part] / total) * 100);
   // Ostatak zaokruživanja ide najtežem području, da zbroj bude 100.
@@ -40,6 +73,10 @@ export type ScoreInput = {
   plan: { total: number; done: number; partial: number };
   rules: { activeWeight: number; keptWeight: number };
   sleep: { deviationMinutes: number | null } | null;
+  /** Zbroj kcal dana i cilj — samo kad je tracker uključen i dan ima unosa (31b). */
+  calories?: { total: number; goal: number } | null;
+  /** Potrošnja dana i dnevni dio limita — samo kad je tracker uključen s limitom (31b). */
+  money?: { spent: number; dailyBudget: number } | null;
 };
 
 export type DayScore = {
@@ -62,12 +99,15 @@ export function sleepPart(deviationMinutes: number): number {
  * razmjerno preraspodijeljenima.
  */
 export function dayScore(input: ScoreInput, areas: readonly ScorePart[] = SCORE_PARTS): DayScore {
-  const { plan, rules, sleep } = input;
+  const { plan, rules, sleep, calories = null, money = null } = input;
   const parts: DayScore['parts'] = {
     plan: areas.includes('plan') && plan.total > 0 ? (plan.done + plan.partial / 2) / plan.total : null,
     rules: areas.includes('rules') && rules.activeWeight > 0 ? rules.keptWeight / rules.activeWeight : null,
     sleep:
       areas.includes('sleep') && sleep && sleep.deviationMinutes !== null ? sleepPart(sleep.deviationMinutes) : null,
+    // Trackeri ne ovise o odabranim područjima: ulaze kad pozivatelj da podatke (uključen tracker i unosi taj dan).
+    calories: calories ? caloriePart(calories.total, calories.goal) : null,
+    money: money ? moneyPart(money.spent, money.dailyBudget) : null,
   };
   let weightSum = 0;
   let weighted = 0;
