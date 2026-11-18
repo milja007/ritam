@@ -4,7 +4,9 @@
 import { describe, expect, it } from "@jest/globals";
 
 import type { ChecklistAnswer, EveningDraft } from "@/core/checkin";
-import { parseYearDiagnosis } from "@/core/diagnosis";
+import { parseYearDiagnosis, writeYearReportRequest, type LlmYearText } from "@/core/diagnosis";
+
+import { parseWriteYearReportRequest } from "../../supabase/functions/_shared/report-logic";
 import { createDefaultDraft, toSettingsInput } from "@/core/onboarding";
 import { addDays } from "@/core/time/local-date";
 
@@ -12,8 +14,11 @@ import {
   answerReportSuggestion,
   createBlock,
   createRule,
+  generateMonthReport,
   generateWeekReport,
   generateYearReport,
+  loadYearWriteReportData,
+  saveYearReportText,
   getReport,
   saveEveningCheckin,
   saveSettings,
@@ -161,5 +166,64 @@ describe("reports repo — godišnja dijagnoza (37b)", () => {
     answerReportSuggestion(db, USER, "week", "2026-11-02", false, deps);
     const diagnosis = generateYearReport(db, USER, YEAR, "2027-01-05", deps)?.diagnosis;
     expect(diagnosis?.changes).toEqual({ accepted: 0, rejected: 1 });
+  });
+});
+
+describe("reports repo — godišnja dijagnoza riječima (korak 31e)", () => {
+  const text: LlmYearText = {
+    version: "llm-year-v1",
+    summary: "Godina je bila bolja od prošle.",
+    praise: [],
+    noticed: ["Prosinac je najjači."],
+    problems: [],
+    ideasWhy: null,
+  };
+
+  it("bez godišnje dijagnoze nema podataka ni spremanja", async () => {
+    const { db, deps } = await setup();
+    expect(await loadYearWriteReportData(db, USER, "2026-01-01")).toBeNull();
+    expect(saveYearReportText(db, USER, "2026-01-01", text, "{}", deps)).toBeNull();
+  });
+
+  it("podaci: statistika, mjesečne dijagnoze te godine, ranije godišnje; zahtjev prolazi provjeru", async () => {
+    const { db, deps, closeDays } = await setup();
+    await closeDays("2025-12-20", 8, 1, 4);
+    await closeDays("2026-11-25", 10, 4, 4);
+    expect(generateYearReport(db, USER, "2025", "2027-01-05", deps)).not.toBeNull();
+    expect(generateMonthReport(db, USER, "2026-11", "2027-01-05", deps)).not.toBeNull();
+    expect(generateMonthReport(db, USER, "2026-12", "2027-01-05", deps)).not.toBeNull();
+    expect(generateYearReport(db, USER, YEAR, "2027-01-05", deps)).not.toBeNull();
+    const data = await loadYearWriteReportData(db, USER, "2026-01-01");
+    expect(data?.current.recorded).toBe(10);
+    expect(data?.months.map((m) => m.month)).toEqual(["2026-11", "2026-12"]);
+    expect(data?.previousReports.map((r) => r.start)).toEqual(["2025-01-01"]);
+    if (!data) return;
+    const request = writeYearReportRequest({
+      locale: "hr",
+      diagnosis: data.diagnosis,
+      current: data.current,
+      previous: data.previous,
+      monthSummaries: data.months.map(({ month, diagnosis }) => ({ month, summary: diagnosis.summary.key })),
+      previousReports: data.previousReports,
+      renderLine: (line) => line.key,
+    });
+    const parsed = parseWriteYearReportRequest(JSON.parse(JSON.stringify(request)));
+    expect(parsed?.year.end).toBe("2026-12-31");
+    expect(parsed?.previousYear?.start).toBe("2025-01-01");
+    expect(parsed?.months.filter((m) => m.summary !== null).map((m) => m.month)).toEqual(["2026-11", "2026-12"]);
+    expect(parsed?.previous.map((p) => p.date)).toEqual(["2025-01-01"]);
+  });
+
+  it("tekst se sprema, preživi ponovno generiranje, a otpada kad se godina promijeni", async () => {
+    const { db, deps, closeDay, closeDays } = await setup();
+    await closeDays("2026-12-20", 12, 2, 4);
+    generateYearReport(db, USER, YEAR, "2027-01-05", deps);
+    const data = await loadYearWriteReportData(db, USER, "2026-01-01");
+    expect(saveYearReportText(db, USER, "2026-01-01", text, data?.basis ?? "", deps)?.llm).toEqual(text);
+    expect(parseYearDiagnosis((await getReport(db, USER, "year", "2026-01-01"))?.sections)?.llm).toEqual(text);
+    expect(generateYearReport(db, USER, YEAR, "2027-01-05", deps)?.diagnosis.llm).toEqual(text);
+    await closeDay("2026-12-10", 0, 4);
+    expect(generateYearReport(db, USER, YEAR, "2027-01-05", deps)?.diagnosis.llm).toBeUndefined();
+    expect(saveYearReportText(db, USER, "2026-01-01", text, data?.basis ?? "", deps)).toBeNull();
   });
 });

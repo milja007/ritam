@@ -16,6 +16,10 @@ import {
   yearBounds,
   yearChanges,
   LOCAL_YEAR_DIAGNOSIS_VERSION,
+  llmYearTextSchema,
+  parseYearDiagnosis,
+  type LlmPreviousYearReport,
+  type LlmYearText,
   type YearDiagnosis,
   isWeekDiagnosisReady,
   llmDayTextSchema,
@@ -327,6 +331,13 @@ export type WeekReportResult = { report: Report; diagnosis: WeekDiagnosis };
 const monthLlmOf = (sections: unknown): LlmMonthText | undefined => {
   const llm = typeof sections === 'object' && sections !== null && 'llm' in sections ? sections.llm : undefined;
   const result = llmMonthTextSchema.safeParse(llm);
+  return result.success ? result.data : undefined;
+};
+
+/** Tekst modela spremljene godišnje dijagnoze (korak 31e), ako je valjan. */
+const yearLlmOf = (sections: unknown): LlmYearText | undefined => {
+  const llm = typeof sections === 'object' && sections !== null && 'llm' in sections ? sections.llm : undefined;
+  const result = llmYearTextSchema.safeParse(llm);
   return result.success ? result.data : undefined;
 };
 
@@ -706,6 +717,11 @@ export function generateYearReport(
     const diagnosis = buildYearDiagnosis(current, previous, days, { previousBest, changes });
     const stats = { current, previous };
     const existing = tx.select().from(reports).where(reportOf(userId, 'year', bounds.start)).get();
+    // Riječi modela (korak 31e) ostaju dok su statistika godine i smjer isti.
+    const existingLlm = existing ? yearLlmOf(existing.sections) : undefined;
+    if (existingLlm && sameJson(existing?.stats, stats) && sameIdeas(existing?.sections, diagnosis)) {
+      diagnosis.llm = existingLlm;
+    }
     if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
       return { report: reportSchema.parse(existing), diagnosis };
     }
@@ -1117,6 +1133,107 @@ export function saveMonthReportText(
     const diagnosis = parseMonthDiagnosis(row.sections);
     if (diagnosis === null || monthBasis(row.stats, diagnosis) !== basis) return null;
     const next: MonthDiagnosis = { ...diagnosis, llm: llmMonthTextSchema.parse(text) };
+    if (!sameJson(diagnosis.llm, next.llm)) {
+      tx.update(reports)
+        .set({ sections: next, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return next;
+  });
+}
+
+export type WriteYearReportData = {
+  diagnosis: YearDiagnosis;
+  current: PeriodStats;
+  previous: PeriodStats | null;
+  /** Mjesečne dijagnoze te godine (za sažetke mjeseci), po redu. */
+  months: { month: string; diagnosis: MonthDiagnosis }[];
+  previousReports: LlmPreviousYearReport[];
+  basis: string;
+};
+
+/** Koliko ranijih godišnjih dijagnoza ide modelu. */
+const LLM_PREVIOUS_YEARS = 2;
+
+const yearBasis = (stats: unknown, diagnosis: YearDiagnosis) => JSON.stringify({ stats, ideas: diagnosis.ideas });
+
+/**
+ * Sve što `write-report` treba za godinu koja počinje danom `start` (korak 31e), iz spremljenih
+ * dijagnoza: statistika godine, mjesečne dijagnoze te godine i ranije godišnje. Bez pojedinačnih
+ * dana. `null` kad godišnje dijagnoze nema.
+ */
+export async function loadYearWriteReportData(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+): Promise<WriteYearReportData | null> {
+  const row = await db.select().from(reports).where(reportOf(userId, 'year', start)).get();
+  if (!row) return null;
+  const diagnosis = parseYearDiagnosis(row.sections);
+  const stats = storedWeekStats(row.stats);
+  if (diagnosis === null || stats === null) return null;
+  const monthRows = await db
+    .select()
+    .from(reports)
+    .where(
+      and(
+        eq(reports.userId, userId),
+        eq(reports.period, 'month'),
+        gte(reports.periodStart, diagnosis.start),
+        lte(reports.periodStart, diagnosis.end),
+      ),
+    )
+    .orderBy(reports.periodStart)
+    .all();
+  const months: WriteYearReportData['months'] = [];
+  for (const monthRow of monthRows) {
+    const monthDiagnosis = parseMonthDiagnosis(monthRow.sections);
+    if (monthDiagnosis) months.push({ month: monthRow.periodStart.slice(0, 7), diagnosis: monthDiagnosis });
+  }
+  const earlier = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), eq(reports.period, 'year'), lt(reports.periodStart, start)))
+    .orderBy(desc(reports.periodStart))
+    .limit(LLM_PREVIOUS_YEARS)
+    .all();
+  const previousReports: LlmPreviousYearReport[] = [];
+  for (const report of earlier) {
+    const earlierDiagnosis = parseYearDiagnosis(report.sections);
+    if (!earlierDiagnosis) continue;
+    previousReports.push({
+      start: report.periodStart,
+      diagnosis: earlierDiagnosis,
+      helpful: report.helpful,
+      comment: report.feedbackComment,
+    });
+  }
+  return {
+    diagnosis,
+    current: stats.current,
+    previous: stats.previous,
+    months,
+    previousReports,
+    basis: yearBasis(row.stats, diagnosis),
+  };
+}
+
+/** Spremi riječi modela uz godišnju dijagnozu; ne sprema ako su se statistika ili smjer promijenili. */
+export function saveYearReportText(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+  text: LlmYearText,
+  basis: string,
+  deps: RepoDeps = defaultRepoDeps,
+): YearDiagnosis | null {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, 'year', start)).get();
+    if (!row) return null;
+    const diagnosis = parseYearDiagnosis(row.sections);
+    if (diagnosis === null || yearBasis(row.stats, diagnosis) !== basis) return null;
+    const next: YearDiagnosis = { ...diagnosis, llm: llmYearTextSchema.parse(text) };
     if (!sameJson(diagnosis.llm, next.llm)) {
       tx.update(reports)
         .set({ sections: next, updatedAt: deps.now().toISOString() })

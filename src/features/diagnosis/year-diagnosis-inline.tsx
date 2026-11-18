@@ -25,7 +25,7 @@ export function YearDiagnosisInline({ date }: { date: string }) {
 function YearSection({ year, date }: { year: string; date: string }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const { diagnosis, seen, markSeen } = useYearReport(year, date, null);
+  const { diagnosis, seen, markSeen, writing } = useYearReport(year, date, null);
 
   useEffect(() => {
     if (diagnosis !== null && !seen) markSeen();
@@ -48,7 +48,7 @@ function YearSection({ year, date }: { year: string; date: string }) {
       <Text variant="caption" tone="textMuted">
         {`${year}.`}
       </Text>
-      <YearDiagnosisView diagnosis={diagnosis} />
+      <YearDiagnosisView diagnosis={diagnosis} writing={writing} />
       <DiagnosisFeedback period="year" periodStart={diagnosis.start} />
     </View>
   );

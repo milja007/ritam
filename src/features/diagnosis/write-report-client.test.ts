@@ -29,21 +29,30 @@ import {
   DAY_REPORT_PROMPT_VERSION,
   MONTH_REPORT_PROMPT_VERSION,
   WEEK_REPORT_PROMPT_VERSION,
+  YEAR_REPORT_PROMPT_VERSION,
 } from '../../../supabase/functions/_shared/report-logic';
 import {
   EXAMPLE_MONTH_THURSDAYS,
   EXAMPLE_TIRED_TUESDAY,
   EXAMPLE_WEEK_EVENINGS,
+  EXAMPLE_YEAR_SUMMER_DIP,
 } from '../../../supabase/functions/_shared/report-examples';
-import { LLM_DAY_DIAGNOSIS_VERSION, LLM_MONTH_DIAGNOSIS_VERSION, LLM_WEEK_DIAGNOSIS_VERSION } from '@/core/diagnosis';
+import {
+  LLM_DAY_DIAGNOSIS_VERSION,
+  LLM_MONTH_DIAGNOSIS_VERSION,
+  LLM_WEEK_DIAGNOSIS_VERSION,
+  LLM_YEAR_DIAGNOSIS_VERSION,
+} from '@/core/diagnosis';
 
 import {
   refineDayDiagnosis,
   refineMonthDiagnosis,
   refineWeekDiagnosis,
+  refineYearDiagnosis,
   requestWriteMonthReport,
   requestWriteReport,
   requestWriteWeekReport,
+  requestWriteYearReport,
   WRITE_REPORT_TIMEOUT_MS,
 } from './write-report-client';
 /* eslint-enable import/first */
@@ -168,5 +177,40 @@ describe('requestWriteMonthReport (korak 31d)', () => {
     expect(await requestWriteMonthReport(monthBody)).toEqual(monthText);
     mockInvoke.mockResolvedValueOnce({ data: { report: { ...monthText, version: 'llm-week-v1', ideaWhy: null } }, error: null });
     expect(await requestWriteMonthReport(monthBody)).toBeNull();
+  });
+});
+
+describe('requestWriteYearReport (korak 31e)', () => {
+  const yearBody = JSON.parse(JSON.stringify(EXAMPLE_YEAR_SUMMER_DIP)) as Parameters<typeof requestWriteYearReport>[0];
+  const yearText = {
+    version: 'llm-year-v1',
+    summary: 'Bolja godina.',
+    praise: [],
+    noticed: [],
+    problems: [],
+    ideasWhy: null,
+  };
+
+  beforeEach(() => {
+    mockClient = { auth: { getSession: mockGetSession }, functions: { invoke: mockInvoke } };
+    mockInvoke.mockReset();
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  it('verzija prompta je ista u appu i na serveru', () => {
+    expect(LLM_YEAR_DIAGNOSIS_VERSION).toBe(YEAR_REPORT_PROMPT_VERSION);
+  });
+
+  it('bez oblaka ne zove ništa i ne čita bazu', async () => {
+    mockClient = null;
+    expect(await requestWriteYearReport(yearBody)).toBeNull();
+    expect(await refineYearDiagnosis('2026-01-01', 'hr', () => '', () => '')).toBeNull();
+  });
+
+  it('vraća provjeren tekst godine; mjesečni oblik se ne prihvaća', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { report: yearText }, error: null });
+    expect(await requestWriteYearReport(yearBody)).toEqual(yearText);
+    mockInvoke.mockResolvedValueOnce({ data: { report: { ...yearText, version: 'llm-month-v1' } }, error: null });
+    expect(await requestWriteYearReport(yearBody)).toBeNull();
   });
 });

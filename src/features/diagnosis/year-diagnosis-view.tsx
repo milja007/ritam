@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 
 import type { YearDiagnosis } from '@/core/diagnosis';
@@ -62,12 +62,19 @@ export function YearMonthStrip({ diagnosis }: { diagnosis: YearDiagnosis }) {
  * Prikaz godišnje dijagnoze istim redom kao mjesečna: Ukratko (s trakom mjeseci) → Napredak →
  * Pohvale → Što smo primijetili → Veliki problemi → Smjer za iduću godinu (bez prihvaćanja).
  */
-export function YearDiagnosisView({ diagnosis }: { diagnosis: YearDiagnosis }) {
+export function YearDiagnosisView({ diagnosis, writing = false }: { diagnosis: YearDiagnosis; writing?: boolean }) {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const lineText = useYearLineText();
   const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
   const trendLabel = t(`diagnosis.year.trend.${diagnosis.trend}`);
+  // Korak 31e: riječi modela zamjenjuju lokalne retke; brojke, trend, mjeseci i smjer ostaju lokalni.
+  const { llm } = diagnosis;
+  const summaryText = llm ? llm.summary : lineText(diagnosis.summary);
+  const sections = LINE_SECTIONS.map((section) => ({
+    section,
+    lines: llm && section !== 'ideas' ? llm[section] : diagnosis[section].map(lineText),
+  })).filter(({ section, lines }) => lines.length > 0 || section === 'ideas');
 
   return (
     <View style={styles.root}>
@@ -75,7 +82,7 @@ export function YearDiagnosisView({ diagnosis }: { diagnosis: YearDiagnosis }) {
         <Text variant="overline" tone="textMuted" accessibilityRole="header">
           {t('diagnosis.sections.summary')}
         </Text>
-        <View style={styles.summaryRow} accessible accessibilityLabel={`${trendLabel}. ${lineText(diagnosis.summary)}`}>
+        <View style={styles.summaryRow} accessible accessibilityLabel={`${trendLabel}. ${summaryText}`}>
           <Text variant="title" tone={WEEK_TREND_TONE[diagnosis.trend]}>
             {WEEK_TREND_ARROW[diagnosis.trend]}
           </Text>
@@ -83,9 +90,17 @@ export function YearDiagnosisView({ diagnosis }: { diagnosis: YearDiagnosis }) {
             <Text variant="bodyStrong" tone={WEEK_TREND_TONE[diagnosis.trend]}>
               {trendLabel}
             </Text>
-            <Text>{lineText(diagnosis.summary)}</Text>
+            <Text>{summaryText}</Text>
           </View>
         </View>
+        {writing ? (
+          <View style={styles.writingRow} accessibilityLiveRegion="polite">
+            <ActivityIndicator size="small" color={colors.accent} />
+            <Text variant="caption" tone="textMuted">
+              {t('diagnosis.writing')}
+            </Text>
+          </View>
+        ) : null}
         <Text variant="caption" tone="textMuted" accessibilityRole="header">
           {t('diagnosis.year.monthsTitle')}
         </Text>
@@ -101,21 +116,26 @@ export function YearDiagnosisView({ diagnosis }: { diagnosis: YearDiagnosis }) {
         ))}
       </View>
 
-      {LINE_SECTIONS.map((section) => (
+      {sections.map(({ section, lines }) => (
         <View
           key={section}
           style={[card, section === 'ideas' ? { borderColor: colors.accent, borderWidth: 1 } : null]}>
           <Text variant="overline" tone={section === 'ideas' ? 'accent' : 'textMuted'} accessibilityRole="header">
             {t(`diagnosis.sections.${section}`)}
           </Text>
-          {diagnosis[section].map((line, index) => (
-            <View key={`${line.key}-${index}`} style={styles.bulletRow}>
+          {lines.map((text, index) => (
+            <View key={`${section}-${index}`} style={styles.bulletRow}>
               <Text tone={section === 'ideas' ? 'accent' : 'textMuted'} importantForAccessibility="no">
                 •
               </Text>
-              <Text style={styles.flex}>{lineText(line)}</Text>
+              <Text style={styles.flex}>{text}</Text>
             </View>
           ))}
+          {section === 'ideas' && llm?.ideasWhy ? (
+            <Text variant="caption" tone="textMuted">
+              {llm.ideasWhy}
+            </Text>
+          ) : null}
           {section === 'ideas' ? (
             <Text variant="caption" tone="textMuted">
               {t('diagnosis.year.ideasNote')}
@@ -132,6 +152,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  writingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   bulletRow: { flexDirection: 'row', gap: spacing.sm },
   strip: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: spacing.xs },
   stripCell: { alignItems: 'center', gap: spacing.xs, flex: 1, minHeight: 44, justifyContent: 'center' },
