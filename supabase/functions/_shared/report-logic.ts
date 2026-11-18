@@ -1,5 +1,5 @@
 /**
- * write-report — čista logika dnevne dijagnoze s LLM-om (korak 31).
+ * write-report — čista logika dnevne (korak 31) i tjedne (korak 31c) dijagnoze s LLM-om.
  *
  * Bez Deno API-ja i bez uvoza, da je testira Jest u appu (`src/core/diagnosis/report-logic.test.ts`).
  * Prompt je verzioniran ovdje (`DAY_REPORT_PROMPT_VERSION`): svaka promjena teksta upute ili oblika
@@ -423,4 +423,353 @@ export function readReportText(parsed: unknown): WriteReportText | null {
   const ideas = readLines(parsed.ideas, REPORT_LIMITS.ideas);
   if (praise === null || noticed === null || problems === null || ideas === null || ideas.length === 0) return null;
   return { version: DAY_REPORT_PROMPT_VERSION, summary, praise, noticed, problems, ideas };
+}
+
+// ===========================================================================
+// Tjedna dijagnoza riječima (korak 31c, prompt llm-week-v1)
+// ===========================================================================
+
+/**
+ * Tjedna dijagnoza: brojke („Napredak“), trend i **promjenu tjedna** bira app lokalno (najviše
+ * jedna nova promjena tjedno, „Probat ću / Ne sada“, odbijena se ne nudi dva tjedna). Model piše
+ * Ukratko, Pohvale, Što smo primijetili, Velike probleme i jednu rečenicu zašto baš ta promjena.
+ */
+export const WEEK_REPORT_PROMPT_VERSION = 'llm-week-v1';
+
+export type ReportRuleSummary = { title: string; weight: number; broken: number; triggers: string[] };
+
+/** Statistika tjedna (iz lokalne `PeriodStats`). */
+export type ReportWeek = {
+  start: string;
+  end: string;
+  /** Zaključeni dani 0–7. */
+  recorded: number;
+  average: number | null;
+  best: { date: string; score: number } | null;
+  worst: { date: string; score: number } | null;
+  plan: { total: number; done: number; partial: number; missed: number; moved: number };
+  rules: { active: number; kept: number; broken: number; byRule: ReportRuleSummary[] };
+  sleep: { nights: number; averageMinutes: number; shortNights: number; onTarget: number; withTarget: number } | null;
+  xp: number;
+  /** Prosječna ocjena dana 1–5 (jedna decimala) ili `null`. */
+  rating: number | null;
+  gaveUpDays: number;
+  misses: { morning: number; afternoon: number; evening: number };
+  repeatedMisses: { title: string; count: number }[];
+  calories: { days: number; within: number; over: number; under: number } | null;
+  money: { days: number; spentCents: number; budgetCents: number; overDays: number } | null;
+};
+
+/** Promjena tjedna koju je odabrala lokalna logika (tekst na jeziku appa). */
+export type ReportWeekIdea = {
+  text: string;
+  /** Prenesena prihvaćena promjena (još nije stabilna) — ne nudi se nova. */
+  carried: boolean;
+};
+
+export type WriteWeekReportRequest = {
+  period: 'week';
+  /** Ponedjeljak tjedna. */
+  start: string;
+  locale: ReportLocale;
+  trend: ReportTrend;
+  /** Niz boljih tjedana zaključno s ovim. */
+  betterWeeks: number;
+  week: ReportWeek;
+  previousWeek: ReportWeek | null;
+  /** Dani tjedna ukratko (rezultat, ocjena, komentari, prekršaji) — za uzorke po danu. */
+  days: ReportHistoryDay[];
+  /** `null` = „zadrži ritam“ (nema promjene). */
+  idea: ReportWeekIdea | null;
+  /** Ranije tjedne dijagnoze (`date` = ponedjeljak) s odgovorom Pomoglo / Nije pomoglo. */
+  previous: ReportPrevious[];
+};
+
+export type WriteWeekReportText = {
+  version: typeof WEEK_REPORT_PROMPT_VERSION;
+  summary: string;
+  praise: string[];
+  noticed: string[];
+  problems: string[];
+  /** Jedna rečenica: zašto baš ova promjena (ili zašto zadržati ritam); `null` bez nje. */
+  ideaWhy: string | null;
+};
+
+export const WEEK_REPORT_LIMITS = {
+  byRule: 6,
+  triggers: 3,
+  repeated: 5,
+  previous: 4,
+  idea: 400,
+} as const;
+
+const nonNegative = (value: unknown, max: number) => isInt(value, 0, max);
+
+function parseDated(raw: unknown): { date: string; score: number } | null {
+  return isRecord(raw) && isDate(raw.date) && isInt(raw.score, 0, 100) ? { date: raw.date, score: raw.score } : null;
+}
+
+function parseWeek(raw: unknown): ReportWeek | null {
+  if (!isRecord(raw) || !isDate(raw.start) || !isDate(raw.end) || raw.end < raw.start) return null;
+  if (!isRecord(raw.plan) || !isRecord(raw.rules) || !isRecord(raw.misses)) return null;
+  const { plan, rules, misses } = raw;
+  const count = (value: unknown) => nonNegative(value, 5000);
+  if (!isInt(raw.recorded, 0, 7)) return null;
+  if (![plan.total, plan.done, plan.partial, plan.missed, plan.moved].every(count)) return null;
+  if (![rules.active, rules.kept, rules.broken].every(count)) return null;
+  if (![misses.morning, misses.afternoon, misses.evening].every(count)) return null;
+  if (!nonNegative(raw.xp, 1_000_000) || !isInt(raw.gaveUpDays, 0, 7)) return null;
+  const average = parseScore(raw.average);
+  if (average === undefined) return null;
+  let sleep: ReportWeek['sleep'] = null;
+  if (raw.sleep !== null && raw.sleep !== undefined) {
+    const s = raw.sleep;
+    if (
+      !isRecord(s) ||
+      !isInt(s.nights, 0, 7) ||
+      !isInt(s.averageMinutes, 0, 24 * 60) ||
+      !isInt(s.shortNights, 0, 7) ||
+      !isInt(s.onTarget, 0, 7) ||
+      !isInt(s.withTarget, 0, 7)
+    ) {
+      return null;
+    }
+    sleep = {
+      nights: s.nights,
+      averageMinutes: s.averageMinutes,
+      shortNights: s.shortNights,
+      onTarget: s.onTarget,
+      withTarget: s.withTarget,
+    };
+  }
+  const rating =
+    typeof raw.rating === 'number' && raw.rating >= 1 && raw.rating <= 5 ? Math.round(raw.rating * 10) / 10 : null;
+  const c = raw.calories;
+  const m = raw.money;
+  return {
+    start: raw.start,
+    end: raw.end,
+    recorded: raw.recorded,
+    average,
+    best: parseDated(raw.best),
+    worst: parseDated(raw.worst),
+    plan: {
+      total: plan.total as number,
+      done: plan.done as number,
+      partial: plan.partial as number,
+      missed: plan.missed as number,
+      moved: plan.moved as number,
+    },
+    rules: {
+      active: rules.active as number,
+      kept: rules.kept as number,
+      broken: rules.broken as number,
+      byRule: list(rules.byRule, WEEK_REPORT_LIMITS.byRule, (value) => {
+        if (!isRecord(value)) return null;
+        const title = clip(value.title, REPORT_LIMITS.title);
+        if (title === null || !isInt(value.weight, 1, 3) || !isInt(value.broken, 1, 7)) return null;
+        return {
+          title,
+          weight: value.weight,
+          broken: value.broken,
+          triggers: list(value.triggers, WEEK_REPORT_LIMITS.triggers, (t) => clip(t, REPORT_LIMITS.comment)),
+        };
+      }),
+    },
+    sleep,
+    xp: raw.xp,
+    rating,
+    gaveUpDays: raw.gaveUpDays,
+    misses: { morning: misses.morning as number, afternoon: misses.afternoon as number, evening: misses.evening as number },
+    repeatedMisses: list(raw.repeatedMisses, WEEK_REPORT_LIMITS.repeated, (value) => {
+      if (!isRecord(value)) return null;
+      const title = clip(value.title, REPORT_LIMITS.title);
+      return title !== null && isInt(value.count, 2, 50) ? { title, count: value.count } : null;
+    }),
+    calories:
+      isRecord(c) && isInt(c.days, 1, 7) && [c.within, c.over, c.under].every((v) => isInt(v, 0, 7))
+        ? { days: c.days, within: c.within as number, over: c.over as number, under: c.under as number }
+        : null,
+    money:
+      isRecord(m) &&
+      isInt(m.days, 1, 7) &&
+      isInt(m.spentCents, 0, 1_000_000_000) &&
+      isInt(m.budgetCents, 0, 1_000_000_000) &&
+      isInt(m.overDays, 0, 7)
+        ? { days: m.days, spentCents: m.spentCents, budgetCents: m.budgetCents, overDays: m.overDays }
+        : null,
+  };
+}
+
+/**
+ * Zahtjev za tjednu dijagnozu, provjeren. `null` bez valjanog tjedna (ponedjeljak, statistika
+ * tog tjedna) ili trenda; dani izvan tjedna, prošli tjedan koji nije prije, ranije dijagnoze
+ * koje nisu prije i nevaljane stavke otpadaju.
+ */
+export function parseWriteWeekReportRequest(raw: unknown): WriteWeekReportRequest | null {
+  if (!isRecord(raw) || raw.period !== 'week' || !isDate(raw.start)) return null;
+  if (new Date(`${raw.start}T12:00:00Z`).getUTCDay() !== 1) return null;
+  const start = raw.start;
+  const trend = TRENDS.find((value) => value === raw.trend);
+  const week = parseWeek(raw.week);
+  if (trend === undefined || week === null || week.start !== start) return null;
+  const previousWeek = raw.previousWeek === null || raw.previousWeek === undefined ? null : parseWeek(raw.previousWeek);
+  const ideaText = isRecord(raw.idea) ? clip(raw.idea.text, WEEK_REPORT_LIMITS.idea) : null;
+  return {
+    period: 'week',
+    start,
+    locale: raw.locale === 'en' ? 'en' : 'hr',
+    trend,
+    betterWeeks: isInt(raw.betterWeeks, 0, 1000) ? raw.betterWeeks : 0,
+    week,
+    previousWeek: previousWeek !== null && previousWeek.end < start ? previousWeek : null,
+    days: list(raw.days, 7, parseHistoryDay).filter((day) => day.date >= week.start && day.date <= week.end),
+    idea:
+      ideaText === null
+        ? null
+        : { text: ideaText, carried: isRecord(raw.idea) && raw.idea.carried === true },
+    previous: list(raw.previous, WEEK_REPORT_LIMITS.previous, parsePrevious).filter((prev) => prev.date < start),
+  };
+}
+
+/** Sistemska uputa tjedne dijagnoze: isti ton i red sekcija, promjenu tjedna ne bira model. */
+export function buildWeekReportSystemPrompt(locale: ReportLocale): string {
+  return `\
+Ti si iskren i topao osobni trener u appu Ritam. Pišeš TJEDNU dijagnozu korisnikova tjedna.
+Ton: kao dobar trener — iskren, topao, konkretan. Prvo činjenice, pa tumačenje. Svaka kritika ima ideju što napraviti. Bez posramljivanja, bez osude, bez uljepšavanja. Nikad kazna: neodrađeno je informacija, ne neuspjeh.
+Čita se za minutu: kratke rečenice, obraćaš se korisniku s "ti".
+
+Brojke ("Napredak") app prikazuje sam — koristi ih samo kad nešto znače.
+Napiši, uvijek ovim redom:
+1. summary — JEDNA rečenica: kakav je bio tjedan i kamo ide trend (trend ti je zadan, ne mijenjaj ga).
+2. praise — 0–${REPORT_LIMITS.praise} pohvale: što je išlo super i neka tako ostane. Samo stvarne, iz podataka.
+3. noticed — 0–${REPORT_LIMITS.noticed} uzorka kroz tjedan i mogući uzroci, psihološki pogled: koji dani ili doba dana padaju, što te diže, što pomaže. Komentari korisnika postaju uvidi ako se razlog ponavlja. Ako su trackeri (kalorije, potrošnja) dani, poveži ih s ostalim kad ima smisla.
+4. problems — 0–${REPORT_LIMITS.problems} velika problema: iskreno i objektivno, ali nikad bezobrazno. Ako ih nema, prazan popis.
+5. ideaWhy — JEDNA rečenica zašto je baš PROMJENA TJEDNA (zadana ti je) dobar sljedeći korak, iz podataka ovog tjedna. Promjenu NE mijenjaj, ne predlaži drugu ni dodatnu: malo po malo, najviše jedna nova promjena tjedno. Ako promjene nema ("zadrži ritam"), reci zašto je dobro zadržati ritam. Ako je promjena prenesena (već prihvaćena, još nije stabilna), ohrabri da je drži.
+
+Prethodne tjedne dijagnoze: pogledaj je li prošli savjet upalio. Ako je korisnik rekao "Nije pomoglo", ne hvali isti pristup — priznaj to i budi konkretniji. Prijedlog odbijen s "Ne sada" ne spominji kao obavezu.
+Ne izmišljaj podatke koji nisu dani. Ne spominji da si AI, model ili app.
+Svaki redak najviše ${REPORT_LIMITS.line} znakova, summary najviše ${REPORT_LIMITS.summary}.
+Piši na ${LANGUAGE[locale]} jeziku.
+
+Vrati SAMO JSON objekt (bez markdowna):
+{"summary":"...","praise":["..."],"noticed":["..."],"problems":["..."],"ideaWhy":"..."}`;
+}
+
+const WEEK_TREND_TEXT: Record<ReportTrend, string> = {
+  better: 'bolje nego prošli tjedan',
+  same: 'otprilike isto kao prošli tjedan',
+  worse: 'lošije nego prošli tjedan',
+  first: 'nema usporedbe (prvi tjedan ili prošli nema zaključenih dana)',
+};
+
+const euroText = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+
+function weekLines(week: ReportWeek): string[] {
+  const lines: string[] = [];
+  lines.push(`Zaključeni dani: ${week.recorded}/7 · prosjek ${week.average === null ? '—' : `${week.average}/100`}`);
+  if (week.best !== null) lines.push(`Najbolji dan: ${week.best.date} (${weekdayOf(week.best.date)}) ${week.best.score}`);
+  if (week.worst !== null) lines.push(`Najslabiji dan: ${week.worst.date} (${weekdayOf(week.worst.date)}) ${week.worst.score}`);
+  const p = week.plan;
+  lines.push(
+    `Plan: ${p.total} aktivnosti — odrađeno ${p.done}, djelomično ${p.partial}, neodrađeno ${p.missed} (premješteno ${p.moved})`,
+  );
+  lines.push(
+    `Propušteno po dobu dana: jutro ${week.misses.morning}, popodne ${week.misses.afternoon}, večer ${week.misses.evening}`,
+  );
+  for (const miss of week.repeatedMisses) lines.push(`- ponavlja se propust: ${quote(miss.title)} ${miss.count}×`);
+  lines.push(`Zabrane: vrijedilo ${week.rules.active}, poštovano ${week.rules.kept}, prekršeno ${week.rules.broken}`);
+  for (const rule of week.rules.byRule) {
+    const triggers = rule.triggers.length > 0 ? `, okidači: ${rule.triggers.map(quote).join(', ')}` : '';
+    lines.push(`- ${quote(rule.title)} (težina ${rule.weight}/3) prekršena ${rule.broken}×${triggers}`);
+  }
+  if (week.sleep !== null) {
+    const s = week.sleep;
+    const target = s.withTarget > 0 ? `, u krevet na vrijeme ${s.onTarget}/${s.withTarget}` : '';
+    lines.push(`San: prosjek ${minutesText(s.averageMinutes)} (${s.nights} noći, kratkih ${s.shortNights}${target})`);
+  } else {
+    lines.push('San: nije praćen');
+  }
+  if (week.calories !== null) {
+    const c = week.calories;
+    lines.push(`Kalorije (dani s unosom ${c.days}): unutar cilja ${c.within}, iznad ${c.over}, ispod ${c.under}`);
+  }
+  if (week.money !== null) {
+    const m = week.money;
+    lines.push(
+      `Potrošnja (dani s unosom ${m.days}): ${euroText(m.spentCents)} naspram dijela limita ${euroText(m.budgetCents)}, dana iznad ${m.overDays}`,
+    );
+  }
+  lines.push(
+    `XP: ${week.xp} · prosječna ocjena dana: ${week.rating === null ? '—' : `${week.rating}/5`}${week.gaveUpDays > 0 ? ` · dana s "Odustajem": ${week.gaveUpDays}` : ''}`,
+  );
+  return lines;
+}
+
+/** Korisnička poruka tjedne dijagnoze: tjedan, dani, prošli tjedan, promjena tjedna, ranije dijagnoze. */
+export function buildWeekReportUserMessage(req: WriteWeekReportRequest): string {
+  const lines: string[] = [];
+  lines.push(
+    `Tjedna dijagnoza za ${req.week.start} – ${req.week.end}. Trend: ${WEEK_TREND_TEXT[req.trend]}. Niz boljih tjedana: ${req.betterWeeks}.`,
+  );
+  lines.push('', 'OVAJ TJEDAN', ...weekLines(req.week));
+  if (req.days.length > 0) {
+    lines.push('', 'DANI');
+    for (const day of req.days) {
+      const parts = [
+        `${day.date} (${weekdayOf(day.date)})`,
+        `rezultat ${day.score ?? '—'}`,
+        `ocjena ${day.rating ?? '—'}`,
+        ...day.comments.map((c) => `${quote(c.title)} ${outcomeText(c.outcome)}: ${quote(c.comment)}`),
+        ...day.broken.map((rule) => `prekršena ${quote(rule.title)}${rule.trigger ? ` (${quote(rule.trigger)})` : ''}`),
+      ];
+      lines.push(`- ${parts.join('; ')}`);
+    }
+  }
+  if (req.previousWeek !== null) lines.push('', `PROŠLI TJEDAN (${req.previousWeek.start})`, ...weekLines(req.previousWeek));
+  lines.push('', 'PROMJENA TJEDNA (odabrana, ne mijenjaj je)');
+  if (req.idea === null) lines.push('- nema nove promjene: zadrži ritam');
+  else lines.push(`- ${quote(req.idea.text)}${req.idea.carried ? ' (prenesena — prihvaćena prošli tjedan, drži se još tjedan)' : ''}`);
+  if (req.previous.length > 0) {
+    lines.push('', 'PRETHODNE TJEDNE DIJAGNOZE (je li savjet upalio?)');
+    for (const prev of req.previous) {
+      const feedback =
+        prev.helpful === null ? 'bez odgovora' : prev.helpful ? 'korisnik: Pomoglo' : 'korisnik: Nije pomoglo';
+      const accepted =
+        prev.suggestionAccepted === null ? '' : prev.suggestionAccepted ? '; promjena: Probat ću' : '; promjena: Ne sada';
+      lines.push(`- tjedan od ${prev.date}: ${quote(prev.summary)}`);
+      if (prev.ideas.length > 0) lines.push(`  promjena: ${prev.ideas.map(quote).join(' | ')}`);
+      lines.push(`  ${feedback}${prev.comment ? ` — ${quote(prev.comment)}` : ''}${accepted}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/** Odgovor modela za tjedan, ili `null` ako ne drži oblik (app ostaje na lokalnoj dijagnozi). */
+export function acceptModelWeekReport(raw: string): WriteWeekReportText | null {
+  const jsonText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  try {
+    return readWeekReportText(JSON.parse(jsonText));
+  } catch {
+    return null;
+  }
+}
+
+/** Provjera teksta tjedne dijagnoze (odgovor modela i odgovor funkcije u appu). */
+export function readWeekReportText(parsed: unknown): WriteWeekReportText | null {
+  if (!isRecord(parsed) || typeof parsed.summary !== 'string') return null;
+  const summary = parsed.summary.replace(/\s+/g, ' ').trim();
+  if (summary.length === 0 || summary.length > REPORT_LIMITS.summary) return null;
+  const praise = readLines(parsed.praise, REPORT_LIMITS.praise);
+  const noticed = readLines(parsed.noticed, REPORT_LIMITS.noticed);
+  const problems = readLines(parsed.problems, REPORT_LIMITS.problems);
+  if (praise === null || noticed === null || problems === null) return null;
+  let ideaWhy: string | null = null;
+  if (parsed.ideaWhy !== undefined && parsed.ideaWhy !== null) {
+    if (typeof parsed.ideaWhy !== 'string') return null;
+    const text = parsed.ideaWhy.replace(/\s+/g, ' ').trim();
+    if (text.length > REPORT_LIMITS.line) return null;
+    ideaWhy = text.length > 0 ? text : null;
+  }
+  return { version: WEEK_REPORT_PROMPT_VERSION, summary, praise, noticed, problems, ideaWhy };
 }
