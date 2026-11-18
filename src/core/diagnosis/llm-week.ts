@@ -77,7 +77,8 @@ export type WriteWeekReportInput = {
 const PREVIOUS_WEEKS = 4;
 const int = (value: number) => Math.max(0, Math.round(value));
 
-function reportWeek(stats: PeriodStats): ReportWeek {
+/** Statistika razdoblja (tjedan ili mjesec) u obliku zahtjeva `write-report`. */
+export function reportPeriodStats(stats: PeriodStats): ReportWeek {
   return {
     start: stats.start,
     end: stats.end,
@@ -162,8 +163,8 @@ export function writeWeekReportRequest(input: WriteWeekReportInput): WriteWeekRe
     locale: input.locale,
     trend: diagnosis.trend,
     betterWeeks: diagnosis.betterWeeks,
-    week: reportWeek(input.current),
-    previousWeek: input.previous && input.previous.recorded > 0 ? reportWeek(input.previous) : null,
+    week: reportPeriodStats(input.current),
+    previousWeek: input.previous && input.previous.recorded > 0 ? reportPeriodStats(input.previous) : null,
     days,
     idea: diagnosis.suggestion === null || idea === undefined ? null : { text: renderLine(idea), carried: diagnosis.carried },
     previous,

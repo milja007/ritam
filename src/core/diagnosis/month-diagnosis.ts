@@ -14,6 +14,7 @@ import { daysInMonth } from '../ember/periods';
 import { weekStart } from '../progress/compare';
 import { addDays, daysBetween } from '../time/local-date';
 import { TRENDS } from './day-diagnosis';
+import { llmMonthTextSchema } from './llm-month';
 import type { PeriodDay, PeriodStats } from './period-stats';
 import {
   periodNoticedLines,
@@ -108,6 +109,8 @@ export const monthDiagnosisSchema = z.object({
   ideas: z.array(monthLineSchema).min(1).max(MAX_MONTH_IDEAS),
   /** Odgovori na prijedloge tjednih dijagnoza tog mjeseca. */
   changes: z.object({ accepted: z.number(), rejected: z.number() }),
+  /** Riječi modela (korak 31d); brojke, trend i smjer ostaju lokalni. Pokvaren tekst ne ruši lokalnu. */
+  llm: llmMonthTextSchema.optional().catch(undefined),
 });
 export type MonthDiagnosis = Omit<z.infer<typeof monthDiagnosisSchema>, 'summary' | 'praise' | 'noticed' | 'problems' | 'ideas'> & {
   summary: MonthLine;

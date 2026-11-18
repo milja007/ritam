@@ -6,7 +6,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Plan (isti obrazac kao 31c; koncept: mjesečna = dan + tjedan + mjesec, najviše 2 ideje kao smjer):
   (1) `write-report` mjesečni način (`llm-month-v1`): statistika mjeseca i prošlog (s trackerima), dani mjeseca ukratko (uzorci po danu u tjednu i polovicama), lokalne ideje-smjer, odgovori na tjedne promjene, ranije mjesečne dijagnoze s Pomoglo/Nije. Model piše riječi + jednu rečenicu uz smjer; ideje ne mijenja.
   (2) App: `sections.llm` uz mjesečnu dijagnozu (otpada kad se statistika ili ideje promijene), poziv samo za svjež mjesec (zadnji dan ili dan poslije), bez oblaka lokalna.
-- `[~]` do deploya (pitanje 77).
+- Gotovo (PR #53): 1–2. Korak 31d `[~]` do deploya (pitanje 77). Pitanje 91 vrijedi i za mjesec (model ne mijenja smjer, samo svjež mjesec).
 
 ## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
 - Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
@@ -28,7 +28,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. **Ž11 haptika / Skia (33)** — čeka Bornu: `npx expo install expo-haptics` (i Skia) na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API).
 2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 30 (glasovni unos — novi paket), 24 (Google Calendar — OAuth tajne), 29 (wind-down po koraku — pitanje 87).
-3. Bez Borne sljedeće sesije mogu: mjesečna (i godišnja) dijagnoza riječima (isti obrazac kao 31c, prompt `llm-month-v1`), P2 nalaze Codexa kad stignu, sažetak starih pitanja (23–70) u jedan paket.
+3. Bez Borne sljedeće sesije mogu: godišnja dijagnoza riječima (isti obrazac kao 31c/31d, `llm-year-v1`), P2 nalaze Codexa kad stignu, sažetak starih pitanja (23–70) u jedan paket.
 
 ## Pitanja za Bornu
 91. **Tjedna dijagnoza s trackerima i LLM-om (31c)** — nije u konceptu, odabrano: o trackeru u tjednu se govori tek s barem 2 dana unosa; pohvala kalorija kad je ≥ 70 % dana s unosom unutar cilja; potrošnja se uspoređuje sa zbrojem dnevnih dijelova limita za dane s unosom. Model piše riječi i jednu rečenicu „zašto ova promjena“, a **promjenu tjedna i dalje bira lokalna logika** (da „najviše jedna promjena tjedno“ i pauza za odbijene ostanu pouzdani). Model piše samo za tjedan koji je upravo završio (nedjelja/ponedjeljak). U redu?

@@ -19,6 +19,7 @@ import {
   type YearDiagnosis,
   isWeekDiagnosisReady,
   llmDayTextSchema,
+  llmMonthTextSchema,
   llmWeekTextSchema,
   LOCAL_DAY_DIAGNOSIS_VERSION,
   LOCAL_MONTH_DIAGNOSIS_VERSION,
@@ -26,6 +27,7 @@ import {
   monthBounds,
   monthChanges,
   parseDayDiagnosis,
+  parseMonthDiagnosis,
   parseWeekDiagnosis,
   periodStats,
   rollingWeekStart,
@@ -35,6 +37,8 @@ import {
   type DayStats,
   type LlmDayText,
   type LlmPreviousReport,
+  type LlmMonthText,
+  type LlmPreviousMonthReport,
   type LlmPreviousWeekReport,
   type LlmWeekDay,
   type LlmWeekText,
@@ -319,6 +323,20 @@ export function markReportSeen(
 export type WeekReportResult = { report: Report; diagnosis: WeekDiagnosis };
 
 
+/** Tekst modela spremljene mjesečne dijagnoze (korak 31d), ako je valjan. */
+const monthLlmOf = (sections: unknown): LlmMonthText | undefined => {
+  const llm = typeof sections === 'object' && sections !== null && 'llm' in sections ? sections.llm : undefined;
+  const result = llmMonthTextSchema.safeParse(llm);
+  return result.success ? result.data : undefined;
+};
+
+/** Sve ideje spremljenih sekcija i nove dijagnoze su iste. */
+const sameIdeas = (stored: unknown, next: { ideas: readonly unknown[] }): boolean =>
+  sameJson(
+    typeof stored === 'object' && stored !== null && 'ideas' in stored ? stored.ideas : null,
+    next.ideas,
+  );
+
 /** Prva ideja spremljenih sekcija i nove dijagnoze je ista (ključ i parametri). */
 const sameIdea = (stored: unknown, next: { ideas: readonly unknown[] }): boolean => {
   const storedIdeas =
@@ -575,6 +593,11 @@ export function generateMonthReport(
     const diagnosis = buildMonthDiagnosis(current, previous, days, { previousBest, changes });
     const stats = { current, previous };
     const existing = tx.select().from(reports).where(reportOf(userId, 'month', bounds.start)).get();
+    // Riječi modela (korak 31d) ostaju dok su statistika mjeseca i smjer isti.
+    const existingLlm = existing ? monthLlmOf(existing.sections) : undefined;
+    if (existingLlm && sameJson(existing?.stats, stats) && sameIdeas(existing?.sections, diagnosis)) {
+      diagnosis.llm = existingLlm;
+    }
     if (existing && sameJson(existing.sections, diagnosis) && sameJson(existing.stats, stats)) {
       return { report: reportSchema.parse(existing), diagnosis };
     }
@@ -946,20 +969,7 @@ export async function loadWeekWriteReportData(
   const stats = storedWeekStats(row.stats);
   const end = addDays(start, 6);
   if (diagnosis === null || stats === null || end === null) return null;
-  const dayRows = await db
-    .select()
-    .from(reports)
-    .where(
-      and(eq(reports.userId, userId), eq(reports.period, 'day'), gte(reports.periodStart, start), lte(reports.periodStart, end)),
-    )
-    .all();
-  const days: LlmWeekDay[] = [];
-  for (const dayRow of dayRows) {
-    const dayStatsStored = storedDayStats(dayRow.stats);
-    if (!dayStatsStored) continue;
-    const scoreRow = parseDayDiagnosis(dayRow.sections)?.progress.find((progress) => progress.metric === 'score');
-    days.push({ stats: dayStatsStored.today, score: scoreRow ? scoreRow.value : null });
-  }
+  const days = await storedPeriodDays(db, userId, start, end);
   const earlier = await db
     .select()
     .from(reports)
@@ -1008,6 +1018,105 @@ export function saveWeekReportText(
     const diagnosis = parseWeekDiagnosis(row.sections);
     if (diagnosis === null || weekBasis(row.stats, diagnosis) !== basis) return null;
     const next: WeekDiagnosis = { ...diagnosis, llm: llmWeekTextSchema.parse(text) };
+    if (!sameJson(diagnosis.llm, next.llm)) {
+      tx.update(reports)
+        .set({ sections: next, updatedAt: deps.now().toISOString() })
+        .where(eq(reports.id, row.id))
+        .run();
+    }
+    return next;
+  });
+}
+
+export type WriteMonthReportData = {
+  diagnosis: MonthDiagnosis;
+  current: PeriodStats;
+  previous: PeriodStats | null;
+  days: LlmWeekDay[];
+  previousReports: LlmPreviousMonthReport[];
+  basis: string;
+};
+
+/** Koliko ranijih mjesečnih dijagnoza ide modelu. */
+const LLM_PREVIOUS_MONTHS = 3;
+
+const monthBasis = (stats: unknown, diagnosis: MonthDiagnosis) => JSON.stringify({ stats, ideas: diagnosis.ideas });
+
+/** Dani razdoblja `from`–`to` iz spremljenih dnevnih dijagnoza: statistika i rezultat koji je korisnik vidio. */
+async function storedPeriodDays(db: RitamDb, userId: string, from: LocalDate, to: LocalDate): Promise<LlmWeekDay[]> {
+  const rows = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), eq(reports.period, 'day'), gte(reports.periodStart, from), lte(reports.periodStart, to)))
+    .all();
+  const days: LlmWeekDay[] = [];
+  for (const row of rows) {
+    const stored = storedDayStats(row.stats);
+    if (!stored) continue;
+    const scoreRow = parseDayDiagnosis(row.sections)?.progress.find((progress) => progress.metric === 'score');
+    days.push({ stats: stored.today, score: scoreRow ? scoreRow.value : null });
+  }
+  return days;
+}
+
+/**
+ * Sve što `write-report` treba za mjesec koji počinje danom `start` (korak 31d), iz spremljenih
+ * dijagnoza. `null` kad mjesečne dijagnoze nema.
+ */
+export async function loadMonthWriteReportData(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+): Promise<WriteMonthReportData | null> {
+  const row = await db.select().from(reports).where(reportOf(userId, 'month', start)).get();
+  if (!row) return null;
+  const diagnosis = parseMonthDiagnosis(row.sections);
+  const stats = storedWeekStats(row.stats);
+  if (diagnosis === null || stats === null) return null;
+  const days = await storedPeriodDays(db, userId, diagnosis.start, diagnosis.end);
+  const earlier = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), eq(reports.period, 'month'), lt(reports.periodStart, start)))
+    .orderBy(desc(reports.periodStart))
+    .limit(LLM_PREVIOUS_MONTHS)
+    .all();
+  const previousReports: LlmPreviousMonthReport[] = [];
+  for (const report of earlier) {
+    const earlierDiagnosis = parseMonthDiagnosis(report.sections);
+    if (!earlierDiagnosis) continue;
+    previousReports.push({
+      start: report.periodStart,
+      diagnosis: earlierDiagnosis,
+      helpful: report.helpful,
+      comment: report.feedbackComment,
+    });
+  }
+  return {
+    diagnosis,
+    current: stats.current,
+    previous: stats.previous,
+    days,
+    previousReports,
+    basis: monthBasis(row.stats, diagnosis),
+  };
+}
+
+/** Spremi riječi modela uz mjesečnu dijagnozu; ne sprema ako su se statistika ili smjer promijenili. */
+export function saveMonthReportText(
+  db: RitamDb,
+  userId: string,
+  start: LocalDate,
+  text: LlmMonthText,
+  basis: string,
+  deps: RepoDeps = defaultRepoDeps,
+): MonthDiagnosis | null {
+  return db.transaction((tx) => {
+    const row = tx.select().from(reports).where(reportOf(userId, 'month', start)).get();
+    if (!row) return null;
+    const diagnosis = parseMonthDiagnosis(row.sections);
+    if (diagnosis === null || monthBasis(row.stats, diagnosis) !== basis) return null;
+    const next: MonthDiagnosis = { ...diagnosis, llm: llmMonthTextSchema.parse(text) };
     if (!sameJson(diagnosis.llm, next.llm)) {
       tx.update(reports)
         .set({ sections: next, updatedAt: deps.now().toISOString() })

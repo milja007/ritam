@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { MonthDiagnosis } from '@/core/diagnosis';
+import { isMonthFreshForWriting, type MonthDiagnosis } from '@/core/diagnosis';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { generateMonthReport, markReportSeen } from '@/db/repos';
+
+import { capitalize, monthLineParams } from './month-diagnosis-view';
+import { canWriteReport, refineMonthDiagnosis } from './write-report-client';
 
 type Loaded = { key: string; status: 'ready' | 'none' | 'error'; diagnosis: MonthDiagnosis | null; seen: boolean };
 
@@ -12,6 +16,8 @@ export type MonthReportState = {
   status: 'loading' | 'ready' | 'none' | 'error';
   diagnosis: MonthDiagnosis | null;
   seen: boolean;
+  /** Čekaju se riječi modela (korak 31d); lokalna dijagnoza je već tu. */
+  writing: boolean;
   markSeen: () => void;
 };
 
@@ -20,7 +26,10 @@ export type MonthReportState = {
  * čim je dostupna. `refresh` se promijeni kad se podaci mjeseca promijene (učitani podaci taba).
  */
 export function useMonthReport(month: string, today: string, refresh: unknown): MonthReportState {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en' : 'hr';
   const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const [written, setWritten] = useState<{ base: MonthDiagnosis; diagnosis: MonthDiagnosis | null } | null>(null);
   const key = `${month}|${today}`;
 
   useEffect(() => {
@@ -57,9 +66,28 @@ export function useMonthReport(month: string, today: string, refresh: unknown): 
   }, [key, month]);
 
   const current = loaded !== null && loaded.key === key ? loaded : null;
+  const base = current?.status === 'ready' ? current.diagnosis : null;
+  // Korak 31d: riječi modela samo za svjež mjesec (zadnji dan ili dan poslije) i s oblakom.
+  const wanted = base !== null && base.llm === undefined && isMonthFreshForWriting(base.end, today) && canWriteReport();
+
+  useEffect(() => {
+    if (!wanted || base === null) return;
+    let active = true;
+    void refineMonthDiagnosis(base.start, locale, (line) =>
+      capitalize(t(`diagnosis.month.lines.${line.key}`, monthLineParams(line, locale))),
+    ).then((diagnosis) => {
+      if (active) setWritten({ base, diagnosis });
+    });
+    return () => {
+      active = false;
+    };
+  }, [base, locale, t, wanted]);
+
+  const writtenNow = written !== null && written.base === base ? written : null;
   return {
     status: current?.status ?? 'loading',
-    diagnosis: current?.diagnosis ?? null,
+    diagnosis: writtenNow?.diagnosis ?? current?.diagnosis ?? null,
+    writing: wanted && writtenNow === null,
     seen: current?.seen ?? false,
     markSeen,
   };

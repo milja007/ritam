@@ -43,7 +43,7 @@ export function MonthDiagnosisCard({ report, monthLabel, current }: MonthDiagnos
     ) : null;
   }
 
-  const summary = lineText(diagnosis.summary);
+  const summary = diagnosis.llm?.summary ?? lineText(diagnosis.summary);
   const trendLabel = t(`diagnosis.month.trend.${diagnosis.trend}`);
   const hasChanges = diagnosis.changes.accepted + diagnosis.changes.rejected > 0;
   const openDiagnosis = () => {
@@ -111,7 +111,7 @@ export function MonthDiagnosisCard({ report, monthLabel, current }: MonthDiagnos
                 <Text variant="title" accessibilityRole="header">
                   {t('diagnosis.month.title')}
                 </Text>
-                <MonthDiagnosisView diagnosis={diagnosis} />
+                <MonthDiagnosisView diagnosis={diagnosis} writing={report.writing} />
                 <DiagnosisFeedback period="month" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>
