@@ -62,6 +62,7 @@ describe('Supabase shema prati lokalnu', () => {
       'schedule_blocks',
       'settings',
       'tasks',
+      'tracker_entries',
       'xp_events',
     ]);
   });

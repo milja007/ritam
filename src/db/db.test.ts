@@ -48,6 +48,13 @@ const settingsInput: SettingsInput = {
       scorePlan: true,
       scoreRules: false,
       scoreSleep: false,
+  trackCalories: false,
+  calorieGoal: null,
+  trackMoney: false,
+  moneyLimitCents: null,
+  moneyPeriod: null,
+  moneyBalanceCents: null,
+  moneyBalanceOn: null,
 };
 
 const block = (overrides: Partial<ScheduleBlockInput> = {}): ScheduleBlockInput => ({
@@ -82,6 +89,7 @@ describe('migracije', () => {
       'sync_queue',
       'sync_state',
       'tasks',
+      'tracker_entries',
       'xp_events',
     ]);
   });

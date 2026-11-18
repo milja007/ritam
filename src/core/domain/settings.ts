@@ -1,7 +1,16 @@
 import { z } from 'zod';
 
 import { SUPPORTED_LANGUAGES } from '../i18n/language';
-import { baseEntityShape, clockTimeSchema } from './common';
+import { baseEntityShape, clockTimeSchema, localDateSchema } from './common';
+
+/** Razdoblje limita potrošnje (koncept: „najviše 100 € ovaj tjedan“). */
+export const MONEY_PERIODS = ['day', 'week', 'month'] as const;
+export type MoneyPeriod = (typeof MONEY_PERIODS)[number];
+/** Granice cilja kalorija: šire od razumnog, da upozorenje (ne zabrana) radi posao. */
+export const CALORIE_GOAL_MIN = 500;
+export const CALORIE_GOAL_MAX = 10_000;
+/** Najveći iznos (limit, stanje, unos) u centima: 1 000 000 €. */
+export const MONEY_MAX_CENTS = 100_000_000;
 
 /** Jezik appa: 'system' prati jezik uređaja, inače ručni odabir. */
 export const LANGUAGE_PREFERENCES = ['system', ...SUPPORTED_LANGUAGES] as const;
@@ -61,9 +70,33 @@ export const settingsSchema = z.object({
   scorePlan: z.literal(true),
   scoreRules: z.boolean(),
   scoreSleep: z.boolean(),
+  /**
+   * Opcionalni trackeri (korak 31b, koncept: isključeni po defaultu, uključuju se u Profilu).
+   * Kalorije: dnevni cilj u kcal (`null` dok ga korisnik ne postavi).
+   */
+  trackCalories: z.boolean().default(false),
+  calorieGoal: z.number().int().min(CALORIE_GOAL_MIN).max(CALORIE_GOAL_MAX).nullable().default(null),
+  /** Novac: limit potrošnje (u centima) za dan, tjedan ili mjesec; po želji trenutno stanje. */
+  trackMoney: z.boolean().default(false),
+  moneyLimitCents: z.number().int().min(1).max(MONEY_MAX_CENTS).nullable().default(null),
+  moneyPeriod: z.enum(MONEY_PERIODS).nullable().default(null),
+  /** Stanje na dan `moneyBalanceOn`; potrošnja od tog dana (uključivo) se oduzima. */
+  moneyBalanceCents: z.number().int().min(-MONEY_MAX_CENTS).max(MONEY_MAX_CENTS).nullable().default(null),
+  moneyBalanceOn: localDateSchema.nullable().default(null),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
+
+/** Zadani trackeri (korak 31b): isključeni, bez cilja, limita i stanja. */
+export const DEFAULT_TRACKERS = {
+  trackCalories: false,
+  calorieGoal: null,
+  trackMoney: false,
+  moneyLimitCents: null,
+  moneyPeriod: null,
+  moneyBalanceCents: null,
+  moneyBalanceOn: null,
+} as const satisfies Partial<Settings>;
 
 /** Zadana područja rezultata: samo plan. */
 export const DEFAULT_SCORE_AREAS = {

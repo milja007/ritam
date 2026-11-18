@@ -18,6 +18,7 @@ export const SYNC_TABLES = [
   'quests',
   'goals',
   'tasks',
+  'tracker_entries',
 ] as const;
 
 export type SyncTable = (typeof SYNC_TABLES)[number];
@@ -36,6 +37,7 @@ export const NATURAL_KEYS: Readonly<Record<SyncTable, readonly string[] | null>>
   quests: null,
   goals: null,
   tasks: null,
+  tracker_entries: null,
 };
 
 export function isSyncTable(name: string): name is SyncTable {

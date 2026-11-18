@@ -61,6 +61,7 @@ const TABLES: Record<SyncTable, SQLiteTable> = {
   quests: schema.quests,
   goals: schema.goals,
   tasks: schema.tasks,
+  tracker_entries: schema.trackerEntries,
 };
 
 type IdColumns = { id: ReturnType<typeof getTableColumns>[string]; userId: ReturnType<typeof getTableColumns>[string] };
