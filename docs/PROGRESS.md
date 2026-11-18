@@ -8,14 +8,14 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 3. Ciljevi tjedna — podaci (sljedeći PR, HIGH_RISK): tablica `goals` (razdoblje week/month/year + početak, naslov, gotovo) da je koriste i 25b; lokalna + Supabase migracija (remote = Borna), sync.
 4. Ciljevi tjedna — kartica na Tjednu (do 5, dodaj/označi/obriši), bez XP-a (koncept ga ne traži).
 5. Tjedni zadaci s pitanjima (trajanje, rok, koliko puta, doba dana, energija) + smještanje → kasnije (26).
-- Gotovo 1–2 (PR #37), 3 (PR #38: `goals`, lokalna migracija 0012, Supabase `20261118060000_goals.sql` — remote = Borna, pitanje 84). 4 (PR #39: kartica ciljeva na Tjednu, i na Mjesecu i Godini — dio 25b). Sljedeće: tjedni zadaci s pitanjima (5). Ne radi se: wind-down po koraku kreveta (čeka pitanje 87).
+- Gotovo 1–2 (PR #37), 3 (PR #38: `goals`, lokalna migracija 0012, Supabase `20261118060000_goals.sql` — remote = Borna, pitanje 84). 4 (PR #39: kartica ciljeva na Tjednu, i na Mjesecu i Godini — dio 25b). PR #40: tipkovnica ne prekriva polje cilja (PeriodScreen). Sljedeće: tjedni zadaci s pitanjima (5) — nova tablica `tasks` (veza `schedule_blocks.task_id` već postoji), pitanja kod unosa, smještanje u dane tjedna. Ne radi se: wind-down po koraku kreveta (čeka pitanje 87).
 
 ## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
 ## Stanje
-- `main`: koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
+- `main`: korak 25 dio (Tjedan kao kalendar, ciljevi razdoblja), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
 - Remote Supabase `ritam`: 7 migracija (zadnja `20261111103947_sync`), tablice prazne. Auth/sync iza `EXPO_PUBLIC_FEATURE_AUTH` (isključeno).
 - Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna, mjesečna i godišnja dijagnoza, magic link, sync s dva uređaja.
 - Stanje #1 (2026-11-17 15:45): nema P0/P1 ni otvorenih P2 (PR #22 → #26, PR #16 → #27; model: pitanje 77).

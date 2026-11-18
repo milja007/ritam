@@ -28,7 +28,13 @@ export function PeriodScreen({ subtitle, title, pill, nav, status, onRetry, chil
   return (
     <View style={[styles.fill, { backgroundColor: colors.background }]}>
       <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
-        <ScrollView contentContainerStyle={styles.content}>
+        {/* Polje „Novi cilj“ je nisko na ekranu: iOS pomakne sadržaj iznad tipkovnice, a dodir
+            gumba „Dodaj“ dok je tipkovnica otvorena odmah radi (ne samo zatvori tipkovnicu). */}
+        <ScrollView
+          contentContainerStyle={styles.content}
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive">
           <View style={styles.header}>
             <View style={styles.titles}>
               <Text variant="caption" tone="textMuted">
