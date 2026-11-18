@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-18 · Sesija 18:43 (nastavak) — korak 31d: mjesečna dijagnoza riječima
+- Plan (isti obrazac kao 31c; koncept: mjesečna = dan + tjedan + mjesec, najviše 2 ideje kao smjer):
+  (1) `write-report` mjesečni način (`llm-month-v1`): statistika mjeseca i prošlog (s trackerima), dani mjeseca ukratko (uzorci po danu u tjednu i polovicama), lokalne ideje-smjer, odgovori na tjedne promjene, ranije mjesečne dijagnoze s Pomoglo/Nije. Model piše riječi + jednu rečenicu uz smjer; ideje ne mijenja.
+  (2) App: `sections.llm` uz mjesečnu dijagnozu (otpada kad se statistika ili ideje promijene), poziv samo za svjež mjesec (zadnji dan ili dan poslije), bez oblaka lokalna.
+- `[~]` do deploya (pitanje 77).
+
 ## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
 - Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
   (1) Trackeri u lokalnoj tjednoj/mjesečnoj/godišnjoj dijagnozi: statistika razdoblja broji dane s unosom kalorija (unutar/iznad/ispod) i potrošnju naspram zbroja dnevnih dijelova limita; Napredak „Kalorije: dani unutar cilja“, „Potrošnja“; pohvala/uočeno. i18n HR/EN.
