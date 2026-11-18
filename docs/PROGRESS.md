@@ -2,13 +2,15 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-18 · Sesija 06:43 — korak 25 (dio): tjedan kao kalendar za planiranje
-1. Core `weekNav` / `isWeekOpenable` dobiju `ahead` (tjedni unaprijed): Tjedan lista **i sljedeći tjedan** (planiranje nedjeljom, P54); dalje ne. `weekDaysLeft` = dani tjedna od danas (tekući: „ostalo je N dana“, sljedeći: 7, prošli: 0). Testovi.
-2. Tjedan: dodir dana koji tek dolazi (sutra i dalje, i u sljedećem tjednu) otvara isti tok kao „Što imaš sutra?“ za taj dan (naslov „Što imaš u {dan}?“); danas vodi na Dan; prošli dani ostaju samo za čitanje. Pilula „Ostalo je N dana“. Pristupačnost (gumb, hint), HR/EN.
-3. Ciljevi tjedna — podaci (sljedeći PR, HIGH_RISK): tablica `goals` (razdoblje week/month/year + početak, naslov, gotovo) da je koriste i 25b; lokalna + Supabase migracija (remote = Borna), sync.
-4. Ciljevi tjedna — kartica na Tjednu (do 5, dodaj/označi/obriši), bez XP-a (koncept ga ne traži).
-5. Tjedni zadaci s pitanjima (trajanje, rok, koliko puta, doba dana, energija) + smještanje → kasnije (26).
-- Gotovo 1–2 (PR #37), 3 (PR #38: `goals`, lokalna migracija 0012, Supabase `20261118060000_goals.sql` — remote = Borna, pitanje 84). 4 (PR #39: kartica ciljeva na Tjednu, i na Mjesecu i Godini — dio 25b). PR #40: tipkovnica ne prekriva polje cilja (PeriodScreen). Sljedeće: tjedni zadaci s pitanjima (5) — nova tablica `tasks` (veza `schedule_blocks.task_id` već postoji), pitanja kod unosa, smještanje u dane tjedna. Ne radi se: wind-down po koraku kreveta (čeka pitanje 87).
+## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
+1. Podaci (PR A, HIGH_RISK): domena `task.ts` — tjedni zadatak: tjedan (ponedjeljak), naslov 1–120, trajanje 5–480 min, koliko puta 1–7, rok (dan unutar tjedna ili bez), doba dana (bilo kad/jutro/popodne/večer), energija (niska/srednja/visoka), što treba (≤ 300). Najviše 10 po tjednu.
+2. SQLite `tasks` (0013 + okidači synca), Supabase migracija (CHECK-ovi, RLS, tombstone; remote = Borna, pitanje 84), sync tablice, repo list/create/update/delete; testovi + `test:supabase`.
+3. Core smještanje (PR B): `placeWeekTasks` — lokalno i deterministički (LLM = korak 26): samo dani od danas do roka, svaki put drugi dan, slobodni prozori (buđenje + 30 min → krevet, bez preklapanja), doba dana tvrdo, visoka energija ranije u danu, niska kasnije; već smješteni blokovi zadatka (`task_id`) se broje. Vraća prijedlog + što nije stalo i zašto. Testovi.
+4. UI (PR B): kartica „Zadaci tjedna“ na Tjednu — dodavanje uz pitanja (čipovi, bez tipkanja osim naslova i „što treba“), napredak „N od M puta“ (odrađeni blokovi zadatka), „Smjesti u tjedan“ → prijedlog → Prihvati stvara blokove vrste Zadatak s `task_id` (korisnik odobrava), ukloni zadatak. HR/EN, 44 pt, labeli.
+- Recenzija: koncept („pitanja kod unosa … LLM ih smješta, pravila su tvrda ograničenja“) — pravila iz pitanja su tvrda u lokalnom smještanju, LLM ostaje za 26; bez XP-a za sam zadatak (XP ide kroz blokove kao i sada). „Najviše 10“ nije u konceptu → konstanta.
+
+## 2026-11-18 · Sesija 06:43 — korak 25 (dio)
+- Gotovo: Tjedan kao kalendar + sljedeći tjedan (PR #37), ciljevi razdoblja — podaci `goals` 0012 + Supabase (PR #38, remote = Borna, pitanje 84), kartica ciljeva na Tjednu/Mjesecu/Godini (PR #39), tipkovnica (PR #40).
 
 ## Odluke (Borna, 2026-11-15) — 79 Skia da (paket na Macu), 81 tema s računom, 82 tjedna uz dnevnu + obavijest, 83 mjesečna kao smjer. Detalji u arhivi.
 
@@ -29,7 +31,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Pitanja za Bornu
 87. **San (29)** — pragovi nisu u konceptu, odabrano: kratka noć = barem 1 h manje od cilja, jako kratka = 2 h; „Lakše jutro“ samo predlaže (otvara „Nešto je iskrslo“ s razlogom „Loš san“, 1 h), ne mijenja plan samo. Krevet: ako zadnjih noći (≥ 3) kasniš > 15 min, večerašnji cilj je ~15 min ranije od navike, korak po korak do cilja. Želiš li da i **wind-down obavijest** prati taj korak (umjesto ciljanog kreveta)?
 85. **Žeravica (freeze tokeni, korak 34)** — pravila nisu u konceptu, odabrano: 1 žeravica za svakih 7 dana zaredom, najviše 2, troši se automatski za propušten dan (dan ne povećava niz); ako rupa ima više dana nego žeravica, niz pukne, a žeravice ostaju. Vrijedi za glavni niz svugdje (Profil, Dan, bedževi, orb, dijagnoze). Naziv u UI-ju „Žeravica“ / „Banked ember“. U redu? Promjena je jedna konstanta.
-84. **Remote migracije `color_theme` (odluka 81), `quests` (korak 34) i `goals` (korak 25)** — Claudeov alat ne smije primijeniti. Na Macu: `npx supabase db push` (primijeni `20261117010000_color_theme.sql`, `20261117180000_quests.sql` i `20261118060000_goals.sql`). Dok nisu primijenjene, sync ne smije biti uključen.
+84. **Remote migracije `color_theme` (odluka 81), `quests` (korak 34), `goals` i `tasks` (korak 25)** — Claudeov alat ne smije primijeniti. Na Macu: `npx supabase db push` (primijeni `20261117010000_color_theme.sql`, `20261117180000_quests.sql`, `20261118060000_goals.sql` i `20261118100000_tasks.sql`). Dok nisu primijenjene, sync ne smije biti uključen.
 86. **Epski questovi (34)** — pravila nisu u konceptu, odabrano: quest = naslov, zašto, okvirni rok (neobavezan), do 12 etapa; najviše 3 u tijeku; XP 15 po etapi i 100 za ostvaren quest (bez kazni; poništena etapa vraća XP); arhiva čuva XP. U redu?
 75. Prelazak na drugi račun na istom uređaju: sync je sada blokiran (sigurno). (a) ostaje tako; (b) gumb "Obriši podatke s uređaja i preuzmi drugi račun" uz potvrdu; (c) zasebni lokalni podaci po računu.
 76. Rang (34b): pragovi i definicija „dobrog tjedna“ nisu u konceptu, pa su odabrani ovdje (gore). Je li u redu da S traži 20 dobrih tjedana i da tjedan koji samo drži isti prosjek ispod 70 ne broji? Promjena je jedna konstanta.

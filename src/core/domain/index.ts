@@ -7,3 +7,4 @@ export * from './xp-event';
 export * from './report';
 export * from './quest';
 export * from './goal';
+export * from './task';

@@ -10,6 +10,8 @@ import type { RitamDb } from './db';
 import {
   createBlock,
   createGoal,
+  createTask,
+  listTasks,
   createQuest,
   listGoals,
   listQuests,
@@ -258,6 +260,43 @@ describe('syncOnce', () => {
     await syncOnce(db, remote, ids);
     expect(listGoals(db, LOCAL, 'week', '2026-11-09')).toEqual([
       expect.objectContaining({ id: goal.id, userId: LOCAL, title: 'Četiri treninga', doneOn: '2026-11-11' }),
+    ]);
+    expect(countQueue(db)).toBe(0);
+  });
+
+  it('tjedni zadatak (korak 25) ide na poslužitelj i vraća se s izmjenom s drugog uređaja', async () => {
+    const { db, remote } = await setup();
+    const deps = testDeps();
+    const input = {
+      weekStart: '2026-11-09',
+      title: 'Trening',
+      durationMinutes: 60,
+      timesPerWeek: 3,
+      deadline: '2026-11-14',
+      partOfDay: 'evening' as const,
+      energy: 'high' as const,
+      needs: 'Tenisice',
+    };
+    const task = createTask(db, LOCAL, input, deps);
+    await syncOnce(db, remote, ids);
+    expect(remote.rows('tasks')).toEqual([
+      expect.objectContaining({
+        id: task.id,
+        user_id: UID,
+        week_start: '2026-11-09',
+        duration_minutes: 60,
+        times_per_week: 3,
+        deadline: '2026-11-14',
+        part_of_day: 'evening',
+        energy: 'high',
+        needs: 'Tenisice',
+      }),
+    ]);
+    const [row] = remote.rows('tasks');
+    remote.put('tasks', { ...row, updated_at: '2026-11-12T08:00:00+00:00', times_per_week: 2 });
+    await syncOnce(db, remote, ids);
+    expect(listTasks(db, LOCAL, '2026-11-09')).toEqual([
+      expect.objectContaining({ id: task.id, userId: LOCAL, timesPerWeek: 2, deadline: '2026-11-14' }),
     ]);
     expect(countQueue(db)).toBe(0);
   });

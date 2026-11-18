@@ -89,6 +89,9 @@ insert into public.quests (id, title, why, target_date, milestones, status) valu
 insert into public.goals (id, period, period_start, title) values
   ('60000000-0000-0000-0000-000000000001', 'week', '2026-11-16', 'Tri treninga');
 
+insert into public.tasks (id, week_start, title, duration_minutes, times_per_week, deadline, part_of_day, energy, needs) values
+  ('70000000-0000-0000-0000-000000000001', '2026-11-16', 'Trening', 60, 3, '2026-11-22', 'evening', 'high', 'Tenisice');
+
 -- user_id se popuni iz auth.uid()
 select test.expect_count(
   $q$select 1 from public.schedule_blocks where user_id = '00000000-0000-0000-0000-00000000000a'$q$,
@@ -163,6 +166,22 @@ select test.expect_error($q$insert into public.goals (period, period_start, titl
 select test.expect_error($q$insert into public.goals (period, period_start, title) values ('week', '2026-11-16', '  ')$q$,
   '23514', 'cilj: naslov nije prazan');
 select test.expect_count($q$select 1 from public.goals where period = 'week' and title = 'Tri treninga'$q$, 1, 'cilj se sprema');
+-- Tjedni zadaci (korak 25)
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-17', 'X', 30, 1, 'any', 'low')$q$,
+  '23514', 'zadatak: tjedan počinje ponedjeljkom');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, deadline, part_of_day, energy) values ('2026-11-16', 'X', 30, 1, '2026-11-23', 'any', 'low')$q$,
+  '23514', 'zadatak: rok unutar tjedna');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', 'X', 30, 8, 'any', 'low')$q$,
+  '23514', 'zadatak: najviše 7 puta tjedno');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', 'X', 4, 1, 'any', 'low')$q$,
+  '23514', 'zadatak: trajanje 5–480');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', 'X', 30, 1, 'night', 'low')$q$,
+  '23514', 'zadatak: doba dana');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', 'X', 30, 1, 'any', 'max')$q$,
+  '23514', 'zadatak: energija');
+select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', ' ', 30, 1, 'any', 'low')$q$,
+  '23514', 'zadatak: naslov nije prazan');
+select test.expect_count($q$select 1 from public.tasks where title = 'Trening' and needs = 'Tenisice'$q$, 1, 'zadatak se sprema');
 select test.expect_error($q$insert into public.schedule_blocks (user_id, date, title, start, "end", kind, source, status)
   values ('00000000-0000-0000-0000-00000000000b', '2026-11-10', 'X', '10:00', '11:00', 'task', 'user', 'planned')$q$,
   '42501', 'ne može pisati u tuđe ime');
@@ -187,6 +206,8 @@ select test.expect_count('select 1 from public.quests', 0, 'B ne vidi A-ove ques
 update public.quests set title = 'hack';
 select test.expect_count('select 1 from public.goals', 0, 'B ne vidi A-ove ciljeve');
 update public.goals set title = 'hack';
+select test.expect_count('select 1 from public.tasks', 0, 'B ne vidi A-ove zadatke');
+update public.tasks set title = 'hack';
 
 update public.schedule_blocks set title = 'hack';
 delete from public.xp_events;
@@ -223,6 +244,7 @@ select test.expect_count('select 1 from public.llm_calls', 1, 'A vidi samo svoje
 select test.expect_count($q$select 1 from public.schedule_blocks where title = 'hack'$q$, 0, 'B nije promijenio A-ove blokove');
 select test.expect_count($q$select 1 from public.quests where title = 'hack'$q$, 0, 'B nije promijenio A-ov quest');
 select test.expect_count($q$select 1 from public.goals where title = 'hack'$q$, 0, 'B nije promijenio A-ov cilj');
+select test.expect_count($q$select 1 from public.tasks where title = 'hack'$q$, 0, 'B nije promijenio A-ov zadatak');
 select test.expect_count('select 1 from public.xp_events', 2, 'B nije obrisao A-ov XP');
 
 -- Brisanje checkina: stavke idu (cascade), zapis zabrane ostaje bez checkin_id.
@@ -242,6 +264,8 @@ delete from public.quests;
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'quests'$q$, 1, 'tombstone questa');
 delete from public.goals;
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'goals'$q$, 1, 'tombstone cilja');
+delete from public.tasks;
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tasks'$q$, 1, 'tombstone zadatka');
 select test.expect_error($q$insert into public.sync_tombstones (user_id, table_name, row_id)
   values ((select auth.uid()), 'rules', gen_random_uuid())$q$, '42501', 'klijent ne piše tombstone');
 -- synced_at postavlja poslužitelj, i kad ga klijent pokuša zadati.
