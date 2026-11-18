@@ -4,7 +4,7 @@ import type { YearLine } from '@/core/diagnosis';
 import { monthName } from '@/features/ember/format';
 
 import { capitalize } from './month-diagnosis-view';
-import { dayMonthName, weekdayName } from './week-diagnosis-view';
+import { dayMonthName, weekdayName, withEuroParams } from './week-diagnosis-view';
 
 /** Naziv mjeseca u rečenici: HR malim slovom („studeni“), EN velikim („November“). */
 function monthInSentence(month: string, language: string): string {
@@ -24,7 +24,7 @@ export function yearLineParams(line: YearLine, language: string): Record<string,
     else if (typeof value === 'string' && name.endsWith('Month')) params[name] = monthInSentence(value, language);
     else params[name] = value;
   }
-  return params;
+  return withEuroParams(params, language);
 }
 
 /** Tekst retka godišnje dijagnoze na jeziku appa. */

@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { Trend, WeekDiagnosis, WeekLine, WeekProgressRow } from '@/core/diagnosis';
 import { radius, spacing } from '@/core/theme';
+import { formatEuro } from '@/features/trackers/format';
 import { Button } from '@/ui/button';
 import { Text, type TextProps } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
@@ -51,13 +52,29 @@ export function dayMonthName(date: string, language: string): string {
   }
 }
 
+/**
+ * Iznosi u centima (`…Cents`, trackeri) dobivaju i formatirani euro pod imenom bez nastavka
+ * (`diffCents` → `diff`), isto kao u dnevnoj dijagnozi.
+ */
+export function withEuroParams(
+  params: Record<string, string | number>,
+  language: string,
+): Record<string, string | number> {
+  for (const [name, value] of Object.entries(params)) {
+    if (name.endsWith('Cents') && typeof value === 'number') {
+      params[name.slice(0, -'Cents'.length)] = formatEuro(value, language);
+    }
+  }
+  return params;
+}
+
 /** Parametri retka za prikaz: svaki `…Date` parametar postaje naziv dana na jeziku appa. */
 export function weekLineParams(line: WeekLine, language: string): Record<string, string | number> {
   const params: Record<string, string | number> = {};
   for (const [name, value] of Object.entries(line.params ?? {})) {
     params[name] = name.endsWith('Date') && typeof value === 'string' ? weekdayName(value, language) : value;
   }
-  return params;
+  return withEuroParams(params, language);
 }
 
 type WeekDiagnosisViewProps = {
@@ -206,7 +223,13 @@ export function WeekProgressRowView({ row, period }: ProgressRowProps) {
       case 'days':
       case 'plan':
       case 'rules':
+      case 'calories':
         return t('diagnosis.value.ofTotal', { value: number(value), total: number(total ?? 0) });
+      case 'money':
+        return t('diagnosis.value.money', {
+          value: formatEuro(value, i18n.language),
+          budget: formatEuro(total ?? 0, i18n.language),
+        });
       case 'sleep':
         return t('diagnosis.value.duration', { hours: Math.floor(value / 60), minutes: value % 60 });
       case 'xp':

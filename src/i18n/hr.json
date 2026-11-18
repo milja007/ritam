@@ -616,7 +616,9 @@
         "xp": "XP",
         "rating": "Ocjena dana",
         "best": "Najbolji dan",
-        "betterWeeks": "Niz boljih tjedana"
+        "betterWeeks": "Niz boljih tjedana",
+        "calories": "Kalorije unutar cilja (dani)",
+        "money": "Potrošnja / dio limita"
       },
       "value": {
         "best": "{{day}} · {{score}}",
@@ -664,7 +666,9 @@
           "rulesFewer": "Manje prekršaja nego tjedan prije: {{broken}} naspram {{previous}}.",
           "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
           "allDays": "Zaključio si svih {{days}} dana u tjednu. Upit je postao navika.",
-          "showedUp": "Zapisao si tjedan (zaključeni dani: {{days}}). Od toga sve kreće."
+          "showedUp": "Zapisao si tjedan (zaključeni dani: {{days}}). Od toga sve kreće.",
+          "caloriesWithin": "Kalorije unutar cilja {{count}} od {{total}} dana s unosom — dobar osjećaj za mjeru.",
+          "moneyWithin": "Potrošnja {{spent}} unutar dijela limita ({{budget}}) za dane s unosom."
         },
         "followUp": {
           "checkin": {
@@ -702,7 +706,10 @@
           "gaveUp": "Dani zatvoreni s „Odustajem”: {{count}}.",
           "moved": "Premještanja na kasnije: {{count}}.",
           "comment": "{{commentDate}}, {{title}}: „{{comment}}”",
-          "none": "U ovom tjednu nema posebnih uzoraka."
+          "none": "U ovom tjednu nema posebnih uzoraka.",
+          "caloriesOver": "Kalorije iznad cilja {{count}} od {{total}} dana s unosom — vrijedi pogledati koji obrok podiže zbroj.",
+          "caloriesUnder": "Kalorije ispod cilja {{count}} od {{total}} dana s unosom — premalo goriva zna oboriti energiju.",
+          "moneyOver": "Potrošnja {{diff}} iznad dijela limita (dana iznad: {{days}}). Pogledaj na što najviše ode."
         },
         "problems": {
           "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika tjedna nepotpuna.",
@@ -757,7 +764,9 @@
         "sleep": "Prosječan san",
         "xp": "XP",
         "rating": "Ocjena dana",
-        "best": "Najbolji dan"
+        "best": "Najbolji dan",
+        "calories": "Kalorije unutar cilja (dani)",
+        "money": "Potrošnja / dio limita"
       },
       "previous": "prošli mjesec {{value}}",
       "ideasNote": "Ovo je smjer, ne nova obveza. Promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu.",
@@ -791,7 +800,9 @@
           "rulesFewer": "Manje prekršaja nego prošli mjesec: {{broken}} naspram {{previous}}.",
           "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
           "allDays": "Zaključio si svih {{days}} dana u mjesecu. Upit je postao navika.",
-          "showedUp": "Zapisao si mjesec (zaključeni dani: {{days}}). Od toga sve kreće."
+          "showedUp": "Zapisao si mjesec (zaključeni dani: {{days}}). Od toga sve kreće.",
+          "caloriesWithin": "Kalorije unutar cilja {{count}} od {{total}} dana s unosom — dobar osjećaj za mjeru.",
+          "moneyWithin": "Potrošnja {{spent}} unutar dijela limita ({{budget}}) za dane s unosom."
         },
         "noticed": {
           "bestWorst": "Najbolji dan: {{bestDate}} ({{best}}). Najslabiji: {{worstDate}} ({{worst}}).",
@@ -816,7 +827,10 @@
             "up": "Druga polovica mjeseca bila je bolja od prve: {{second}} naspram {{first}}.",
             "down": "Druga polovica mjeseca bila je slabija od prve: {{second}} naspram {{first}}."
           },
-          "changes": "Tjedne promjene ovog mjeseca: prihvaćeno {{accepted}}, preskočeno {{rejected}}."
+          "changes": "Tjedne promjene ovog mjeseca: prihvaćeno {{accepted}}, preskočeno {{rejected}}.",
+          "caloriesOver": "Kalorije iznad cilja {{count}} od {{total}} dana s unosom — vrijedi pogledati koji obrok podiže zbroj.",
+          "caloriesUnder": "Kalorije ispod cilja {{count}} od {{total}} dana s unosom — premalo goriva zna oboriti energiju.",
+          "moneyOver": "Potrošnja {{diff}} iznad dijela limita (dana iznad: {{days}}). Pogledaj na što najviše ode."
         },
         "problems": {
           "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika mjeseca nepotpuna.",
@@ -856,7 +870,9 @@
         "sleep": "Prosječan san",
         "xp": "XP",
         "rating": "Ocjena dana",
-        "best": "Najbolji dan"
+        "best": "Najbolji dan",
+        "calories": "Kalorije unutar cilja (dani)",
+        "money": "Potrošnja / dio limita"
       },
       "previous": "prošla godina {{value}}",
       "ideasNote": "Ovo je smjer za iduću godinu, ne popis obveza. Promjene i dalje dolaze jedna po jedna kroz tjednu dijagnozu.",
@@ -893,7 +909,9 @@
           "rulesFewer": "Manje prekršaja nego prošle godine: {{broken}} naspram {{previous}}.",
           "sleepOnTarget": "U krevet na vrijeme: {{count}} od {{total}} noći.",
           "allDays": "Zaključio si svih {{days}} dana u godini. Upit je postao dio tebe.",
-          "showedUp": "Zapisao si godinu (zaključeni dani: {{days}}). Od toga sve kreće."
+          "showedUp": "Zapisao si godinu (zaključeni dani: {{days}}). Od toga sve kreće.",
+          "caloriesWithin": "Kalorije unutar cilja {{count}} od {{total}} dana s unosom — dobar osjećaj za mjeru.",
+          "moneyWithin": "Potrošnja {{spent}} unutar dijela limita ({{budget}}) za dane s unosom."
         },
         "noticed": {
           "bestWorst": "Najbolji dan: {{bestDate}} ({{best}}). Najslabiji: {{worstDate}} ({{worst}}).",
@@ -923,7 +941,10 @@
           "halves": {
             "up": "Druga polovica godine bila je bolja od prve: {{second}} naspram {{first}}.",
             "down": "Druga polovica godine bila je slabija od prve: {{second}} naspram {{first}}."
-          }
+          },
+          "caloriesOver": "Kalorije iznad cilja {{count}} od {{total}} dana s unosom — vrijedi pogledati koji obrok podiže zbroj.",
+          "caloriesUnder": "Kalorije ispod cilja {{count}} od {{total}} dana s unosom — premalo goriva zna oboriti energiju.",
+          "moneyOver": "Potrošnja {{diff}} iznad dijela limita (dana iznad: {{days}}). Pogledaj na što najviše ode."
         },
         "problems": {
           "fewDays": "Zaključeno je samo {{days}} od {{length}} dana, pa je slika godine nepotpuna.",

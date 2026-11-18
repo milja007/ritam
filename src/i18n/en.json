@@ -606,7 +606,9 @@
         "xp": "XP",
         "rating": "Day rating",
         "best": "Best day",
-        "betterWeeks": "Better-week streak"
+        "betterWeeks": "Better-week streak",
+        "calories": "Calories on target (days)",
+        "money": "Spending / limit share"
       },
       "value": {
         "best": "{{day}} · {{score}}",
@@ -654,7 +656,9 @@
           "rulesFewer": "Fewer slips than the week before: {{broken}} versus {{previous}}.",
           "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
           "allDays": "You closed all {{days}} days of the week. The check-in has become a habit.",
-          "showedUp": "You recorded the week (days closed: {{days}}). Everything starts there."
+          "showedUp": "You recorded the week (days closed: {{days}}). Everything starts there.",
+          "caloriesWithin": "Calories on target {{count}} of {{total}} logged days — good sense of measure.",
+          "moneyWithin": "Spending {{spent}} within the limit share ({{budget}}) for logged days."
         },
         "followUp": {
           "checkin": {
@@ -692,7 +696,10 @@
           "gaveUp": "Days closed with “I give up”: {{count}}.",
           "moved": "Moves to later: {{count}}.",
           "comment": "{{commentDate}}, {{title}}: “{{comment}}”",
-          "none": "No particular patterns this week."
+          "none": "No particular patterns this week.",
+          "caloriesOver": "Calories over target {{count}} of {{total}} logged days — worth checking which meal pushes the total.",
+          "caloriesUnder": "Calories under target {{count}} of {{total}} logged days — too little fuel can drag energy down.",
+          "moneyOver": "Spending {{diff}} over the limit share (days over: {{days}}). Check where most of it goes."
         },
         "problems": {
           "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the week is incomplete.",
@@ -747,7 +754,9 @@
         "sleep": "Average sleep",
         "xp": "XP",
         "rating": "Day rating",
-        "best": "Best day"
+        "best": "Best day",
+        "calories": "Calories on target (days)",
+        "money": "Spending / limit share"
       },
       "previous": "last month {{value}}",
       "ideasNote": "This is a direction, not a new obligation. Changes still come one at a time through the weekly diagnosis.",
@@ -781,7 +790,9 @@
           "rulesFewer": "Fewer slips than last month: {{broken}} versus {{previous}}.",
           "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
           "allDays": "You closed all {{days}} days of the month. The check-in has become a habit.",
-          "showedUp": "You recorded the month (days closed: {{days}}). Everything starts there."
+          "showedUp": "You recorded the month (days closed: {{days}}). Everything starts there.",
+          "caloriesWithin": "Calories on target {{count}} of {{total}} logged days — good sense of measure.",
+          "moneyWithin": "Spending {{spent}} within the limit share ({{budget}}) for logged days."
         },
         "noticed": {
           "bestWorst": "Best day: {{bestDate}} ({{best}}). Weakest: {{worstDate}} ({{worst}}).",
@@ -806,7 +817,10 @@
             "up": "The second half of the month was better than the first: {{second}} versus {{first}}.",
             "down": "The second half of the month was weaker than the first: {{second}} versus {{first}}."
           },
-          "changes": "Weekly changes this month: accepted {{accepted}}, skipped {{rejected}}."
+          "changes": "Weekly changes this month: accepted {{accepted}}, skipped {{rejected}}.",
+          "caloriesOver": "Calories over target {{count}} of {{total}} logged days — worth checking which meal pushes the total.",
+          "caloriesUnder": "Calories under target {{count}} of {{total}} logged days — too little fuel can drag energy down.",
+          "moneyOver": "Spending {{diff}} over the limit share (days over: {{days}}). Check where most of it goes."
         },
         "problems": {
           "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the month is incomplete.",
@@ -846,7 +860,9 @@
         "sleep": "Average sleep",
         "xp": "XP",
         "rating": "Day rating",
-        "best": "Best day"
+        "best": "Best day",
+        "calories": "Calories on target (days)",
+        "money": "Spending / limit share"
       },
       "previous": "last year {{value}}",
       "ideasNote": "This is a direction for next year, not a list of obligations. Changes still come one at a time through the weekly diagnosis.",
@@ -883,7 +899,9 @@
           "rulesFewer": "Fewer slips than last year: {{broken}} versus {{previous}}.",
           "sleepOnTarget": "In bed on time: {{count}} of {{total}} nights.",
           "allDays": "You closed all {{days}} days of the year. The check-in is part of you now.",
-          "showedUp": "You recorded the year (days closed: {{days}}). Everything starts there."
+          "showedUp": "You recorded the year (days closed: {{days}}). Everything starts there.",
+          "caloriesWithin": "Calories on target {{count}} of {{total}} logged days — good sense of measure.",
+          "moneyWithin": "Spending {{spent}} within the limit share ({{budget}}) for logged days."
         },
         "noticed": {
           "bestWorst": "Best day: {{bestDate}} ({{best}}). Weakest: {{worstDate}} ({{worst}}).",
@@ -913,7 +931,10 @@
           "halves": {
             "up": "The second half of the year was better than the first: {{second}} versus {{first}}.",
             "down": "The second half of the year was weaker than the first: {{second}} versus {{first}}."
-          }
+          },
+          "caloriesOver": "Calories over target {{count}} of {{total}} logged days — worth checking which meal pushes the total.",
+          "caloriesUnder": "Calories under target {{count}} of {{total}} logged days — too little fuel can drag energy down.",
+          "moneyOver": "Spending {{diff}} over the limit share (days over: {{days}}). Check where most of it goes."
         },
         "problems": {
           "fewDays": "Only {{days}} of {{length}} days were closed, so the picture of the year is incomplete.",
