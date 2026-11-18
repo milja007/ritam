@@ -12,6 +12,7 @@ import { GoalLimitError, createGoal, deleteGoal, setGoalDone } from '@/db/repos'
 import { Button } from '@/ui/button';
 import { Ember } from '@/ui/ember';
 import { Flare } from '@/ui/flare';
+import { playHaptic } from '@/ui/haptics';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
@@ -78,7 +79,9 @@ export function GoalsCard({ period, periodStart, periodEnd, today, heading, empt
 
   function toggle(goal: Goal) {
     const nowDone = goal.doneOn === null;
-    if (run(() => setGoalDone(getDb(), LOCAL_USER_ID, goal.id, nowDone ? today : null)) && nowDone) {
+    const ok = run(() => setGoalDone(getDb(), LOCAL_USER_ID, goal.id, nowDone ? today : null));
+    if (ok) playHaptic(nowDone ? 'achievement' : 'skip');
+    if (ok && nowDone) {
       AccessibilityInfo.announceForAccessibility(t('goals.doneA11y', { title: goal.title }));
     }
   }

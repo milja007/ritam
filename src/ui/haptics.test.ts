@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
+import { getHapticsEnabled, playHaptic, resetHapticsForTests, setHapticsEnabled } from './haptics';
+
 const mockPrefs = new Map<string, string>();
 jest.mock('./device-prefs', () => ({
   readDevicePref: (key: string) => mockPrefs.get(key) ?? null,
@@ -25,8 +27,6 @@ jest.mock('expo-haptics', () => ({
     return Promise.resolve();
   },
 }));
-
-import { getHapticsEnabled, playHaptic, resetHapticsForTests, setHapticsEnabled } from './haptics';
 
 describe('haptika na uređaju', () => {
   let now = 10_000;

@@ -21,6 +21,7 @@ import { notifyProgressChanged } from '@/features/progress';
 import { Button } from '@/ui/button';
 import { Ember } from '@/ui/ember';
 import { Flare } from '@/ui/flare';
+import { playHaptic } from '@/ui/haptics';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
@@ -84,11 +85,13 @@ export function QuestsCard({ today }: { today: string }) {
   function toggleMilestone(quest: Quest, milestone: QuestMilestone) {
     const nowDone = milestone.doneOn === null;
     const ok = run(() => setQuestMilestoneDone(getDb(), LOCAL_USER_ID, quest.id, milestone.id, nowDone, today));
+    if (ok) playHaptic(nowDone ? 'done' : 'skip');
     if (ok && nowDone) AccessibilityInfo.announceForAccessibility(t('quests.milestoneDoneA11y', { xp: QUEST_MILESTONE_XP }));
   }
 
   function setStatus(quest: Quest, status: QuestStatus) {
     const ok = run(() => setQuestStatus(getDb(), LOCAL_USER_ID, quest.id, status, today));
+    if (ok && status === 'done') playHaptic('achievement');
     if (ok && status === 'done') AccessibilityInfo.announceForAccessibility(t('quests.doneA11y', { xp: QUEST_DONE_XP }));
   }
 
