@@ -29,6 +29,7 @@ const request: PlanDayRequest = {
   priorities: [{ title: 'Kemija', durationMinutes: 45, fixedStart: null, important: false }],
   freeWindows: [{ start: '07:30', end: '23:00' }],
   preferences: null,
+  context: { goals: [], tasks: [], rules: [] },
 };
 
 describe('requestPlanDay (korak 22)', () => {

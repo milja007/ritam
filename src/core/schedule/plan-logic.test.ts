@@ -7,7 +7,9 @@ import {
   LLM_MODELS,
   llmModelFor,
   parseParseInputBody,
+  parsePlanContext,
   parsePlanDayRequest,
+  planContextLines,
   type DayPriority,
   type PlanDayRequest,
 } from '../../../supabase/functions/_shared/plan-logic';
@@ -30,6 +32,7 @@ const request = (priorities: DayPriority[], freeWindows: { start: string; end: s
   priorities,
   freeWindows,
   preferences: null,
+  context: { goals: [], tasks: [], rules: [] },
 });
 
 describe('isClock', () => {
@@ -193,5 +196,56 @@ describe('plan-day jezik (korak 22)', () => {
     expect(plan.questions[0]).toBe('Not everything fit: Long. Do you have more time?');
     expect(plan.summary).toBe("The plan doesn't fit into the given windows.");
     expect(buildFallbackPlan({ ...en, freeWindows: [] }).questions[0]).toContain('When are you free');
+  });
+});
+
+describe('kontekst plana (korak 26)', () => {
+  const task = {
+    title: 'Trening',
+    durationMinutes: 60,
+    timesLeft: 2,
+    partOfDay: 'evening',
+    energy: 'high',
+    deadline: '2026-11-22',
+    needs: 'tenisice',
+  };
+
+  it('stari klijent bez konteksta → prazan kontekst, prompt isti kao prije', () => {
+    const body = { date: '2026-11-18', priorities: [], freeWindows: [], preferences: null };
+    expect(parsePlanDayRequest(body)?.context).toEqual({ goals: [], tasks: [], rules: [] });
+    expect(planContextLines({ goals: [], tasks: [], rules: [] }, 'hr')).toEqual([]);
+    expect(parsePlanContext('x')).toEqual({ goals: [], tasks: [], rules: [] });
+  });
+
+  it('nevaljane stavke otpadaju, valjane ostaju (bez rušenja zahtjeva)', () => {
+    const context = parsePlanContext({
+      goals: [{ period: 'week', title: ' Tri  treninga ' }, { period: 'day', title: 'X' }, { period: 'year', title: '' }],
+      tasks: [task, { ...task, timesLeft: 0 }, { ...task, durationMinutes: 2 }, { ...task, partOfDay: 'night' }, { ...task, deadline: 'sutra' }],
+      rules: [{ title: 'Bez slatkiša', why: 'Zdravlje' }, { title: '   ' }, null],
+    });
+    expect(context.goals).toEqual([{ period: 'week', title: 'Tri treninga', done: false }]);
+    expect(context.tasks).toEqual([task]);
+    expect(context.rules).toEqual([{ title: 'Bez slatkiša', why: 'Zdravlje' }]);
+  });
+
+  it('granice broja stavki', () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({ ...task, title: `Z${i}` }));
+    expect(parsePlanContext({ tasks: many }).tasks).toHaveLength(10);
+    const rules = Array.from({ length: 30 }, (_, i) => ({ title: `R${i}` }));
+    expect(parsePlanContext({ rules }).rules).toHaveLength(15);
+  });
+
+  it('retci za model na jeziku zahtjeva', () => {
+    const context = parsePlanContext({
+      goals: [{ period: 'month', title: 'Seminar', done: true }],
+      tasks: [task],
+      rules: [{ title: 'Bez ekrana poslije 23', why: '' }],
+    });
+    const hr = planContextLines(context, 'hr').join('\n');
+    expect(hr).toContain('[mjesec] Seminar (ostvaren)');
+    expect(hr).toContain('- Trening (60 min, još 2×, navečer, puno energije, rok 2026-11-22, treba: tenisice)');
+    expect(hr).toContain('- Bez ekrana poslije 23');
+    const en = planContextLines(context, 'en').join('\n');
+    expect(en).toContain('- Trening (60 min, 2× left, evening, high energy, due 2026-11-22, needs: tenisice)');
   });
 });

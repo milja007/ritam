@@ -4,6 +4,11 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
+- Plan (provjeren protiv koncepta „pitanja kod unosa … LLM ih smješta, pravila su tvrda“): (1–2) podaci `tasks` (tjedan, naslov, trajanje 5–480, koliko puta 1–7, rok u tjednu, doba dana, energija, što treba; najviše 10 — konstanta, nije u konceptu), (3) lokalno smještanje `placeWeekTasks` po tvrdim pravilima (LLM = 26), (4) kartica „Zadaci tjedna“ na Tjednu s pitanjima kao čipovima i prijedlogom koji korisnik odobrava. Bez XP-a za sam zadatak (XP ide kroz blokove).
+- Gotovo: 1–2 (PR #41, remote migracija = Borna, pitanje 84), 3–4 (PR #42). Korak 25 `[x]`.
+- 25b (PR #43): Mjesec kao kalendar za planiranje (sljedeći mjesec, dodir dana → plan dana, točka za dane s planom; usporedba i dijagnoza skrivene za budući mjesec); Godina otvara i sljedeći mjesec, u prosincu „Ciljevi za <sljedeću godinu>“. Korak 25b `[x]`.
+
 ## 2026-11-18 · Sesija 06:43 — korak 25 (dio)
 - Gotovo: Tjedan kao kalendar + sljedeći tjedan (PR #37), ciljevi razdoblja — podaci `goals` 0012 + Supabase (PR #38, remote = Borna, pitanje 84), kartica ciljeva na Tjednu/Mjesecu/Godini (PR #39), tipkovnica (PR #40).
 

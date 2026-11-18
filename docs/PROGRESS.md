@@ -7,11 +7,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Plan (provjeren protiv koncepta „zabrane se postavljaju unutar planova godine/mjeseca/tjedna; naziv, kad vrijedi, razlog, težina 1–3; svaka ima streak i lagano Držao sam se / Prekršio“): (1) zabrana dobiva razdoblje `period` + `period_start` (oba `null` = stalna, kao zabrane iz onboardinga); lokalna migracija 0014 + Supabase migracija (remote = Borna, pitanje 84). (2) Core: `isRuleActiveOn` (dan u tjednu + unutar razdoblja), `rulesActiveOn` ga koristi → večernji upit pita samo zabrane koje taj dan vrijede; `ruleStreak` (dani zaredom kad je vrijedila i držao si se; današnji neodgovoren dan ne prekida, neodgovoren prošli prekida, dani kad ne vrijedi se preskaču) + najbolji niz. (3) Repo: `createRule` s razdobljem, `listRuleLogs`, `deleteRule` samo bez povijesti. (4) UI: kartica „Zabrane“ na Tjednu/Mjesecu/Godini — zabrane koje vrijede u tom razdoblju (i šire: godina/mjesec/stalne, s oznakom izvora), niz žarom po zabrani, dodavanje za to razdoblje (naziv, zašto, težina, dani), prošlo razdoblje samo čitanje.
 - Nije u konceptu (konstante, pitanje 88): pravila niza; brisanje samo bez povijesti; najviše 5 zabrana po razdoblju.
 - Gotovo: 1–3 (PR #44; remote migracija `20261118120000_rule_periods.sql` = Borna, pitanje 84), 4 (PR #45). Korak 28 `[x]`.
-
-## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
-- Plan (provjeren protiv koncepta „pitanja kod unosa … LLM ih smješta, pravila su tvrda“): (1–2) podaci `tasks` (tjedan, naslov, trajanje 5–480, koliko puta 1–7, rok u tjednu, doba dana, energija, što treba; najviše 10 — konstanta, nije u konceptu), (3) lokalno smještanje `placeWeekTasks` po tvrdim pravilima (LLM = 26), (4) kartica „Zadaci tjedna“ na Tjednu s pitanjima kao čipovima i prijedlogom koji korisnik odobrava. Bez XP-a za sam zadatak (XP ide kroz blokove).
-- Gotovo: 1–2 (PR #41, remote migracija = Borna, pitanje 84), 3–4 (PR #42). Korak 25 `[x]`.
-- 25b (PR #43): Mjesec kao kalendar za planiranje (sljedeći mjesec, dodir dana → plan dana, točka za dane s planom; usporedba i dijagnoza skrivene za budući mjesec); Godina otvara i sljedeći mjesec, u prosincu „Ciljevi za <sljedeću godinu>“. Korak 25b `[x]`.
+- Korak 26 (PR #46): plan (1) `plan-day` prima kontekst (ciljevi, tjedni zadaci s „još N×“, zabrane), nevaljane stavke otpadaju, stari klijent radi; (2) `planDayContext` u appu; (3) „Složi mi dan“ ga šalje, blok zadatka dobiva `task_id`. Lokalni fallback ne smješta zadatke (to radi „Predloži termine“ na Tjednu). `[~]` do deploya (pitanje 77).
 
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
@@ -24,7 +20,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Sljedeće
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. **Ž11 haptika / Skia (33)** — čeka Bornu: `npx expo install expo-haptics` (i Skia) na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API).
-2. 20–22 su u appu (čekaju deploy, pitanje 77). Dalje: 26 (zadaci i ciljevi u `plan-day`), 28 (zabrane unutar planova).
+2. 20–22 i 26 su u appu (čekaju deploy, pitanje 77). Dalje faza 2: 30 (glasovni unos — novi paket, Borna), 31 (LLM dnevna dijagnoza `write-report`), 31b (trackeri kalorija i novca), 24 (Google Calendar — OAuth tajne, Borna).
 
 ## Pitanja za Bornu
 88. **Zabrane u planovima (28)** — nije u konceptu, odabrano: zabrana pripada tjednu, mjesecu ili godini (zabrane iz onboardinga su „stalne“); u tjednu se vide i zabrane mjeseca/godine/stalne; najviše 5 po razdoblju; niz = dani zaredom kad vrijedi i držao si se (dan kad ne vrijedi se preskače, prošli dan bez odgovora prekida, današnji ne); zabrana s poviješću se ne briše (povijest ulazi u rezultate). U redu?

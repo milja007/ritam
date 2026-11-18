@@ -192,6 +192,10 @@ describe('validacija i pretvorba', () => {
       status: 'planned',
       note: null,
     });
+    // Korak 26: termin tjednog zadatka iz „Složi mi dan“ čuva vezu.
+    expect(draftToInput({ ...draft('18:00', '19:00', 'task', 'Trening'), taskId: 'task-1' }, '2026-11-09').taskId).toBe(
+      'task-1',
+    );
   });
   it('draftFromBlock i draftToPatch mijenjaju samo naziv, vrijeme i tip', () => {
     const b = { ...block('a', '09:00', '10:00', 'calendar'), status: 'done' as const };

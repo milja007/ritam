@@ -19,6 +19,8 @@ export type BlockDraft = {
   start: string;
   end: string;
   kind: BlockKind;
+  /** Termin tjednog zadatka (korak 26: „Složi mi dan“ smjesti zadatak); inače nema. */
+  taskId?: string | null;
 };
 
 /** Polja za `createBlock` (isti oblik kao `ScheduleBlockInput` u repou). */
@@ -114,7 +116,7 @@ export function draftToInput(draft: BlockDraft, date: LocalDate): BlockDraftInpu
     start: draft.start,
     end: draft.end,
     kind: draft.kind,
-    taskId: null,
+    taskId: draft.taskId ?? null,
     source: 'user',
     status: 'planned',
   };

@@ -25,6 +25,29 @@ export type PlanPreferences = {
 
 export type TimeWindow = { start: string; end: string };
 
+/** Tjedni zadatak kojem još fale termini (korak 26): model ga smije smjestiti jednom u dan. */
+export type PlanContextTask = {
+  title: string;
+  durationMinutes: number;
+  /** Koliko puta još treba ovaj tjedan. */
+  timesLeft: number;
+  partOfDay: 'any' | 'morning' | 'afternoon' | 'evening';
+  energy: 'low' | 'medium' | 'high';
+  /** Rok ("YYYY-MM-DD") ili `null`. */
+  deadline: string | null;
+  needs: string;
+};
+
+/**
+ * Kontekst plana (korak 26): ciljevi razdoblja u kojem je dan, tjedni zadaci kojima fale termini
+ * i zabrane koje taj dan vrijede. Stari klijent bez polja → prazan kontekst.
+ */
+export type PlanContext = {
+  goals: { period: 'week' | 'month' | 'year'; title: string; done: boolean }[];
+  tasks: PlanContextTask[];
+  rules: { title: string; why: string }[];
+};
+
 export type PlanDayRequest = {
   date: string;
   /** Jezik sažetka i pitanja (stari klijent bez polja → hrvatski). */
@@ -32,6 +55,7 @@ export type PlanDayRequest = {
   priorities: DayPriority[];
   freeWindows: TimeWindow[];
   preferences: PlanPreferences | null;
+  context: PlanContext;
 };
 
 export type PlannedBlock = {
@@ -54,6 +78,11 @@ const MAX_PRIORITIES = 30;
 const MAX_WINDOWS = 12;
 const MAX_TITLE = 200;
 const MAX_QUESTIONS = 3;
+/** Granice konteksta (korak 26): dovoljno za tjedan/mjesec/godinu, a prompt ostaje kratak. */
+export const MAX_CONTEXT_GOALS = 15;
+export const MAX_CONTEXT_TASKS = 10;
+export const MAX_CONTEXT_RULES = 15;
+const MAX_NOTE = 300;
 
 /** Edge Functions koje zovu model. */
 export type LlmFunctionName = 'parse-input' | 'plan-day';
@@ -139,6 +168,118 @@ function parsePreferences(raw: unknown): PlanPreferences | null | undefined {
   };
 }
 
+const text = (value: unknown, max: number): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.replace(/\s+/g, ' ').trim();
+  return trimmed.length > 0 && trimmed.length <= max ? trimmed : null;
+};
+
+function parseContextGoal(raw: unknown): PlanContext['goals'][number] | null {
+  if (!isRecord(raw)) return null;
+  const title = text(raw.title, MAX_TITLE);
+  if (title === null || (raw.period !== 'week' && raw.period !== 'month' && raw.period !== 'year')) return null;
+  return { period: raw.period, title, done: raw.done === true };
+}
+
+function parseContextTask(raw: unknown): PlanContextTask | null {
+  if (!isRecord(raw)) return null;
+  const title = text(raw.title, MAX_TITLE);
+  const duration = raw.durationMinutes;
+  const timesLeft = raw.timesLeft;
+  if (title === null) return null;
+  if (typeof duration !== 'number' || !Number.isInteger(duration) || duration < 5 || duration > 480) return null;
+  if (typeof timesLeft !== 'number' || !Number.isInteger(timesLeft) || timesLeft < 1 || timesLeft > 7) return null;
+  const partOfDay = raw.partOfDay;
+  if (partOfDay !== 'any' && partOfDay !== 'morning' && partOfDay !== 'afternoon' && partOfDay !== 'evening') return null;
+  const energy = raw.energy;
+  if (energy !== 'low' && energy !== 'medium' && energy !== 'high') return null;
+  const deadline = raw.deadline ?? null;
+  if (deadline !== null && (typeof deadline !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(deadline))) return null;
+  const needs = typeof raw.needs === 'string' ? raw.needs.replace(/\s+/g, ' ').trim().slice(0, MAX_NOTE) : '';
+  return { title, durationMinutes: duration, timesLeft, partOfDay, energy, deadline, needs };
+}
+
+function parseContextRule(raw: unknown): PlanContext['rules'][number] | null {
+  if (!isRecord(raw)) return null;
+  const title = text(raw.title, MAX_TITLE);
+  if (title === null) return null;
+  const why = typeof raw.why === 'string' ? raw.why.replace(/\s+/g, ' ').trim().slice(0, MAX_NOTE) : '';
+  return { title, why };
+}
+
+function parseList<T>(raw: unknown, parse: (entry: unknown) => T | null, max: number): T[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(0, max)
+    .map(parse)
+    .filter((entry): entry is T => entry !== null);
+}
+
+/**
+ * Kontekst je samo savjet modelu: nevaljane stavke otpadaju (ne ruše zahtjev), a nema li ga
+ * (stari klijent), kontekst je prazan.
+ */
+export function parsePlanContext(raw: unknown): PlanContext {
+  if (!isRecord(raw)) return { goals: [], tasks: [], rules: [] };
+  return {
+    goals: parseList(raw.goals, parseContextGoal, MAX_CONTEXT_GOALS),
+    tasks: parseList(raw.tasks, parseContextTask, MAX_CONTEXT_TASKS),
+    rules: parseList(raw.rules, parseContextRule, MAX_CONTEXT_RULES),
+  };
+}
+
+const PART_TEXT = {
+  hr: { any: 'bilo kad', morning: 'ujutro', afternoon: 'popodne', evening: 'navečer' },
+  en: { any: 'any time', morning: 'morning', afternoon: 'afternoon', evening: 'evening' },
+} as const;
+const ENERGY_TEXT = {
+  hr: { low: 'malo energije', medium: 'srednje energije', high: 'puno energije' },
+  en: { low: 'low energy', medium: 'medium energy', high: 'high energy' },
+} as const;
+const PERIOD_TEXT = {
+  hr: { week: 'tjedan', month: 'mjesec', year: 'godina' },
+  en: { week: 'week', month: 'month', year: 'year' },
+} as const;
+
+/**
+ * Retci konteksta za poruku modelu (korak 26). Prazan kontekst → prazan niz (prompt isti kao
+ * prije). Tekst je na jeziku zahtjeva, kao sažetak i pitanja.
+ */
+export function planContextLines(context: PlanContext, locale: 'hr' | 'en'): string[] {
+  const hr = locale === 'hr';
+  const lines: string[] = [];
+  if (context.goals.length > 0) {
+    lines.push(hr ? 'Ciljevi (kontekst — ne moraju se sutra raditi):' : 'Goals (context — not all for tomorrow):');
+    for (const goal of context.goals) {
+      const done = goal.done ? (hr ? ' (ostvaren)' : ' (done)') : '';
+      lines.push(`- [${PERIOD_TEXT[locale][goal.period]}] ${goal.title}${done}`);
+    }
+  }
+  if (context.tasks.length > 0) {
+    lines.push(
+      hr
+        ? 'Tjedni zadaci kojima fale termini (neobavezno: smjesti najviše jedan put po zadatku ako stane, naslov točno kao zadatak):'
+        : 'Weekly tasks still missing slots (optional: place at most one session per task if it fits, title exactly as the task):',
+    );
+    for (const task of context.tasks) {
+      const parts = [
+        `${task.durationMinutes} min`,
+        hr ? `još ${task.timesLeft}×` : `${task.timesLeft}× left`,
+        PART_TEXT[locale][task.partOfDay],
+        ENERGY_TEXT[locale][task.energy],
+      ];
+      if (task.deadline) parts.push(hr ? `rok ${task.deadline}` : `due ${task.deadline}`);
+      if (task.needs) parts.push(hr ? `treba: ${task.needs}` : `needs: ${task.needs}`);
+      lines.push(`- ${task.title} (${parts.join(', ')})`);
+    }
+  }
+  if (context.rules.length > 0) {
+    lines.push(hr ? 'Zabrane koje taj dan vrijede (ne planiraj ništa što ih krši):' : 'Rules that apply that day (plan nothing that breaks them):');
+    for (const rule of context.rules) lines.push(`- ${rule.title}${rule.why ? ` — ${rule.why}` : ''}`);
+  }
+  return lines;
+}
+
 /**
  * Valjan zahtjev za `plan-day` ili `null` (→ 400). Svaki prioritet i prozor se provjerava:
  * `priorities: [null]`, sat 99:99 ili prozor koji završava prije nego počne ne prolaze.
@@ -159,6 +300,7 @@ export function parsePlanDayRequest(body: unknown): PlanDayRequest | null {
     priorities: priorities as DayPriority[],
     freeWindows: (freeWindows as TimeWindow[]).sort((a, b) => clockToMinutes(a.start) - clockToMinutes(b.start)),
     preferences,
+    context: parsePlanContext(body.context),
   };
 }
 

@@ -363,7 +363,7 @@
       "back": "Back to my list",
       "nothingSaved": "Nothing is saved until you confirm the plan.",
       "arrange": "Arrange my day",
-      "arrangeHint": "A proposed schedule in your free time — you decide.",
+      "arrangeHint": "A proposed schedule in your free time, with your goals, weekly tasks and rules in mind — you decide.",
       "error": "Arranging didn't work. Your list is unchanged."
     },
     "dayPlan": {

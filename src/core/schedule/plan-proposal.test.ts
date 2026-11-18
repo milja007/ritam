@@ -70,6 +70,7 @@ describe('priorityOf / planDayRequest', () => {
     expect(request.priorities).toHaveLength(30);
     expect(request.freeWindows).toEqual([{ start: '07:30', end: '23:00' }]);
     expect(request.preferences).toBeNull();
+    expect(request.context).toEqual({ goals: [], tasks: [], rules: [] });
   });
 });
 
@@ -85,6 +86,7 @@ const request: PlanDayRequest = {
     { start: '18:00', end: '23:00' },
   ],
   preferences: null,
+  context: { goals: [], tasks: [], rules: [] },
 };
 
 describe('readPlanDayResponse', () => {
@@ -161,5 +163,36 @@ describe('planProposal', () => {
     expect(proposal.leftOut.map((entry) => entry.draft.title)).toEqual(['Trčanje']);
     expect(proposal.questions).toEqual(['Q']);
     expect(proposal.summary).toBe('S');
+  });
+
+  it('blok s naslovom tjednog zadatka postaje njegov termin, najviše jednom (korak 26)', () => {
+    const tasks = [{ id: 'task-1', title: 'Trening' }];
+    const proposal = planProposal(
+      {
+        schedule: [
+          { title: 'Kemija', start: '08:00', end: '08:45', kind: 'suggestion' },
+          { title: 'trening', start: '18:00', end: '19:00', kind: 'suggestion' },
+          { title: 'Trening', start: '20:00', end: '21:00', kind: 'suggestion' },
+        ],
+        questions: [],
+        summary: '',
+      },
+      [item('Kemija', '07:30', '08:15')],
+      tasks,
+    );
+    expect(proposal.drafts).toEqual([
+      { title: 'Kemija', kind: 'task', start: '08:00', end: '08:45' },
+      { title: 'Trening', kind: 'task', start: '18:00', end: '19:00', taskId: 'task-1' },
+      { title: 'Trening', kind: 'task', start: '20:00', end: '21:00' },
+    ]);
+  });
+
+  it('stavka koja je već termin zadatka čuva vezu', () => {
+    const linked = { ...item('Trening', '18:00', '19:00'), draft: { ...item('Trening', '18:00', '19:00').draft, taskId: 'task-1' } };
+    const proposal = planProposal(
+      { schedule: [{ title: 'Trening', start: '17:00', end: '18:00', kind: 'suggestion' }], questions: [], summary: '' },
+      [linked],
+    );
+    expect(proposal.drafts[0]?.taskId).toBe('task-1');
   });
 });
