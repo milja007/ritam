@@ -1419,5 +1419,89 @@
     "limit": "You already have {{max}} goals for this period.",
     "failed": "The change wasn't saved. Try again.",
     "loadError": "Couldn't load goals."
+  },
+  "tasks": {
+    "heading": "Tasks this week",
+    "intro": "What do you need to get done this week? Answer a few questions and Ritam suggests when.",
+    "introNext": "What do you need to get done next week? Answer a few questions and Ritam suggests when.",
+    "emptyPast": "No tasks were written down for that week.",
+    "add": "Add a task",
+    "place": "Suggest times",
+    "placeHint": "Fits tasks into free time on the days ahead. Nothing is saved until you confirm.",
+    "allPlaced": "Every task has its times.",
+    "limitHint": "Up to {{max}} tasks a week — you don't have to do it all.",
+    "limit": "You already have {{max}} tasks this week.",
+    "failed": "The change wasn't saved. Please try again.",
+    "loadError": "Tasks didn't load.",
+    "progress": "{{done}} of {{target}} times",
+    "progressA11y": "Done {{done}} of {{target}} times, {{placed}} planned",
+    "editHint": "Opens the task's questions",
+    "minutes": "{{count}} min",
+    "hours": "{{h}} h",
+    "hoursMinutes": "{{h}} h {{m}} min",
+    "times_one": "once a week",
+    "times_other": "{{count}}× a week",
+    "until": "by {{day}}",
+    "part": {
+      "any": "any time",
+      "morning": "mornings",
+      "afternoon": "afternoons",
+      "evening": "evenings"
+    },
+    "energy": {
+      "low": "low energy",
+      "medium": "medium energy",
+      "high": "high energy"
+    },
+    "editor": {
+      "overline": "Weekly task",
+      "newTitle": "New task",
+      "editTitle": "Edit task",
+      "body": "A few questions so it lands at the right time. Your answers are rules that are kept.",
+      "titleLabel": "What needs doing?",
+      "titlePlaceholder": "e.g. Workout, Chemistry, Vacuum the flat",
+      "durationLabel": "How long does it take once?",
+      "timesLabel": "How many times this week?",
+      "deadlineLabel": "By when?",
+      "noDeadline": "By the end of the week",
+      "partLabel": "What time of day?",
+      "energyLabel": "How much energy does it take?",
+      "energyHint": "Demanding things go earlier in the day, easy ones later.",
+      "energy": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "part": {
+        "any": "Any time",
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
+      "needsLabel": "What do you need? (optional)",
+      "needsPlaceholder": "e.g. trainers, laptop, a ride",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Remove task",
+      "deleteTitle": "Remove task?",
+      "deleteMessage": "“{{title}}” leaves the list. Times already in your plan stay.",
+      "failed": "The task wasn't saved. Please try again."
+    },
+    "proposal": {
+      "overline": "Suggested times",
+      "title": "When could this go?",
+      "body": "Each time on a different day, at the time of day you chose, in free time. Nothing is saved until you confirm.",
+      "nothing": "Nothing to fit — every task already has its times.",
+      "unplacedHeading": "Didn't fit",
+      "noDays": "{{title}}: {{count}} more — no days left before the deadline.",
+      "noTime": "{{title}}: {{count}} more — no free time at that time of day.",
+      "unplacedHint": "Change the answers (deadline, time of day, length) or free up time, then suggest again.",
+      "accept_one": "Add {{count}} time to the plan",
+      "accept_other": "Add {{count}} times to the plan",
+      "back": "Back",
+      "added_one": "{{count}} time added.",
+      "added_other": "{{count}} times added.",
+      "failed": "The times weren't added. Please try again."
+    }
   }
 }

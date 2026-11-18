@@ -1443,5 +1443,92 @@
     "limit": "Već imaš {{max}} ciljeva za ovo razdoblje.",
     "failed": "Promjena nije spremljena. Pokušaj ponovo.",
     "loadError": "Ciljevi se nisu učitali."
+  },
+  "tasks": {
+    "heading": "Zadaci tjedna",
+    "intro": "Što trebaš napraviti ovaj tjedan? Odgovori na par pitanja, a Ritam predloži kad.",
+    "introNext": "Što trebaš napraviti sljedeći tjedan? Odgovori na par pitanja, a Ritam predloži kad.",
+    "emptyPast": "Za taj tjedan nisu bili zapisani zadaci.",
+    "add": "Dodaj zadatak",
+    "place": "Predloži termine",
+    "placeHint": "Smješta zadatke u slobodno vrijeme dana koji dolaze. Ništa se ne sprema dok ne potvrdiš.",
+    "allPlaced": "Svi zadaci imaju termine.",
+    "limitHint": "Najviše {{max}} zadataka tjedno — ne mora se sve ispuniti.",
+    "limit": "Već imaš {{max}} zadataka ovaj tjedan.",
+    "failed": "Promjena nije spremljena. Pokušaj ponovo.",
+    "loadError": "Zadaci se nisu učitali.",
+    "progress": "{{done}} od {{target}} puta",
+    "progressA11y": "Odrađeno {{done}} od {{target}} puta, u planu {{placed}}",
+    "editHint": "Otvara pitanja zadatka",
+    "minutes": "{{count}} min",
+    "hours": "{{h}} h",
+    "hoursMinutes": "{{h}} h {{m}} min",
+    "times_one": "{{count}}× tjedno",
+    "times_few": "{{count}}× tjedno",
+    "times_other": "{{count}}× tjedno",
+    "until": "rok: {{day}}",
+    "part": {
+      "any": "bilo kad",
+      "morning": "ujutro",
+      "afternoon": "popodne",
+      "evening": "navečer"
+    },
+    "energy": {
+      "low": "malo energije",
+      "medium": "srednje energije",
+      "high": "puno energije"
+    },
+    "editor": {
+      "overline": "Tjedni zadatak",
+      "newTitle": "Novi zadatak",
+      "editTitle": "Uredi zadatak",
+      "body": "Par pitanja da ga se smjesti u pravo vrijeme. Odgovori su pravila koja se poštuju.",
+      "titleLabel": "Što treba napraviti?",
+      "titlePlaceholder": "npr. Trening, Kemija, Usisati stan",
+      "durationLabel": "Koliko traje jednom?",
+      "timesLabel": "Koliko puta ovaj tjedan?",
+      "deadlineLabel": "Do kada?",
+      "noDeadline": "Do kraja tjedna",
+      "partLabel": "U koje doba dana?",
+      "energyLabel": "Koliko energije traži?",
+      "energyHint": "Zahtjevno ide ranije u danu, lagano kasnije.",
+      "energy": {
+        "low": "Malo",
+        "medium": "Srednje",
+        "high": "Puno"
+      },
+      "part": {
+        "any": "Bilo kad",
+        "morning": "Ujutro",
+        "afternoon": "Popodne",
+        "evening": "Navečer"
+      },
+      "needsLabel": "Što ti treba? (neobavezno)",
+      "needsPlaceholder": "npr. tenisice, laptop, prijevoz",
+      "save": "Spremi",
+      "cancel": "Odustani",
+      "delete": "Ukloni zadatak",
+      "deleteTitle": "Ukloniti zadatak?",
+      "deleteMessage": "„{{title}}“ nestaje s popisa. Termini koji su već u planu ostaju.",
+      "failed": "Zadatak nije spremljen. Pokušaj ponovo."
+    },
+    "proposal": {
+      "overline": "Prijedlog termina",
+      "title": "Kad bi ovo išlo?",
+      "body": "Svaki put drugi dan, u doba koje si odabrao, u slobodno vrijeme. Ništa se ne sprema dok ne potvrdiš.",
+      "nothing": "Nema što smjestiti — svi zadaci već imaju termine.",
+      "unplacedHeading": "Nije stalo",
+      "noDays": "{{title}}: još {{count}}× — nema više dana do roka.",
+      "noTime": "{{title}}: još {{count}}× — nema slobodnog vremena u odabrano doba.",
+      "unplacedHint": "Promijeni odgovore (rok, doba dana, trajanje) ili oslobodi vrijeme pa predloži ponovo.",
+      "accept_one": "Dodaj {{count}} termin u plan",
+      "accept_few": "Dodaj {{count}} termina u plan",
+      "accept_other": "Dodaj {{count}} termina u plan",
+      "back": "Natrag",
+      "added_one": "Dodan je {{count}} termin.",
+      "added_few": "Dodana su {{count}} termina.",
+      "added_other": "Dodano je {{count}} termina.",
+      "failed": "Termini nisu dodani. Pokušaj ponovo."
+    }
   }
 }

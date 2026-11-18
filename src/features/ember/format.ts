@@ -54,3 +54,8 @@ export function dayNumber(date: string): string {
 export function dayMonth(date: string, language: string): string {
   return format(date, language, { day: 'numeric', month: 'long' }, date);
 }
+
+/** "2026-11-20" → "petak" / "Friday". */
+export function weekdayName(date: string, language: string): string {
+  return format(date, language, { weekday: 'long' }, date);
+}
