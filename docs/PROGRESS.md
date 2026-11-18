@@ -28,7 +28,8 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Sljedeće
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. **Ž11 haptika / Skia (33)** — čeka Bornu: `npx expo install expo-haptics` (i Skia) na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API).
-2. 20–22 i 26 su u appu (čekaju deploy, pitanje 77). Dalje faza 2: 30 (glasovni unos — novi paket, Borna), 31 (LLM dnevna dijagnoza `write-report`), 31b (trackeri kalorija i novca), 24 (Google Calendar — OAuth tajne, Borna).
+2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 30 (glasovni unos — novi paket), 24 (Google Calendar — OAuth tajne), 29 (wind-down po koraku — pitanje 87).
+3. Bez Borne sljedeće sesije mogu: tjedna/mjesečna dijagnoza s trackerima i LLM-om (proširenje `write-report` na tjedan, prompt `llm-week-v1`), P2 nalaze Codexa kad stignu, sažetak starih pitanja (23–70) u jedan paket.
 
 ## Pitanja za Bornu
 90. **Trackeri (31b)** — nije u konceptu, odabrano: kalorije „unutar cilja“ = ±10 %; upozorenje kad je cilj < 1200 kcal (cilj 500–10 000 je dopušten); novac u € (centi u bazi), limit za dan/tjedan/mjesec (tjedan pon–ned), stanje = zadani iznos na dan X minus potrošnja od tog dana; potrošnja s budućim datumom se ne broji. U rezultatu: težina 15 svaki, samo dani s unosima (dan bez potrošnje koji nije zapisan ne ulazi), isključen tracker ne ulazi ni u prošle dane (za razliku od područja, nema snimke). Treba li druga valuta ili prihodi (ne samo potrošnja)?
