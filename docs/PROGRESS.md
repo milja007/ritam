@@ -2,20 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
-## 2026-11-18 · Sesija 15:43 (nastavak) — korak 31b: trackeri kalorija i novca
-- Plan (koncept „Opcionalni trackeri“: isključeni po defaultu, uključuju se u Profilu; kalorije = dnevni cilj, unos po obroku ili zbroj → večernja provjera unutar/iznad/ispod i koliko, upozorenje za neuobičajeno nizak cilj; novac = limit za dan/tjedan/mjesec, po želji stanje, unos iznos + bilješka → koliko je ostalo, tjedni/mjesečni zbroj; ulaze u rezultat i dijagnozu samo kad su uključeni):
-  (1) Podaci (PR A, visokorizično, malo): postavke (`track_calories`, `calorie_goal`, `track_money`, `money_limit_cents`, `money_period`, `money_balance_cents`, `money_balance_on`), tablica `tracker_entries` (dan, vrsta, iznos, bilješka), lokalna migracija 0015 + Supabase migracija (remote = Borna, pitanje 84), sync, repo; core: provjera kalorija, upozorenje, ostatak limita i stanja.
-  (2) UI (PR B): Profil → kartica „Trackeri“; Dan → brzi unos kad je uključen; večernji upit pokazuje provjeru.
-  (3) Rezultat i dijagnoza (PR C): područja kalorije/novac u dnevnom rezultatu, dijagnozi i statovima Zdravlje/Novac.
-- Nije u konceptu (konstante, pitanje 90): „unutar“ = ±10 % cilja; nizak cilj < 1200 kcal; valuta €.
-- Gotovo: (1) podaci (PR #48; remote migracija `20261118160000_trackers.sql` = Borna, pitanje 84); (2) UI (PR #49): Profil → Trackeri, kartica na Danu, večernja provjera u zadnjem koraku upita. (3) rezultat, dijagnoza, statovi (PR #50): tracker ulazi kad je uključen i taj dan ima unosa (težina 15; kalorije puni dio unutar ±10 %, do 0 na ±50 %; novac puni dio do dnevnog dijela limita = limit / dani razdoblja, do 0 na dvostrukom); Napredak, pohvala/uočeno u dijagnozi, kontekst za `write-report`, Zdravlje i Novac na Profilu. Korak 31b `[x]`.
-
-## 2026-11-18 · Sesija 15:43 — korak 31: dijagnoza s LLM-om
-- Plan (provjeren protiv koncepta „Dijagnoze“: isti red sekcija, LLM dobiva sve iz razdoblja i prethodne dijagnoze — prati je li savjet upalio; promptovi verzionirani i testirani na primjerima; ispod svake dijagnoze Pomoglo / Nije pomoglo + komentar):
-  (1) Pomoglo / Nije pomoglo + komentar ispod dnevne, tjedne, mjesečne i godišnje dijagnoze — polja `helpful` / `feedback_comment` već postoje lokalno i u Supabaseu (bez migracije).
-  (2) `write-report` Edge Function: prompt `llm-day-v1` u repou, čista logika u `_shared/report-logic.ts` (zahtjev, poruka modelu, provjera odgovora: ista struktura i granice), testovi s primjerom dana. Kontekst: statistika dana i jučer, komentari checkliste, zabrane, san, XP, zadnje dijagnoze s odgovorom Pomoglo/Nije i komentarom.
-  (3) App: s oblakom i sesijom nakon večernjeg upita traži tekst modela i sprema ga uz lokalnu dijagnozu (brojke „Napretka“ ostaju lokalne); greška ili bez oblaka → lokalna kao dosad. `[~]` do deploya (Borna).
-- Gotovo (PR #47): 1–3. Tekst modela je `sections.llm` uz lokalnu dijagnozu (bez migracije); otpada kad se činjenice dana promijene. Model piše samo za danas/jučer (arhiva ne troši pozive). Korak 31 `[~]` do deploya `write-report` (pitanje 77) i provjere teksta na uređaju.
+## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
+- Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
+  (1) Trackeri u lokalnoj tjednoj/mjesečnoj/godišnjoj dijagnozi: statistika razdoblja broji dane s unosom kalorija (unutar/iznad/ispod) i potrošnju naspram zbroja dnevnih dijelova limita; Napredak „Kalorije: dani unutar cilja“, „Potrošnja“; pohvala/uočeno. i18n HR/EN.
+  (2) `write-report` tjedni način (prompt `llm-week-v1`, čista logika `_shared/week-report-logic.ts`, primjer, testovi): tjedan, dani ukratko, prošli tjedan, lokalni prijedlog tjedna, ranije tjedne dijagnoze s Pomoglo/Nije. Model piše Ukratko, Pohvale, Što smo primijetili, Velike probleme i jednu rečenicu „zašto baš ova promjena“ — **promjenu tjedna i dalje bira lokalna logika** (Probat ću / Ne sada, pauza 2 tjedna), model je ne mijenja.
+  (3) App: `sections.llm` uz tjednu dijagnozu (otpada kad se statistika tjedna promijeni), poziv samo za svjež tjedan (nedjelja ili ponedjeljak; arhiva ne troši pozive), bez oblaka lokalna kao dosad. `[~]` do deploya (pitanje 77).
+- Nije u konceptu (pitanje 91): pragovi pohvale/uočenog za trackere u tjednu; da model ne bira promjenu.
 
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
