@@ -25,6 +25,7 @@ import { radius, spacing } from '@/core/theme';
 import { DiagnosisModal, MonthDiagnosisCard, monthTitle, useMonthReport } from '@/features/diagnosis';
 import { TomorrowPlan } from '@/features/evening';
 import { GoalsCard } from '@/features/goals';
+import { RulesCard } from '@/features/rules';
 import { useNow } from '@/features/today';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
@@ -231,6 +232,13 @@ export function MonthScreen() {
           )}
 
           <GoalsCard
+            period="month"
+            periodStart={`${month}-01`}
+            periodEnd={dates[dates.length - 1] ?? `${month}-01`}
+            today={now.date}
+          />
+
+          <RulesCard
             period="month"
             periodStart={`${month}-01`}
             periodEnd={dates[dates.length - 1] ?? `${month}-01`}

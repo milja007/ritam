@@ -23,6 +23,7 @@ import { radius, spacing } from '@/core/theme';
 import { useWeekReport, WeekDiagnosisCard } from '@/features/diagnosis';
 import { TomorrowPlan } from '@/features/evening';
 import { GoalsCard } from '@/features/goals';
+import { RulesCard } from '@/features/rules';
 import { TasksCard } from '@/features/tasks';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
@@ -250,6 +251,8 @@ export function WeekScreen() {
           ) : null}
 
           <GoalsCard period="week" periodStart={from} periodEnd={to} today={now.date} />
+
+          <RulesCard period="week" periodStart={from} periodEnd={to} today={now.date} />
 
           <TasksCard
             weekStart={from}

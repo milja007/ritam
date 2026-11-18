@@ -1509,5 +1509,74 @@
       "added_other": "{{count}} times added.",
       "failed": "The times weren't added. Please try again."
     }
+  },
+  "rules": {
+    "week": {
+      "heading": "Rules this week",
+      "empty": "What are you staying away from this week? A rule holds only this week — the evening check-in asks about it.",
+      "emptyPast": "That week had no rules."
+    },
+    "month": {
+      "heading": "Rules this month",
+      "empty": "What are you staying away from this month? A month rule also shows in each of its weeks.",
+      "emptyPast": "That month had no rules."
+    },
+    "year": {
+      "heading": "Rules this year",
+      "empty": "Big rules for the whole year — they show in every month and week.",
+      "emptyPast": "That year had no rules."
+    },
+    "scope": {
+      "month": "Month",
+      "year": "Year",
+      "always": "Always"
+    },
+    "streak_one": "Streak: {{count}} day",
+    "streak_other": "Streak: {{count}} days",
+    "best": "best {{count}}",
+    "noLogs": "No entries yet — the evening check-in asks on every day it applies.",
+    "notStarted": "Starts {{date}}.",
+    "weight": {
+      "1": "light",
+      "2": "medium",
+      "3": "heavy"
+    },
+    "rowA11y": "{{title}}. {{streak}}. Weight: {{weight}}.",
+    "expandHint": "Shows why and details",
+    "why": "Why: {{why}}",
+    "days": "Applies: {{days}}",
+    "everyDay": "Applies every day",
+    "tally": "Kept {{kept}} · broken {{broken}}",
+    "add": "Add a rule",
+    "limitHint": "At most {{max}} rules per period — little by little.",
+    "limit": "You already have {{max}} rules for this period.",
+    "remove": "Remove",
+    "removeLabel": "Remove rule {{title}}",
+    "removeTitle": "Remove the rule?",
+    "removeMessage": "“{{title}}” disappears from the plan.",
+    "cancel": "Cancel",
+    "hasHistory": "It has entries, so it stays until the period ends — its history counts in your scores.",
+    "failed": "The change wasn't saved. Try again.",
+    "loadError": "Rules didn't load.",
+    "addedA11y": "Rule added: {{title}}",
+    "editor": {
+      "overline": "Rule",
+      "title": {
+        "week": "A rule for this week",
+        "month": "A rule for this month",
+        "year": "A rule for this year"
+      },
+      "range": "Applies from {{from}} to {{to}}.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. No phone in bed",
+      "whyLabel": "Why? (you'll see this when tempted)",
+      "whyPlaceholder": "e.g. I want to wake up rested",
+      "weightLabel": "Weight",
+      "daysLabel": "Days",
+      "daysHint": "When it applies — the evening check-in asks only on these days.",
+      "save": "Save rule",
+      "cancel": "Cancel",
+      "failed": "The rule wasn't saved. Try again."
+    }
   }
 }
