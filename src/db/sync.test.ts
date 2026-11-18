@@ -9,8 +9,11 @@ import type { Row, SyncTable } from '@/core/sync';
 import type { RitamDb } from './db';
 import {
   createBlock,
+  createGoal,
   createQuest,
+  listGoals,
   listQuests,
+  setGoalDone,
   setQuestMilestoneDone,
   deleteBlock,
   getBlock,
@@ -229,6 +232,32 @@ describe('syncOnce', () => {
     await syncOnce(db, remote, ids);
     expect(listQuests(db, LOCAL)).toEqual([
       expect.objectContaining({ id: quest.id, userId: LOCAL, status: 'done', doneOn: '2026-11-12' }),
+    ]);
+    expect(countQueue(db)).toBe(0);
+  });
+
+  it('cilj tjedna (korak 25) ide na poslužitelj, a brisanje s drugog uređaja ga uklanja', async () => {
+    const { db, remote } = await setup();
+    const deps = testDeps();
+    const goal = createGoal(db, LOCAL, { period: 'week', periodStart: '2026-11-09', title: 'Tri treninga' }, deps);
+    setGoalDone(db, LOCAL, goal.id, '2026-11-11', deps);
+    await syncOnce(db, remote, ids);
+    expect(remote.rows('goals')).toEqual([
+      expect.objectContaining({
+        id: goal.id,
+        user_id: UID,
+        period: 'week',
+        period_start: '2026-11-09',
+        title: 'Tri treninga',
+        position: 0,
+        done_on: '2026-11-11',
+      }),
+    ]);
+    const [row] = remote.rows('goals');
+    remote.put('goals', { ...row, updated_at: '2026-11-12T08:00:00+00:00', title: 'Četiri treninga' });
+    await syncOnce(db, remote, ids);
+    expect(listGoals(db, LOCAL, 'week', '2026-11-09')).toEqual([
+      expect.objectContaining({ id: goal.id, userId: LOCAL, title: 'Četiri treninga', doneOn: '2026-11-11' }),
     ]);
     expect(countQueue(db)).toBe(0);
   });

@@ -14,6 +14,7 @@ import type {
   CheckinItemKind,
   CheckinKind,
   CheckinOutcome,
+  GoalPeriod,
   QuestMilestone,
   QuestStatus,
   ReportPeriod,
@@ -193,4 +194,18 @@ export const quests = sqliteTable(
     doneOn: text('done_on'),
   },
   (table) => [index('quests_user_idx').on(table.userId)],
+);
+
+/** Ciljevi razdoblja (korak 25, 25b): tjedni, mjesečni i godišnji plan. */
+export const goals = sqliteTable(
+  'goals',
+  {
+    ...baseColumns(),
+    period: text('period').$type<GoalPeriod>().notNull(),
+    periodStart: text('period_start').notNull(),
+    title: text('title').notNull(),
+    position: integer('position').notNull(),
+    doneOn: text('done_on'),
+  },
+  (table) => [index('goals_user_period_idx').on(table.userId, table.period, table.periodStart)],
 );
