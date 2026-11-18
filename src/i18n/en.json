@@ -1383,5 +1383,41 @@
     "targetLine": "Goal",
     "error": "Couldn't load your nights.",
     "rested": "Rested: {{count}} of {{total}} nights"
+  },
+  "goals": {
+    "week": {
+      "heading": "Goals this week",
+      "empty": "What do you want this week to bring? Add 1–3 goals — context for your days. It doesn't all have to happen.",
+      "emptyPast": "No goals were written down for that week.",
+      "placeholder": "e.g. Three workouts"
+    },
+    "month": {
+      "heading": "Goals this month",
+      "empty": "What do you want this month to bring? Add 1–3 goals.",
+      "emptyPast": "No goals were written down for that month.",
+      "placeholder": "e.g. Finish the seminar paper"
+    },
+    "year": {
+      "heading": "Goals this year",
+      "empty": "What do you want this year to bring? Add a few big goals.",
+      "emptyPast": "No goals were written down for that year.",
+      "placeholder": "e.g. Half marathon"
+    },
+    "progress": "{{done}} of {{total}}",
+    "addLabel": "New goal",
+    "add": "Add",
+    "addedA11y": "Goal added: {{title}}",
+    "doneA11y": "Achieved: {{title}}",
+    "doneHint": "Marks the goal as achieved",
+    "undoHint": "Marks the goal as not achieved",
+    "removeLabel": "Remove goal {{title}}",
+    "removeTitle": "Remove goal?",
+    "removeMessage": "“{{title}}” will be removed from the list.",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "limitHint": "At most {{max}} goals — less is more.",
+    "limit": "You already have {{max}} goals for this period.",
+    "failed": "The change wasn't saved. Try again.",
+    "loadError": "Couldn't load goals."
   }
 }

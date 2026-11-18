@@ -18,6 +18,7 @@ import {
 } from '@/core/ember';
 import { radius, spacing } from '@/core/theme';
 import { DiagnosisModal, MonthDiagnosisCard, monthTitle, useMonthReport } from '@/features/diagnosis';
+import { GoalsCard } from '@/features/goals';
 import { useNow } from '@/features/today';
 import { ProgressBar } from '@/ui/progress-bar';
 import { Text } from '@/ui/text';
@@ -187,6 +188,13 @@ export function MonthScreen() {
               ) : null}
             </Card>
           )}
+
+          <GoalsCard
+            period="month"
+            periodStart={`${month}-01`}
+            periodEnd={dates[dates.length - 1] ?? `${month}-01`}
+            today={now.date}
+          />
 
           <MonthDiagnosisCard
             report={report}

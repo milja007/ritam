@@ -39,3 +39,19 @@ describe('tekstovi planiranja tjedna (korak 25)', () => {
     }
   });
 });
+
+describe('tekstovi ciljeva razdoblja (korak 25)', () => {
+  it('svako razdoblje ima naslov, prazno stanje i primjer u oba jezika', () => {
+    for (const lng of ['hr', 'en'] as const) {
+      const t = i18n.getFixedT(lng);
+      for (const period of ['week', 'month', 'year'] as const) {
+        for (const key of ['heading', 'empty', 'emptyPast', 'placeholder'] as const) {
+          expect(t(`goals.${period}.${key}`)).not.toBe(`goals.${period}.${key}`);
+        }
+      }
+      expect(t('goals.progress', { done: 2, total: 3 })).toMatch(/2.*3/);
+      expect(t('goals.limit', { max: 5 })).toContain('5');
+      expect(t('goals.removeMessage', { title: 'T' })).toContain('T');
+    }
+  });
+});

@@ -22,6 +22,7 @@ import { addDays } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
 import { useWeekReport, WeekDiagnosisCard } from '@/features/diagnosis';
 import { TomorrowPlan } from '@/features/evening';
+import { GoalsCard } from '@/features/goals';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -246,6 +247,8 @@ export function WeekScreen() {
               {t(future ? 'ember.week.emptyNext' : nav.current ? 'ember.week.empty' : 'ember.week.emptyPast')}
             </Text>
           ) : null}
+
+          <GoalsCard period="week" periodStart={from} periodEnd={to} today={now.date} />
 
           {future ? null : (
             <WeekDiagnosisCard report={report} rangeLabel={weekRange(from, to, language)} current={nav.current} />
