@@ -2,6 +2,14 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## Odluke Borne (anketa u chatu, 2026-11-18 ~22:00)
+- 89/91 (dijagnoze riječima): **u redu** — model piše tekst, promjenu/smjer bira app, samo svjež period.
+- 90 (trackeri): u redu, **plus prihodi** — praćenje prihoda kao opcija, **isključeno po defaultu** (uključuje se u Profilu). → novi korak 31f.
+- 85 (žeravica), 76 (rang), 75 (drugi račun ostaje blokiran), 78 (bedževi): **u redu, ostaje**.
+- 86 (questovi): **„samo badge“** — tumačenje: ostvaren quest daje bedž, **bez XP-a** za etape i quest. → korak 34c.
+- 80 (otključavanja): **dodati okvire avatara i animacije „Gotovo“** kao nagrade po razini. → korak 32b.
+- 88 (zabrane) i 87 (wind-down po koraku): bez odgovora → ostaje kako je; wind-down i dalje prati ciljani krevet.
+
 ## 2026-11-18 · Sesija 21:43 — korak 31e: godišnja dijagnoza riječima
 - Plan (isti obrazac kao 31c/31d; koncept: godišnja = dan + tjedan + mjesec + godina, smjer najviše 2 ideje):
   (1) `write-report` godišnji način (`llm-year-v1`): statistika godine i prošle (s trackerima), prosjek po mjesecima (12), sažeci mjesečnih dijagnoza te godine (bez 365 dana — previše), lokalni smjer, tjedne promjene godine, do 2 ranije godišnje s Pomoglo/Nije. Granice brojeva skaliraju s duljinom razdoblja (godina ima > 5000 blokova). Model piše riječi + jednu rečenicu uz smjer; smjer ne mijenja.
@@ -22,13 +30,10 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Sljedeće
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. **Ž11 haptika / Skia (33)** — čeka Bornu: `npx expo install expo-haptics` (i Skia) na Macu + commit `package.json` / `package-lock.json` (cloud proxy blokira Expo API).
-2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 30 (glasovni unos — novi paket), 24 (Google Calendar — OAuth tajne), 29 (wind-down po koraku — pitanje 87).
-3. Bez Borne sljedeće sesije mogu: P2 nalaze Codexa kad stignu, sažetak starih pitanja (23–70) u jedan paket, ostaci faze 3 koji ne traže novi paket.
+2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 30 (glasovni unos — novi paket), 24 (Google Calendar — OAuth tajne).
+3. **Sljedeće skupine (Bornine odluke 2026-11-18):** 34c questovi samo s bedžem (bez XP-a); 31f prihodi kao opcijski tracker (isključen po defaultu; lokalna migracija + Supabase migracija = HIGH_RISK, remote primjenjuje Borna); 32b okviri avatara i animacije „Gotovo“ kao nagrade po razini. Uz to P2 nalazi Codexa kad stignu.
 
 ## Pitanja za Bornu
-91. **Tjedna dijagnoza s trackerima i LLM-om (31c)** — nije u konceptu, odabrano: o trackeru u tjednu se govori tek s barem 2 dana unosa; pohvala kalorija kad je ≥ 70 % dana s unosom unutar cilja; potrošnja se uspoređuje sa zbrojem dnevnih dijelova limita za dane s unosom. Model piše riječi i jednu rečenicu „zašto ova promjena“, a **promjenu tjedna i dalje bira lokalna logika** (da „najviše jedna promjena tjedno“ i pauza za odbijene ostanu pouzdani). Model piše samo za tjedan koji je upravo završio (nedjelja/ponedjeljak). U redu?
-90. **Trackeri (31b)** — nije u konceptu, odabrano: kalorije „unutar cilja“ = ±10 %; upozorenje kad je cilj < 1200 kcal (cilj 500–10 000 je dopušten); novac u € (centi u bazi), limit za dan/tjedan/mjesec (tjedan pon–ned), stanje = zadani iznos na dan X minus potrošnja od tog dana; potrošnja s budućim datumom se ne broji. U rezultatu: težina 15 svaki, samo dani s unosima (dan bez potrošnje koji nije zapisan ne ulazi), isključen tracker ne ulazi ni u prošle dane (za razliku od područja, nema snimke). Treba li druga valuta ili prihodi (ne samo potrošnja)?
-89. **LLM dijagnoza dana (31)** — nije u konceptu, odabrano: model piše riječi (Ukratko, do 3 pohvale, do 3 uočena uzorka, do 2 velika problema, 1–2 ideje; redak ≤ 280 znakova), brojke „Napretka“ i trend ostaju lokalni; kontekst = danas, jučer, do 14 ranijih dana (komentari, prekršaji), zadnjih 5 dijagnoza s Pomoglo/Nije i komentarom; piše se samo za danas i jučer. U redu?
-84. **Remote migracije `color_theme` (odluka 81), `quests` (korak 34), `goals` i `tasks` (korak 25), `rule_periods` (korak 28), `trackers` (korak 31b)** — Claudeov alat ne smije primijeniti. Na Macu: `npx supabase db push` (primijeni `20261117010000_color_theme.sql`, `20261117180000_quests.sql`, `20261118060000_goals.sql`, `20261118100000_tasks.sql` i `20261118120000_rule_periods.sql`, `20261118160000_trackers.sql`). Dok nisu primijenjene, sync ne smije biti uključen.
+84. **Remote migracije** (`color_theme`, `quests`, `goals`, `tasks`, `rule_periods`, `trackers`) — Claudeov alat ne smije primijeniti. Na Macu `npx supabase db push`. Dok nisu primijenjene, sync ne smije biti uključen.
 77. Deploy Edge Functions (20–22, 26, 31): ključ je već u secrets (2026-11-09), model je tvoja odluka od 2026-11-09 i sada je u kodu (`parse-input` Haiku 5.5, `plan-day` i `write-report` Sonnet 5.5). Ostaje samo na Macu: `npx supabase functions deploy parse-input`, `plan-day` i `write-report` — kad uključiš oblak. Primjeri za probu `write-report`: `supabase/functions/_shared/report-examples.ts`.
-- Otvorena pitanja 75, 76, 78, 80, 85–88 premještena su u arhivu (2026-11-18 18:43) pod „Otvorena pitanja (premještena)“ — i dalje čekaju odgovor. Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.
+- Pitanja 75–91 odgovorena 2026-11-18 (gore, „Odluke Borne“); 87 i 88 bez odgovora → ostaje kako je. Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.
