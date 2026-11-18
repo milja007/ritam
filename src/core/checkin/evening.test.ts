@@ -111,9 +111,10 @@ describe('weekdayOf / rulesActiveOn', () => {
 
   it('vraća samo zabrane koje vrijede taj dan', () => {
     const rules = [
-      { id: 'radni', activeDays: [1, 2, 3, 4, 5] },
-      { id: 'vikend', activeDays: [0, 6] },
-      { id: 'uvijek', activeDays: [0, 1, 2, 3, 4, 5, 6] },
+      { id: 'radni', activeDays: [1, 2, 3, 4, 5], period: null, periodStart: null },
+      { id: 'vikend', activeDays: [0, 6], period: null, periodStart: null },
+      { id: 'uvijek', activeDays: [0, 1, 2, 3, 4, 5, 6], period: null, periodStart: null },
+      { id: 'prosli-tjedan', activeDays: [0, 1, 2, 3, 4, 5, 6], period: 'week' as const, periodStart: '2026-10-26' },
     ];
     expect(rulesActiveOn(rules, '2026-11-09').map((r) => r.id)).toEqual(['radni', 'uvijek']);
     expect(rulesActiveOn(rules, '2026-11-08').map((r) => r.id)).toEqual(['vikend', 'uvijek']);

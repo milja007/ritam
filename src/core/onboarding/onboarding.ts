@@ -120,7 +120,7 @@ export function emptyRule(): RuleDraft {
   return { title: '', why: '', weight: 2 };
 }
 
-/** Zabrana iz onboardinga vrijedi svaki dan, cijeli dan (detaljno uređivanje dolazi kasnije). */
+/** Zabrana iz onboardinga je stalna: vrijedi svaki dan, cijeli dan, u svakom razdoblju. */
 export function toRuleInput(rule: RuleDraft): RuleInput {
   return {
     title: rule.title.trim(),
@@ -129,6 +129,8 @@ export function toRuleInput(rule: RuleDraft): RuleInput {
     activeHours: null,
     why: rule.why.trim(),
     weight: rule.weight,
+    period: null,
+    periodStart: null,
   };
 }
 

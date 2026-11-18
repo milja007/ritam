@@ -169,6 +169,8 @@ describe('pretvorba', () => {
       activeHours: null,
       why: 'San',
       weight: 2,
+      period: null,
+      periodStart: null,
     });
     expect(ruleSchema.safeParse({ ...input, ...base }).success).toBe(true);
   });

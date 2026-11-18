@@ -35,6 +35,8 @@ const ruleInput: RuleInput = {
   icon: null,
   activeDays: [0, 1, 2, 3, 4, 5, 6],
   activeHours: null,
+  period: null,
+  periodStart: null,
   why: '',
   weight: 3,
 };

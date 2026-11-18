@@ -33,6 +33,8 @@ const ruleInput: RuleInput = {
   icon: null,
   activeDays: [1, 2, 3, 4, 5],
   activeHours: { start: '22:00', end: '02:00' },
+  period: null,
+  periodStart: null,
   why: 'Energija',
   weight: 2,
 };

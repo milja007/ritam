@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   baseEntityShape,
+  isValidLocalDate,
   clockTimeSchema,
   idSchema,
   localDateSchema,
@@ -22,7 +23,26 @@ export const activeHoursSchema = z
 
 export type ActiveHours = z.infer<typeof activeHoursSchema>;
 
-/** Zabrana ("rule"): naziv, kad vrijedi, razlog, težina 1–3. */
+/** Razdoblje plana kojem zabrana pripada (koncept: zabrane se postavljaju unutar planova). */
+export const RULE_PERIODS = ['week', 'month', 'year'] as const;
+export type RulePeriod = (typeof RULE_PERIODS)[number];
+
+/** Najviše zabrana po jednom razdoblju — manje je više (nije u konceptu, jedna konstanta). */
+export const MAX_RULES_PER_PERIOD = 5;
+
+/** Je li `start` prvi dan razdoblja (tjedan → ponedjeljak, mjesec → 1., godina → 1. 1.). */
+export function isRulePeriodStart(period: RulePeriod, start: string): boolean {
+  if (!isValidLocalDate(start)) return false;
+  if (period === 'year') return start.endsWith('-01-01');
+  if (period === 'month') return start.endsWith('-01');
+  const [y, m, d] = start.split('-').map(Number);
+  return new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, d ?? 1)).getUTCDay() === 1;
+}
+
+/**
+ * Zabrana ("rule"): naziv, kad vrijedi, razlog, težina 1–3. Pripada tjednom, mjesečnom ili
+ * godišnjem planu (`period` + `periodStart`) ili je stalna (oba `null`, npr. iz onboardinga).
+ */
 export const ruleSchema = z.object({
   ...baseEntityShape,
   title: z.string().trim().min(1).max(120),
@@ -38,7 +58,17 @@ export const ruleSchema = z.object({
   /** Zašto — korisnik to vidi kad je u iskušenju. */
   why: noteSchema,
   weight: z.literal(RULE_WEIGHTS),
-});
+  /** Razdoblje plana; `null` = stalna zabrana. */
+  period: z.enum(RULE_PERIODS).nullable(),
+  /** Prvi dan razdoblja ("YYYY-MM-DD"); `null` točno kad je `period` `null`. */
+  periodStart: localDateSchema.nullable(),
+}).refine(
+  (rule) =>
+    rule.period === null
+      ? rule.periodStart === null
+      : rule.periodStart !== null && isRulePeriodStart(rule.period, rule.periodStart),
+  { message: 'periodStart must be the first day of its period (or both null)', path: ['periodStart'] },
+);
 
 export type Rule = z.infer<typeof ruleSchema>;
 
