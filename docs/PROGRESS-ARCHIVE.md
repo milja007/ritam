@@ -4,6 +4,22 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-18 · Sesija 00:43 (2) — korak 22 u appu, PR #36
+1. `plan-day` dobiva `locale` (stari klijent → hr); lokalni raspored i prompt pišu sažetak/pitanja na tom jeziku. Test.
+2. Core `src/core/schedule/plan-day-client.ts`: zahtjev iz stavki (stavka s izričitim vremenom ili naučena = `fixedStart`, ostale fleksibilne s trajanjem), slobodni prozori = od buđenja + 30 min do odlaska u krevet minus postojeći blokovi (≥ 15 min, najviše 12), provjera odgovora u appu (HH:MM, bez preklapanja, unutar prozora ili točno fiksna stavka; ≤ 3 pitanja), prijedlog → nacrti (vrsta iz stavke) + popis stavki koje nisu stale. Testovi.
+3. UI „Što imaš sutra?“: s oblakom gumb „Složi mi dan“ (≥ 2 stavke) → prijedlog (sažetak, raspored, „nije stalo“, pitanja) → „Prihvati prijedlog“ zamijeni stavke (one koje nisu stale ostaju) ili „Natrag na moj popis“; plan postaje plan tek na Potvrdi (odobrenje). Greška → poruka, popis ostaje. HR/EN, pristupačnost.
+4. Bez oblaka se ništa ne mijenja (gumb se ne prikazuje).
+- Gotovo 1–4. Sljedeće: wind-down prema koraku kreveta (pitanje 87) ili 25 (tjedni plan); 20–22 čekaju deploy.
+
+## 2026-11-18 · Sesija 00:43 — koraci 20–22 u appu (prioritet „Žar“ istekao 17. 11.)
+1. **20 — model po funkciji** prema Borninoj odluci 2026-11-09 (arhiva): `parse-input` → `claude-haiku-5-5`, `plan-day` → `claude-sonnet-5-5`; čista funkcija `llmModelFor(fn, env)` u `_shared/plan-logic.ts` (override `LLM_MODEL_PARSE_INPUT` / `LLM_MODEL_PLAN_DAY`), test. Zatvara P2 5 (Sonnet 4.5 se povlači) bez čekanja Borne — model je već odabran; ostaje samo deploy.
+2. **21 — app validira odgovor** `parse-input` (`src/core/schedule/parsed-input.ts`): nevaljani blokovi otpadaju, najviše 20; `parsedBlocksToDrafts` → `BlockDraft` (od–do / početak + trajanje / doba dana / prvi slobodan termin), termini se ne preklapaju s već dodanim. Testovi.
+3. **21 — lokalni višestruki unos**: „Trening 18-19, zubar u 15; kemija 45 min“ → tri stavke bez LLM-a (dijeli se samo na `,` `;` i novi red). Testovi.
+4. **21 — spoj na korak 13**: „Što imaš sutra?“ — kad je oblak uključen i postoji sesija, unos s više stavki ide kroz `parse-input` (timeout 8 s); inače / na grešku lokalno. Gumb pokazuje učitavanje, čitač čuje „Dodano N“. Bez oblaka ponašanje je kao prije (osim višestrukog unosa).
+5. **22 — sljedeći PR**: klijent `plan-day` + prijedlog plana s pitanjima i odobrenjem.
+- Gotovo 1–4 (PR #35). Deploy funkcija ostaje Borni (pitanje 77, sada samo deploy). Sljedeće: 22 u appu.
+
+
 ## 2026-11-17 · Sesija 21:43 — korak 29: san, PR #34
 1. Core `src/core/sleep/`: ocjena noći prema cilju (`assessNight`: odmoran / kratko < cilj − 1 h / jako kratko < cilj − 2 h), 7 noći za karticu, korak kreveta: ako je prosječni krevet zadnjih noći (≥ 3) kasniji od cilja > 15 min, večerašnji cilj je 15 min ranije od prosjeka (zaokruženo na 15), nikad ranije od cilja — „postupni pomaci po 15 min“ iz koncepta. Testovi.
 2. DB `listMorningCheckins(from, to)` — samo čitanje.

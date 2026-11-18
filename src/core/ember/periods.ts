@@ -251,26 +251,58 @@ export function monthNav(month: string, today: string, earliest: string | null):
   };
 }
 
-/** Listanje tjedana; `date` je bilo koji dan tjedna, a odredišta su ponedjeljci. */
-export function weekNav(date: string, today: string, earliest: string | null): PeriodNav {
+/** Koliko se tjedana unaprijed Tjedan može otvoriti za planiranje (P54: nedjeljom za sljedeći tjedan). */
+export const PLAN_AHEAD_WEEKS = 1;
+
+/**
+ * Listanje tjedana; `date` je bilo koji dan tjedna, a odredišta su ponedjeljci. `ahead` je koliko
+ * tjedana nakon tekućeg se smije otvoriti (zadano 0 — samo prošlost i tekući).
+ */
+export function weekNav(date: string, today: string, earliest: string | null, ahead = 0): PeriodNav {
   const start = isValidLocalDate(date) ? weekStart(date) : null;
   const thisWeek = isValidLocalDate(today) ? weekStart(today) : null;
   if (start === null || thisWeek === null) return NO_NAV;
   const before = addDays(start, -7);
   const after = addDays(start, 7);
   const first = earliest !== null && isValidLocalDate(earliest) ? weekStart(earliest) : null;
+  const last = addDays(thisWeek, 7 * Math.max(0, Math.floor(ahead)));
   return {
-    previous: before !== null && first !== null && before >= first ? before : null,
-    next: after !== null && after <= thisWeek ? after : null,
+    // Iz tjedna unaprijed se uvijek može natrag do tekućeg, i bez ijednog rezultata.
+    previous: before !== null && ((first !== null && before >= first) || before >= thisWeek) ? before : null,
+    next: after !== null && last !== null && after <= last ? after : null,
     current: start === thisWeek,
   };
 }
 
-/** Može li se tjedan s ponedjeljkom `start` prikazati: ispravan ponedjeljak, ne nakon tekućeg tjedna. */
-export function isWeekOpenable(start: string, today: string): boolean {
+/**
+ * Može li se tjedan s ponedjeljkom `start` prikazati: ispravan ponedjeljak, najviše `ahead`
+ * tjedana nakon tekućeg.
+ */
+export function isWeekOpenable(start: string, today: string, ahead = 0): boolean {
   if (!isValidLocalDate(start) || !isValidLocalDate(today)) return false;
   const thisWeek = weekStart(today);
-  return thisWeek !== null && weekStart(start) === start && start <= thisWeek;
+  const last = thisWeek !== null ? addDays(thisWeek, 7 * Math.max(0, Math.floor(ahead))) : null;
+  return last !== null && weekStart(start) === start && start <= last;
+}
+
+/**
+ * Koliko je dana tjedna `dates` ostalo od `today` (uključivo): tekući tjedan → dani do nedjelje,
+ * budući tjedan → svih 7, prošli → 0. Za „ostalo je manje dana“ kad se ulazi usred tjedna (P54).
+ */
+export function weekDaysLeft(dates: readonly string[], today: string): number {
+  if (!isValidLocalDate(today)) return 0;
+  return dates.filter((date) => date >= today).length;
+}
+
+/**
+ * Što dodir dana na Tjednu radi: prošli dan je samo za čitanje, danas vodi na Dan, a dan koji tek
+ * dolazi otvara planiranje tog dana.
+ */
+export type WeekDayAction = 'past' | 'today' | 'plan';
+
+export function weekDayAction(date: string, today: string): WeekDayAction {
+  if (!isValidLocalDate(date) || !isValidLocalDate(today) || date < today) return 'past';
+  return date === today ? 'today' : 'plan';
 }
 
 /** Dvanaest mjeseci godine, svaki sa svojim danima. */

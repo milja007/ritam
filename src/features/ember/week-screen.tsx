@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   averageScore,
@@ -8,8 +9,11 @@ import {
   isoWeek,
   isWeekOpenable,
   nowLine,
+  PLAN_AHEAD_WEEKS,
   segmentColor,
   weekDates,
+  weekDayAction,
+  weekDaysLeft,
   weekNav,
   weekSegments,
   type SegmentLook,
@@ -17,6 +21,7 @@ import {
 import { addDays } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
 import { useWeekReport, WeekDiagnosisCard } from '@/features/diagnosis';
+import { TomorrowPlan } from '@/features/evening';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -40,7 +45,10 @@ const LEGEND: readonly { look: SegmentLook; key: 'legendDone' | 'legendMissed' |
 /**
  * Tab Tjedan (smjer „Žar“): sedam stupaca dana s blokovima (odrađeno svijetli, neodrađeno je
  * ugašeno, plan je ocrtan), linija „sada“ kroz današnji stupac i žar svakog dana ispod.
- * Strelice listaju prošle tjedne (do tjedna najranijeg rezultata); „Ovaj tjedan“ vraća na tekući.
+ * Strelice listaju prošle tjedne (do tjedna najranijeg rezultata) i sljedeći tjedan (planiranje
+ * unaprijed); „Ovaj tjedan“ vraća na tekući. Korak 25: tjedan je kalendar — dodir dana koji tek
+ * dolazi otvara plan tog dana (fiksan, ali uvijek promjenjiv; ne mora se sve ispuniti), danas vodi
+ * na Dan, prošli dani su samo za čitanje.
  */
 export function WeekScreen() {
   const { t, i18n } = useTranslation();
@@ -48,14 +56,19 @@ export function WeekScreen() {
   const now = useNow();
   // Ponedjeljak tjedna odabranog strelicom; `null` (ili neispravan) znači tekući tjedan.
   const [selected, setSelected] = useState<string | null>(null);
-  const shown = selected !== null && isWeekOpenable(selected, now.date) ? selected : now.date;
+  // Dan koji se planira (otvoren dodirom stupca); `null` = zatvoreno.
+  const [planning, setPlanning] = useState<string | null>(null);
+  const shown =
+    selected !== null && isWeekOpenable(selected, now.date, PLAN_AHEAD_WEEKS) ? selected : now.date;
   const dates = weekDates(shown);
   const from = dates[0] ?? now.date;
   const to = dates[6] ?? now.date;
   const state = useEmberData(now.eveningDate, { from, to });
   const language = i18n.language;
   const week = isoWeek(from);
-  const nav = weekNav(shown, now.date, useEarliestScored(state));
+  const nav = weekNav(shown, now.date, useEarliestScored(state), PLAN_AHEAD_WEEKS);
+  const future = from > now.date;
+  const daysLeft = weekDaysLeft(dates, now.date);
   // Dijagnoza se ponovno provjeri kad se podaci taba osvježe (fokus, novi upit, „Gotovo“).
   const report = useWeekReport(from, now.date, state.data);
 
@@ -87,7 +100,13 @@ export function WeekScreen() {
         />
       }
       pill={
-        diffText !== null ? (
+        future ? (
+          <Pill>
+            <Text variant="caption" tone="accent" style={styles.strong}>
+              {t('ember.week.nextWeek')}
+            </Text>
+          </Pill>
+        ) : diffText !== null ? (
           <Pill label={t('ember.week.vsPreviousLabel', { diff: diffText })}>
             <Text variant="caption" tone={diff !== null && diff > 0 ? 'success' : 'textMuted'} style={styles.strong}>
               {t('ember.week.vsPrevious', { diff: diffText })}
@@ -97,6 +116,12 @@ export function WeekScreen() {
       }>
       {state.data ? (
         <>
+          {daysLeft > 0 ? (
+            <Text variant="caption" tone="textMuted">
+              {nav.current && daysLeft < 7 ? `${t('ember.week.daysLeft', { count: daysLeft })} · ` : ''}
+              {t('ember.week.planHint')}
+            </Text>
+          ) : null}
           <View style={styles.grid} accessibilityLabel={t('ember.week.columns')}>
             <View style={styles.hours} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
               {HOUR_MARKS.map((mark) => (
@@ -116,8 +141,26 @@ export function WeekScreen() {
                   : ember.kind === 'past' && ember.score !== null
                     ? t('ember.week.dayScored', { day, score: ember.score, count: segments.length })
                     : t('ember.week.dayPlain', { day, count: segments.length });
+              const action = weekDayAction(date, now.date);
               return (
-                <View key={date} style={styles.day} accessible accessibilityLabel={label}>
+                <Pressable
+                  key={date}
+                  style={({ pressed }) => [styles.day, pressed && action !== 'past' ? styles.pressed : null]}
+                  accessible
+                  accessibilityLabel={label}
+                  accessibilityRole={action === 'past' ? undefined : 'button'}
+                  accessibilityHint={
+                    action === 'plan'
+                      ? t('ember.week.planDayHint')
+                      : action === 'today'
+                        ? t('ember.week.todayHint')
+                        : undefined
+                  }
+                  disabled={action === 'past'}
+                  onPress={() => {
+                    if (action === 'plan') setPlanning(date);
+                    else if (action === 'today') router.navigate('/');
+                  }}>
                   <View style={styles.dayHead}>
                     <Text variant="caption" tone="textMuted">
                       {weekdayLetter(date, language)}
@@ -173,7 +216,7 @@ export function WeekScreen() {
                         ? String(ember.score)
                         : t('ember.week.noScore')}
                   </Text>
-                </View>
+                </Pressable>
               );
             })}
           </View>
@@ -198,10 +241,24 @@ export function WeekScreen() {
             })}
           </View>
 
-          {empty ? <Text tone="textMuted">{t(nav.current ? 'ember.week.empty' : 'ember.week.emptyPast')}</Text> : null}
+          {empty ? (
+            <Text tone="textMuted">
+              {t(future ? 'ember.week.emptyNext' : nav.current ? 'ember.week.empty' : 'ember.week.emptyPast')}
+            </Text>
+          ) : null}
 
-          <WeekDiagnosisCard report={report} rangeLabel={weekRange(from, to, language)} current={nav.current} />
+          {future ? null : (
+            <WeekDiagnosisCard report={report} rangeLabel={weekRange(from, to, language)} current={nav.current} />
+          )}
         </>
+      ) : null}
+      {planning !== null ? (
+        <TomorrowPlan
+          date={planning}
+          variant={planning === addDays(now.date, 1) ? 'tomorrow' : 'day'}
+          onSaved={state.reload}
+          onClose={() => setPlanning(null)}
+        />
       ) : null}
     </PeriodScreen>
   );
@@ -219,6 +276,7 @@ const styles = StyleSheet.create({
   now: { position: 'absolute', left: -3, right: -3, height: 2, borderRadius: 1 },
   score: { fontSize: 11, lineHeight: 14, fontWeight: '600', fontVariant: ['tabular-nums'] },
   strong: { fontWeight: '600' },
+  pressed: { opacity: 0.7 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   swatch: { width: 10, height: 10, borderRadius: 3 },
