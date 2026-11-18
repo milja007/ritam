@@ -1536,5 +1536,75 @@
       "added_other": "Dodano je {{count}} termina.",
       "failed": "Termini nisu dodani. Pokušaj ponovo."
     }
+  },
+  "rules": {
+    "week": {
+      "heading": "Zabrane tjedna",
+      "empty": "Čega se ovaj tjedan držiš podalje? Zabrana vrijedi samo ovaj tjedan — večernji upit te pita za nju.",
+      "emptyPast": "Taj tjedan nije imao zabrana."
+    },
+    "month": {
+      "heading": "Zabrane mjeseca",
+      "empty": "Čega se ovaj mjesec držiš podalje? Zabrana mjeseca vidi se i u svakom njegovom tjednu.",
+      "emptyPast": "Taj mjesec nije imao zabrana."
+    },
+    "year": {
+      "heading": "Zabrane godine",
+      "empty": "Velike zabrane za cijelu godinu — vide se u svakom mjesecu i tjednu.",
+      "emptyPast": "Ta godina nije imala zabrana."
+    },
+    "scope": {
+      "month": "Mjesec",
+      "year": "Godina",
+      "always": "Stalna"
+    },
+    "streak_one": "Niz: {{count}} dan",
+    "streak_few": "Niz: {{count}} dana",
+    "streak_other": "Niz: {{count}} dana",
+    "best": "najbolji {{count}}",
+    "noLogs": "Još bez zapisa — večernji upit pita svaki dan kad vrijedi.",
+    "notStarted": "Počinje {{date}}.",
+    "weight": {
+      "1": "lagana",
+      "2": "srednja",
+      "3": "teška"
+    },
+    "rowA11y": "{{title}}. {{streak}}. Težina: {{weight}}.",
+    "expandHint": "Pokazuje zašto i pojedinosti",
+    "why": "Zašto: {{why}}",
+    "days": "Vrijedi: {{days}}",
+    "everyDay": "Vrijedi svaki dan",
+    "tally": "Držao si se {{kept}} · prekršio {{broken}}",
+    "add": "Dodaj zabranu",
+    "limitHint": "Najviše {{max}} zabrana po razdoblju — malo po malo.",
+    "limit": "Već imaš {{max}} zabrana za ovo razdoblje.",
+    "remove": "Ukloni",
+    "removeLabel": "Ukloni zabranu {{title}}",
+    "removeTitle": "Ukloniti zabranu?",
+    "removeMessage": "„{{title}}“ nestaje iz plana.",
+    "cancel": "Odustani",
+    "hasHistory": "Ima zapise pa ostaje do kraja razdoblja — povijest ulazi u rezultate.",
+    "failed": "Promjena nije spremljena. Pokušaj ponovo.",
+    "loadError": "Zabrane se nisu učitale.",
+    "addedA11y": "Dodana zabrana: {{title}}",
+    "editor": {
+      "overline": "Zabrana",
+      "title": {
+        "week": "Zabrana za ovaj tjedan",
+        "month": "Zabrana za ovaj mjesec",
+        "year": "Zabrana za ovu godinu"
+      },
+      "range": "Vrijedi od {{from}} do {{to}}.",
+      "nameLabel": "Naziv",
+      "namePlaceholder": "npr. Bez mobitela u krevetu",
+      "whyLabel": "Zašto? (vidjet ćeš to kad si u iskušenju)",
+      "whyPlaceholder": "npr. Želim se ujutro budit odmoran",
+      "weightLabel": "Težina",
+      "daysLabel": "Dani",
+      "daysHint": "Kad vrijedi — večernji upit pita samo tim danima.",
+      "save": "Spremi zabranu",
+      "cancel": "Odustani",
+      "failed": "Zabrana nije spremljena. Pokušaj ponovo."
+    }
   }
 }

@@ -6,7 +6,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Prioritet „Žar“ istekao 2026-11-17; 20–22 čekaju deploy (Borna), pa ide faza 2 redom: 26 traži deploy `plan-day` za provjeru → prvo 28.
 - Plan (provjeren protiv koncepta „zabrane se postavljaju unutar planova godine/mjeseca/tjedna; naziv, kad vrijedi, razlog, težina 1–3; svaka ima streak i lagano Držao sam se / Prekršio“): (1) zabrana dobiva razdoblje `period` + `period_start` (oba `null` = stalna, kao zabrane iz onboardinga); lokalna migracija 0014 + Supabase migracija (remote = Borna, pitanje 84). (2) Core: `isRuleActiveOn` (dan u tjednu + unutar razdoblja), `rulesActiveOn` ga koristi → večernji upit pita samo zabrane koje taj dan vrijede; `ruleStreak` (dani zaredom kad je vrijedila i držao si se; današnji neodgovoren dan ne prekida, neodgovoren prošli prekida, dani kad ne vrijedi se preskaču) + najbolji niz. (3) Repo: `createRule` s razdobljem, `listRuleLogs`, `deleteRule` samo bez povijesti. (4) UI: kartica „Zabrane“ na Tjednu/Mjesecu/Godini — zabrane koje vrijede u tom razdoblju (i šire: godina/mjesec/stalne, s oznakom izvora), niz žarom po zabrani, dodavanje za to razdoblje (naziv, zašto, težina, dani), prošlo razdoblje samo čitanje.
 - Nije u konceptu (konstante, pitanje 88): pravila niza; brisanje samo bez povijesti; najviše 5 zabrana po razdoblju.
-- Gotovo: 1–3 (PR #44; remote migracija `20261118120000_rule_periods.sql` = Borna, pitanje 84).
+- Gotovo: 1–3 (PR #44; remote migracija `20261118120000_rule_periods.sql` = Borna, pitanje 84), 4 (PR #45). Korak 28 `[x]`.
 
 ## 2026-11-18 · Sesija 09:43 — korak 25: tjedni zadaci s pitanjima
 - Plan (provjeren protiv koncepta „pitanja kod unosa … LLM ih smješta, pravila su tvrda“): (1–2) podaci `tasks` (tjedan, naslov, trajanje 5–480, koliko puta 1–7, rok u tjednu, doba dana, energija, što treba; najviše 10 — konstanta, nije u konceptu), (3) lokalno smještanje `placeWeekTasks` po tvrdim pravilima (LLM = 26), (4) kartica „Zadaci tjedna“ na Tjednu s pitanjima kao čipovima i prijedlogom koji korisnik odobrava. Bez XP-a za sam zadatak (XP ide kroz blokove).
@@ -16,7 +16,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 ## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
 
 ## Stanje
-- `main`: koraci 25 i 25b (kalendari tjedna/mjeseca za planiranje, ciljevi razdoblja, tjedni zadaci), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
+- `main`: korak 28 (zabrane u planovima s nizom), koraci 25 i 25b (kalendari tjedna/mjeseca za planiranje, ciljevi razdoblja, tjedni zadaci), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).
 - Remote Supabase `ritam`: 7 migracija (zadnja `20261111103947_sync`), tablice prazne. Auth/sync iza `EXPO_PUBLIC_FEATURE_AUTH` (isključeno).
 - Na uređaju neprovjereno: cijeli smjer „Žar“, Profil (orb-plamen, rang, statovi, bedževi, teme), level-up, tjedna, mjesečna i godišnja dijagnoza, magic link, sync s dva uređaja.
 - Stanje #1 (2026-11-18 09:45): nema Codexovih zahtjeva od 2026-11-17 15:45; nema P0/P1 ni otvorenih P2.

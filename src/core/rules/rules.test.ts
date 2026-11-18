@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   isRuleActiveOn,
+  ruleEmberLevel,
   rulePeriodEnd,
   rulePeriodStart,
   rulesActiveOn,
@@ -113,5 +114,22 @@ describe('ruleStreak', () => {
       answeredToday: true,
     });
     expect(ruleStreak(always, [kept('2026-11-19')], '2026-11-18').current).toBe(0);
+  });
+});
+
+describe('ruleEmberLevel', () => {
+  it('žar raste s nizom, bez niza je ugašen', () => {
+    expect([0, 1, 2, 3, 6, 7, 13, 14, 100, Number.NaN].map(ruleEmberLevel)).toEqual([
+      'unlit',
+      'faint',
+      'faint',
+      'low',
+      'low',
+      'warm',
+      'warm',
+      'bright',
+      'bright',
+      'unlit',
+    ]);
   });
 });

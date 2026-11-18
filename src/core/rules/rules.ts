@@ -163,3 +163,15 @@ export function ruleStreak(
   }
   return { current: run, best, kept, broken, answeredToday: byDate.has(today) };
 }
+
+/** Donje granice niza (dani) za svjetlinu žara zabrane: `faint`, `low`, `warm`, `bright`. */
+export const RULE_EMBER_STEPS = { faint: 1, low: 3, warm: 7, bright: 14 } as const;
+
+/** Žar zabrane raste s nizom; bez niza je ugašen (bez kazne, samo tišina). */
+export function ruleEmberLevel(current: number): 'unlit' | 'faint' | 'low' | 'warm' | 'bright' {
+  if (!Number.isFinite(current) || current < RULE_EMBER_STEPS.faint) return 'unlit';
+  if (current >= RULE_EMBER_STEPS.bright) return 'bright';
+  if (current >= RULE_EMBER_STEPS.warm) return 'warm';
+  if (current >= RULE_EMBER_STEPS.low) return 'low';
+  return 'faint';
+}
