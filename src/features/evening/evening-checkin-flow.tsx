@@ -15,6 +15,7 @@ import {
 import type { Rule, ScheduleBlock } from '@/core/domain';
 import { spacing } from '@/core/theme';
 import { DayDiagnosisView, DiagnosisFeedback, PeriodDiagnosesInline, useWrittenDiagnosis } from '@/features/diagnosis';
+import { TrackersCard } from '@/features/trackers';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -141,7 +142,11 @@ export function EveningCheckinFlow({
                     ) : step === 'rules' ? (
                       <RulesStep draft={draft} rules={activeRules} onChange={updateRule} />
                     ) : (
-                      <RatingStep draft={draft} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
+                      <>
+                        {/* Korak 31b: večernja provjera kalorija i novca (samo kad su trackeri uključeni). */}
+                        <TrackersCard date={date} evening />
+                        <RatingStep draft={draft} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
+                      </>
                     )}
                   </View>
                 </ScrollView>

@@ -25,7 +25,10 @@ export function DiagnosisModal({ date, dayLabel, onClose }: { date: string; dayL
     <Modal animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <GradientBackground>
         <SafeAreaView style={styles.flex}>
-          <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            automaticallyAdjustKeyboardInsets
+            keyboardShouldPersistTaps="handled">
             <View style={styles.topRow}>
               <Text variant="overline" tone="textMuted">
                 {dayLabel}

@@ -98,7 +98,10 @@ export function MonthDiagnosisCard({ report, monthLabel, current }: MonthDiagnos
         <Modal animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setOpen(false)}>
           <GradientBackground>
             <SafeAreaView style={styles.flex}>
-              <ScrollView contentContainerStyle={styles.content}>
+              <ScrollView
+                contentContainerStyle={styles.content}
+                automaticallyAdjustKeyboardInsets
+                keyboardShouldPersistTaps="handled">
                 <View style={styles.topRow}>
                   <Text variant="overline" tone="textMuted">
                     {monthLabel}

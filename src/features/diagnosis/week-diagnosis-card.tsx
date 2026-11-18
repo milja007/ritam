@@ -116,7 +116,10 @@ export function WeekDiagnosisCard({ report, rangeLabel, current }: WeekDiagnosis
         <Modal animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setOpen(false)}>
           <GradientBackground>
             <SafeAreaView style={styles.flex}>
-              <ScrollView contentContainerStyle={styles.content}>
+              <ScrollView
+                contentContainerStyle={styles.content}
+                automaticallyAdjustKeyboardInsets
+                keyboardShouldPersistTaps="handled">
                 <View style={styles.topRow}>
                   <Text variant="overline" tone="textMuted">
                     {rangeLabel}

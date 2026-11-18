@@ -27,6 +27,7 @@ import { QuestsCard } from '@/features/quests';
 import { updateSettings, useSettings } from '@/features/settings';
 import { SleepCard } from '@/features/sleep';
 import { useNow } from '@/features/today';
+import { TrackersSettings } from '@/features/trackers';
 import { ThemePickerCard } from '@/features/unlocks';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
@@ -149,6 +150,10 @@ export function ProfileScreen() {
 
               <Section title={t('profile.score.title')}>
                 <ScoreAreasPicker value={settings} onChange={save} />
+              </Section>
+
+              <Section title={t('trackers.settings.title')}>
+                <TrackersSettings settings={settings} save={save} today={now.date} />
               </Section>
             </>
           )}
