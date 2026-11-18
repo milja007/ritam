@@ -26,6 +26,7 @@ const fixedAt = (title: string, fixedStart: string, durationMinutes: number): Da
 });
 const request = (priorities: DayPriority[], freeWindows: { start: string; end: string }[]): PlanDayRequest => ({
   date: '2026-11-18',
+  locale: 'hr',
   priorities,
   freeWindows,
   preferences: null,
@@ -175,5 +176,22 @@ describe('llmModelFor (korak 20, odluka Borne 2026-11-09)', () => {
 
   it('prazna varijabla ne briše model', () => {
     expect(llmModelFor('parse-input', () => '  ')).toBe('claude-haiku-5-5');
+  });
+});
+
+describe('plan-day jezik (korak 22)', () => {
+  it('zahtjev bez jezika je hrvatski, en se čuva', () => {
+    const body = { date: '2026-11-18', priorities: [], freeWindows: [], preferences: null };
+    expect(parsePlanDayRequest(body)?.locale).toBe('hr');
+    expect(parsePlanDayRequest({ ...body, locale: 'en' })?.locale).toBe('en');
+    expect(parsePlanDayRequest({ ...body, locale: 'de' })?.locale).toBe('hr');
+  });
+
+  it('lokalni raspored piše sažetak i pitanja na jeziku zahtjeva', () => {
+    const en = { ...request([flexible('Long', 600)], [{ start: '09:00', end: '10:00' }]), locale: 'en' as const };
+    const plan = buildFallbackPlan(en);
+    expect(plan.questions[0]).toBe('Not everything fit: Long. Do you have more time?');
+    expect(plan.summary).toBe("The plan doesn't fit into the given windows.");
+    expect(buildFallbackPlan({ ...en, freeWindows: [] }).questions[0]).toContain('When are you free');
   });
 });

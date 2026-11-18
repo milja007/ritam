@@ -5,9 +5,11 @@ import {
   MAX_PARSED_BLOCKS,
   parsedBlocksToDrafts,
   parsedBlockToEntry,
+  parsedItems,
   readParseInputResponse,
   splitEntries,
   typedDrafts,
+  typedItems,
   wantsSmartParse,
 } from './parsed-input';
 
@@ -139,5 +141,18 @@ describe('wantsSmartParse', () => {
     expect(wantsSmartParse('ujutro kemija pa trening')).toBe(true);
     expect(wantsSmartParse('meeting at 9 and then gym')).toBe(true);
     expect(wantsSmartParse('sutra moram završiti seminar iz povijesti koji traje otprilike tri sata')).toBe(true);
+  });
+});
+
+describe('typedItems / parsedItems (oznaka izričitog vremena)', () => {
+  it('izričito vrijeme je „pinned“, slobodan termin nije', () => {
+    expect(typedItems('Zubar u 16, kemija 45 min', [], '07:00').map((entry) => entry.pinned)).toEqual([true, false]);
+    expect(
+      parsedItems(
+        [block({ title: 'Sastanak', start: '15:00', end: '16:00' }), block({ title: 'Teretana', timeOfDay: 'evening' })],
+        [],
+        '07:00',
+      ).map((entry) => entry.pinned),
+    ).toEqual([true, false]);
   });
 });

@@ -15,12 +15,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   isTomorrowPlanValid,
   occupiedSlots,
-  parsedBlocksToDrafts,
+  parsedItems,
   pickKey,
-  typedDrafts,
+  PLAN_MIN_ITEMS,
+  planDayRequest,
+  planProposal,
+  typedItems,
   wantsSmartParse,
   type BlockDraft,
   type LearnedPick,
+  type PlanItem,
+  type PlanProposal,
 } from '@/core/schedule';
 import { spacing } from '@/core/theme';
 import { isAuthEnabled } from '@/features/auth';
@@ -34,6 +39,8 @@ import { TextField } from '@/ui/text-field';
 import { useAppTheme } from '@/ui/theme';
 
 import { requestParseInput } from './parse-input-client';
+import { requestPlanDay } from './plan-day-client';
+import { PlanProposalView } from './plan-proposal-view';
 import { useTomorrowPlan } from './use-tomorrow';
 
 type TomorrowPlanProps = {
@@ -44,7 +51,8 @@ type TomorrowPlanProps = {
   onClose: () => void;
 };
 
-type Item = { key: number; draft: BlockDraft };
+/** Stavka popisa; `pinned` = vrijeme je izričito zadano (za „Složi mi dan“ je fiksno). */
+type Item = PlanItem & { key: number };
 
 /**
  * "Što imaš sutra?": tipkanje i naučeni odabiri dodaju blokove za sutra (termini se slažu iza
@@ -63,23 +71,37 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   const [savedCount, setSavedCount] = useState<number | null>(null);
   /** `parse-input` radi — unos i odabiri čekaju da se termini ne slože preko istih mjesta. */
   const [parsing, setParsing] = useState(false);
+  /** „Složi mi dan“ (korak 22): poziv u tijeku, prijedlog za odobrenje, greška. */
+  const [planning, setPlanning] = useState(false);
+  const [proposal, setProposal] = useState<PlanProposal<Item> | null>(null);
+  const [planError, setPlanError] = useState(false);
+  const busy = parsing || planning;
 
   const drafts = items.map((item) => item.draft);
   const occupied = occupiedSlots(plan.existing, drafts);
 
-  function add(draft: BlockDraft) {
-    addAll([draft]);
-  }
-
-  function addAll(newDrafts: readonly BlockDraft[]) {
-    const entries = newDrafts.map((draft) => ({ key: nextKey.current++, draft }));
+  function addAll(newItems: readonly PlanItem[]) {
+    const entries = newItems.map((item) => ({
+      ...item,
+      key: nextKey.current++,
+    }));
     setItems((current) => [...current, ...entries]);
   }
 
   /** Naučeni odabir dolazi u svom uobičajenom terminu (korisnik ga mijenja u editoru). */
   function addLearned(pick: LearnedPick) {
-    if (parsing) return;
-    add({ title: pick.title, kind: pick.kind, start: pick.start, end: pick.end });
+    if (busy) return;
+    addAll([
+      {
+        draft: {
+          title: pick.title,
+          kind: pick.kind,
+          start: pick.start,
+          end: pick.end,
+        },
+        pinned: true,
+      },
+    ]);
   }
 
   // Naučeni odabir koji je već dodan se skriva.
@@ -92,25 +114,62 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
    */
   async function addTyped() {
     const text = typed;
-    if (text.trim().length === 0 || parsing) return;
-    let newDrafts: BlockDraft[] = [];
+    if (text.trim().length === 0 || busy) return;
+    let newItems: PlanItem[] = [];
     if (isAuthEnabled && wantsSmartParse(text)) {
       setParsing(true);
-      const blocks = await requestParseInput(text, i18n.language.startsWith('en') ? 'en' : 'hr');
+      const blocks = await requestParseInput(text, locale);
       setParsing(false);
-      if (blocks) newDrafts = parsedBlocksToDrafts(blocks, occupied, plan.wakeTime);
+      if (blocks) newItems = parsedItems(blocks, occupied, plan.wakeTime);
     }
-    if (newDrafts.length === 0) newDrafts = typedDrafts(text, occupied, plan.wakeTime);
-    if (newDrafts.length === 0) return;
-    addAll(newDrafts);
+    if (newItems.length === 0) newItems = typedItems(text, occupied, plan.wakeTime);
+    if (newItems.length === 0) return;
+    addAll(newItems);
     setTyped('');
-    if (newDrafts.length > 1) {
-      AccessibilityInfo.announceForAccessibility(t('evening.tomorrow.addedCount', { count: newDrafts.length }));
+    setPlanError(false);
+    if (newItems.length > 1) {
+      AccessibilityInfo.announceForAccessibility(t('evening.tomorrow.addedCount', { count: newItems.length }));
     }
   }
 
+  const locale = i18n.language.startsWith('en') ? 'en' : 'hr';
+
+  /**
+   * „Složi mi dan“: stavke + slobodni prozori → `plan-day` → prijedlog. Ništa se ne mijenja dok
+   * korisnik ne prihvati prijedlog, a ništa se ne sprema dok ne potvrdi plan.
+   */
+  async function arrange() {
+    if (busy || items.length < PLAN_MIN_ITEMS) return;
+    const snapshot = items;
+    setPlanError(false);
+    setPlanning(true);
+    const response = await requestPlanDay(
+      planDayRequest(date, snapshot, plan.existing, plan.wakeTime, plan.bedtime, locale),
+    );
+    setPlanning(false);
+    if (!response) {
+      setPlanError(true);
+      return;
+    }
+    setProposal(planProposal(response, snapshot));
+  }
+
+  function acceptProposal() {
+    if (!proposal) return;
+    // Prihvaćeni termini su sada korisnikovi; stavke koje nisu stale ostaju kakve jesu.
+    const accepted = proposal.drafts.map((draft) => ({
+      key: nextKey.current++,
+      draft,
+      pinned: true,
+    }));
+    setItems([...accepted, ...proposal.leftOut]);
+    setProposal(null);
+    AccessibilityInfo.announceForAccessibility(t('evening.plan.accepted'));
+  }
+
   function replace(key: number, draft: BlockDraft) {
-    setItems((current) => current.map((item) => (item.key === key ? { key, draft } : item)));
+    // Vrijeme iz uređivača je korisnikov izbor.
+    setItems((current) => current.map((item) => (item.key === key ? { key, draft, pinned: true } : item)));
   }
 
   function remove(key: number) {
@@ -134,7 +193,11 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
   const sortedItems = [...items].sort((a, b) => a.draft.start.localeCompare(b.draft.start) || a.key - b.key);
 
   return (
-    <Modal animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
+    <Modal
+      animationType="slide"
+      presentationStyle="fullScreen"
+      // Android Natrag: s otvorenog prijedloga natrag na popis, inače zatvori.
+      onRequestClose={proposal ? () => setProposal(null) : onClose}>
       <GradientBackground>
         <SafeAreaView style={styles.flex}>
           <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -169,6 +232,12 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                       <Text tone="danger">{t('evening.tomorrow.loadError')}</Text>
                       <Button variant="secondary" label={t('today.retry')} onPress={plan.reload} />
                     </View>
+                  ) : proposal ? (
+                    <PlanProposalView
+                      proposal={proposal}
+                      onAccept={acceptProposal}
+                      onBack={() => setProposal(null)}
+                    />
                   ) : (
                     <>
                       {plan.existing.length > 0 ? (
@@ -195,7 +264,10 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                                   title: pick.title,
                                   start: pick.start,
                                 })}
-                                hint={t('evening.tomorrow.learnedHint', { start: pick.start, end: pick.end })}
+                                hint={t('evening.tomorrow.learnedHint', {
+                                  start: pick.start,
+                                  end: pick.end,
+                                })}
                                 onPress={() => addLearned(pick)}
                               />
                             ))}
@@ -210,7 +282,7 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                           value={typed}
                           onChangeText={setTyped}
                           onSubmitEditing={() => void addTyped()}
-                          editable={!parsing}
+                          editable={!busy}
                           maxLength={200}
                           returnKeyType="done"
                           submitBehavior="submit"
@@ -219,7 +291,7 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                           variant="secondary"
                           label={t('evening.tomorrow.add')}
                           onPress={() => void addTyped()}
-                          disabled={typed.trim().length === 0}
+                          disabled={typed.trim().length === 0 || planning}
                           loading={parsing}
                         />
                         <Text variant="caption" tone="textMuted">
@@ -243,35 +315,56 @@ export function TomorrowPlan({ date, onSaved, onClose }: TomorrowPlanProps) {
                             />
                           ))
                         )}
+                        {isAuthEnabled && items.length >= PLAN_MIN_ITEMS ? (
+                          <View style={styles.arrange}>
+                            <Button
+                              variant="secondary"
+                              label={t('evening.plan.arrange')}
+                              onPress={() => void arrange()}
+                              disabled={parsing}
+                              loading={planning}
+                            />
+                            <Text variant="caption" tone="textMuted">
+                              {t('evening.plan.arrangeHint')}
+                            </Text>
+                            {planError ? (
+                              <Text tone="danger" accessibilityLiveRegion="assertive">
+                                {t('evening.plan.error')}
+                              </Text>
+                            ) : null}
+                          </View>
+                        ) : null}
                       </View>
                     </>
                   )}
                 </ScrollView>
 
-                <View style={styles.footer}>
-                  {saveError ? (
-                    <Text tone="danger" accessibilityLiveRegion="assertive">
-                      {t('evening.tomorrow.saveError')}
-                    </Text>
-                  ) : null}
-                  <View style={styles.buttons}>
-                    <Button
-                      variant="ghost"
-                      label={t('evening.tomorrow.skip')}
-                      onPress={onClose}
-                      disabled={saving}
-                    />
-                    <Button
-                      label={t('evening.tomorrow.confirm', {
-                        count: items.length,
-                      })}
-                      disabled={plan.status !== 'ready' || parsing || !isTomorrowPlanValid(drafts)}
-                      loading={saving}
-                      onPress={confirm}
-                      style={styles.primary}
-                    />
+                {proposal ? null : (
+                  <View style={styles.footer}>
+                    {saveError ? (
+                      <Text tone="danger" accessibilityLiveRegion="assertive">
+                        {t('evening.tomorrow.saveError')}
+                      </Text>
+                    ) : null}
+                    <View style={styles.buttons}>
+                      <Button
+                        variant="ghost"
+                        label={t('evening.tomorrow.skip')}
+                        onPress={onClose}
+                        disabled={saving || busy}
+                      />
+                      <Button
+                        label={t('evening.tomorrow.confirm', {
+                          count: items.length,
+                        })}
+                        disabled={plan.status !== 'ready' || busy || !isTomorrowPlanValid(drafts)}
+                        loading={saving}
+                        onPress={confirm}
+                        style={styles.primary}
+                      />
+                    </View>
                   </View>
-                </View>
+                )}
               </>
             )}
           </KeyboardAvoidingView>
@@ -324,6 +417,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primary: { minWidth: 140 },
+  arrange: { marginTop: spacing.sm, gap: spacing.xs },
   done: {
     flex: 1,
     justifyContent: 'center',

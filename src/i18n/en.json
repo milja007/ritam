@@ -349,6 +349,22 @@
       "learnedHint": "Adds the block at its usual time {{start}}–{{end}}. You can change it.",
       "addedCount_one": "Added {{count}} item.",
       "addedCount_other": "Added {{count}} items."
+    },
+    "plan": {
+      "overline": "Tomorrow's proposal",
+      "title": "Here's how tomorrow could look",
+      "titleEmpty": "The proposal needs a bit more",
+      "leftOut": "Didn't fit — stays on your list",
+      "questions": "Questions for you",
+      "questionsHint": "Change the items on your list and arrange again.",
+      "accept": "Accept proposal",
+      "acceptHint": "The proposed times replace yours; save the plan with Confirm.",
+      "accepted": "Proposal accepted. Check it, then confirm the plan.",
+      "back": "Back to my list",
+      "nothingSaved": "Nothing is saved until you confirm the plan.",
+      "arrange": "Arrange my day",
+      "arrangeHint": "A proposed schedule in your free time — you decide.",
+      "error": "Arranging didn't work. Your list is unchanged."
     }
   },
   "morning": {
