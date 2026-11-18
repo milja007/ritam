@@ -85,7 +85,7 @@ export const MAX_CONTEXT_RULES = 15;
 const MAX_NOTE = 300;
 
 /** Edge Functions koje zovu model. */
-export type LlmFunctionName = 'parse-input' | 'plan-day';
+export type LlmFunctionName = 'parse-input' | 'plan-day' | 'write-report';
 
 /**
  * Model po funkciji — odluka Borne 2026-11-09: `plan-day` (i kasnije `write-report`) →
@@ -94,12 +94,15 @@ export type LlmFunctionName = 'parse-input' | 'plan-day';
 export const LLM_MODELS: Readonly<Record<LlmFunctionName, string>> = {
   'parse-input': 'claude-haiku-5-5',
   'plan-day': 'claude-sonnet-5-5',
+  // Bornina odluka 2026-11-09: write-report kao plan-day.
+  'write-report': 'claude-sonnet-5-5',
 };
 
 /** Ime varijable kojom se model jedne funkcije može zamijeniti bez novog koda. */
 export const LLM_MODEL_ENV: Readonly<Record<LlmFunctionName, string>> = {
   'parse-input': 'LLM_MODEL_PARSE_INPUT',
   'plan-day': 'LLM_MODEL_PLAN_DAY',
+  'write-report': 'LLM_MODEL_WRITE_REPORT',
 };
 
 /**
