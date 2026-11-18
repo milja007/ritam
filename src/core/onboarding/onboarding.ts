@@ -5,6 +5,7 @@
  */
 import {
   DEFAULT_SCORE_AREAS,
+  DEFAULT_TRACKERS,
   ruleSchema,
   settingsSchema,
   type Rule,
@@ -153,6 +154,7 @@ export function toSettingsInput(draft: OnboardingDraft): SettingsInput {
     scorePlan: draft.scorePlan,
     scoreRules: draft.scoreRules,
     scoreSleep: draft.scoreSleep,
+    ...DEFAULT_TRACKERS,
   };
 }
 

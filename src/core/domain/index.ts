@@ -8,3 +8,4 @@ export * from './report';
 export * from './quest';
 export * from './goal';
 export * from './task';
+export * from './tracker';

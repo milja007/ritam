@@ -15,12 +15,14 @@ import type {
   CheckinKind,
   CheckinOutcome,
   GoalPeriod,
+  MoneyPeriod,
   QuestMilestone,
   TaskEnergy,
   TaskPartOfDay,
   QuestStatus,
   ReportPeriod,
   ThemePreference,
+  TrackerKind,
   XpSource,
 } from '@/core/domain';
 import type { LanguagePreference } from '@/core/i18n/language';
@@ -55,6 +57,14 @@ export const settings = sqliteTable(
     scorePlan: integer('score_plan', { mode: 'boolean' }).notNull().default(true),
     scoreRules: integer('score_rules', { mode: 'boolean' }).notNull().default(false),
     scoreSleep: integer('score_sleep', { mode: 'boolean' }).notNull().default(false),
+    // Opcionalni trackeri (korak 31b); zadano isključeni.
+    trackCalories: integer('track_calories', { mode: 'boolean' }).notNull().default(false),
+    calorieGoal: integer('calorie_goal'),
+    trackMoney: integer('track_money', { mode: 'boolean' }).notNull().default(false),
+    moneyLimitCents: integer('money_limit_cents'),
+    moneyPeriod: text('money_period').$type<MoneyPeriod>(),
+    moneyBalanceCents: integer('money_balance_cents'),
+    moneyBalanceOn: text('money_balance_on'),
   },
   (table) => [uniqueIndex('settings_user_id_unique').on(table.userId)],
 );
@@ -231,4 +241,17 @@ export const tasks = sqliteTable(
     needs: text('needs').notNull().default(''),
   },
   (table) => [index('tasks_user_week_idx').on(table.userId, table.weekStart)],
+);
+
+/** Unosi trackera (korak 31b): kalorije (kcal) ili potrošnja (centi) s bilješkom, po danu. */
+export const trackerEntries = sqliteTable(
+  'tracker_entries',
+  {
+    ...baseColumns(),
+    date: text('date').notNull(),
+    kind: text('kind').$type<TrackerKind>().notNull(),
+    amount: integer('amount').notNull(),
+    note: text('note').notNull().default(''),
+  },
+  (table) => [index('tracker_entries_user_date_idx').on(table.userId, table.date)],
 );

@@ -10,7 +10,9 @@ import type { RitamDb } from './db';
 import {
   createBlock,
   createGoal,
+  addTrackerEntry,
   createTask,
+  listTrackerEntries,
   listTasks,
   createQuest,
   listGoals,
@@ -52,6 +54,13 @@ const settingsInput: SettingsInput = {
   scorePlan: true,
   scoreRules: false,
   scoreSleep: false,
+  trackCalories: false,
+  calorieGoal: null,
+  trackMoney: false,
+  moneyLimitCents: null,
+  moneyPeriod: null,
+  moneyBalanceCents: null,
+  moneyBalanceOn: null,
 };
 
 const blockInput = {
@@ -297,6 +306,27 @@ describe('syncOnce', () => {
     await syncOnce(db, remote, ids);
     expect(listTasks(db, LOCAL, '2026-11-09')).toEqual([
       expect.objectContaining({ id: task.id, userId: LOCAL, timesPerWeek: 2, deadline: '2026-11-14' }),
+    ]);
+    expect(countQueue(db)).toBe(0);
+  });
+
+  it('unos trackera i postavke trackera (korak 31b) idu na poslužitelj i vraćaju se', async () => {
+    const { db, remote } = await setup();
+    const deps = testDeps();
+    await saveSettings(db, LOCAL, { ...settingsInput, trackMoney: true, moneyLimitCents: 10_000, moneyPeriod: 'week' }, deps);
+    const entry = addTrackerEntry(db, LOCAL, { date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }, deps);
+    await syncOnce(db, remote, ids);
+    expect(remote.rows('tracker_entries')).toEqual([
+      expect.objectContaining({ id: entry.id, user_id: UID, date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }),
+    ]);
+    expect(remote.rows('settings')[0]).toEqual(
+      expect.objectContaining({ track_money: true, money_limit_cents: 10_000, money_period: 'week', track_calories: false }),
+    );
+    const [row] = remote.rows('tracker_entries');
+    remote.put('tracker_entries', { ...row, updated_at: '2026-11-12T08:00:00+00:00', amount: 1500 });
+    await syncOnce(db, remote, ids);
+    expect(listTrackerEntries(db, LOCAL, '2026-11-10', '2026-11-10')).toEqual([
+      expect.objectContaining({ id: entry.id, userId: LOCAL, amount: 1500 }),
     ]);
     expect(countQueue(db)).toBe(0);
   });

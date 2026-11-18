@@ -92,6 +92,10 @@ insert into public.goals (id, period, period_start, title) values
 insert into public.tasks (id, week_start, title, duration_minutes, times_per_week, deadline, part_of_day, energy, needs) values
   ('70000000-0000-0000-0000-000000000001', '2026-11-16', 'Trening', 60, 3, '2026-11-22', 'evening', 'high', 'Tenisice');
 
+insert into public.tracker_entries (id, date, kind, amount, note) values
+  ('80000000-0000-0000-0000-000000000001', '2026-11-18', 'calories', 650, 'Ručak'),
+  ('80000000-0000-0000-0000-000000000002', '2026-11-18', 'money', 1250, 'Kava i sendvič');
+
 -- user_id se popuni iz auth.uid()
 select test.expect_count(
   $q$select 1 from public.schedule_blocks where user_id = '00000000-0000-0000-0000-00000000000a'$q$,
@@ -193,6 +197,20 @@ select test.expect_error($q$insert into public.tasks (week_start, title, duratio
 select test.expect_error($q$insert into public.tasks (week_start, title, duration_minutes, times_per_week, part_of_day, energy) values ('2026-11-16', ' ', 30, 1, 'any', 'low')$q$,
   '23514', 'zadatak: naslov nije prazan');
 select test.expect_count($q$select 1 from public.tasks where title = 'Trening' and needs = 'Tenisice'$q$, 1, 'zadatak se sprema');
+-- Trackeri (korak 31b)
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount) values ('2026-11-18', 'steps', 10)$q$,
+  '23514', 'tracker: vrsta');
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount) values ('2026-11-18', 'money', 0)$q$,
+  '23514', 'tracker: iznos barem 1');
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount) values ('2026-11-18', 'calories', 10001)$q$,
+  '23514', 'tracker: najviše 10 000 kcal');
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount, note) values ('2026-11-18', 'money', 5, repeat('x', 201))$q$,
+  '23514', 'tracker: bilješka ≤ 200');
+select test.expect_count($q$select 1 from public.tracker_entries where kind = 'money' and amount = 1250$q$, 1, 'unos trackera se sprema');
+select test.expect_error($q$update public.settings set calorie_goal = 100$q$, '23514', 'cilj kalorija ≥ 500');
+select test.expect_error($q$update public.settings set money_period = 'year'$q$, '23514', 'razdoblje limita');
+update public.settings set track_calories = true, calorie_goal = 2200, track_money = true, money_limit_cents = 10000, money_period = 'week';
+select test.expect_count($q$select 1 from public.settings where track_money and money_period = 'week'$q$, 1, 'postavke trackera se spremaju');
 select test.expect_error($q$insert into public.schedule_blocks (user_id, date, title, start, "end", kind, source, status)
   values ('00000000-0000-0000-0000-00000000000b', '2026-11-10', 'X', '10:00', '11:00', 'task', 'user', 'planned')$q$,
   '42501', 'ne može pisati u tuđe ime');
@@ -219,6 +237,8 @@ select test.expect_count('select 1 from public.goals', 0, 'B ne vidi A-ove cilje
 update public.goals set title = 'hack';
 select test.expect_count('select 1 from public.tasks', 0, 'B ne vidi A-ove zadatke');
 update public.tasks set title = 'hack';
+select test.expect_count('select 1 from public.tracker_entries', 0, 'B ne vidi A-ove unose trackera');
+update public.tracker_entries set amount = 1;
 
 update public.schedule_blocks set title = 'hack';
 delete from public.xp_events;
@@ -256,6 +276,7 @@ select test.expect_count($q$select 1 from public.schedule_blocks where title = '
 select test.expect_count($q$select 1 from public.quests where title = 'hack'$q$, 0, 'B nije promijenio A-ov quest');
 select test.expect_count($q$select 1 from public.goals where title = 'hack'$q$, 0, 'B nije promijenio A-ov cilj');
 select test.expect_count($q$select 1 from public.tasks where title = 'hack'$q$, 0, 'B nije promijenio A-ov zadatak');
+select test.expect_count($q$select 1 from public.tracker_entries where amount = 1$q$, 0, 'B nije promijenio A-ov unos trackera');
 select test.expect_count('select 1 from public.xp_events', 2, 'B nije obrisao A-ov XP');
 
 -- Brisanje checkina: stavke idu (cascade), zapis zabrane ostaje bez checkin_id.
@@ -277,6 +298,8 @@ delete from public.goals;
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'goals'$q$, 1, 'tombstone cilja');
 delete from public.tasks;
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tasks'$q$, 1, 'tombstone zadatka');
+delete from public.tracker_entries;
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tracker_entries'$q$, 2, 'tombstoni unosa trackera');
 select test.expect_error($q$insert into public.sync_tombstones (user_id, table_name, row_id)
   values ((select auth.uid()), 'rules', gen_random_uuid())$q$, '42501', 'klijent ne piše tombstone');
 -- synced_at postavlja poslužitelj, i kad ga klijent pokuša zadati.
