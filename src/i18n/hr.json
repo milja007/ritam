@@ -1407,5 +1407,41 @@
     "targetLine": "Cilj",
     "error": "Noći se nisu učitale.",
     "rested": "Naspavan: {{count}} od {{total}} noći"
+  },
+  "goals": {
+    "week": {
+      "heading": "Ciljevi tjedna",
+      "empty": "Što želiš da ovaj tjedan donese? Upiši 1–3 cilja — kontekst za dane. Ne mora se sve ispuniti.",
+      "emptyPast": "Za taj tjedan nisu bili zapisani ciljevi.",
+      "placeholder": "npr. Tri treninga"
+    },
+    "month": {
+      "heading": "Ciljevi mjeseca",
+      "empty": "Što želiš da ovaj mjesec donese? Upiši 1–3 cilja.",
+      "emptyPast": "Za taj mjesec nisu bili zapisani ciljevi.",
+      "placeholder": "npr. Završiti seminar"
+    },
+    "year": {
+      "heading": "Ciljevi godine",
+      "empty": "Što želiš da ova godina donese? Upiši nekoliko velikih ciljeva.",
+      "emptyPast": "Za tu godinu nisu bili zapisani ciljevi.",
+      "placeholder": "npr. Polumaraton"
+    },
+    "progress": "{{done}} od {{total}}",
+    "addLabel": "Novi cilj",
+    "add": "Dodaj",
+    "addedA11y": "Dodan cilj: {{title}}",
+    "doneA11y": "Ostvareno: {{title}}",
+    "doneHint": "Označava cilj ostvarenim",
+    "undoHint": "Vraća cilj u neostvarene",
+    "removeLabel": "Ukloni cilj {{title}}",
+    "removeTitle": "Ukloniti cilj?",
+    "removeMessage": "„{{title}}“ nestaje s popisa.",
+    "remove": "Ukloni",
+    "cancel": "Odustani",
+    "limitHint": "Najviše {{max}} ciljeva — manje je više.",
+    "limit": "Već imaš {{max}} ciljeva za ovo razdoblje.",
+    "failed": "Promjena nije spremljena. Pokušaj ponovo.",
+    "loadError": "Ciljevi se nisu učitali."
   }
 }

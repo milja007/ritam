@@ -13,6 +13,7 @@ import {
 import { daysBetween } from '@/core/time/local-date';
 import { radius, spacing } from '@/core/theme';
 import { useYearReport, YearDiagnosisCard } from '@/features/diagnosis';
+import { GoalsCard } from '@/features/goals';
 import { useNow } from '@/features/today';
 import { Ember } from '@/ui/ember';
 import { Text } from '@/ui/text';
@@ -154,6 +155,8 @@ export function YearScreen() {
             />
             <Record value={String(scored)} label={t('ember.year.scoredDays')} />
           </View>
+
+          <GoalsCard period="year" periodStart={`${year}-01-01`} periodEnd={`${year}-12-31`} today={now.date} />
 
           {lastYearReport.diagnosis !== null && report.diagnosis === null ? (
             <YearDiagnosisCard report={lastYearReport} yearLabel={`${lastYear}.`} current={false} />
