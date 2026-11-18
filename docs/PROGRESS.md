@@ -7,6 +7,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 2. Core `src/core/schedule/plan-day-client.ts`: zahtjev iz stavki (stavka s izričitim vremenom ili naučena = `fixedStart`, ostale fleksibilne s trajanjem), slobodni prozori = od buđenja + 30 min do odlaska u krevet minus postojeći blokovi (≥ 15 min, najviše 12), provjera odgovora u appu (HH:MM, bez preklapanja, unutar prozora ili točno fiksna stavka; ≤ 3 pitanja), prijedlog → nacrti (vrsta iz stavke) + popis stavki koje nisu stale. Testovi.
 3. UI „Što imaš sutra?“: s oblakom gumb „Složi mi dan“ (≥ 2 stavke) → prijedlog (sažetak, raspored, „nije stalo“, pitanja) → „Prihvati prijedlog“ zamijeni stavke (one koje nisu stale ostaju) ili „Natrag na moj popis“; plan postaje plan tek na Potvrdi (odobrenje). Greška → poruka, popis ostaje. HR/EN, pristupačnost.
 4. Bez oblaka se ništa ne mijenja (gumb se ne prikazuje).
+- Gotovo 1–4. Sljedeće: wind-down prema koraku kreveta (pitanje 87) ili 25 (tjedni plan); 20–22 čekaju deploy.
 
 ## 2026-11-18 · Sesija 00:43 — koraci 20–22 u appu (prioritet „Žar“ istekao 17. 11.)
 1. **20 — model po funkciji** prema Borninoj odluci 2026-11-09 (arhiva): `parse-input` → `claude-haiku-5-5`, `plan-day` → `claude-sonnet-5-5`; čista funkcija `llmModelFor(fn, env)` u `_shared/plan-logic.ts` (override `LLM_MODEL_PARSE_INPUT` / `LLM_MODEL_PLAN_DAY`), test. Zatvara P2 5 (Sonnet 4.5 se povlači) bez čekanja Borne — model je već odabran; ostaje samo deploy.
