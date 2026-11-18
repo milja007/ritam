@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { dayScore, SCORE_PARTS, scoreTrend, type ScorePart } from '../progress';
 import { parseClock } from '../time/clock';
 import type { DayStats } from './day-stats';
+import { llmDayTextSchema } from './llm-day';
 
 /** Verzija pravila (sprema se kao `reports.prompt_version`; LLM dijagnoza ima svoju). */
 export const LOCAL_DAY_DIAGNOSIS_VERSION = 'local-day-v2';
@@ -105,6 +106,11 @@ export const dayDiagnosisSchema = z.object({
   noticed: z.array(diagnosisLineSchema),
   problems: z.array(diagnosisLineSchema),
   ideas: z.array(diagnosisLineSchema),
+  /**
+   * Riječi modela (`write-report`, korak 31) uz lokalne brojke; bez oblaka nema ga. Pokvaren
+   * tekst (npr. s drugog uređaja sa starijom verzijom) se odbaci, lokalna dijagnoza ostaje.
+   */
+  llm: llmDayTextSchema.optional().catch(undefined),
 });
 export type DayDiagnosis = z.infer<typeof dayDiagnosisSchema>;
 

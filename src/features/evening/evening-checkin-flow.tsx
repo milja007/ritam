@@ -14,7 +14,7 @@ import {
 } from '@/core/checkin';
 import type { Rule, ScheduleBlock } from '@/core/domain';
 import { spacing } from '@/core/theme';
-import { DayDiagnosisView, DiagnosisFeedback, PeriodDiagnosesInline } from '@/features/diagnosis';
+import { DayDiagnosisView, DiagnosisFeedback, PeriodDiagnosesInline, useWrittenDiagnosis } from '@/features/diagnosis';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
 import { Text } from '@/ui/text';
@@ -57,6 +57,8 @@ export function EveningCheckinFlow({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [result, setResult] = useState<EveningSaveResult | null>(null);
+  // Korak 31: s oblakom se lokalnoj dijagnozi dopišu riječi modela.
+  const written = useWrittenDiagnosis(date, result?.diagnosis ?? null);
 
   const steps = eveningSteps(draft);
   const step = steps[index] ?? 'checklist';
@@ -107,7 +109,7 @@ export function EveningCheckinFlow({
                   </Text>
                   {result.diagnosis ? (
                     <View style={styles.body}>
-                      <DayDiagnosisView diagnosis={result.diagnosis} />
+                      <DayDiagnosisView diagnosis={written.diagnosis ?? result.diagnosis} writing={written.writing} />
                       <DiagnosisFeedback period="day" periodStart={date} />
                       <PeriodDiagnosesInline date={date} />
                     </View>

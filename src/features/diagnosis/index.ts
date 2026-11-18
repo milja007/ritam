@@ -18,3 +18,4 @@ export { YearDiagnosisInline } from './year-diagnosis-inline';
 export { YearDiagnosisView, YearMonthStrip } from './year-diagnosis-view';
 export { yearLineParams } from './year-line-params';
 export { useYearReport, type YearReportState } from './year-report';
+export { useWrittenDiagnosis } from './written-diagnosis';

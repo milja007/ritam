@@ -953,7 +953,8 @@
       "savedYes": "Spremljeno: pomoglo.",
       "savedNo": "Spremljeno: nije pomoglo.",
       "error": "Spremanje nije uspjelo. Pokušaj ponovo."
-    }
+    },
+    "writing": "Pišem ti dijagnozu riječima…"
   },
   "score": {
     "title": "Rezultat dana",

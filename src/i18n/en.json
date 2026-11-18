@@ -943,7 +943,8 @@
       "savedYes": "Saved: helped.",
       "savedNo": "Saved: didn't help.",
       "error": "Saving failed. Try again."
-    }
+    },
+    "writing": "Writing your diagnosis in words…"
   },
   "score": {
     "title": "Day score",
