@@ -31,7 +31,7 @@ export function MonthDiagnosisInline({ date }: { date: string }) {
 function MonthSection({ month, date }: { month: string; date: string }) {
   const { t, i18n } = useTranslation();
   const { colors } = useAppTheme();
-  const { diagnosis, seen, markSeen } = useMonthReport(month, date, null);
+  const { diagnosis, seen, markSeen, writing } = useMonthReport(month, date, null);
 
   useEffect(() => {
     if (diagnosis !== null && !seen) markSeen();
@@ -54,7 +54,7 @@ function MonthSection({ month, date }: { month: string; date: string }) {
       <Text variant="caption" tone="textMuted">
         {monthTitle(month, i18n.language)}
       </Text>
-      <MonthDiagnosisView diagnosis={diagnosis} />
+      <MonthDiagnosisView diagnosis={diagnosis} writing={writing} />
       <DiagnosisFeedback period="month" periodStart={diagnosis.start} />
     </View>
   );

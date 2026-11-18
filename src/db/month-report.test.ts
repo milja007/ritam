@@ -5,7 +5,9 @@ import { describe, expect, it } from "@jest/globals";
 import { eq } from "drizzle-orm";
 
 import type { ChecklistAnswer, EveningDraft } from "@/core/checkin";
-import { parseMonthDiagnosis } from "@/core/diagnosis";
+import { parseMonthDiagnosis, writeMonthReportRequest, type LlmMonthText } from "@/core/diagnosis";
+
+import { parseWriteMonthReportRequest } from "../../supabase/functions/_shared/report-logic";
 import { createDefaultDraft, toSettingsInput } from "@/core/onboarding";
 import { addDays } from "@/core/time/local-date";
 
@@ -13,7 +15,10 @@ import {
   answerReportSuggestion,
   createBlock,
   createRule,
+  generateDayReport,
   generateMonthReport,
+  loadMonthWriteReportData,
+  saveMonthReportText,
   generateWeekReport,
   getReport,
   saveEveningCheckin,
@@ -246,5 +251,63 @@ describe("reports repo — mjesečna dijagnoza", () => {
       generateMonthReport(db, "drugi", NOV, "2026-12-05", deps),
     ).toBeNull();
     expect(await getReport(db, "drugi", "month", "2026-11-01")).toBeNull();
+  });
+});
+
+describe("reports repo — mjesečna dijagnoza riječima (korak 31d)", () => {
+  const text: LlmMonthText = {
+    version: "llm-month-v1",
+    summary: "Mjesec je bio bolji od prošlog.",
+    praise: [],
+    noticed: ["Druga polovica jača."],
+    problems: [],
+    ideasWhy: null,
+  };
+
+  it("bez mjesečne dijagnoze nema podataka ni spremanja", async () => {
+    const { db, deps } = await setup();
+    expect(await loadMonthWriteReportData(db, USER, "2026-11-01")).toBeNull();
+    expect(saveMonthReportText(db, USER, "2026-11-01", text, "{}", deps)).toBeNull();
+  });
+
+  it("podaci: statistika, dani iz dnevnih dijagnoza, ranije mjesečne; zahtjev prolazi provjeru", async () => {
+    const { db, deps, closeDays } = await setup();
+    await closeDays("2026-10-01", 6, 1, 4);
+    await closeDays("2026-11-01", 6, 4, 4, false);
+    generateDayReport(db, USER, "2026-11-02", deps);
+    generateDayReport(db, USER, "2026-11-03", deps);
+    expect(generateMonthReport(db, USER, OCT, "2026-12-05", deps)).not.toBeNull();
+    expect(generateMonthReport(db, USER, NOV, "2026-12-05", deps)).not.toBeNull();
+    const data = await loadMonthWriteReportData(db, USER, "2026-11-01");
+    expect(data?.current.recorded).toBe(6);
+    expect(data?.days.map((d) => d.stats.date).sort()).toEqual(["2026-11-02", "2026-11-03"]);
+    expect(data?.previousReports.map((r) => r.start)).toEqual(["2026-10-01"]);
+    if (!data) return;
+    const request = writeMonthReportRequest({
+      locale: "hr",
+      diagnosis: data.diagnosis,
+      current: data.current,
+      previous: data.previous,
+      days: data.days,
+      previousReports: data.previousReports,
+      renderLine: (line) => line.key,
+    });
+    const parsed = parseWriteMonthReportRequest(JSON.parse(JSON.stringify(request)));
+    expect(parsed?.month.end).toBe("2026-11-30");
+    expect(parsed?.previousMonth?.start).toBe("2026-10-01");
+    expect(parsed?.ideas.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("tekst se sprema, preživi ponovno generiranje, a otpada kad se mjesec promijeni", async () => {
+    const { db, deps, closeDay, closeDays } = await setup();
+    await closeDays("2026-11-01", 6, 2, 4);
+    generateMonthReport(db, USER, NOV, "2026-12-05", deps);
+    const data = await loadMonthWriteReportData(db, USER, "2026-11-01");
+    expect(saveMonthReportText(db, USER, "2026-11-01", text, data?.basis ?? "", deps)?.llm).toEqual(text);
+    expect(parseMonthDiagnosis((await getReport(db, USER, "month", "2026-11-01"))?.sections)?.llm).toEqual(text);
+    expect(generateMonthReport(db, USER, NOV, "2026-12-05", deps)?.diagnosis.llm).toEqual(text);
+    await closeDay("2026-11-20", 0, 4);
+    expect(generateMonthReport(db, USER, NOV, "2026-12-05", deps)?.diagnosis.llm).toBeUndefined();
+    expect(saveMonthReportText(db, USER, "2026-11-01", text, data?.basis ?? "", deps)).toBeNull();
   });
 });

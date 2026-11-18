@@ -25,13 +25,23 @@ jest.mock('@/db/open', () => ({
 }));
 
 /* eslint-disable import/first -- moduli se uvoze nakon mockova */
-import { DAY_REPORT_PROMPT_VERSION, WEEK_REPORT_PROMPT_VERSION } from '../../../supabase/functions/_shared/report-logic';
-import { EXAMPLE_TIRED_TUESDAY, EXAMPLE_WEEK_EVENINGS } from '../../../supabase/functions/_shared/report-examples';
-import { LLM_DAY_DIAGNOSIS_VERSION, LLM_WEEK_DIAGNOSIS_VERSION } from '@/core/diagnosis';
+import {
+  DAY_REPORT_PROMPT_VERSION,
+  MONTH_REPORT_PROMPT_VERSION,
+  WEEK_REPORT_PROMPT_VERSION,
+} from '../../../supabase/functions/_shared/report-logic';
+import {
+  EXAMPLE_MONTH_THURSDAYS,
+  EXAMPLE_TIRED_TUESDAY,
+  EXAMPLE_WEEK_EVENINGS,
+} from '../../../supabase/functions/_shared/report-examples';
+import { LLM_DAY_DIAGNOSIS_VERSION, LLM_MONTH_DIAGNOSIS_VERSION, LLM_WEEK_DIAGNOSIS_VERSION } from '@/core/diagnosis';
 
 import {
   refineDayDiagnosis,
+  refineMonthDiagnosis,
   refineWeekDiagnosis,
+  requestWriteMonthReport,
   requestWriteReport,
   requestWriteWeekReport,
   WRITE_REPORT_TIMEOUT_MS,
@@ -123,5 +133,40 @@ describe('requestWriteWeekReport (korak 31c)', () => {
     expect(mockInvoke).toHaveBeenCalledWith('write-report', { body: weekBody, timeout: WRITE_REPORT_TIMEOUT_MS });
     mockInvoke.mockResolvedValueOnce({ data: { report }, error: null });
     expect(await requestWriteWeekReport(weekBody)).toBeNull();
+  });
+});
+
+describe('requestWriteMonthReport (korak 31d)', () => {
+  const monthBody = JSON.parse(JSON.stringify(EXAMPLE_MONTH_THURSDAYS)) as Parameters<typeof requestWriteMonthReport>[0];
+  const monthText = {
+    version: 'llm-month-v1',
+    summary: 'Bolji mjesec.',
+    praise: [],
+    noticed: [],
+    problems: [],
+    ideasWhy: 'Četvrtak je najteži.',
+  };
+
+  beforeEach(() => {
+    mockClient = { auth: { getSession: mockGetSession }, functions: { invoke: mockInvoke } };
+    mockInvoke.mockReset();
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  it('verzija prompta je ista u appu i na serveru', () => {
+    expect(LLM_MONTH_DIAGNOSIS_VERSION).toBe(MONTH_REPORT_PROMPT_VERSION);
+  });
+
+  it('bez oblaka ne zove ništa i ne čita bazu', async () => {
+    mockClient = null;
+    expect(await requestWriteMonthReport(monthBody)).toBeNull();
+    expect(await refineMonthDiagnosis('2026-11-01', 'hr', () => '')).toBeNull();
+  });
+
+  it('vraća provjeren tekst mjeseca; tjedni oblik se ne prihvaća', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { report: monthText }, error: null });
+    expect(await requestWriteMonthReport(monthBody)).toEqual(monthText);
+    mockInvoke.mockResolvedValueOnce({ data: { report: { ...monthText, version: 'llm-week-v1', ideaWhy: null } }, error: null });
+    expect(await requestWriteMonthReport(monthBody)).toBeNull();
   });
 });

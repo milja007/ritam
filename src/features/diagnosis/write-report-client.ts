@@ -1,19 +1,35 @@
-import type { WriteReportRequest, WriteWeekReportRequest } from '../../../supabase/functions/_shared/report-logic';
+import type {
+  WriteMonthReportRequest,
+  WriteReportRequest,
+  WriteWeekReportRequest,
+} from '../../../supabase/functions/_shared/report-logic';
 import {
+  readWriteMonthReportResponse,
   readWriteReportResponse,
   readWriteWeekReportResponse,
+  writeMonthReportRequest,
   writeReportRequest,
   writeWeekReportRequest,
   type DayDiagnosis,
   type DiagnosisLine,
   type LlmDayText,
+  type LlmMonthText,
   type LlmWeekText,
+  type MonthDiagnosis,
+  type MonthLine,
   type WeekDiagnosis,
   type WeekLine,
 } from '@/core/diagnosis';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
-import { loadWeekWriteReportData, loadWriteReportData, saveDayReportText, saveWeekReportText } from '@/db/repos';
+import {
+  loadMonthWriteReportData,
+  loadWeekWriteReportData,
+  loadWriteReportData,
+  saveDayReportText,
+  saveMonthReportText,
+  saveWeekReportText,
+} from '@/db/repos';
 import { getSupabase } from '@/features/auth/supabase';
 
 /** Dulje od ovoga se ne čeka — lokalna dijagnoza je već na ekranu. */
@@ -50,6 +66,11 @@ async function invokeWriteReport<T>(body: object, read: (data: unknown) => T | n
  */
 export function requestWriteReport(body: WriteReportRequest): Promise<LlmDayText | null> {
   return invokeWriteReport(body, readWriteReportResponse);
+}
+
+/** Korak 31d: isto za mjesec (`period: 'month'`). */
+export function requestWriteMonthReport(body: WriteMonthReportRequest): Promise<LlmMonthText | null> {
+  return invokeWriteReport(body, readWriteMonthReportResponse);
 }
 
 /** Korak 31c: isto za tjedan (`period: 'week'`). */
@@ -121,6 +142,35 @@ export async function refineWeekDiagnosis(
     return saveWeekReportText(getDb(), LOCAL_USER_ID, start, text, data.basis);
   } catch (error: unknown) {
     console.warn('Writing week diagnosis failed, keeping local diagnosis', error);
+    return null;
+  }
+}
+
+/** Dopiši riječi modela uz spremljenu mjesečnu dijagnozu (prvi dan `start`); kao za tjedan. */
+export async function refineMonthDiagnosis(
+  start: string,
+  locale: 'hr' | 'en',
+  renderLine: (line: MonthLine) => string,
+): Promise<MonthDiagnosis | null> {
+  if (!canWriteReport()) return null;
+  try {
+    const data = await loadMonthWriteReportData(getDb(), LOCAL_USER_ID, start);
+    if (data === null || data.diagnosis.llm !== undefined) return null;
+    const text = await requestWriteMonthReport(
+      writeMonthReportRequest({
+        locale,
+        diagnosis: data.diagnosis,
+        current: data.current,
+        previous: data.previous,
+        days: data.days,
+        previousReports: data.previousReports,
+        renderLine,
+      }),
+    );
+    if (text === null) return null;
+    return saveMonthReportText(getDb(), LOCAL_USER_ID, start, text, data.basis);
+  } catch (error: unknown) {
+    console.warn('Writing month diagnosis failed, keeping local diagnosis', error);
     return null;
   }
 }

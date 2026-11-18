@@ -509,16 +509,16 @@ function parseDated(raw: unknown): { date: string; score: number } | null {
   return isRecord(raw) && isDate(raw.date) && isInt(raw.score, 0, 100) ? { date: raw.date, score: raw.score } : null;
 }
 
-function parseWeek(raw: unknown): ReportWeek | null {
+function parseWeek(raw: unknown, maxDays = 7): ReportWeek | null {
   if (!isRecord(raw) || !isDate(raw.start) || !isDate(raw.end) || raw.end < raw.start) return null;
   if (!isRecord(raw.plan) || !isRecord(raw.rules) || !isRecord(raw.misses)) return null;
   const { plan, rules, misses } = raw;
   const count = (value: unknown) => nonNegative(value, 5000);
-  if (!isInt(raw.recorded, 0, 7)) return null;
+  if (!isInt(raw.recorded, 0, maxDays)) return null;
   if (![plan.total, plan.done, plan.partial, plan.missed, plan.moved].every(count)) return null;
   if (![rules.active, rules.kept, rules.broken].every(count)) return null;
   if (![misses.morning, misses.afternoon, misses.evening].every(count)) return null;
-  if (!nonNegative(raw.xp, 1_000_000) || !isInt(raw.gaveUpDays, 0, 7)) return null;
+  if (!nonNegative(raw.xp, 1_000_000) || !isInt(raw.gaveUpDays, 0, maxDays)) return null;
   const average = parseScore(raw.average);
   if (average === undefined) return null;
   let sleep: ReportWeek['sleep'] = null;
@@ -526,11 +526,11 @@ function parseWeek(raw: unknown): ReportWeek | null {
     const s = raw.sleep;
     if (
       !isRecord(s) ||
-      !isInt(s.nights, 0, 7) ||
+      !isInt(s.nights, 0, maxDays) ||
       !isInt(s.averageMinutes, 0, 24 * 60) ||
-      !isInt(s.shortNights, 0, 7) ||
-      !isInt(s.onTarget, 0, 7) ||
-      !isInt(s.withTarget, 0, 7)
+      !isInt(s.shortNights, 0, maxDays) ||
+      !isInt(s.onTarget, 0, maxDays) ||
+      !isInt(s.withTarget, 0, maxDays)
     ) {
       return null;
     }
@@ -567,7 +567,7 @@ function parseWeek(raw: unknown): ReportWeek | null {
       byRule: list(rules.byRule, WEEK_REPORT_LIMITS.byRule, (value) => {
         if (!isRecord(value)) return null;
         const title = clip(value.title, REPORT_LIMITS.title);
-        if (title === null || !isInt(value.weight, 1, 3) || !isInt(value.broken, 1, 7)) return null;
+        if (title === null || !isInt(value.weight, 1, 3) || !isInt(value.broken, 1, maxDays)) return null;
         return {
           title,
           weight: value.weight,
@@ -587,15 +587,15 @@ function parseWeek(raw: unknown): ReportWeek | null {
       return title !== null && isInt(value.count, 2, 50) ? { title, count: value.count } : null;
     }),
     calories:
-      isRecord(c) && isInt(c.days, 1, 7) && [c.within, c.over, c.under].every((v) => isInt(v, 0, 7))
+      isRecord(c) && isInt(c.days, 1, maxDays) && [c.within, c.over, c.under].every((v) => isInt(v, 0, maxDays))
         ? { days: c.days, within: c.within as number, over: c.over as number, under: c.under as number }
         : null,
     money:
       isRecord(m) &&
-      isInt(m.days, 1, 7) &&
+      isInt(m.days, 1, maxDays) &&
       isInt(m.spentCents, 0, 1_000_000_000) &&
       isInt(m.budgetCents, 0, 1_000_000_000) &&
-      isInt(m.overDays, 0, 7)
+      isInt(m.overDays, 0, maxDays)
         ? { days: m.days, spentCents: m.spentCents, budgetCents: m.budgetCents, overDays: m.overDays }
         : null,
   };
@@ -665,9 +665,9 @@ const WEEK_TREND_TEXT: Record<ReportTrend, string> = {
 
 const euroText = (cents: number) => `${(cents / 100).toFixed(2)} €`;
 
-function weekLines(week: ReportWeek): string[] {
+function weekLines(week: ReportWeek, length = 7): string[] {
   const lines: string[] = [];
-  lines.push(`Zaključeni dani: ${week.recorded}/7 · prosjek ${week.average === null ? '—' : `${week.average}/100`}`);
+  lines.push(`Zaključeni dani: ${week.recorded}/${length} · prosjek ${week.average === null ? '—' : `${week.average}/100`}`);
   if (week.best !== null) lines.push(`Najbolji dan: ${week.best.date} (${weekdayOf(week.best.date)}) ${week.best.score}`);
   if (week.worst !== null) lines.push(`Najslabiji dan: ${week.worst.date} (${weekdayOf(week.worst.date)}) ${week.worst.score}`);
   const p = week.plan;
@@ -772,4 +772,199 @@ export function readWeekReportText(parsed: unknown): WriteWeekReportText | null 
     ideaWhy = text.length > 0 ? text : null;
   }
   return { version: WEEK_REPORT_PROMPT_VERSION, summary, praise, noticed, problems, ideaWhy };
+}
+
+// ===========================================================================
+// Mjesečna dijagnoza riječima (korak 31d, prompt llm-month-v1)
+// ===========================================================================
+
+/**
+ * Mjesečna dijagnoza: brojke, trend i **ideje-smjer** (najviše dvije, bez prihvaćanja — promjene
+ * po jednu nudi tjedna) računa app lokalno. Model piše Ukratko, Pohvale, Što smo primijetili,
+ * Velike probleme i jednu rečenicu uz smjer.
+ */
+export const MONTH_REPORT_PROMPT_VERSION = 'llm-month-v1';
+
+/** Statistika razdoblja (isti oblik za tjedan i mjesec). */
+export type ReportPeriodStats = ReportWeek;
+
+export type WriteMonthReportRequest = {
+  period: 'month';
+  /** Prvi dan mjeseca. */
+  start: string;
+  locale: ReportLocale;
+  trend: ReportTrend;
+  month: ReportPeriodStats;
+  previousMonth: ReportPeriodStats | null;
+  /** Zaključeni dani mjeseca ukratko — uzorci po danu u tjednu i polovicama. */
+  days: ReportHistoryDay[];
+  /** Lokalne ideje-smjer (1–2), tekst na jeziku appa. */
+  ideas: string[];
+  /** Odgovori na tjedne promjene tog mjeseca. */
+  changes: { accepted: number; rejected: number };
+  /** Ranije mjesečne dijagnoze (`date` = prvi dan) s odgovorom Pomoglo / Nije pomoglo. */
+  previous: ReportPrevious[];
+};
+
+export type WriteMonthReportText = {
+  version: typeof MONTH_REPORT_PROMPT_VERSION;
+  summary: string;
+  praise: string[];
+  noticed: string[];
+  problems: string[];
+  /** Jedna rečenica zašto je taj smjer dobar za idući mjesec; `null` bez nje. */
+  ideasWhy: string | null;
+};
+
+export const MONTH_REPORT_LIMITS = { days: 31, ideas: 2, previous: 3, comments: 2 } as const;
+
+const lastDayOfMonth = (start: string): string | null => {
+  const [y, m] = start.split('-').map(Number);
+  if (y === undefined || m === undefined) return null;
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return `${start.slice(0, 8)}${String(last).padStart(2, '0')}`;
+};
+
+/**
+ * Zahtjev za mjesečnu dijagnozu, provjeren. `null` bez valjanog mjeseca (prvi dan, statistika
+ * tog mjeseca do njegova zadnjeg dana) ili trenda; dani izvan mjeseca, prošli mjesec koji nije
+ * prije, kasnije dijagnoze i nevaljane stavke otpadaju.
+ */
+export function parseWriteMonthReportRequest(raw: unknown): WriteMonthReportRequest | null {
+  if (!isRecord(raw) || raw.period !== 'month' || !isDate(raw.start) || !raw.start.endsWith('-01')) return null;
+  const start = raw.start;
+  const end = lastDayOfMonth(start);
+  const trend = TRENDS.find((value) => value === raw.trend);
+  const month = parseWeek(raw.month, MONTH_REPORT_LIMITS.days);
+  if (end === null || trend === undefined || month === null || month.start !== start || month.end !== end) return null;
+  const previousMonth =
+    raw.previousMonth === null || raw.previousMonth === undefined
+      ? null
+      : parseWeek(raw.previousMonth, MONTH_REPORT_LIMITS.days);
+  const changes = isRecord(raw.changes) ? raw.changes : {};
+  return {
+    period: 'month',
+    start,
+    locale: raw.locale === 'en' ? 'en' : 'hr',
+    trend,
+    month,
+    previousMonth: previousMonth !== null && previousMonth.end < start ? previousMonth : null,
+    days: list(raw.days, MONTH_REPORT_LIMITS.days, (value) => {
+      const day = parseHistoryDay(value);
+      return day === null
+        ? null
+        : {
+            ...day,
+            comments: day.comments.slice(0, MONTH_REPORT_LIMITS.comments),
+            broken: day.broken.slice(0, MONTH_REPORT_LIMITS.comments),
+          };
+    }).filter((day) => day.date >= start && day.date <= end),
+    ideas: list(raw.ideas, MONTH_REPORT_LIMITS.ideas, (value) => clip(value, WEEK_REPORT_LIMITS.idea)),
+    changes: {
+      accepted: isInt(changes.accepted, 0, 10) ? changes.accepted : 0,
+      rejected: isInt(changes.rejected, 0, 10) ? changes.rejected : 0,
+    },
+    previous: list(raw.previous, MONTH_REPORT_LIMITS.previous, parsePrevious).filter((prev) => prev.date < start),
+  };
+}
+
+/** Sistemska uputa mjesečne dijagnoze: isti ton i red, smjer ne bira model. */
+export function buildMonthReportSystemPrompt(locale: ReportLocale): string {
+  return `\
+Ti si iskren i topao osobni trener u appu Ritam. Pišeš MJESEČNU dijagnozu korisnikova mjeseca.
+Ton: kao dobar trener — iskren, topao, konkretan. Prvo činjenice, pa tumačenje. Svaka kritika ima ideju što napraviti. Bez posramljivanja, bez osude, bez uljepšavanja. Nikad kazna: neodrađeno je informacija, ne neuspjeh.
+Čita se za dvije minute: kratke rečenice, obraćaš se korisniku s "ti".
+
+Brojke ("Napredak") app prikazuje sam — koristi ih samo kad nešto znače.
+Napiši, uvijek ovim redom:
+1. summary — JEDNA rečenica: kakav je bio mjesec i kamo ide trend (trend ti je zadan, ne mijenjaj ga).
+2. praise — 0–${REPORT_LIMITS.praise} pohvale: što je išlo super i neka tako ostane. Samo stvarne, iz podataka.
+3. noticed — 0–${REPORT_LIMITS.noticed} uzorka kroz mjesec i mogući uzroci, psihološki pogled: dani u tjednu koji padaju ili nose, prva naspram druge polovice, koje tjedne promjene su prihvaćene i drže li, što se ponavlja u komentarima. Ako su trackeri (kalorije, potrošnja) dani, poveži ih s ostalim kad ima smisla.
+4. problems — 0–${REPORT_LIMITS.problems} velika problema: iskreno i objektivno, ali nikad bezobrazno. Ako ih nema, prazan popis.
+5. ideasWhy — JEDNA rečenica zašto je SMJER ZA IDUĆI MJESEC (zadan ti je, najviše dvije stavke) dobar, iz podataka ovog mjeseca. Smjer NE mijenjaj i ne dodaj nove promjene: malo po malo, nove promjene dolaze jedna po jedna kroz tjedne dijagnoze.
+
+Prethodne mjesečne dijagnoze: pogledaj je li prošli smjer upalio. Ako je korisnik rekao "Nije pomoglo", priznaj to i budi konkretniji.
+Ne izmišljaj podatke koji nisu dani. Ne spominji da si AI, model ili app.
+Svaki redak najviše ${REPORT_LIMITS.line} znakova, summary najviše ${REPORT_LIMITS.summary}.
+Piši na ${LANGUAGE[locale]} jeziku.
+
+Vrati SAMO JSON objekt (bez markdowna):
+{"summary":"...","praise":["..."],"noticed":["..."],"problems":["..."],"ideasWhy":"..."}`;
+}
+
+const MONTH_TREND_TEXT: Record<ReportTrend, string> = {
+  better: 'bolje nego prošli mjesec',
+  same: 'otprilike isto kao prošli mjesec',
+  worse: 'lošije nego prošli mjesec',
+  first: 'nema usporedbe (prvi mjesec ili prošli nema zaključenih dana)',
+};
+
+/** Korisnička poruka mjesečne dijagnoze. */
+export function buildMonthReportUserMessage(req: WriteMonthReportRequest): string {
+  const lines: string[] = [];
+  lines.push(`Mjesečna dijagnoza za ${req.month.start} – ${req.month.end}. Trend: ${MONTH_TREND_TEXT[req.trend]}.`);
+  lines.push('', 'OVAJ MJESEC', ...weekLines(req.month, dayCount(req.month)));
+  lines.push(`Tjedne promjene ovog mjeseca: prihvaćeno ${req.changes.accepted}, odbijeno ${req.changes.rejected}`);
+  if (req.days.length > 0) {
+    lines.push('', 'DANI');
+    for (const day of req.days) {
+      const parts = [
+        `${day.date} (${weekdayOf(day.date)})`,
+        `rezultat ${day.score ?? '—'}`,
+        `ocjena ${day.rating ?? '—'}`,
+        ...day.comments.map((c) => `${quote(c.title)} ${outcomeText(c.outcome)}: ${quote(c.comment)}`),
+        ...day.broken.map((rule) => `prekršena ${quote(rule.title)}${rule.trigger ? ` (${quote(rule.trigger)})` : ''}`),
+      ];
+      lines.push(`- ${parts.join('; ')}`);
+    }
+  }
+  const previousMonth = req.previousMonth;
+  if (previousMonth !== null) {
+    lines.push('', `PROŠLI MJESEC (${previousMonth.start})`, ...weekLines(previousMonth, dayCount(previousMonth)));
+  }
+  lines.push('', 'SMJER ZA IDUĆI MJESEC (odabran, ne mijenjaj ga)');
+  for (const idea of req.ideas) lines.push(`- ${quote(idea)}`);
+  if (req.ideas.length === 0) lines.push('- zadrži ritam');
+  if (req.previous.length > 0) {
+    lines.push('', 'PRETHODNE MJESEČNE DIJAGNOZE (je li smjer upalio?)');
+    for (const prev of req.previous) {
+      const feedback =
+        prev.helpful === null ? 'bez odgovora' : prev.helpful ? 'korisnik: Pomoglo' : 'korisnik: Nije pomoglo';
+      lines.push(`- mjesec od ${prev.date}: ${quote(prev.summary)}`);
+      if (prev.ideas.length > 0) lines.push(`  smjer: ${prev.ideas.map(quote).join(' | ')}`);
+      lines.push(`  ${feedback}${prev.comment ? ` — ${quote(prev.comment)}` : ''}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/** Broj kalendarskih dana razdoblja (za „zaključeni dani x/N“). */
+function dayCount(stats: ReportPeriodStats): number {
+  const ms = Date.parse(`${stats.end}T12:00:00Z`) - Date.parse(`${stats.start}T12:00:00Z`);
+  return Math.round(ms / 86_400_000) + 1;
+}
+
+/** Odgovor modela za mjesec, ili `null` ako ne drži oblik. */
+export function acceptModelMonthReport(raw: string): WriteMonthReportText | null {
+  const jsonText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  try {
+    return readMonthReportText(JSON.parse(jsonText));
+  } catch {
+    return null;
+  }
+}
+
+/** Provjera teksta mjesečne dijagnoze (odgovor modela i odgovor funkcije u appu). */
+export function readMonthReportText(parsed: unknown): WriteMonthReportText | null {
+  if (!isRecord(parsed)) return null;
+  const week = readWeekReportText({ ...parsed, ideaWhy: parsed.ideasWhy });
+  if (week === null) return null;
+  return {
+    version: MONTH_REPORT_PROMPT_VERSION,
+    summary: week.summary,
+    praise: week.praise,
+    noticed: week.noticed,
+    problems: week.problems,
+    ideasWhy: week.ideaWhy,
+  };
 }
