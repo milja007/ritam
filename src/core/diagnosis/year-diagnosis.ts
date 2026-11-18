@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import { addDays, daysBetween } from '../time/local-date';
 import { TRENDS } from './day-diagnosis';
+import { llmYearTextSchema } from './llm-year';
 import {
   isSharedLineKey,
   monthChanges,
@@ -106,6 +107,8 @@ export const yearDiagnosisSchema = z.object({
   changes: z.object({ accepted: z.number(), rejected: z.number() }),
   /** Prosjek po mjesecu (`null` = mjesec bez ocijenjenih dana), 12 vrijednosti — za traku žarova. */
   months: z.array(z.number().nullable()).length(12),
+  /** Riječi modela (korak 31e); brojke, trend, mjeseci i smjer ostaju lokalni. Pokvaren tekst ne ruši lokalnu. */
+  llm: llmYearTextSchema.optional().catch(undefined),
 });
 export type YearDiagnosis = Omit<z.infer<typeof yearDiagnosisSchema>, 'summary' | 'praise' | 'noticed' | 'problems' | 'ideas'> & {
   summary: YearLine;

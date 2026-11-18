@@ -44,7 +44,7 @@ export function YearDiagnosisCard({ report, yearLabel, current }: YearDiagnosisC
     ) : null;
   }
 
-  const summary = lineText(diagnosis.summary);
+  const summary = diagnosis.llm?.summary ?? lineText(diagnosis.summary);
   const trendLabel = t(`diagnosis.year.trend.${diagnosis.trend}`);
   const hasChanges = diagnosis.changes.accepted + diagnosis.changes.rejected > 0;
   const openDiagnosis = () => {
@@ -113,7 +113,7 @@ export function YearDiagnosisCard({ report, yearLabel, current }: YearDiagnosisC
                 <Text variant="title" accessibilityRole="header">
                   {t('diagnosis.year.title')}
                 </Text>
-                <YearDiagnosisView diagnosis={diagnosis} />
+                <YearDiagnosisView diagnosis={diagnosis} writing={report.writing} />
                 <DiagnosisFeedback period="year" periodStart={diagnosis.start} />
               </ScrollView>
             </SafeAreaView>

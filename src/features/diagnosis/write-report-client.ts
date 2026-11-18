@@ -2,23 +2,29 @@ import type {
   WriteMonthReportRequest,
   WriteReportRequest,
   WriteWeekReportRequest,
+  WriteYearReportRequest,
 } from '../../../supabase/functions/_shared/report-logic';
 import {
   readWriteMonthReportResponse,
   readWriteReportResponse,
   readWriteWeekReportResponse,
+  readWriteYearReportResponse,
   writeMonthReportRequest,
   writeReportRequest,
   writeWeekReportRequest,
+  writeYearReportRequest,
   type DayDiagnosis,
   type DiagnosisLine,
   type LlmDayText,
   type LlmMonthText,
   type LlmWeekText,
+  type LlmYearText,
   type MonthDiagnosis,
   type MonthLine,
   type WeekDiagnosis,
   type WeekLine,
+  type YearDiagnosis,
+  type YearLine,
 } from '@/core/diagnosis';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
@@ -26,9 +32,11 @@ import {
   loadMonthWriteReportData,
   loadWeekWriteReportData,
   loadWriteReportData,
+  loadYearWriteReportData,
   saveDayReportText,
   saveMonthReportText,
   saveWeekReportText,
+  saveYearReportText,
 } from '@/db/repos';
 import { getSupabase } from '@/features/auth/supabase';
 
@@ -71,6 +79,11 @@ export function requestWriteReport(body: WriteReportRequest): Promise<LlmDayText
 /** Korak 31d: isto za mjesec (`period: 'month'`). */
 export function requestWriteMonthReport(body: WriteMonthReportRequest): Promise<LlmMonthText | null> {
   return invokeWriteReport(body, readWriteMonthReportResponse);
+}
+
+/** Korak 31e: isto za godinu (`period: 'year'`). */
+export function requestWriteYearReport(body: WriteYearReportRequest): Promise<LlmYearText | null> {
+  return invokeWriteReport(body, readWriteYearReportResponse);
 }
 
 /** Korak 31c: isto za tjedan (`period: 'week'`). */
@@ -171,6 +184,42 @@ export async function refineMonthDiagnosis(
     return saveMonthReportText(getDb(), LOCAL_USER_ID, start, text, data.basis);
   } catch (error: unknown) {
     console.warn('Writing month diagnosis failed, keeping local diagnosis', error);
+    return null;
+  }
+}
+
+/**
+ * Dopiši riječi modela uz spremljenu godišnju dijagnozu (1. 1. = `start`); kao za mjesec. Sažeci
+ * mjeseci su riječi modela mjesečne dijagnoze ako postoje, inače njen lokalni redak.
+ */
+export async function refineYearDiagnosis(
+  start: string,
+  locale: 'hr' | 'en',
+  renderLine: (line: YearLine) => string,
+  renderMonthLine: (line: MonthLine) => string,
+): Promise<YearDiagnosis | null> {
+  if (!canWriteReport()) return null;
+  try {
+    const data = await loadYearWriteReportData(getDb(), LOCAL_USER_ID, start);
+    if (data === null || data.diagnosis.llm !== undefined) return null;
+    const text = await requestWriteYearReport(
+      writeYearReportRequest({
+        locale,
+        diagnosis: data.diagnosis,
+        current: data.current,
+        previous: data.previous,
+        monthSummaries: data.months.map(({ month, diagnosis }) => ({
+          month,
+          summary: diagnosis.llm ? diagnosis.llm.summary : renderMonthLine(diagnosis.summary),
+        })),
+        previousReports: data.previousReports,
+        renderLine,
+      }),
+    );
+    if (text === null) return null;
+    return saveYearReportText(getDb(), LOCAL_USER_ID, start, text, data.basis);
+  } catch (error: unknown) {
+    console.warn('Writing year diagnosis failed, keeping local diagnosis', error);
     return null;
   }
 }

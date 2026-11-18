@@ -12,8 +12,10 @@
  *
  * Mjesečna (korak 31d): `period: 'month'` → isto za mjesec, ideje-smjer zadane (prompt `llm-month-v1`).
  *
- * Ulaz:  POST body: WriteReportRequest | WriteWeekReportRequest | WriteMonthReportRequest
- * Izlaz: { report: WriteReportText | WriteWeekReportText | WriteMonthReportText | null } — `null` kad model ne uspije ili
+ * Godišnja (korak 31e): `period: 'year'` → godina, mjeseci (prosjek i sažetak), smjer zadan (prompt `llm-year-v1`).
+ *
+ * Ulaz:  POST body: WriteReportRequest | WriteWeekReportRequest | WriteMonthReportRequest | WriteYearReportRequest
+ * Izlaz: { report: WriteReportText | WriteWeekReportText | WriteMonthReportText | WriteYearReportText | null } — `null` kad model ne uspije ili
  *        vrati krivi oblik; app tada ostaje na lokalnoj dijagnozi.
  *
  * Zahtijeva JWT korisnika — `Authorization: Bearer <token>`.
@@ -27,18 +29,23 @@ import {
   acceptModelMonthReport,
   acceptModelReport,
   acceptModelWeekReport,
+  acceptModelYearReport,
   buildMonthReportSystemPrompt,
   buildMonthReportUserMessage,
   buildReportSystemPrompt,
   buildReportUserMessage,
   buildWeekReportSystemPrompt,
   buildWeekReportUserMessage,
+  buildYearReportSystemPrompt,
+  buildYearReportUserMessage,
   parseWriteMonthReportRequest,
   parseWriteReportRequest,
   parseWriteWeekReportRequest,
+  parseWriteYearReportRequest,
   type WriteMonthReportText,
   type WriteReportText,
   type WriteWeekReportText,
+  type WriteYearReportText,
 } from '../_shared/report-logic.ts';
 
 Deno.serve(async (req: Request) => {
@@ -64,10 +71,18 @@ Deno.serve(async (req: Request) => {
     return errorResponse('Neispravan JSON', 400);
   }
 
-  type Text = WriteReportText | WriteWeekReportText | WriteMonthReportText;
+  type Text = WriteReportText | WriteWeekReportText | WriteMonthReportText | WriteYearReportText;
   const period = typeof raw === 'object' && raw !== null ? (raw as { period?: unknown }).period : undefined;
   let prompt: { system: string; user: string; accept: (content: string) => Text | null };
-  if (period === 'month') {
+  if (period === 'year') {
+    const body = parseWriteYearReportRequest(raw);
+    if (body === null) return errorResponse('Neispravan zahtjev: start (1. 1.), trend i year moraju biti valjani', 400);
+    prompt = {
+      system: buildYearReportSystemPrompt(body.locale),
+      user: buildYearReportUserMessage(body),
+      accept: acceptModelYearReport,
+    };
+  } else if (period === 'month') {
     const body = parseWriteMonthReportRequest(raw);
     if (body === null) return errorResponse('Neispravan zahtjev: start (prvi dan mjeseca), trend i month moraju biti valjani', 400);
     prompt = {

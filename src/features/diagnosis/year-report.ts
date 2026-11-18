@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { YearDiagnosis } from '@/core/diagnosis';
+import { isYearFreshForWriting, type YearDiagnosis } from '@/core/diagnosis';
 import { LOCAL_USER_ID } from '@/core/user/local-user';
 import { getDb } from '@/db/open';
 import { generateYearReport, markReportSeen } from '@/db/repos';
+
+import { capitalize, monthLineParams } from './month-diagnosis-view';
+import { canWriteReport, refineYearDiagnosis } from './write-report-client';
+import { yearLineParams } from './year-line-params';
 
 type Loaded = { key: string; status: 'ready' | 'none' | 'error'; diagnosis: YearDiagnosis | null; seen: boolean };
 
@@ -12,6 +17,8 @@ export type YearReportState = {
   status: 'loading' | 'ready' | 'none' | 'error';
   diagnosis: YearDiagnosis | null;
   seen: boolean;
+  /** Čekaju se riječi modela (korak 31e); lokalna dijagnoza je već tu. */
+  writing: boolean;
   markSeen: () => void;
 };
 
@@ -21,7 +28,10 @@ export type YearReportState = {
  * `enabled = false`: ne čita bazu (npr. prošla godina izvan siječnja).
  */
 export function useYearReport(year: string, today: string, refresh: unknown, enabled = true): YearReportState {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en' : 'hr';
   const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const [written, setWritten] = useState<{ base: YearDiagnosis; diagnosis: YearDiagnosis | null } | null>(null);
   const key = `${year}|${today}|${enabled ? 1 : 0}`;
 
   useEffect(() => {
@@ -62,9 +72,31 @@ export function useYearReport(year: string, today: string, refresh: unknown, ena
   }, [key, year]);
 
   const current = loaded !== null && loaded.key === key ? loaded : null;
+  const base = current?.status === 'ready' ? current.diagnosis : null;
+  // Korak 31e: riječi modela samo za svježu godinu (31. 12. ili 1. 1.) i s oblakom.
+  const wanted = base !== null && base.llm === undefined && isYearFreshForWriting(base.end, today) && canWriteReport();
+
+  useEffect(() => {
+    if (!wanted || base === null) return;
+    let active = true;
+    void refineYearDiagnosis(
+      base.start,
+      locale,
+      (line) => capitalize(t(`diagnosis.year.lines.${line.key}`, yearLineParams(line, locale))),
+      (line) => capitalize(t(`diagnosis.month.lines.${line.key}`, monthLineParams(line, locale))),
+    ).then((diagnosis) => {
+      if (active) setWritten({ base, diagnosis });
+    });
+    return () => {
+      active = false;
+    };
+  }, [base, locale, t, wanted]);
+
+  const writtenNow = written !== null && written.base === base ? written : null;
   return {
     status: current?.status ?? 'loading',
-    diagnosis: current?.diagnosis ?? null,
+    diagnosis: writtenNow?.diagnosis ?? current?.diagnosis ?? null,
+    writing: wanted && writtenNow === null,
     seen: current?.seen ?? false,
     markSeen,
   };

@@ -513,7 +513,8 @@ function parseWeek(raw: unknown, maxDays = 7): ReportWeek | null {
   if (!isRecord(raw) || !isDate(raw.start) || !isDate(raw.end) || raw.end < raw.start) return null;
   if (!isRecord(raw.plan) || !isRecord(raw.rules) || !isRecord(raw.misses)) return null;
   const { plan, rules, misses } = raw;
-  const count = (value: unknown) => nonNegative(value, 5000);
+  // Godina ima i više od 5000 blokova — granica raste s duljinom razdoblja (tjedan i mjesec ostaju 5000).
+  const count = (value: unknown) => nonNegative(value, Math.max(5000, maxDays * 50));
   if (!isInt(raw.recorded, 0, maxDays)) return null;
   if (![plan.total, plan.done, plan.partial, plan.missed, plan.moved].every(count)) return null;
   if (![rules.active, rules.kept, rules.broken].every(count)) return null;
@@ -584,7 +585,7 @@ function parseWeek(raw: unknown, maxDays = 7): ReportWeek | null {
     repeatedMisses: list(raw.repeatedMisses, WEEK_REPORT_LIMITS.repeated, (value) => {
       if (!isRecord(value)) return null;
       const title = clip(value.title, REPORT_LIMITS.title);
-      return title !== null && isInt(value.count, 2, 50) ? { title, count: value.count } : null;
+      return title !== null && isInt(value.count, 2, Math.max(50, maxDays)) ? { title, count: value.count } : null;
     }),
     calories:
       isRecord(c) && isInt(c.days, 1, maxDays) && [c.within, c.over, c.under].every((v) => isInt(v, 0, maxDays))
@@ -967,4 +968,182 @@ export function readMonthReportText(parsed: unknown): WriteMonthReportText | nul
     problems: week.problems,
     ideasWhy: week.ideaWhy,
   };
+}
+
+// ===========================================================================
+// Godišnja dijagnoza riječima (korak 31e, prompt llm-year-v1)
+// ===========================================================================
+
+/**
+ * Godišnja dijagnoza: brojke, trend, prosjek po mjesecima i **smjer** (najviše dvije ideje) računa
+ * app lokalno. Model dobiva godinu, prošlu godinu, mjesece (prosjek i sažetak mjesečne dijagnoze)
+ * i ranije godišnje dijagnoze — ne pojedinačne dane (365 dana je previše za jedan poziv).
+ */
+export const YEAR_REPORT_PROMPT_VERSION = 'llm-year-v1';
+
+export type ReportYearMonth = {
+  /** "YYYY-MM". */
+  month: string;
+  /** Prosjek ocijenjenih dana; `null` bez njih. */
+  average: number | null;
+  /** Ukratko mjesečne dijagnoze (riječi modela ili lokalni redak); `null` bez dijagnoze. */
+  summary: string | null;
+};
+
+export type WriteYearReportRequest = {
+  period: 'year';
+  /** 1. 1. te godine. */
+  start: string;
+  locale: ReportLocale;
+  trend: ReportTrend;
+  year: ReportPeriodStats;
+  previousYear: ReportPeriodStats | null;
+  months: ReportYearMonth[];
+  /** Lokalni smjer za iduću godinu (1–2), tekst na jeziku appa. */
+  ideas: string[];
+  /** Odgovori na tjedne promjene te godine. */
+  changes: { accepted: number; rejected: number };
+  /** Ranije godišnje dijagnoze (`date` = 1. 1.) s odgovorom Pomoglo / Nije pomoglo. */
+  previous: ReportPrevious[];
+};
+
+export type WriteYearReportText = {
+  version: typeof YEAR_REPORT_PROMPT_VERSION;
+  summary: string;
+  praise: string[];
+  noticed: string[];
+  problems: string[];
+  /** Jedna rečenica zašto je taj smjer dobar za iduću godinu; `null` bez nje. */
+  ideasWhy: string | null;
+};
+
+export const YEAR_REPORT_LIMITS = { days: 366, months: 12, ideas: 2, previous: 2, changes: 60 } as const;
+
+function parseYearMonth(raw: unknown, year: string): ReportYearMonth | null {
+  if (!isRecord(raw) || typeof raw.month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(raw.month)) return null;
+  if (!raw.month.startsWith(`${year}-`)) return null;
+  const average = parseScore(raw.average);
+  if (average === undefined) return null;
+  return {
+    month: raw.month,
+    average,
+    summary: raw.summary === null || raw.summary === undefined ? null : clip(raw.summary, REPORT_LIMITS.line),
+  };
+}
+
+/**
+ * Zahtjev za godišnju dijagnozu, provjeren. `null` bez valjane godine (1. 1., statistika do 31. 12.)
+ * ili trenda; mjeseci druge godine i ponovljeni mjeseci, prošla godina koja nije prije, kasnije
+ * dijagnoze i nevaljane stavke otpadaju.
+ */
+export function parseWriteYearReportRequest(raw: unknown): WriteYearReportRequest | null {
+  if (!isRecord(raw) || raw.period !== 'year' || !isDate(raw.start) || !raw.start.endsWith('-01-01')) return null;
+  const start = raw.start;
+  const yearText = start.slice(0, 4);
+  const trend = TRENDS.find((value) => value === raw.trend);
+  const year = parseWeek(raw.year, YEAR_REPORT_LIMITS.days);
+  if (trend === undefined || year === null || year.start !== start || year.end !== `${yearText}-12-31`) return null;
+  const previousYear =
+    raw.previousYear === null || raw.previousYear === undefined ? null : parseWeek(raw.previousYear, YEAR_REPORT_LIMITS.days);
+  const changes = isRecord(raw.changes) ? raw.changes : {};
+  const byMonth = new Map<string, ReportYearMonth>();
+  for (const month of list(raw.months, YEAR_REPORT_LIMITS.months, (value) => parseYearMonth(value, yearText))) {
+    if (!byMonth.has(month.month)) byMonth.set(month.month, month);
+  }
+  const months = [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month));
+  return {
+    period: 'year',
+    start,
+    locale: raw.locale === 'en' ? 'en' : 'hr',
+    trend,
+    year,
+    previousYear: previousYear !== null && previousYear.end < start ? previousYear : null,
+    months,
+    ideas: list(raw.ideas, YEAR_REPORT_LIMITS.ideas, (value) => clip(value, WEEK_REPORT_LIMITS.idea)),
+    changes: {
+      accepted: isInt(changes.accepted, 0, YEAR_REPORT_LIMITS.changes) ? changes.accepted : 0,
+      rejected: isInt(changes.rejected, 0, YEAR_REPORT_LIMITS.changes) ? changes.rejected : 0,
+    },
+    previous: list(raw.previous, YEAR_REPORT_LIMITS.previous, parsePrevious).filter((prev) => prev.date < start),
+  };
+}
+
+/** Sistemska uputa godišnje dijagnoze: isti ton i red, smjer ne bira model. */
+export function buildYearReportSystemPrompt(locale: ReportLocale): string {
+  return `\
+Ti si iskren i topao osobni trener u appu Ritam. Pišeš GODIŠNJU dijagnozu korisnikove godine.
+Ton: kao dobar trener — iskren, topao, konkretan. Prvo činjenice, pa tumačenje. Svaka kritika ima ideju što napraviti. Bez posramljivanja, bez osude, bez uljepšavanja. Nikad kazna: neodrađeno je informacija, ne neuspjeh.
+Čita se za dvije minute: kratke rečenice, obraćaš se korisniku s "ti". Godina je velika — vidi luk, ne pojedinosti.
+
+Brojke ("Napredak") i traku mjeseci app prikazuje sam — koristi ih samo kad nešto znače.
+Napiši, uvijek ovim redom:
+1. summary — JEDNA rečenica: kakva je bila godina i kamo ide trend (trend ti je zadan, ne mijenjaj ga).
+2. praise — 0–${REPORT_LIMITS.praise} pohvale: što je kroz godinu išlo super i neka tako ostane. Samo stvarne, iz podataka.
+3. noticed — 0–${REPORT_LIMITS.noticed} uzorka kroz godinu i mogući uzroci, psihološki pogled: najjači i najslabiji mjeseci i što ih dijeli, prva naspram druge polovice, koje tjedne promjene su prihvaćene i drže li, što se ponavlja u sažecima mjeseci. Ako su trackeri (kalorije, potrošnja) dani, poveži ih s ostalim kad ima smisla.
+4. problems — 0–${REPORT_LIMITS.problems} velika problema: iskreno i objektivno, ali nikad bezobrazno. Ako ih nema, prazan popis.
+5. ideasWhy — JEDNA rečenica zašto je SMJER ZA IDUĆU GODINU (zadan ti je, najviše dvije stavke) dobar, iz podataka ove godine. Smjer NE mijenjaj i ne dodaj nove promjene: malo po malo, nove promjene dolaze jedna po jedna kroz tjedne dijagnoze.
+
+Prethodne godišnje dijagnoze: pogledaj je li prošli smjer upalio. Ako je korisnik rekao "Nije pomoglo", priznaj to i budi konkretniji.
+Ne izmišljaj podatke koji nisu dani. Ne spominji da si AI, model ili app.
+Svaki redak najviše ${REPORT_LIMITS.line} znakova, summary najviše ${REPORT_LIMITS.summary}.
+Piši na ${LANGUAGE[locale]} jeziku.
+
+Vrati SAMO JSON objekt (bez markdowna):
+{"summary":"...","praise":["..."],"noticed":["..."],"problems":["..."],"ideasWhy":"..."}`;
+}
+
+const YEAR_TREND_TEXT: Record<ReportTrend, string> = {
+  better: 'bolje nego prošla godina',
+  same: 'otprilike isto kao prošla godina',
+  worse: 'lošije nego prošla godina',
+  first: 'nema usporedbe (prva godina ili prošla nema zaključenih dana)',
+};
+
+/** Korisnička poruka godišnje dijagnoze. */
+export function buildYearReportUserMessage(req: WriteYearReportRequest): string {
+  const lines: string[] = [];
+  lines.push(`Godišnja dijagnoza za ${req.year.start} – ${req.year.end}. Trend: ${YEAR_TREND_TEXT[req.trend]}.`);
+  lines.push('', 'OVA GODINA', ...weekLines(req.year, dayCount(req.year)));
+  lines.push(`Tjedne promjene ove godine: prihvaćeno ${req.changes.accepted}, odbijeno ${req.changes.rejected}`);
+  if (req.months.length > 0) {
+    lines.push('', 'MJESECI (prosjek · sažetak mjesečne dijagnoze)');
+    for (const month of req.months) {
+      const average = month.average === null ? 'bez ocijenjenih dana' : `prosjek ${month.average}/100`;
+      lines.push(`- ${month.month}: ${average}${month.summary ? ` · ${quote(month.summary)}` : ''}`);
+    }
+  }
+  const previousYear = req.previousYear;
+  if (previousYear !== null) {
+    lines.push('', `PROŠLA GODINA (${previousYear.start.slice(0, 4)})`, ...weekLines(previousYear, dayCount(previousYear)));
+  }
+  lines.push('', 'SMJER ZA IDUĆU GODINU (odabran, ne mijenjaj ga)');
+  for (const idea of req.ideas) lines.push(`- ${quote(idea)}`);
+  if (req.ideas.length === 0) lines.push('- zadrži ritam');
+  if (req.previous.length > 0) {
+    lines.push('', 'PRETHODNE GODIŠNJE DIJAGNOZE (je li smjer upalio?)');
+    for (const prev of req.previous) {
+      const feedback =
+        prev.helpful === null ? 'bez odgovora' : prev.helpful ? 'korisnik: Pomoglo' : 'korisnik: Nije pomoglo';
+      lines.push(`- godina ${prev.date.slice(0, 4)}: ${quote(prev.summary)}`);
+      if (prev.ideas.length > 0) lines.push(`  smjer: ${prev.ideas.map(quote).join(' | ')}`);
+      lines.push(`  ${feedback}${prev.comment ? ` — ${quote(prev.comment)}` : ''}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/** Odgovor modela za godinu, ili `null` ako ne drži oblik. */
+export function acceptModelYearReport(raw: string): WriteYearReportText | null {
+  const jsonText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  try {
+    return readYearReportText(JSON.parse(jsonText));
+  } catch {
+    return null;
+  }
+}
+
+/** Provjera teksta godišnje dijagnoze (odgovor modela i odgovor funkcije u appu). */
+export function readYearReportText(parsed: unknown): WriteYearReportText | null {
+  const month = readMonthReportText(parsed);
+  return month === null ? null : { ...month, version: YEAR_REPORT_PROMPT_VERSION };
 }
