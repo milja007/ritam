@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { levelUpHaptics } from '@/core/haptics';
 import { type LevelProgress, type LevelUp, nextUnlocks, titleAt } from '@/core/gamification';
 import {
   type BurstSpark,
@@ -33,6 +34,7 @@ import {
 } from '@/core/theme';
 import { Button } from '@/ui/button';
 import { FlameSwatch } from '@/ui/flame-swatch';
+import { playHaptic } from '@/ui/haptics';
 import { Text } from '@/ui/text';
 import { chooseColorTheme } from '@/features/settings';
 import { useAppTheme } from '@/ui/theme';
@@ -60,7 +62,7 @@ type Props = {
  * Slavlje nove razine preko cijelog ekrana (korak 35; koncept: „traka se napuni, burst čestica,
  * novi level broj se odbroji“). Redom: traka se napuni → broj razine odbroji i poskoči, iskre
  * polete iz plamena → traka se smiri na napredak nove razine, izroni popis otključanog.
- * Uz „smanji kretanje“ odmah stoji krajnje stanje, bez praska. Bez haptike (Ž11).
+ * Uz „smanji kretanje“ odmah stoji krajnje stanje, bez praska (haptika samo jedan uspjeh).
  */
 export function LevelUpCelebration({ levelUp, level, onClose }: Props) {
   const { t } = useTranslation();
@@ -110,6 +112,15 @@ export function LevelUpCelebration({ levelUp, level, onClose }: Props) {
       cancelAnimation(reveal);
     };
   }, [bar, burst, reveal, countMs, reduceMotion, target]);
+
+  // Haptika (Ž11) prati koreografiju: tik po koraku odbrojavanja, uspjeh uz prasak iskri.
+  useEffect(() => {
+    const cues = levelUpHaptics(steps, { fillMs: LEVEL_UP_FILL_MS, stepMs: LEVEL_UP_COUNT_STEP_MS }, reduceMotion);
+    const timers = cues.map((cue) => setTimeout(() => playHaptic(cue.event), cue.at));
+    return () => {
+      for (const id of timers) clearTimeout(id);
+    };
+  }, [reduceMotion, steps]);
 
   // Odbrojavanje razine: kad se traka napuni, broj ide korak po korak do nove razine.
   useEffect(() => {

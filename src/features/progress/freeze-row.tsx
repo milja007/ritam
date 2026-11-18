@@ -8,6 +8,7 @@ import { spacing } from '@/core/theme';
 import { dayMonth } from '@/features/ember/format';
 import { Ember } from '@/ui/ember';
 import { Flare } from '@/ui/flare';
+import { playHaptic } from '@/ui/haptics';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -28,7 +29,9 @@ export function FreezeRow({ freezes }: { freezes: StreakFreezes }) {
   const earnedAnnouncement = earned ? t('progress.freeze.earnedA11y') : null;
 
   useEffect(() => {
-    if (earnedAnnouncement !== null) AccessibilityInfo.announceForAccessibility(earnedAnnouncement);
+    if (earnedAnnouncement === null) return;
+    playHaptic('achievement');
+    AccessibilityInfo.announceForAccessibility(earnedAnnouncement);
   }, [earnedAnnouncement, id]);
 
   const title = t('progress.freeze.title', { held: freezes.held, max: FREEZE_MAX });

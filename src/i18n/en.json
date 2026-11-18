@@ -31,6 +31,11 @@
       "blocks": "Block reminders",
       "blocksDetail": "At the start of each block, with Done / Snooze / Came up buttons"
     },
+    "haptics": {
+      "title": "Haptics",
+      "label": "Vibration on confirmations",
+      "detail": "A short tap for Done, a growing streak, rewards and a new level"
+    },
     "saveError": "The change wasn't saved. Please try again.",
     "progress": "Progress",
     "score": {

@@ -8,6 +8,7 @@ import { radius, spacing } from '@/core/theme';
 import { useDayScore, useProgress, useStreakGain } from '@/features/progress';
 import { EmberIgnite, RailDot } from '@/ui/ember';
 import { Bump, Flare } from '@/ui/flare';
+import { playHaptic } from '@/ui/haptics';
 import { Text, type TextProps } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -45,7 +46,9 @@ export function DayPills({ today, checkinDay }: { today: string; checkinDay: str
   const gainAnnouncement = gain > 0 && streak !== null ? t('progress.streak.gainA11y', { count: streak }) : null;
 
   useEffect(() => {
-    if (gainAnnouncement !== null) AccessibilityInfo.announceForAccessibility(gainAnnouncement);
+    if (gainAnnouncement === null) return;
+    playHaptic('streak');
+    AccessibilityInfo.announceForAccessibility(gainAnnouncement);
   }, [gainAnnouncement, id]);
 
   if (streak === null && pill === null) return null;

@@ -31,6 +31,7 @@ import { TrackersSettings } from '@/features/trackers';
 import { ThemePickerCard } from '@/features/unlocks';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
+import { HAPTICS_SUPPORTED, setHapticsEnabled, useHapticsEnabled } from '@/ui/haptics';
 import { Stepper } from '@/ui/stepper';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
@@ -148,6 +149,12 @@ export function ProfileScreen() {
                 <NotificationToggles settings={settings} save={save} />
               </Section>
 
+              {HAPTICS_SUPPORTED ? (
+                <Section title={t('profile.haptics.title')}>
+                  <HapticsToggle />
+                </Section>
+              ) : null}
+
               <Section title={t('profile.score.title')}>
                 <ScoreAreasPicker value={settings} onChange={save} trackers={settings.trackCalories || settings.trackMoney} />
               </Section>
@@ -165,6 +172,31 @@ export function ProfileScreen() {
           ) : null}
         </ScrollView>
       </SafeAreaView>
+    </View>
+  );
+}
+
+function HapticsToggle() {
+  const { t } = useTranslation();
+  const { colors } = useAppTheme();
+  const on = useHapticsEnabled();
+  const label = t('profile.haptics.label');
+  return (
+    <View style={[styles.group, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+      <View style={styles.row}>
+        <View style={styles.rowText}>
+          <Text>{label}</Text>
+          <Text variant="caption" tone="textMuted">
+            {t('profile.haptics.detail')}
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel={label}
+          value={on}
+          onValueChange={setHapticsEnabled}
+          trackColor={{ true: colors.accent, false: colors.border }}
+        />
+      </View>
     </View>
   );
 }

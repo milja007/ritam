@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { BlockStatus, ScheduleBlock } from '@/core/domain';
 import { flameBlockId } from '@/core/ember';
+import { blockStatusHaptic } from '@/core/haptics';
 import {
   blockPhase,
   canGiveUp,
@@ -40,6 +41,7 @@ import { DayScoreCard, XpStreakBar } from '@/features/progress';
 import { LevelUpHost, useLevelUpState } from '@/features/unlocks';
 import { Button } from '@/ui/button';
 import { GradientBackground } from '@/ui/gradient-background';
+import { playHaptic } from '@/ui/haptics';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -244,6 +246,7 @@ export function TodayScreen() {
 
   async function changeStatus(block: ScheduleBlock, next: BlockStatus) {
     await day.setStatus(block, next);
+    playHaptic(blockStatusHaptic(next));
     evening.reload(); // nacrt upita kreće od svježih statusa
   }
 
