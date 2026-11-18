@@ -8,9 +8,9 @@
  * Ključ `ANTHROPIC_API_KEY` dolazi isključivo iz Supabase secrets — nikad
  * iz repoa ni iz env datoteke.
  *
- * DeepSeek implementacija dolazi kada Borna promijeni provider (korak iz
- * faze 4). Jedina promjena tada: zamijeniti `createClaudeProvider(fn)` s
- * `createDeepSeekProvider(fn)` u svakoj Edge Function koja ovaj modul koristi.
+ * DeepSeek je odbačen (Borna 2026-11-18): ostaje Claude, s najjeftinijim modelom
+ * koji je dobar za posao po funkciji (`LLM_MODELS` u `plan-logic.ts`). Sučelje
+ * ostaje kako bi se provider mogao zamijeniti bez diranja funkcija.
  */
 
 // deno-lint-ignore-file no-explicit-any

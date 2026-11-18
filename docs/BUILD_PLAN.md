@@ -97,4 +97,5 @@ Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/go
 - [x] 38. Teme boja — *gotovo (2026-11-14):* pet tema plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak; `src/core/theme/flame.ts`); mijenjaju akcent, žarove, traku dana i orb, ne pozadine ni statusne boje. Birač na Profilu, zaključane teme pokazuju razinu. Odabir se pamti **na uređaju** (`expo-sqlite/kv-store`), ne u `settings` — bez migracije; sinkronizacija teme među uređajima je pitanje 81.
 
 ## Faza 4 — Nadogradnje
-- [ ] 39. Health sync · 40. DeepSeek provider · 41. Home-screen widget
+- [ ] 39. Health sync · 41. Home-screen widget
+- [x] 40. ~~DeepSeek provider~~ — *odluka Borna 2026-11-18: bez DeepSeeka; najjeftiniji model koji je dobar za posao:* `parse-input` i `plan-day` → Claude Haiku 5.5, `write-report` (dijagnoze na hrvatskom) → Claude Sonnet 5.5.

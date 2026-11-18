@@ -88,13 +88,15 @@ const MAX_NOTE = 300;
 export type LlmFunctionName = 'parse-input' | 'plan-day' | 'write-report';
 
 /**
- * Model po funkciji — odluka Borne 2026-11-09: `plan-day` (i kasnije `write-report`) →
- * Sonnet 5.5, `parse-input` → Haiku 5.5. `claude-sonnet-4-5` se povlači 30. 11. 2026. (Codex, PR #16).
+ * Model po funkciji. Odluka Borne 2026-11-18 („najjeftiniji, ali dobar za ovo“; bez DeepSeeka):
+ * `parse-input` i `plan-day` → Haiku 5.5 (strukturirani JSON), `write-report` ostaje Sonnet 5.5
+ * (tekst dijagnoze na hrvatskom). Ranije (2026-11-09) je `plan-day` bio Sonnet. Mijenja se bez
+ * koda varijablom `LLM_MODEL_<FUNKCIJA>` u Supabase secrets. `claude-sonnet-4-5` se povlači
+ * 30. 11. 2026. (Codex, PR #16).
  */
 export const LLM_MODELS: Readonly<Record<LlmFunctionName, string>> = {
   'parse-input': 'claude-haiku-5-5',
-  'plan-day': 'claude-sonnet-5-5',
-  // Bornina odluka 2026-11-09: write-report kao plan-day.
+  'plan-day': 'claude-haiku-5-5',
   'write-report': 'claude-sonnet-5-5',
 };
 

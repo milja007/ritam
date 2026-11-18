@@ -163,7 +163,7 @@ describe('llmModelFor (korak 20, odluka Borne 2026-11-09)', () => {
 
   it('daje model po funkciji: parse-input Haiku 5.5, plan-day Sonnet 5.5', () => {
     expect(llmModelFor('parse-input', none)).toBe('claude-haiku-5-5');
-    expect(llmModelFor('plan-day', none)).toBe('claude-sonnet-5-5');
+    expect(llmModelFor('plan-day', none)).toBe('claude-haiku-5-5');
   });
 
   it('ne koristi model koji se povlači 30. 11. 2026.', () => {
