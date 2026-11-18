@@ -10,8 +10,10 @@
  * lokalno odabrana promjena tjedna i ranije tjedne dijagnoze; model piše riječi i jednu rečenicu
  * zašto ta promjena (prompt `llm-week-v1`), promjenu ne bira.
  *
- * Ulaz:  POST body: WriteReportRequest | WriteWeekReportRequest (`period: 'week'`)
- * Izlaz: { report: WriteReportText | WriteWeekReportText | null } — `null` kad model ne uspije ili
+ * Mjesečna (korak 31d): `period: 'month'` → isto za mjesec, ideje-smjer zadane (prompt `llm-month-v1`).
+ *
+ * Ulaz:  POST body: WriteReportRequest | WriteWeekReportRequest | WriteMonthReportRequest
+ * Izlaz: { report: WriteReportText | WriteWeekReportText | WriteMonthReportText | null } — `null` kad model ne uspije ili
  *        vrati krivi oblik; app tada ostaje na lokalnoj dijagnozi.
  *
  * Zahtijeva JWT korisnika — `Authorization: Bearer <token>`.
@@ -22,14 +24,19 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsPreflightResponse, errorResponse, jsonResponse } from '../_shared/cors.ts';
 import { createClaudeProvider, withLogging } from '../_shared/llm-provider.ts';
 import {
+  acceptModelMonthReport,
   acceptModelReport,
   acceptModelWeekReport,
+  buildMonthReportSystemPrompt,
+  buildMonthReportUserMessage,
   buildReportSystemPrompt,
   buildReportUserMessage,
   buildWeekReportSystemPrompt,
   buildWeekReportUserMessage,
+  parseWriteMonthReportRequest,
   parseWriteReportRequest,
   parseWriteWeekReportRequest,
+  type WriteMonthReportText,
   type WriteReportText,
   type WriteWeekReportText,
 } from '../_shared/report-logic.ts';
@@ -57,9 +64,18 @@ Deno.serve(async (req: Request) => {
     return errorResponse('Neispravan JSON', 400);
   }
 
-  const isWeek = typeof raw === 'object' && raw !== null && (raw as { period?: unknown }).period === 'week';
-  let prompt: { system: string; user: string; accept: (content: string) => WriteReportText | WriteWeekReportText | null };
-  if (isWeek) {
+  type Text = WriteReportText | WriteWeekReportText | WriteMonthReportText;
+  const period = typeof raw === 'object' && raw !== null ? (raw as { period?: unknown }).period : undefined;
+  let prompt: { system: string; user: string; accept: (content: string) => Text | null };
+  if (period === 'month') {
+    const body = parseWriteMonthReportRequest(raw);
+    if (body === null) return errorResponse('Neispravan zahtjev: start (prvi dan mjeseca), trend i month moraju biti valjani', 400);
+    prompt = {
+      system: buildMonthReportSystemPrompt(body.locale),
+      user: buildMonthReportUserMessage(body),
+      accept: acceptModelMonthReport,
+    };
+  } else if (period === 'week') {
     const body = parseWriteWeekReportRequest(raw);
     if (body === null) return errorResponse('Neispravan zahtjev: start (ponedjeljak), trend i week moraju biti valjani', 400);
     prompt = {
@@ -73,7 +89,7 @@ Deno.serve(async (req: Request) => {
     prompt = { system: buildReportSystemPrompt(body.locale), user: buildReportUserMessage(body), accept: acceptModelReport };
   }
 
-  let report: WriteReportText | WriteWeekReportText | null = null;
+  let report: Text | null = null;
   try {
     const provider = withLogging(createClaudeProvider('write-report'), user.id, 'write-report');
     const result = await provider.complete([{ role: 'user', content: prompt.user }], {

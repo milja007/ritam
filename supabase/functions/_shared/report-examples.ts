@@ -179,3 +179,43 @@ export const EXAMPLE_WEEK_EVENINGS = {
     },
   ],
 } as const;
+
+/** Primjer za prompt `llm-month-v1` (korak 31d): mjesec s padom četvrtkom i boljom drugom polovicom. */
+export const EXAMPLE_MONTH_THURSDAYS = {
+  period: 'month',
+  start: '2026-11-01',
+  locale: 'hr',
+  trend: 'better',
+  month: {
+    start: '2026-11-01',
+    end: '2026-11-30',
+    recorded: 24,
+    average: 71,
+    best: { date: '2026-11-22', score: 94 },
+    worst: { date: '2026-11-05', score: 38 },
+    plan: { total: 110, done: 78, partial: 9, missed: 23, moved: 11 },
+    rules: {
+      active: 48,
+      kept: 43,
+      broken: 5,
+      byRule: [{ title: 'Bez mobitela u krevetu', weight: 2, broken: 4, triggers: ['stres', 'dosada'] }],
+    },
+    sleep: { nights: 24, averageMinutes: 420, shortNights: 6, onTarget: 15, withTarget: 24 },
+    xp: 1340,
+    rating: 3.6,
+    gaveUpDays: 1,
+    misses: { morning: 5, afternoon: 6, evening: 21 },
+    repeatedMisses: [{ title: 'Trening', count: 6 }],
+    calories: null,
+    money: { days: 18, spentCents: 31200, budgetCents: 30000, overDays: 5 },
+  },
+  previousMonth: null,
+  days: [
+    { date: '2026-11-05', score: 38, rating: 2, comments: [{ title: 'Trening', outcome: 'not', comment: 'četvrtkom kasno s faksa' }], broken: [] },
+    { date: '2026-11-12', score: 52, rating: 2, comments: [], broken: [] },
+    { date: '2026-11-22', score: 94, rating: 5, comments: [], broken: [] },
+  ],
+  ideas: ['Četvrtkom planiraj lakše — jedna stvar manje.', 'Trening prebaci s večeri na jutro vikendom.'],
+  changes: { accepted: 2, rejected: 1 },
+  previous: [],
+} as const;
