@@ -28,7 +28,7 @@ import { updateSettings, useSettings } from '@/features/settings';
 import { SleepCard } from '@/features/sleep';
 import { useNow } from '@/features/today';
 import { TrackersSettings } from '@/features/trackers';
-import { ThemePickerCard } from '@/features/unlocks';
+import { RewardsPickerCard, ThemePickerCard } from '@/features/unlocks';
 import type { SettingsInput } from '@/db/repos';
 import { ClockStepper } from '@/ui/clock-stepper';
 import { HAPTICS_SUPPORTED, setHapticsEnabled, useHapticsEnabled } from '@/ui/haptics';
@@ -93,6 +93,10 @@ export function ProfileScreen() {
 
           <Section title={t('unlocks.picker.title')}>
             <ThemePickerCard today={now.date} checkinDay={now.eveningDate} />
+          </Section>
+
+          <Section title={t('unlocks.rewards.title')}>
+            <RewardsPickerCard today={now.date} checkinDay={now.eveningDate} />
           </Section>
 
           <Section title={t('profile.habits.title')}>

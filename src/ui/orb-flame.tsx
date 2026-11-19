@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
+  type SharedValue,
   Easing,
   useAnimatedStyle,
   useReducedMotion,
@@ -12,7 +13,14 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { shouldIgnite, type EmberLevel } from '@/core/ember';
-import { ORB_DASHED_INSET, orbFireMotion, orbFlameColors, type OrbFlame as OrbFlameState } from '@/core/gamification';
+import {
+  type AvatarFrameId,
+  ORB_DASHED_INSET,
+  orbFireMotion,
+  orbFlameColors,
+  type OrbFlame as OrbFlameState,
+  type OrbFlameColors,
+} from '@/core/gamification';
 import { IGNITE_DURATION_MS, IGNITE_SWELL_MS, ORB_FLICKER_RATIO, ORB_ORBIT_MS } from '@/core/theme';
 
 import { OrbFire } from './orb-fire';
@@ -28,6 +36,8 @@ type OrbFlameProps = {
   size?: number;
   /** `false` dok ekran nije vidljiv (tab ostaje montiran): plamen stoji i ne troši sličice. */
   active?: boolean;
+  /** Okvir avatara (korak 32b); pozivatelj daje samo otključan. */
+  frame?: AvatarFrameId;
 };
 
 /**
@@ -38,7 +48,7 @@ type OrbFlameProps = {
  * (isto pravilo kao paljenje žara dana, `shouldIgnite`). Uz „smanji kretanje“ sve stoji. Čisto ukrasno — značenje
  * (rang, toplina, niz) nosi tekst uz avatar.
  */
-export function OrbFlame({ flame, size = 116, active = true }: OrbFlameProps) {
+export function OrbFlame({ flame, size = 116, active = true, frame = 'plain' }: OrbFlameProps) {
   const { scheme, flame: palette } = useAppTheme();
   const colors = orbFlameColors(flame.heat, scheme, palette);
   const reduceMotion = useReducedMotion();
@@ -129,6 +139,7 @@ export function OrbFlame({ flame, size = 116, active = true }: OrbFlameProps) {
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden>
       <View style={[styles.fill, round, styles.ring, { borderColor: colors.ring }]} />
+      {frame !== 'plain' ? <AvatarFrame frame={frame} size={size} lit={lit} colors={colors} breath={breath} /> : null}
       {/* Crtkani obrub na iOS-u traži jednaku širinu sa svih strana. */}
       <View
         style={[
@@ -202,6 +213,105 @@ export function OrbFlame({ flame, size = 116, active = true }: OrbFlameProps) {
         </Animated.View>
       ) : null}
     </View>
+  );
+}
+
+/** Broj žeravica u okviru „Žeravice“ i zraka u „Koroni“. */
+const FRAME_EMBERS = 12;
+const FRAME_RAYS = 24;
+
+/**
+ * Okvir avatara (korak 32b) na vanjskom prstenu: „Žeravice“ (12 žeravica koje dišu s plamenom),
+ * „Aureola“ (svjetleći prsten), „Korona“ (kratke zrake). Uz ugašen plamen okvir je u boji prstena,
+ * bez sjaja. Diše zajedno s aureolom (`breath`), pa uz „smanji kretanje“ stoji.
+ */
+function AvatarFrame({
+  frame,
+  size,
+  lit,
+  colors,
+  breath,
+}: {
+  frame: Exclude<AvatarFrameId, 'plain'>;
+  size: number;
+  lit: boolean;
+  colors: OrbFlameColors;
+  breath: SharedValue<number>;
+}) {
+  const color = lit ? colors.spark : colors.dashed;
+  const glowStyle = useAnimatedStyle(() => ({ opacity: lit ? 0.55 + breath.value * 0.45 : 0.7 }));
+  const radiusOuter = size / 2;
+
+  if (frame === 'halo') {
+    return (
+      <Animated.View
+        style={[
+          styles.fill,
+          {
+            borderRadius: size,
+            borderWidth: 2,
+            borderColor: color,
+            boxShadow: lit ? `0 0 ${Math.round(size * 0.09)}px ${colors.spark}` : undefined,
+          },
+          glowStyle,
+        ]}
+      />
+    );
+  }
+
+  if (frame === 'embers') {
+    const dot = Math.max(4, Math.round(size * 0.05));
+    return (
+      <Animated.View style={[styles.fill, glowStyle]}>
+        {Array.from({ length: FRAME_EMBERS }, (_, index) => {
+          const angle = (index / FRAME_EMBERS) * 2 * Math.PI - Math.PI / 2;
+          // Svaka druga žeravica je manja, da prsten ne izgleda kao sat.
+          const d = index % 2 === 0 ? dot : Math.max(3, Math.round(dot * 0.65));
+          return (
+            <View
+              key={index}
+              style={{
+                position: 'absolute',
+                width: d,
+                height: d,
+                borderRadius: d,
+                left: radiusOuter + radiusOuter * Math.cos(angle) - d / 2,
+                top: radiusOuter + radiusOuter * Math.sin(angle) - d / 2,
+                backgroundColor: color,
+                boxShadow: lit ? `0 0 ${d}px ${colors.spark}` : undefined,
+              }}
+            />
+          );
+        })}
+      </Animated.View>
+    );
+  }
+
+  // Korona: zrake okomite na prsten, naizmjence duže i kraće.
+  const long = Math.max(5, Math.round(size * 0.07));
+  return (
+    <Animated.View style={[styles.fill, glowStyle]}>
+      {Array.from({ length: FRAME_RAYS }, (_, index) => {
+        const angle = (index / FRAME_RAYS) * 2 * Math.PI;
+        const length = index % 2 === 0 ? long : Math.round(long * 0.55);
+        const centre = radiusOuter - length / 2 - 1;
+        return (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              width: 2,
+              height: length,
+              borderRadius: 1,
+              left: radiusOuter + centre * Math.sin(angle) - 1,
+              top: radiusOuter - centre * Math.cos(angle) - length / 2,
+              backgroundColor: color,
+              transform: [{ rotate: `${angle}rad` }],
+            }}
+          />
+        );
+      })}
+    </Animated.View>
   );
 }
 

@@ -6,7 +6,8 @@ import { railColors, railLine, railState } from '@/core/ember';
 import { blockActions, isCancelled, type BlockPhase } from '@/core/schedule';
 import { radius, spacing } from '@/core/theme';
 import { Orb, RailDot, RailLineView } from '@/ui/ember';
-import { Flare } from '@/ui/flare';
+import { DoneFlare } from '@/ui/flare';
+import { useDoneEffect } from '@/ui/reward-prefs';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -53,6 +54,7 @@ export function BlockCard({
   const time = t('today.timeRange', { start: block.start, end: block.end });
   const state = railState(block, phase, flame);
   const dotFlare = useDotFlare(state);
+  const doneEffect = useDoneEffect();
   const line = railLine(phase);
   // Riješena prošla aktivnost je sažeta u jedan redak bez kartice.
   const compact = phase === 'past' && settled;
@@ -73,9 +75,9 @@ export function BlockCard({
         {state === 'now' ? (
           <Orb size={14} />
         ) : (
-          <Flare trigger={dotFlare} size={DOT} color={railColors(scheme, palette).lit}>
+          <DoneFlare effect={doneEffect} trigger={dotFlare} size={DOT} color={railColors(scheme, palette).lit}>
             <RailDot state={state} size={DOT} />
-          </Flare>
+          </DoneFlare>
         )}
         {last ? <View style={styles.railEnd} /> : <RailLineView kind={line} />}
       </View>

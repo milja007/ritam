@@ -1349,9 +1349,7 @@
     "levelTitle": "Razina {{level}} · {{title}}",
     "levelTitleA11y": "Razina {{level}}, naslov {{title}}",
     "next": "Razina {{level}} otključava: {{what}}",
-    "allUnlocked": "Sve teme i naslovi su otključani. Plamen i dalje raste.",
-    "theme": "tema „{{name}}“",
-    "title": "naslov „{{name}}“",
+    "allUnlocked": "Sve teme, naslovi, okviri i animacije su otključani. Plamen i dalje raste.",
     "listJoin": ", ",
     "titles": {
       "spark": "Iskra",
@@ -1380,13 +1378,42 @@
     "levelUp": {
       "overline": "Nova razina",
       "unlocked": "Otključano",
-      "themeRow": "Tema „{{name}}“",
-      "titleRow": "Naslov „{{name}}“",
       "nothing": "Plamen je jači. Sljedeće otključavanje stiže na razini {{level}}.",
       "nothingAll": "Plamen je jači. Sve je već otključano — sad raste samo on.",
       "tryTheme": "Isprobaj temu „{{name}}“",
       "continue": "Nastavi",
-      "a11y": "Nova razina: {{level}}."
+      "a11y": "Nova razina: {{level}}.",
+      "rows": {
+        "theme": "Tema „{{name}}“",
+        "title": "Naslov „{{name}}“",
+        "frame": "Okvir avatara „{{name}}“",
+        "doneEffect": "Animacija „Gotovo“: {{name}}"
+      }
+    },
+    "inline": {
+      "theme": "tema „{{name}}“",
+      "title": "naslov „{{name}}“",
+      "frame": "okvir „{{name}}“",
+      "doneEffect": "animacija „Gotovo“: {{name}}"
+    },
+    "frames": {
+      "plain": "Prsten",
+      "embers": "Žeravice",
+      "halo": "Aureola",
+      "corona": "Korona"
+    },
+    "doneEffects": {
+      "flare": "Bljesak",
+      "sparks": "Iskre",
+      "wave": "Val"
+    },
+    "rewards": {
+      "title": "Okvir i animacija",
+      "hint": "Okvir je oko plamena na Profilu, animacija zasvijetli kad aktivnost prijaviš kao odrađenu. Nove otključavaju razine.",
+      "frames": "Okvir avatara",
+      "effects": "Animacija „Gotovo“",
+      "lockedInfo": "„{{name}}“ se otključava na razini {{level}}. Sad si na razini {{current}}.",
+      "preview": "Pogledaj"
     }
   },
   "quests": {

@@ -2,18 +2,28 @@ import type { TFunction } from 'i18next';
 
 import type { Unlock } from '@/core/gamification';
 
-/** Naziv otključanog unutar rečenice: „tema „Zora““, „naslov „Rani ptić““. */
-export function unlockInline(t: TFunction, unlock: Unlock): string {
-  return unlock.kind === 'theme'
-    ? t('unlocks.theme', { name: t(`unlocks.themes.${unlock.theme}`) })
-    : t('unlocks.title', { name: t(`unlocks.titles.${unlock.title}`) });
+/** Ime otključanog (bez vrste): „Zora“, „Rani ptić“, „Žeravice“, „Iskre“. */
+export function unlockName(t: TFunction, unlock: Unlock): string {
+  switch (unlock.kind) {
+    case 'theme':
+      return t(`unlocks.themes.${unlock.theme}`);
+    case 'title':
+      return t(`unlocks.titles.${unlock.title}`);
+    case 'frame':
+      return t(`unlocks.frames.${unlock.frame}`);
+    case 'doneEffect':
+      return t(`unlocks.doneEffects.${unlock.effect}`);
+  }
 }
 
-/** Redak na popisu otključanog: „Tema „Zora““, „Naslov „Rani ptić““. */
+/** Naziv otključanog unutar rečenice: „tema „Zora““, „okvir „Žeravice““. */
+export function unlockInline(t: TFunction, unlock: Unlock): string {
+  return t(`unlocks.inline.${unlock.kind}`, { name: unlockName(t, unlock) });
+}
+
+/** Redak na popisu otključanog: „Tema „Zora““, „Animacija „Gotovo“: Iskre“. */
 export function unlockRow(t: TFunction, unlock: Unlock): string {
-  return unlock.kind === 'theme'
-    ? t('unlocks.levelUp.themeRow', { name: t(`unlocks.themes.${unlock.theme}`) })
-    : t('unlocks.levelUp.titleRow', { name: t(`unlocks.titles.${unlock.title}`) });
+  return t(`unlocks.levelUp.rows.${unlock.kind}`, { name: unlockName(t, unlock) });
 }
 
 /** „Razina 3 otključava: tema „Zora““ ili poruka da je sve otključano. */

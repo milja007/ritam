@@ -1,7 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
-import { levelUp, type LevelUp, parseSeenLevel, usableTheme } from '@/core/gamification';
+import { levelUp, type LevelUp, parseSeenLevel, usableDoneEffect, usableFrame, usableTheme } from '@/core/gamification';
 import { readDevicePref, writeDevicePref } from '@/ui/device-prefs';
+import { getAvatarFrame, getDoneEffect, setAvatarFrame, setDoneEffect } from '@/ui/reward-prefs';
 import { getColorTheme, setColorTheme } from '@/ui/theme';
 
 const KEY = 'ritam.seenLevel';
@@ -36,7 +37,8 @@ function setSeen(level: number): void {
 
 /**
  * Uskladi spremljeno stanje s trenutnom razinom: prvo bilježenje (bez slavlja) i pad razine nakon
- * brisanja podataka. Usput vrati zadanu temu ako odabrana više nije otključana.
+ * brisanja podataka. Usput vrati zadanu temu, okvir i animaciju „Gotovo“ ako odabrani više nisu
+ * otključani.
  */
 function syncLevel(level: number): void {
   const current = getSeen();
@@ -44,6 +46,12 @@ function syncLevel(level: number): void {
   const theme = getColorTheme();
   const usable = usableTheme(theme, level);
   if (usable !== theme) setColorTheme(usable);
+  const frame = getAvatarFrame();
+  const usableFrameNow = usableFrame(frame, level);
+  if (usableFrameNow !== frame) setAvatarFrame(usableFrameNow);
+  const effect = getDoneEffect();
+  const usableEffect = usableDoneEffect(effect, level);
+  if (usableEffect !== effect) setDoneEffect(usableEffect);
 }
 
 /** Korisnik je vidio slavlje za ovu razinu — više se ne prikazuje. */

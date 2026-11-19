@@ -1,7 +1,7 @@
 /**
  * Otključavanja po razini (korak 32). Koncept: „svaki level otključava nešto vidljivo: novu temu
- * boja, … novi naslov“. Ovdje su **teme boja plamena** (korak 38) i **naslovi**; okviri avatara i
- * animacije završenog zadatka dolaze kasnije.
+ * boja, … novi naslov“. Ovdje su **teme boja plamena** (korak 38), **naslovi**, **okviri avatara**
+ * i **animacije „Gotovo“** (korak 32b, odluka Borna 2026-11-18).
  *
  * Sve je izvedeno iz razine, a razina iz ukupnog XP-a — ništa se ne sprema. XP se nikad ne oduzima
  * (bez kazni), pa razina i otključano ne padaju. Čista logika, bez React importa.
@@ -12,9 +12,21 @@ import { COLOR_THEMES, type ColorThemeId, DEFAULT_COLOR_THEME } from '../theme';
 export const TITLES = ['spark', 'earlyBird', 'flameKeeper', 'routineMaster', 'habitSmith', 'eternalFlame'] as const;
 export type TitleId = (typeof TITLES)[number];
 
+/** Okviri orb-avatara na Profilu; prvi je početni (samo prsten). */
+export const AVATAR_FRAMES = ['plain', 'embers', 'halo', 'corona'] as const;
+export type AvatarFrameId = (typeof AVATAR_FRAMES)[number];
+export const DEFAULT_AVATAR_FRAME: AvatarFrameId = 'plain';
+
+/** Animacija točke na traci dana kad se aktivnost prijavi kao odrađena; prva je početna. */
+export const DONE_EFFECTS = ['flare', 'sparks', 'wave'] as const;
+export type DoneEffectId = (typeof DONE_EFFECTS)[number];
+export const DEFAULT_DONE_EFFECT: DoneEffectId = 'flare';
+
 export type Unlock =
   | { level: number; kind: 'theme'; theme: ColorThemeId }
-  | { level: number; kind: 'title'; title: TitleId };
+  | { level: number; kind: 'title'; title: TitleId }
+  | { level: number; kind: 'frame'; frame: AvatarFrameId }
+  | { level: number; kind: 'doneEffect'; effect: DoneEffectId };
 
 /**
  * Što koja razina otključava, uzlazno po razini. Razina 1 je početno stanje (zadana tema i prvi
@@ -24,14 +36,21 @@ export type Unlock =
 export const UNLOCKS: readonly Unlock[] = [
   { level: 1, kind: 'title', title: 'spark' },
   { level: 1, kind: 'theme', theme: 'ember' },
+  { level: 1, kind: 'frame', frame: 'plain' },
+  { level: 1, kind: 'doneEffect', effect: 'flare' },
   { level: 2, kind: 'title', title: 'earlyBird' },
   { level: 3, kind: 'theme', theme: 'rose' },
   { level: 4, kind: 'title', title: 'flameKeeper' },
   { level: 5, kind: 'theme', theme: 'azure' },
   { level: 6, kind: 'title', title: 'routineMaster' },
+  { level: 7, kind: 'frame', frame: 'embers' },
   { level: 8, kind: 'theme', theme: 'aurora' },
+  { level: 9, kind: 'doneEffect', effect: 'sparks' },
   { level: 10, kind: 'title', title: 'habitSmith' },
+  { level: 11, kind: 'frame', frame: 'halo' },
   { level: 12, kind: 'theme', theme: 'violet' },
+  { level: 13, kind: 'doneEffect', effect: 'wave' },
+  { level: 14, kind: 'frame', frame: 'corona' },
   { level: 15, kind: 'title', title: 'eternalFlame' },
 ];
 
@@ -59,6 +78,44 @@ export function unlockedThemes(level: number): ColorThemeId[] {
 /** Odabrana tema ako je otključana, inače zadana (npr. nakon brisanja podataka). */
 export function usableTheme(selected: ColorThemeId, level: number): ColorThemeId {
   return isThemeUnlocked(selected, level) ? selected : DEFAULT_COLOR_THEME;
+}
+
+/** Razina na kojoj se okvir avatara otključava (bez retka u tablici: odmah; test jamči redak). */
+export function frameUnlockLevel(frame: AvatarFrameId): number {
+  return UNLOCKS.find((item) => item.kind === 'frame' && item.frame === frame)?.level ?? 1;
+}
+
+export function isFrameUnlocked(frame: AvatarFrameId, level: number): boolean {
+  return frameUnlockLevel(frame) <= safeLevel(level);
+}
+
+/** Odabrani okvir ako je otključan, inače početni. */
+export function usableFrame(selected: AvatarFrameId, level: number): AvatarFrameId {
+  return isFrameUnlocked(selected, level) ? selected : DEFAULT_AVATAR_FRAME;
+}
+
+/** Razina na kojoj se animacija „Gotovo“ otključava. */
+export function doneEffectUnlockLevel(effect: DoneEffectId): number {
+  return UNLOCKS.find((item) => item.kind === 'doneEffect' && item.effect === effect)?.level ?? 1;
+}
+
+export function isDoneEffectUnlocked(effect: DoneEffectId, level: number): boolean {
+  return doneEffectUnlockLevel(effect) <= safeLevel(level);
+}
+
+/** Odabrana animacija ako je otključana, inače početna. */
+export function usableDoneEffect(selected: DoneEffectId, level: number): DoneEffectId {
+  return isDoneEffectUnlocked(selected, level) ? selected : DEFAULT_DONE_EFFECT;
+}
+
+/** Spremljeni zapis → okvir; nepoznat ili prazan je početni. */
+export function avatarFrameOr(stored: string | null): AvatarFrameId {
+  return AVATAR_FRAMES.find((frame) => frame === stored) ?? DEFAULT_AVATAR_FRAME;
+}
+
+/** Spremljeni zapis → animacija „Gotovo“; nepoznat ili prazan je početna. */
+export function doneEffectOr(stored: string | null): DoneEffectId {
+  return DONE_EFFECTS.find((effect) => effect === stored) ?? DEFAULT_DONE_EFFECT;
 }
 
 /** Naslov koji vrijedi na razini: zadnji osvojeni. */
