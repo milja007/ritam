@@ -118,7 +118,14 @@ describe('widgetTimeline', () => {
     });
     const entries = widgetTimeline(input(many), at(5, 0));
     expect(entries).toHaveLength(MAX_WIDGET_ENTRIES);
-    expect(entries[entries.length - 1]?.props.stale).toBe(true);
+    const last = entries[entries.length - 1];
+    expect(last?.props.stale).toBe(true);
+    // Zadnji zadržani zapis je 11:40; widget postaje zastario na prvoj izostavljenoj
+    // promjeni (11:45), a ne tek u ponoć s krivim „Sada“ / „Sljedeće“.
+    expect(entries[entries.length - 2]?.date.getHours()).toBe(11);
+    expect(entries[entries.length - 2]?.date.getMinutes()).toBe(40);
+    expect(last?.date.getHours()).toBe(11);
+    expect(last?.date.getMinutes()).toBe(45);
   });
 
   it('an empty day still has now and midnight', () => {

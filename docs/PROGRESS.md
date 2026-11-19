@@ -2,6 +2,10 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-19 · Sesija 15:43 — Codex P2 za vremensku crtu widgeta
+- #1: Codex odobrio #65 i #66; jedan P2 za `widget.ts:152` (komentar 7010186119). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Issue #1 se automatski zatvorio mergeom #65 ("Fixes #1" u PR-u) — ponovo otvoren.
+- Plan: (1) `fix/widget-timeline-p2`: kad promjena ima više nego što stane (46), zastarjeli zapis („otvori Ritam“) dolazi na prvoj izostavljenoj promjeni umjesto u ponoć; test s 60 blokova (zadnji zapis 11:40, zastarjelost 11:45). Ostalo (24, 34c, 39, 41) čeka Bornu.
+
 ## 2026-11-19 · Sesija 12:43 — P2 nalazi diktiranja, zatim faza 4
 - #1: Codex odobrio #63 i #64; dva P2 nalaza za `src/ui/dictation.ts` (komentar 7004635027). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92, 93 bez odgovora.
 - Plan: (1) `fix/diktiranje-p2`: zaustavljanje u stanju „starting“ prekida native sesiju (`abort`) ako je `start()` već pozvan; ručno tipkanje tijekom diktiranja prekida diktiranje (rezultati se slažu na početni tekst pa bi izbrisali ispravak). Testovi s lažnim modulom. (2) Zatim faza 4 (39/41) — prvo provjera što SDK 58 nudi.
