@@ -230,9 +230,8 @@ describe('syncOnce', () => {
         ],
       }),
     ]);
-    expect(remote.rows('xp_events')).toEqual([
-      expect.objectContaining({ source: 'quest', source_id: quest.milestones[0].id }),
-    ]);
+    // Korak 34c: ostvarena etapa više ne daje XP.
+    expect(remote.rows('xp_events')).toEqual([]);
 
     const [row] = remote.rows('quests');
     remote.put('quests', {

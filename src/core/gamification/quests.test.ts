@@ -2,30 +2,17 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   MAX_ACTIVE_QUESTS,
-  QUEST_DONE_XP,
-  QUEST_MILESTONE_XP,
   canStartQuest,
   questDaysLeft,
   questDeadlineDate,
+  questBadges,
   questProgress,
-  questXpAwards,
   sortQuests,
 } from './quests';
 
 const m = (id: string, doneOn: string | null = null) => ({ id, title: id, doneOn });
 
 describe('epski questovi', () => {
-  it('XP: svaka ostvarena etapa + ostvaren quest', () => {
-    expect(questXpAwards({ id: 'q', milestones: [m('a', '2026-11-10'), m('b')], doneOn: null })).toEqual([
-      { sourceId: 'a', date: '2026-11-10', amount: QUEST_MILESTONE_XP },
-    ]);
-    expect(questXpAwards({ id: 'q', milestones: [m('a', '2026-11-10')], doneOn: '2026-11-12' })).toEqual([
-      { sourceId: 'a', date: '2026-11-10', amount: QUEST_MILESTONE_XP },
-      { sourceId: 'q', date: '2026-11-12', amount: QUEST_DONE_XP },
-    ]);
-    expect(questXpAwards({ id: 'q', milestones: [], doneOn: null })).toEqual([]);
-  });
-
   it('napredak', () => {
     expect(questProgress({ milestones: [m('a', '2026-11-10'), m('b'), m('c'), m('d')], status: 'active' })).toEqual({
       done: 1,
@@ -78,5 +65,28 @@ describe('okvirni rok', () => {
     expect(questDeadlineDate('1m', '2027-01-31')).toBe('2027-02-28');
     expect(questDeadlineDate('1m', '2028-01-31')).toBe('2028-02-29');
     expect(questDeadlineDate('6m', '2026-08-31')).toBe('2027-02-28');
+  });
+
+  it('bedževi ostvarenih questova (34c): noviji prvi, arhiviran ostaje, u tijeku ne', () => {
+    const q = (id: string, status: 'active' | 'done' | 'archived', doneOn: string | null) => ({
+      id,
+      title: id.toUpperCase(),
+      status,
+      doneOn,
+    });
+    expect(
+      questBadges([
+        q('a', 'done', '2026-11-10'),
+        q('b', 'active', null),
+        q('c', 'archived', '2026-11-15'),
+        q('d', 'archived', null),
+        q('e', 'done', '2026-11-15'),
+      ]),
+    ).toEqual([
+      { id: 'c', title: 'C', doneOn: '2026-11-15' },
+      { id: 'e', title: 'E', doneOn: '2026-11-15' },
+      { id: 'a', title: 'A', doneOn: '2026-11-10' },
+    ]);
+    expect(questBadges([])).toEqual([]);
   });
 });

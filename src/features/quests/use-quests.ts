@@ -14,7 +14,7 @@ export type QuestsState =
 
 /**
  * Epski questovi iz lokalne baze (Profil). Ponovo se učitaju pri povratku na tab, nakon promjene
- * napretka (`notifyProgressChanged` — svaka promjena questa mijenja XP) i na `reload()`.
+ * napretka (`notifyProgressChanged`) i na `reload()`.
  */
 export function useQuests(): QuestsState & { reload: () => void } {
   const [state, setState] = useState<QuestsState>({ status: 'loading', quests: null });

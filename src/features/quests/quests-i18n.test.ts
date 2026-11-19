@@ -26,7 +26,13 @@ describe('tekstovi epskih questova', () => {
         expect(t(`quests.editor.deadline.${deadline}`)).not.toContain('quests.');
       }
       expect(t('quests.progress', { done: 2, total: 5 })).toMatch(/2.*5/);
-      expect(t('quests.confirmDoneMessage', { title: 'Q', xp: 100 })).toContain('100');
+      expect(t('quests.confirmDoneMessage', { title: 'Q' })).toContain('Q');
+      expect(t('badges.questA11y', { title: 'Maraton', date: '3. 12.' })).toMatch(/Maraton.*3\. 12\./);
+      expect(t('badges.questEarned', { date: 'd' })).toContain('d');
+      expect(t('badges.questRule')).not.toContain('badges.');
+      for (const key of ['confirmDoneMessage', 'doneA11y', 'milestoneDoneA11y', 'milestoneHint', 'milestoneDoneOn', 'doneOn'] as const) {
+        expect(t(`quests.${key}`, { title: 'Q', date: 'd' })).not.toMatch(/XP|{{/);
+      }
     }
   });
 });

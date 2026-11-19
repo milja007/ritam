@@ -6,8 +6,6 @@ import type { Quest, QuestMilestone, QuestStatus } from '@/core/domain';
 import { emberColor } from '@/core/ember';
 import {
   MAX_ACTIVE_QUESTS,
-  QUEST_DONE_XP,
-  QUEST_MILESTONE_XP,
   canStartQuest,
   questDaysLeft,
   questProgress,
@@ -34,7 +32,7 @@ const DOT = 16;
 type Editing = { quest: Quest | null } | null;
 
 /**
- * Epski questovi na Profilu (korak 34): questovi u tijeku s etapama (dodir pali žar etape, +XP),
+ * Epski questovi na Profilu (korak 34): questovi u tijeku s etapama (dodir pali žar etape; bez XP-a od koraka 34c),
  * trakom napretka i rokom; ostvareni ispod; arhiva skrivena. Najviše `MAX_ACTIVE_QUESTS` u tijeku.
  */
 export function QuestsCard({ today }: { today: string }) {
@@ -86,17 +84,17 @@ export function QuestsCard({ today }: { today: string }) {
     const nowDone = milestone.doneOn === null;
     const ok = run(() => setQuestMilestoneDone(getDb(), LOCAL_USER_ID, quest.id, milestone.id, nowDone, today));
     if (ok) playHaptic(nowDone ? 'done' : 'skip');
-    if (ok && nowDone) AccessibilityInfo.announceForAccessibility(t('quests.milestoneDoneA11y', { xp: QUEST_MILESTONE_XP }));
+    if (ok && nowDone) AccessibilityInfo.announceForAccessibility(t('quests.milestoneDoneA11y'));
   }
 
   function setStatus(quest: Quest, status: QuestStatus) {
     const ok = run(() => setQuestStatus(getDb(), LOCAL_USER_ID, quest.id, status, today));
     if (ok && status === 'done') playHaptic('achievement');
-    if (ok && status === 'done') AccessibilityInfo.announceForAccessibility(t('quests.doneA11y', { xp: QUEST_DONE_XP }));
+    if (ok && status === 'done') AccessibilityInfo.announceForAccessibility(t('quests.doneA11y'));
   }
 
   function confirmDone(quest: Quest) {
-    Alert.alert(t('quests.confirmDoneTitle'), t('quests.confirmDoneMessage', { title: quest.title, xp: QUEST_DONE_XP }), [
+    Alert.alert(t('quests.confirmDoneTitle'), t('quests.confirmDoneMessage', { title: quest.title }), [
       { text: t('quests.editor.cancel'), style: 'cancel' },
       { text: t('quests.markDone'), onPress: () => setStatus(quest, 'done') },
     ]);
@@ -268,7 +266,7 @@ function MilestoneRow({ milestone, onPress }: { milestone: QuestMilestone; onPre
       accessibilityRole="checkbox"
       accessibilityState={{ checked: done }}
       accessibilityLabel={milestone.title}
-      accessibilityHint={done ? t('quests.milestoneUndoHint') : t('quests.milestoneHint', { xp: QUEST_MILESTONE_XP })}
+      accessibilityHint={done ? t('quests.milestoneUndoHint') : t('quests.milestoneHint')}
       onPress={onPress}
       style={styles.milestone}>
       <Flare trigger={seen.flare} size={DOT} color={glow}>
@@ -280,7 +278,7 @@ function MilestoneRow({ milestone, onPress }: { milestone: QuestMilestone; onPre
         </Text>
         {milestone.doneOn !== null ? (
           <Text variant="caption" tone="textMuted">
-            {t('quests.milestoneDoneOn', { date: dayMonth(milestone.doneOn, i18n.language), xp: QUEST_MILESTONE_XP })}
+            {t('quests.milestoneDoneOn', { date: dayMonth(milestone.doneOn, i18n.language) })}
           </Text>
         ) : null}
       </View>
@@ -299,7 +297,7 @@ function ClosedQuest({ quest, actions }: { quest: Quest; actions: { label: strin
           <Text variant="bodyStrong">{quest.title}</Text>
           <Text variant="caption" tone="textMuted">
             {quest.doneOn !== null
-              ? t('quests.doneOn', { date: dayMonth(quest.doneOn, i18n.language), xp: QUEST_DONE_XP })
+              ? t('quests.doneOn', { date: dayMonth(quest.doneOn, i18n.language) })
               : t('quests.progress', { done: progress.done, total: progress.total })}
           </Text>
         </View>
