@@ -112,7 +112,7 @@ export function healthNight(samples: readonly SleepSample[], wakeDate: string): 
   const spans = basis === 'asleep' ? asleep : clipped('inBed');
 
   const candidates = mergeSpans(spans, NIGHT_MERGE_GAP_MINUTES * MINUTE_MS).filter(
-    (block) => block.end > midnight && block.slept >= NIGHT_MIN_MINUTES * MINUTE_MS,
+    (block) => block.end >= midnight && block.slept >= NIGHT_MIN_MINUTES * MINUTE_MS,
   );
   let best: Block | null = null;
   for (const block of candidates) {
