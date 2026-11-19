@@ -8,6 +8,7 @@ import {
   cancelDictation,
   clearDictationProblem,
   dictationAvailable,
+  dictationEditedByHand,
   startDictation,
   stopDictation,
   useDictationState,
@@ -28,6 +29,18 @@ export type TextFieldProps = TextInputProps & {
 /** Polje za unos teksta s nazivom iznad. */
 export function TextField({ label, style, dictation = false, ...rest }: TextFieldProps) {
   const theme = useAppTheme();
+  const owner = useId();
+  const withDictation = dictation && dictationAvailable();
+  const { onChangeText } = rest;
+  // Ručna izmjena dok diktira prekida diktiranje, da sljedeći rezultat ne izbriše ispravak.
+  // Diktirani tekst stiže izravno kroz `onChangeText` roditelja, ne kroz TextInput, pa ovo
+  // hvata samo tipkanje.
+  const handleChangeText = withDictation
+    ? (text: string) => {
+        dictationEditedByHand(owner);
+        onChangeText?.(text);
+      }
+    : onChangeText;
   const input = (
     <TextInput
       accessibilityLabel={label}
@@ -44,6 +57,7 @@ export function TextField({ label, style, dictation = false, ...rest }: TextFiel
         style,
       ]}
       {...rest}
+      onChangeText={handleChangeText}
     />
   );
   return (
@@ -51,8 +65,8 @@ export function TextField({ label, style, dictation = false, ...rest }: TextFiel
       <Text variant="caption" tone="textMuted">
         {label}
       </Text>
-      {dictation && dictationAvailable() ? (
-        <DictationRow input={input} label={label} {...rest} />
+      {withDictation ? (
+        <DictationRow input={input} owner={owner} {...rest} />
       ) : (
         input
       )}
@@ -60,11 +74,10 @@ export function TextField({ label, style, dictation = false, ...rest }: TextFiel
   );
 }
 
-type DictationRowProps = TextInputProps & { input: React.ReactElement; label: string };
+type DictationRowProps = TextInputProps & { input: React.ReactElement; owner: string };
 
-function DictationRow({ input, value, onChangeText, maxLength, editable }: DictationRowProps) {
+function DictationRow({ input, owner, value, onChangeText, maxLength, editable }: DictationRowProps) {
   const { t, i18n } = useTranslation();
-  const owner = useId();
   const dictation = useDictationState();
   const mine = dictation.owner === owner;
   const listening = mine && dictation.status === 'listening';

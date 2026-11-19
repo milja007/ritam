@@ -60,6 +60,8 @@ const IDLE: DictationState = { owner: null, status: 'idle', level: 0, problem: n
 let speechModule: SpeechModule | null | undefined;
 let state: DictationState = IDLE;
 let subscriptions: Subscription[] = [];
+/** Je li `speech.start()` pozvan za trenutnu sesiju (native sesija možda već snima). */
+let nativeStarted = false;
 const listeners = new Set<() => void>();
 
 function loadModule(): SpeechModule | null {
@@ -111,6 +113,7 @@ function detach() {
 
 function finish(problem: DictationState['problem'] = null) {
   detach();
+  nativeStarted = false;
   setState({ ...IDLE, problem });
 }
 
@@ -175,6 +178,7 @@ export async function startDictation(owner: string, request: DictationRequest): 
   ];
 
   try {
+    nativeStarted = true;
     speech.start({
       lang: recognitionLocale(request.language),
       interimResults: true,
@@ -194,8 +198,15 @@ export async function startDictation(owner: string, request: DictationRequest): 
 export function stopDictation(owner: string): void {
   if (state.owner !== owner) return;
   const speech = loadModule();
-  if (state.status === 'starting' || !speech) {
+  if (!speech) {
     finish();
+    return;
+  }
+  if (state.status === 'starting') {
+    // Native start je asinkron: `speech.start()` je možda već pozvan, a događaj `start` još nije
+    // stigao. Samo `finish()` bi ostavio mikrofon da snima dok UI pokazuje mirovanje — prekini
+    // native sesiju (Codex P2, PR #64). Ako se još čeka dopuštenje, start se neće ni pozvati.
+    cancelDictation(owner);
     return;
   }
   try {
@@ -210,12 +221,23 @@ export function stopDictation(owner: string): void {
 export function cancelDictation(owner: string): void {
   if (state.owner !== owner) return;
   const speech = loadModule();
+  const started = nativeStarted;
   finish();
+  if (!started) return;
   try {
     speech?.abort();
   } catch (error: unknown) {
     console.warn('Speech recognition failed to abort', error);
   }
+}
+
+/**
+ * Korisnik je ručno promijenio tekst polja dok diktira → prekini diktiranje. Svaki rezultat se
+ * slaže na tekst s početka (`base`), pa bi sljedeći rezultat izbrisao ručni ispravak (Codex P2,
+ * PR #64). Tekst koji je već upisan ostaje, s korisnikovim ispravkom.
+ */
+export function dictationEditedByHand(owner: string): void {
+  cancelDictation(owner);
 }
 
 /** Ukloni poruku o grešci za polje (korisnik je počeo tipkati ili ponovo diktirati). */
@@ -235,5 +257,6 @@ export function setSpeechModuleForTests(module: SpeechModule | null): void {
   speechModule = module;
   available = null;
   detach();
+  nativeStarted = false;
   state = IDLE;
 }

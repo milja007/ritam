@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-19 · Sesija 12:43 — P2 nalazi diktiranja, zatim faza 4
+- #1: Codex odobrio #63 i #64; dva P2 nalaza za `src/ui/dictation.ts` (komentar 7004635027). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92, 93 bez odgovora.
+- Plan: (1) `fix/diktiranje-p2`: zaustavljanje u stanju „starting“ prekida native sesiju (`abort`) ako je `start()` već pozvan; ručno tipkanje tijekom diktiranja prekida diktiranje (rezultati se slažu na početni tekst pa bi izbrisali ispravak). Testovi s lažnim modulom. (2) Zatim faza 4 (39/41) — prvo provjera što SDK 58 nudi.
+- Gotovo: (1) — testovi 4 nova (`ui/dictation`).
+
 ## 2026-11-19 · Sesija 09:43 — korak 30: glasovni unos
 - #1: nema otvorenih zahtjeva (Codex odobrio #61 i #62); pitanje 92 bez odgovora → 34c čeka. Nema bug issueja ni otvorenih PR-ova. Preostali nezavršeni koraci: 24 (OAuth tajne — Borna), 30, 39/41 (faza 4). Radim 30.
 - Plan: (1) PR A (HIGH_RISK, mali): paket `expo-speech-recognition` 58.x (`npx expo install`, nije u Expo SDK-u, ali verzija prati SDK 58) + config plugin s opisima dopuštenja (mikrofon, prepoznavanje govora). Traži novi development build. (2) `src/core/voice`: jezik appa → locale prepoznavanja (hr-HR, en-US), spajanje diktiranog teksta s već napisanim, odluka smije li se snimati (samo na uređaju — koncept „on-device“). Testovi. (3) `src/ui/voice`: adapter koji ne ruši app kad native modul nije u buildu (stari dev build) — mikrofon se tad ne prikazuje; gumb mikrofona (a11y, haptika, „smanji kretanje“), HR/EN. (4) Spojiti na „Što imaš sutra?“ / plan za danas (tekst → postojeći `parse-input` ili lokalni unos), „Odustajem — što se dogodilo“ i komentare u večernjem upitu.
