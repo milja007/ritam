@@ -6,6 +6,7 @@ export * from './rank';
 export * from './stats';
 export * from './badges';
 export * from './orb';
+export * from './orb-fire';
 export * from './unlocks';
 export * from './better-weeks';
 export * from './quests';
