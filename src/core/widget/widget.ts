@@ -135,6 +135,7 @@ function atMinute(day: Date, minutes: number): Date {
 /**
  * Vremenska crta widgeta od `now` do kraja dana: zapis sada, zatim na svakom početku i kraju
  * aktivnosti (tada se mijenja „Sada“ / „Sljedeće“), i zapis u ponoć koji traži otvaranje appa.
+ * Kad promjena ima više nego što stane, taj zapis dolazi na prvoj izostavljenoj promjeni.
  * `now` mora biti na dan `input.date` (lokalno vrijeme).
  */
 export function widgetTimeline(input: WidgetDayInput, now: Date): WidgetEntry[] {
@@ -149,12 +150,16 @@ export function widgetTimeline(input: WidgetDayInput, now: Date): WidgetEntry[] 
     if (range.start > nowMinutes) changes.add(range.start);
     if (range.end > nowMinutes && range.end < 24 * 60) changes.add(range.end);
   }
-  const minutes = [...changes].sort((a, b) => a - b).slice(0, MAX_WIDGET_ENTRIES - 2);
+  const sorted = [...changes].sort((a, b) => a - b);
+  const minutes = sorted.slice(0, MAX_WIDGET_ENTRIES - 2);
+  // Ako crta ne stane, zastarjelost počinje na prvoj izostavljenoj promjeni, ne u ponoć:
+  // inače bi zadnji zapis do kraja dana pokazivao krivo „Sada“ / „Sljedeće“.
+  const staleAt = sorted[minutes.length] ?? 24 * 60;
 
   const entries: WidgetEntry[] = [{ date: new Date(now), props: widgetProps(input, nowSeconds) }];
   for (const minute of minutes) {
     entries.push({ date: atMinute(now, minute), props: widgetProps(input, minute * 60) });
   }
-  entries.push({ date: atMinute(now, 24 * 60), props: widgetProps(input, 0, true) });
+  entries.push({ date: atMinute(now, staleAt), props: widgetProps(input, 0, true) });
   return entries;
 }
