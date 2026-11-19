@@ -94,7 +94,8 @@ insert into public.tasks (id, week_start, title, duration_minutes, times_per_wee
 
 insert into public.tracker_entries (id, date, kind, amount, note) values
   ('80000000-0000-0000-0000-000000000001', '2026-11-18', 'calories', 650, 'Ručak'),
-  ('80000000-0000-0000-0000-000000000002', '2026-11-18', 'money', 1250, 'Kava i sendvič');
+  ('80000000-0000-0000-0000-000000000002', '2026-11-18', 'money', 1250, 'Kava i sendvič'),
+  ('80000000-0000-0000-0000-000000000003', '2026-11-18', 'income', 150000, 'Plaća');
 
 -- user_id se popuni iz auth.uid()
 select test.expect_count(
@@ -207,6 +208,15 @@ select test.expect_error($q$insert into public.tracker_entries (date, kind, amou
 select test.expect_error($q$insert into public.tracker_entries (date, kind, amount, note) values ('2026-11-18', 'money', 5, repeat('x', 201))$q$,
   '23514', 'tracker: bilješka ≤ 200');
 select test.expect_count($q$select 1 from public.tracker_entries where kind = 'money' and amount = 1250$q$, 1, 'unos trackera se sprema');
+-- Prihodi (korak 31f)
+select test.expect_count($q$select 1 from public.tracker_entries where kind = 'income' and amount = 150000$q$, 1, 'prihod se sprema');
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount) values ('2026-11-18', 'income', 100000001)$q$,
+  '23514', 'prihod: najviše 1 000 000 €');
+select test.expect_error($q$insert into public.tracker_entries (date, kind, amount) values ('2026-11-18', 'income', 0)$q$,
+  '23514', 'prihod: iznos barem 1');
+select test.expect_count($q$select 1 from public.settings where not track_income$q$, 1, 'prihodi su zadano isključeni');
+update public.settings set track_income = true;
+select test.expect_count($q$select 1 from public.settings where track_income$q$, 1, 'prihodi se uključuju');
 select test.expect_error($q$update public.settings set calorie_goal = 100$q$, '23514', 'cilj kalorija ≥ 500');
 select test.expect_error($q$update public.settings set money_period = 'year'$q$, '23514', 'razdoblje limita');
 update public.settings set track_calories = true, calorie_goal = 2200, track_money = true, money_limit_cents = 10000, money_period = 'week';
@@ -299,7 +309,7 @@ select test.expect_count($q$select 1 from public.sync_tombstones where table_nam
 delete from public.tasks;
 select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tasks'$q$, 1, 'tombstone zadatka');
 delete from public.tracker_entries;
-select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tracker_entries'$q$, 2, 'tombstoni unosa trackera');
+select test.expect_count($q$select 1 from public.sync_tombstones where table_name = 'tracker_entries'$q$, 3, 'tombstoni unosa trackera');
 select test.expect_error($q$insert into public.sync_tombstones (user_id, table_name, row_id)
   values ((select auth.uid()), 'rules', gen_random_uuid())$q$, '42501', 'klijent ne piše tombstone');
 -- synced_at postavlja poslužitelj, i kad ga klijent pokuša zadati.

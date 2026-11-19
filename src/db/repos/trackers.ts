@@ -8,7 +8,11 @@ import { defaultRepoDeps, type RepoDeps } from './deps';
 
 export type TrackerEntryInput = { date: string; kind: TrackerKind; amount: number; note: string };
 
-/** Unosi trackera korisnika za dane `from`–`to` (uključivo), redom dana pa unosa. */
+/**
+ * Unosi trackera korisnika za dane `from`–`to` (uključivo), redom dana pa unosa. Red koji ova
+ * verzija appa ne razumije (npr. nova vrsta unosa sinkronizirana s novije verzije na drugom
+ * uređaju) preskače se umjesto da sruši ekran.
+ */
 export function listTrackerEntries(db: RitamDb, userId: string, from: string, to: string): TrackerEntry[] {
   return db
     .select()
@@ -16,7 +20,10 @@ export function listTrackerEntries(db: RitamDb, userId: string, from: string, to
     .where(and(eq(trackerEntries.userId, userId), gte(trackerEntries.date, from), lte(trackerEntries.date, to)))
     .orderBy(asc(trackerEntries.date), asc(trackerEntries.createdAt), asc(trackerEntries.id))
     .all()
-    .map((row) => trackerEntrySchema.parse(row));
+    .flatMap((row) => {
+      const parsed = trackerEntrySchema.safeParse(row);
+      return parsed.success ? [parsed.data] : [];
+    });
 }
 
 /**

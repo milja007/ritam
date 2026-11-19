@@ -65,6 +65,8 @@ export const settings = sqliteTable(
     moneyPeriod: text('money_period').$type<MoneyPeriod>(),
     moneyBalanceCents: integer('money_balance_cents'),
     moneyBalanceOn: text('money_balance_on'),
+    // Prihodi (korak 31f): opcija trackera novca; zadano isključena.
+    trackIncome: integer('track_income', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [uniqueIndex('settings_user_id_unique').on(table.userId)],
 );
@@ -243,7 +245,7 @@ export const tasks = sqliteTable(
   (table) => [index('tasks_user_week_idx').on(table.userId, table.weekStart)],
 );
 
-/** Unosi trackera (korak 31b): kalorije (kcal) ili potrošnja (centi) s bilješkom, po danu. */
+/** Unosi trackera (korak 31b, 31f): kalorije (kcal), potrošnja ili prihod (centi) s bilješkom, po danu. */
 export const trackerEntries = sqliteTable(
   'tracker_entries',
   {

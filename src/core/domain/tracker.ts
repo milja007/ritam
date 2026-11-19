@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { baseEntityShape, localDateSchema } from './common';
 import { MONEY_MAX_CENTS } from './settings';
 
-/** Vrsta unosa trackera (korak 31b). */
-export const TRACKER_KINDS = ['calories', 'money'] as const;
+/** Vrsta unosa trackera: kalorije i potrošnja (korak 31b), prihod (korak 31f). */
+export const TRACKER_KINDS = ['calories', 'money', 'income'] as const;
 export type TrackerKind = (typeof TRACKER_KINDS)[number];
 
 /** Najviše kcal u jednom unosu (obrok ili zbroj dana). */
@@ -12,8 +12,8 @@ export const CALORIE_ENTRY_MAX = 10_000;
 export const TRACKER_NOTE_MAX = 200;
 
 /**
- * Jedan unos trackera: obrok ili zbroj kalorija (kcal), ili potrošnja (iznos u centima, uvijek
- * pozitivan) s bilješkom. Dan je dan na koji se unos računa.
+ * Jedan unos trackera: obrok ili zbroj kalorija (kcal), potrošnja ili prihod (iznos u centima,
+ * uvijek pozitivan) s bilješkom. Dan je dan na koji se unos računa.
  */
 export const trackerEntrySchema = z
   .object({
