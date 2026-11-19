@@ -24,6 +24,7 @@ import {
   wantsSmartParse,
   type BlockDraft,
   type LearnedPick,
+  type PlanAnswer,
   type PlanItem,
   type PlanProposal,
 } from '@/core/schedule';
@@ -87,6 +88,8 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
   const [planning, setPlanning] = useState(false);
   const [proposal, setProposal] = useState<PlanProposal<Item> | null>(null);
   const [planError, setPlanError] = useState(false);
+  /** Svaki novi prijedlog počinje s praznim odgovorima (ključ `PlanProposalView`). */
+  const [proposalRound, setProposalRound] = useState(0);
   const busy = parsing || planning;
 
   const drafts = items.map((item) => item.draft);
@@ -150,7 +153,7 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
    * „Složi mi dan“: stavke + slobodni prozori → `plan-day` → prijedlog. Ništa se ne mijenja dok
    * korisnik ne prihvati prijedlog, a ništa se ne sprema dok ne potvrdi plan.
    */
-  async function arrange() {
+  async function arrange(answers: readonly PlanAnswer[] = []) {
     if (busy || items.length < PLAN_MIN_ITEMS) return;
     const snapshot = items;
     setPlanError(false);
@@ -158,7 +161,7 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
     // Korak 26: model dobiva i ciljeve, tjedne zadatke kojima fale termini i zabrane tog dana.
     const { context, tasks } = await loadPlanContext(date);
     const response = await requestPlanDay(
-      planDayRequest(date, snapshot, plan.existing, plan.wakeTime, plan.bedtime, locale, context),
+      planDayRequest(date, snapshot, plan.existing, plan.wakeTime, plan.bedtime, locale, context, answers),
     );
     setPlanning(false);
     if (!response) {
@@ -166,6 +169,8 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
       return;
     }
     setProposal(planProposal(response, snapshot, tasks));
+    setProposalRound((round) => round + 1);
+    if (answers.length > 0) AccessibilityInfo.announceForAccessibility(t('evening.plan.rearranged'));
   }
 
   function acceptProposal() {
@@ -218,7 +223,14 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
       animationType="slide"
       presentationStyle="fullScreen"
       // Android Natrag: s otvorenog prijedloga natrag na popis, inače zatvori.
-      onRequestClose={proposal ? () => setProposal(null) : onClose}>
+      onRequestClose={
+        proposal
+          ? () => {
+              // Dok se prijedlog slaže ponovo, Natrag čeka (inače bi odgovor vratio prijedlog).
+              if (!planning) setProposal(null);
+            }
+          : onClose
+      }>
       <GradientBackground>
         <SafeAreaView style={styles.flex}>
           <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -253,9 +265,17 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
                     </View>
                   ) : proposal ? (
                     <PlanProposalView
+                      key={proposalRound}
                       proposal={proposal}
                       onAccept={acceptProposal}
-                      onBack={() => setProposal(null)}
+                      onBack={() => {
+                        setPlanError(false);
+                        setProposal(null);
+                      }}
+                      // Korak 22: isti popis + odgovori na pitanja modela → novi prijedlog.
+                      onAnswer={(answers) => void arrange(answers)}
+                      busy={planning}
+                      error={planError}
                     />
                   ) : (
                     <>

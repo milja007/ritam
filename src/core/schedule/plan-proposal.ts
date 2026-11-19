@@ -7,7 +7,7 @@
 import type { ScheduleBlock } from '../domain';
 import { formatClock, parseClock } from '../time/clock';
 import { LAST_END, type BlockDraft } from './block-draft';
-import type { DayPriority, PlanContext, PlanDayRequest, PlanDayResponse, PlannedBlock } from './edge-types';
+import type { DayPriority, PlanAnswer, PlanContext, PlanDayRequest, PlanDayResponse, PlannedBlock } from './edge-types';
 import { planStartMinutes } from './tomorrow';
 
 type Occupied = Pick<ScheduleBlock, 'start' | 'end' | 'kind'>;
@@ -86,6 +86,7 @@ export function planDayRequest(
   bedtime: string | null,
   locale: 'hr' | 'en',
   context: PlanContext = EMPTY_PLAN_CONTEXT,
+  answers: readonly PlanAnswer[] = [],
 ): PlanDayRequest {
   return {
     date,
@@ -94,7 +95,24 @@ export function planDayRequest(
     freeWindows: freeWindows(existing, wakeTime, bedtime),
     preferences: null,
     context,
+    answers: [...answers],
   };
+}
+
+/** Najdulji odgovor na pitanje modela (isto ograničenje kao pitanje i server). */
+export const PLAN_MAX_ANSWER_LENGTH = MAX_QUESTION_LENGTH;
+
+/**
+ * Odgovori za ponovno slaganje (korak 22): svako pitanje s odgovorom koji nije prazan, razmaci
+ * sažeti, najviše 3. Pitanje bez odgovora se ne šalje (model ga smije pitati ponovo).
+ */
+export function planAnswers(questions: readonly string[], replies: readonly string[]): PlanAnswer[] {
+  const answers: PlanAnswer[] = [];
+  questions.slice(0, PLAN_MAX_QUESTIONS).forEach((question, index) => {
+    const answer = (replies[index] ?? '').replace(/\s+/g, ' ').trim().slice(0, PLAN_MAX_ANSWER_LENGTH);
+    if (answer.length > 0) answers.push({ question, answer });
+  });
+  return answers;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

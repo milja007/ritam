@@ -71,7 +71,15 @@ export type PlanDayRequest = {
   preferences: PlanPreferences | null;
   /** Ciljevi, tjedni zadaci i zabrane za taj dan (korak 26); server ga smije i ne dobiti. */
   context: PlanContext;
+  /**
+   * Odgovori na pitanja iz prethodnog prijedloga (korak 22, najviše 3) — plan se slaže zajedno
+   * s korisnikom. Prvo slaganje → prazno.
+   */
+  answers: PlanAnswer[];
 };
+
+/** Korisnikov odgovor na pitanje modela — isti oblik kao `PlanAnswer` u `plan-logic.ts`. */
+export type PlanAnswer = { question: string; answer: string };
 
 /** Tjedni zadatak kojem još fale termini (korak 26). */
 export type PlanContextTask = {

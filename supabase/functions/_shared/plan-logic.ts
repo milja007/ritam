@@ -48,6 +48,12 @@ export type PlanContext = {
   rules: { title: string; why: string }[];
 };
 
+/**
+ * Korisnikov odgovor na pitanje koje je model postavio uz raniji prijedlog (korak 22): app ga
+ * šalje pri ponovnom slaganju, da se plan složi zajedno s korisnikom.
+ */
+export type PlanAnswer = { question: string; answer: string };
+
 export type PlanDayRequest = {
   date: string;
   /** Jezik sažetka i pitanja (stari klijent bez polja → hrvatski). */
@@ -56,6 +62,8 @@ export type PlanDayRequest = {
   freeWindows: TimeWindow[];
   preferences: PlanPreferences | null;
   context: PlanContext;
+  /** Odgovori na pitanja iz prethodnog prijedloga (najviše 3); stari klijent → prazno. */
+  answers: PlanAnswer[];
 };
 
 export type PlannedBlock = {
@@ -83,6 +91,9 @@ export const MAX_CONTEXT_GOALS = 15;
 export const MAX_CONTEXT_TASKS = 10;
 export const MAX_CONTEXT_RULES = 15;
 const MAX_NOTE = 300;
+/** Pitanje i odgovor: kao pitanja u odgovoru modela (≤ 300 znakova), najviše 3. */
+export const MAX_ANSWERS = 3;
+export const MAX_ANSWER_LENGTH = 300;
 
 /** Edge Functions koje zovu model. */
 export type LlmFunctionName = 'parse-input' | 'plan-day' | 'write-report';
@@ -233,6 +244,37 @@ export function parsePlanContext(raw: unknown): PlanContext {
   };
 }
 
+function parseAnswer(raw: unknown): PlanAnswer | null {
+  if (!isRecord(raw)) return null;
+  const question = text(raw.question, MAX_ANSWER_LENGTH);
+  const answer = text(raw.answer, MAX_ANSWER_LENGTH);
+  return question !== null && answer !== null ? { question, answer } : null;
+}
+
+/**
+ * Odgovori su, kao i kontekst, samo savjet modelu: nevaljan ili prazan odgovor otpada (ne ruši
+ * zahtjev), višak preko 3 se ne čita.
+ */
+export function parsePlanAnswers(raw: unknown): PlanAnswer[] {
+  return parseList(raw, parseAnswer, MAX_ANSWERS);
+}
+
+/** Retci odgovora za poruku modelu; bez odgovora prazan niz (prompt isti kao prije). */
+export function planAnswerLines(answers: readonly PlanAnswer[], locale: 'hr' | 'en'): string[] {
+  if (answers.length === 0) return [];
+  const hr = locale === 'hr';
+  const lines = [
+    hr
+      ? 'Odgovori korisnika na tvoja pitanja iz prošlog prijedloga (poštuj ih; ne pitaj ponovo isto):'
+      : "The user's answers to your questions from the previous proposal (follow them; don't ask the same again):",
+  ];
+  for (const entry of answers) {
+    lines.push(hr ? `- P: ${entry.question}` : `- Q: ${entry.question}`);
+    lines.push(hr ? `  O: ${entry.answer}` : `  A: ${entry.answer}`);
+  }
+  return lines;
+}
+
 const PART_TEXT = {
   hr: { any: 'bilo kad', morning: 'ujutro', afternoon: 'popodne', evening: 'navečer' },
   en: { any: 'any time', morning: 'morning', afternoon: 'afternoon', evening: 'evening' },
@@ -306,6 +348,7 @@ export function parsePlanDayRequest(body: unknown): PlanDayRequest | null {
     freeWindows: (freeWindows as TimeWindow[]).sort((a, b) => clockToMinutes(a.start) - clockToMinutes(b.start)),
     preferences,
     context: parsePlanContext(body.context),
+    answers: parsePlanAnswers(body.answers),
   };
 }
 
