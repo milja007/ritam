@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import {
   cancelDictation,
   dictationAvailable,
+  dictationEditedByHand,
   getDictationState,
   setSpeechModuleForTests,
   startDictation,
@@ -133,5 +134,64 @@ describe('dictation', () => {
     cancelDictation('a');
     expect(getDictationState().owner).toBeNull();
     expect(fake.count()).toBe(0);
+  });
+});
+
+describe('dictation lifecycle (Codex P2, PR #64)', () => {
+  beforeEach(() => {
+    setSpeechModuleForTests(null);
+  });
+
+  it('stopping before the native start event aborts the native session', async () => {
+    const fake = fakeModule();
+    setSpeechModuleForTests(fake.speech);
+    await startDictation('plan', { base: '', language: 'hr', onText: () => undefined });
+    expect(fake.calls).toEqual(['start']);
+    expect(getDictationState().status).toBe('starting');
+
+    stopDictation('plan');
+    expect(fake.calls).toEqual(['start', 'abort']);
+    expect(getDictationState()).toMatchObject({ owner: null, status: 'idle' });
+    expect(fake.count()).toBe(0);
+  });
+
+  it('stopping while the permission is pending never starts the microphone', async () => {
+    const fake = fakeModule();
+    let grant: (value: { granted: boolean }) => void = () => undefined;
+    fake.speech.requestPermissionsAsync = () =>
+      new Promise((resolve) => {
+        grant = resolve;
+      });
+    setSpeechModuleForTests(fake.speech);
+    const pending = startDictation('plan', { base: '', language: 'hr', onText: () => undefined });
+    stopDictation('plan');
+    grant({ granted: true });
+    await pending;
+    expect(fake.calls).toEqual([]);
+    expect(getDictationState().owner).toBeNull();
+  });
+
+  it('a manual edit stops dictation so later results keep the correction', async () => {
+    const fake = fakeModule();
+    setSpeechModuleForTests(fake.speech);
+    const texts: string[] = [];
+    await startDictation('note', { base: 'Bilo je', language: 'hr', onText: (text) => texts.push(text) });
+    fake.emit('start');
+    fake.emit('result', { isFinal: false, results: [{ transcript: 'teško' }] });
+    expect(texts).toEqual(['Bilo je teško']);
+
+    dictationEditedByHand('note');
+    expect(fake.calls).toContain('abort');
+    fake.emit('result', { isFinal: true, results: [{ transcript: 'teško danas' }] });
+    expect(texts).toEqual(['Bilo je teško']);
+    expect(getDictationState().owner).toBeNull();
+  });
+
+  it('a manual edit in another field does not stop dictation', async () => {
+    const fake = fakeModule();
+    setSpeechModuleForTests(fake.speech);
+    await startDictation('note', { base: '', language: 'hr', onText: () => undefined });
+    dictationEditedByHand('other');
+    expect(getDictationState().owner).toBe('note');
   });
 });
