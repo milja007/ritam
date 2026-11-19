@@ -2,6 +2,12 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-20 · Sesija 00:43 — korak 39: Health paketi i čitanje (odluka 94b)
+- #1: zadnje Codexovo `CODEX_APPROVED` za #71; nema otvorenih P0/P1/P2, bug issueja ni otvorenih PR-ova. #70 čeka zaseban Codexov pregled.
+- Plan A (`wip/korak-39-health-paketi`, HIGH_RISK: `package.json`, `app.json`; mali PR): (1) paketi `@kingstinct/react-native-healthkit` + `react-native-nitro-modules` (iOS), `react-native-health-connect` (Android, Expo plugin u paketu), `expo-build-properties` (Android `minSdkVersion` 26 — Health Connect); samo čitanje: HealthKit bez pisanja i bez background-delivery, Android `READ_SLEEP`/`READ_STEPS`/`READ_ACTIVE_CALORIES_BURNED`; provjereno `expo prebuild` u privremenoj kopiji; (2) čisto mapiranje u `src/core/health/source.ts` (HealthKit/Health Connect faze sna → `SleepSample`, raspon upita noći i dana) s testovima; (3) `src/features/health/health-source.ts`: opcionalno učitavanje (stari dev build bez native dijela → „nije dostupno“, bez rušenja), `requestHealthRead`, `readHealthNight(wakeDate)`, `readHealthTotal('steps'|'activeKcal', date)`; testovi s lažnim modulima.
+- Gotovo: (1)–(3) u PR-u #72. Treba **novi development build** (`npx expo run:ios --device`); HealthKit s osobnim timom provjeriti na Macu.
+- Plan B (sljedeći PR): uključivanje u Postavkama (isključeno dok korisnik ne uključi), prijedlog sna u jutarnjem upitu (`healthSleepFill`), koraci/kcal u trackeru.
+
 ## 2026-11-19 · Odluke Borne (anketa u chatu, ~22:00) i korak 34c
 - 94a (widget): **uzima Apple Developer Program** → iOS i Android widget (App Group). Prije builda s widgetom račun mora biti aktivan; tim i App Group ID na Macu.
 - 94b (Health): čitati **san, korake i aktivne kalorije** (samo čitanje).
@@ -12,12 +18,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Codex P2 (#69 ponoć u `healthNight`, #68 odgovori kroz krugove „Složi mi dan“, `plan-day` MAX_ANSWERS 3 → 6) → `fix/codex-p2-ponoc-odgovori`. `plan-day` treba ponovni deploy (pitanje 77).
 - Zatim 39/41 s paketima (Health: san, koraci, kcal; widget: čeka Apple račun za iOS build).
 
-## 2026-11-19 · Sesija 21:43 — korak 39 (dio): čista logika Health podataka
-- #1: zadnja objava je #68 (Codex još nije pregledao). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Svi neblokirani koraci gotovi.
-- Plan (`wip/korak-39-health-logika`, kao 41: samo `src/core/health`, bez paketa i dopuštenja dok pitanje 94 nije odgovoreno): (1) `healthNight`: uzorci sna (u krevetu / spava / budan, s izvorom) → noć koja završava jutrom zadanog dana: segmenti spavanja spojeni uz prekid ≤ 60 min, najduži blok u prozoru 18:00 prethodnog dana – 14:00 tog dana; bez „spava“ uzoraka pada na „u krevetu“; rezultat `sleepStart`/`wakeTime` „HH:MM“ kao u jutarnjem upitu; (2) `dailyHealthTotal`: zbroj uzoraka količine (koraci, aktivne kcal) za lokalni dan, uzorak preko ponoći dijeli se razmjerno; (3) `healthSleepFill`: prijedlog za jutarnji upit samo kad korisnik sam nije upisao san (ručni unos uvijek pobjeđuje). Testovi uz svaki dio; ništa se još ne uvozi u app.
-- Gotovo: (1)–(3) u PR-u #69 (15 testova, provjereno i s `TZ` Zagreb / Los Angeles / Auckland).
-
-- Odluke Borne 2026-11-18 (pitanja 75–91) i sesije 09:43 i 12:43 su u arhivi.
+- Odluke Borne 2026-11-18 (pitanja 75–91), sesije 09:43, 12:43 i 21:43 (2026-11-19) su u arhivi.
 
 ## Stanje
 - `main`: korak 31b (trackeri kalorija i novca, s rezultatom i dijagnozom), korak 31 (Pomoglo/Nije pomoglo + `write-report`, nedeployan), korak 28 (zabrane u planovima s nizom), koraci 25 i 25b (kalendari tjedna/mjeseca za planiranje, ciljevi razdoblja, tjedni zadaci), koraci 0–19, 32, 34b, 36, 37 i 37b (lokalne), 37c, 38, Ž1–Ž10 i Ž12; bedževi (dio 34); orb-plamen bez Skie (dio 33); animacije bez haptike (35); kod koraka 20–22 (nedeployan).

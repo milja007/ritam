@@ -2,7 +2,7 @@
  * Korak 39 (dio): pretvorba uzoraka iz Apple Health / Health Connect u podatke Ritma.
  * Čista logika: bez React importa i bez paketa. Uzorci dolaze kao `Date` objekti, a lokalni
  * dan i sat računaju se po vremenskoj zoni uređaja (kao `localDateOf`).
- * Ništa se još ne uvozi u app — paket i dopuštenja čekaju pitanje 94.
+ * Sirove zapise iz HealthKita / Health Connecta u `SleepSample` pretvara `./source`.
  */
 
 import { formatClock } from '../time/clock';
