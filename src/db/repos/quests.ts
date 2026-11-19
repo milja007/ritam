@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { questSchema, type Quest, type QuestMilestone, type QuestStatus } from '@/core/domain';
 import { canStartQuest, sortQuests } from '@/core/gamification';
