@@ -8,6 +8,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - 93 (diktiranje): **dopusti Apple** — ostaje kako je (na uređaju kad može, inače Apple kao tipkovnica).
 - 92 (questovi): **stari XP ostaje** — novi questovi i etape bez XP-a, već dodijeljeni XP se ne briše (ni brisanjem questa).
 - Plan 34c (`wip/korak-34c-questovi`, HIGH_RISK zbog `src/db/repos/quests.ts`): (1) core/repo: `questXpAwards` i usklađivanje XP-a questa uklonjeni, `deleteQuest` ne dira XP; testovi da ostvarena etapa/quest ne dodaju XP, a postojeći XP ostaje i nakon poništenja i brisanja; (2) UI: tekstovi bez XP-a (HR/EN); ostvaren quest je bedž — u kartici „Bedževi“ osobni čip s naslovom questa (puni obrub, detalj „Ostvaren <datum>“), brojač bedževa ga uključuje.
+- Gotovo: (1)–(2) u PR-u #70 (`[x]`).
 - Zatim 39/41 s paketima (Health: san, koraci, kcal; widget: čeka Apple račun za iOS build).
 
 ## 2026-11-19 · Sesija 21:43 — korak 39 (dio): čista logika Health podataka
@@ -24,9 +25,9 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 
 ## Sljedeće
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
-1. Ž11, 33, 32b i 31f gotovi — provjeriti na iPhoneu. 34c u radu (odluka 92).
+1. Ž11, 33, 32b, 31f i 34c gotovi — provjeriti na iPhoneu.
 2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 24 (Google Calendar — OAuth tajne).
-3. Svi koraci faza 1–3 osim 24 i 34c su gotovi. Faza 4 (39, 41) čeka pitanje 94; dotad samo čista logika (`src/core/widget`, `src/core/health`).
+3. Svi koraci faza 1–3 osim 24 su gotovi. Faza 4 (39, 41) čeka pitanje 94; dotad samo čista logika (`src/core/widget`, `src/core/health`).
 
 ## Pitanja za Bornu
 - 92–94 odgovorena 2026-11-19 (gore).
