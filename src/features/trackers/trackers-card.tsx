@@ -28,7 +28,8 @@ const earliest = (...dates: (string | null)[]) =>
 
 /**
  * Opcionalni trackeri (korak 31b) za jedan dan: kalorije (zbroj naspram cilja, unos po obroku)
- * i novac (koliko je ostalo od limita, tjedni i mjesečni zbroj, stanje, unos potrošnje). Prikazuje
+ * i novac (koliko je ostalo od limita, tjedni i mjesečni zbroj, stanje, unos potrošnje; uz opciju
+ * i prihodi, korak 31f). Prikazuje
  * se samo kad je barem jedan tracker uključen u Profilu. Bez crvenog: prekoračenje je informacija.
  */
 export function TrackersCard({ date, evening = false }: TrackersCardProps) {
@@ -162,6 +163,39 @@ function MoneySection({ date, settings, entries, add, remove }: SectionProps & {
       </Text>
       <EntryList kind="money" date={date} entries={entries} remove={remove} />
       <QuickAdd kind="money" date={date} add={add} />
+      {summary.income !== null ? (
+        <IncomeSection date={date} income={summary.income} entries={entries} add={add} remove={remove} />
+      ) : null}
+    </View>
+  );
+}
+
+/** Prihodi (korak 31f): zbrojevi s „+“, popis i unos; dodaju se stanju, ne limitu. */
+function IncomeSection({
+  date,
+  income,
+  entries,
+  add,
+  remove,
+}: SectionProps & { income: { today: number; week: number; month: number } }) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useAppTheme();
+  const plus = (cents: number) => `+${formatEuro(cents, i18n.language)}`;
+  return (
+    <View style={[styles.subsection, { borderTopColor: colors.border }]}>
+      <View style={styles.head}>
+        <Text variant="bodyStrong" style={styles.flex}>
+          {t('trackers.income.title')}
+        </Text>
+        <Text variant="bodyStrong" tone="success" style={styles.tabular}>
+          {plus(income.month)}
+        </Text>
+      </View>
+      <Text variant="caption" tone="textMuted" style={styles.tabular}>
+        {t('trackers.income.totals', { today: plus(income.today), week: plus(income.week), month: plus(income.month) })}
+      </Text>
+      <EntryList kind="income" date={date} entries={entries} remove={remove} />
+      <QuickAdd kind="income" date={date} add={add} />
     </View>
   );
 }
@@ -174,7 +208,7 @@ function EntryList({ kind, date, entries, remove }: { kind: TrackerKind; date: s
   const amount = (entry: TrackerEntry) =>
     kind === 'calories'
       ? t('trackers.kcal', { value: formatKcal(entry.amount, i18n.language) })
-      : formatEuro(entry.amount, i18n.language);
+      : `${kind === 'income' ? '+' : ''}${formatEuro(entry.amount, i18n.language)}`;
   return (
     <View style={styles.rows}>
       {rows.map((entry) => {
@@ -273,6 +307,7 @@ const styles = StyleSheet.create({
   },
   section: { gap: spacing.sm },
   divider: { height: StyleSheet.hairlineWidth },
+  subsection: { gap: spacing.sm, paddingTop: spacing.md, marginTop: spacing.xs, borderTopWidth: StyleSheet.hairlineWidth },
   head: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   flex: { flex: 1 },
   tabular: { fontVariant: ['tabular-nums'] },

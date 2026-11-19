@@ -1736,6 +1736,18 @@
       "added": "Potrošnja je dodana.",
       "invalid": "Upiši iznos, npr. 12,50."
     },
+    "income": {
+      "title": "Prihodi",
+      "unnamed": "Prihod",
+      "amountLabel": "€",
+      "amountPlaceholder": "1500,00",
+      "noteLabel": "Od čega? (neobavezno)",
+      "notePlaceholder": "Npr. plaća",
+      "add": "Dodaj prihod",
+      "added": "Prihod je dodan.",
+      "invalid": "Upiši iznos, npr. 1500,00.",
+      "totals": "Danas {{today}} · tjedan {{week}} · mjesec {{month}}"
+    },
     "settings": {
       "title": "Trackeri",
       "calories": "Kalorije",
@@ -1758,7 +1770,10 @@
       "balancePlaceholder": "Npr. 500,00",
       "balanceSince": "Stanje {{value}} od {{date}} — potrošnja od tog dana se oduzima.",
       "saveBalance": "Spremi stanje",
-      "amountInvalid": "Upiši iznos, npr. 100,00."
+      "amountInvalid": "Upiši iznos, npr. 100,00.",
+      "income": "Prati i prihode",
+      "incomeDetail": "Unos prihoda (plaća, honorar…). Prihodi se dodaju trenutnom stanju; limit potrošnje i rezultat dana ostaju isti.",
+      "balanceSinceIncome": "Stanje {{value}} od {{date}} — potrošnja od tog dana se oduzima, prihodi dodaju."
     }
   }
 }

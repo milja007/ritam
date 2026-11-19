@@ -1708,6 +1708,18 @@
       "added": "Spending added.",
       "invalid": "Enter an amount, e.g. 12.50."
     },
+    "income": {
+      "title": "Income",
+      "unnamed": "Income",
+      "amountLabel": "€",
+      "amountPlaceholder": "1500.00",
+      "noteLabel": "From what? (optional)",
+      "notePlaceholder": "E.g. salary",
+      "add": "Add income",
+      "added": "Income added.",
+      "invalid": "Enter an amount, e.g. 1500.00.",
+      "totals": "Today {{today}} · week {{week}} · month {{month}}"
+    },
     "settings": {
       "title": "Trackers",
       "calories": "Calories",
@@ -1730,7 +1742,10 @@
       "balancePlaceholder": "E.g. 500.00",
       "balanceSince": "Balance {{value}} since {{date}} — spending from that day is subtracted.",
       "saveBalance": "Save balance",
-      "amountInvalid": "Enter an amount, e.g. 100.00."
+      "amountInvalid": "Enter an amount, e.g. 100.00.",
+      "income": "Track income too",
+      "incomeDetail": "Log income (salary, fees…). Income is added to your current balance; your spending limit and daily score stay the same.",
+      "balanceSinceIncome": "Balance {{value}} since {{date}} — spending from that day is subtracted, income added."
     }
   }
 }

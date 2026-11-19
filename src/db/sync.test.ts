@@ -61,6 +61,7 @@ const settingsInput: SettingsInput = {
   moneyPeriod: null,
   moneyBalanceCents: null,
   moneyBalanceOn: null,
+  trackIncome: false,
 };
 
 const blockInput = {
@@ -310,23 +311,40 @@ describe('syncOnce', () => {
     expect(countQueue(db)).toBe(0);
   });
 
-  it('unos trackera i postavke trackera (korak 31b) idu na poslužitelj i vraćaju se', async () => {
+  it('unos trackera i postavke trackera (korak 31b, 31f) idu na poslužitelj i vraćaju se', async () => {
     const { db, remote } = await setup();
     const deps = testDeps();
-    await saveSettings(db, LOCAL, { ...settingsInput, trackMoney: true, moneyLimitCents: 10_000, moneyPeriod: 'week' }, deps);
-    const entry = addTrackerEntry(db, LOCAL, { date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }, deps);
-    await syncOnce(db, remote, ids);
-    expect(remote.rows('tracker_entries')).toEqual([
-      expect.objectContaining({ id: entry.id, user_id: UID, date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }),
-    ]);
-    expect(remote.rows('settings')[0]).toEqual(
-      expect.objectContaining({ track_money: true, money_limit_cents: 10_000, money_period: 'week', track_calories: false }),
+    await saveSettings(
+      db,
+      LOCAL,
+      { ...settingsInput, trackMoney: true, moneyLimitCents: 10_000, moneyPeriod: 'week', trackIncome: true },
+      deps,
     );
-    const [row] = remote.rows('tracker_entries');
+    const entry = addTrackerEntry(db, LOCAL, { date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }, deps);
+    const income = addTrackerEntry(db, LOCAL, { date: '2026-11-10', kind: 'income', amount: 150_000, note: 'Plaća' }, deps);
+    await syncOnce(db, remote, ids);
+    expect(remote.rows('tracker_entries')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: entry.id, user_id: UID, date: '2026-11-10', kind: 'money', amount: 1250, note: 'Kava' }),
+        expect.objectContaining({ id: income.id, user_id: UID, kind: 'income', amount: 150_000, note: 'Plaća' }),
+      ]),
+    );
+    expect(remote.rows('settings')[0]).toEqual(
+      expect.objectContaining({
+        track_money: true,
+        money_limit_cents: 10_000,
+        money_period: 'week',
+        track_calories: false,
+        track_income: true,
+      }),
+    );
+    const row = remote.rows('tracker_entries').find((candidate) => candidate.id === entry.id);
+    if (row === undefined) throw new Error('nema unosa na poslužitelju');
     remote.put('tracker_entries', { ...row, updated_at: '2026-11-12T08:00:00+00:00', amount: 1500 });
     await syncOnce(db, remote, ids);
     expect(listTrackerEntries(db, LOCAL, '2026-11-10', '2026-11-10')).toEqual([
       expect.objectContaining({ id: entry.id, userId: LOCAL, amount: 1500 }),
+      expect.objectContaining({ id: income.id, kind: 'income', amount: 150_000 }),
     ]);
     expect(countQueue(db)).toBe(0);
   });

@@ -55,6 +55,7 @@ const settingsInput: SettingsInput = {
   moneyPeriod: null,
   moneyBalanceCents: null,
   moneyBalanceOn: null,
+  trackIncome: false,
 };
 
 const block = (overrides: Partial<ScheduleBlockInput> = {}): ScheduleBlockInput => ({

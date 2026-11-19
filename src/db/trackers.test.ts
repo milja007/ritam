@@ -7,6 +7,7 @@ import { ZodError } from 'zod';
 import { createDefaultDraft, toSettingsInput } from '@/core/onboarding';
 
 import { addTrackerEntry, deleteTrackerEntry, getSettings, listTrackerEntries, saveSettings } from './repos';
+import { trackerEntries } from './schema';
 import { readQueue } from './sync';
 import { createTestDb, testDeps } from './testing/test-db';
 
@@ -38,6 +39,35 @@ describe('trackeri (repo, korak 31b)', () => {
     expect(readQueue(db).filter((entry) => entry.tableName === 'tracker_entries')).toHaveLength(4);
   });
 
+  it('prihod (korak 31f) je unos kao potrošnja, iste granice', async () => {
+    const { db, deps } = await setup();
+    addTrackerEntry(db, USER, { date: '2026-11-18', kind: 'income', amount: 150_000, note: 'Plaća' }, deps);
+    expect(() =>
+      addTrackerEntry(db, USER, { date: '2026-11-18', kind: 'income', amount: 100_000_001, note: '' }, deps),
+    ).toThrow(ZodError);
+    expect(listTrackerEntries(db, USER, '2026-11-18', '2026-11-18').map((entry) => [entry.kind, entry.amount])).toEqual([
+      ['income', 150_000],
+    ]);
+  });
+
+  it('red nepoznate vrste (novija verzija appa) se preskače, ostali se čitaju', async () => {
+    const { db, deps } = await setup();
+    addTrackerEntry(db, USER, { date: '2026-11-18', kind: 'money', amount: 100, note: '' }, deps);
+    db.insert(trackerEntries)
+      .values({
+        id: 'future-1',
+        userId: USER,
+        createdAt: '2026-11-18T10:00:00.000Z',
+        updatedAt: '2026-11-18T10:00:00.000Z',
+        date: '2026-11-18',
+        kind: 'steps' as never,
+        amount: 9000,
+        note: '',
+      })
+      .run();
+    expect(listTrackerEntries(db, USER, '2026-11-18', '2026-11-18').map((entry) => entry.kind)).toEqual(['money']);
+  });
+
   it('neispravan unos se ne zapisuje', async () => {
     const { db, deps } = await setup();
     const bad = [
@@ -64,7 +94,12 @@ describe('trackeri (repo, korak 31b)', () => {
     const { db, deps } = await setup();
     const base = toSettingsInput(createDefaultDraft('hr'));
     await saveSettings(db, USER, base, deps);
-    expect(await getSettings(db, USER)).toMatchObject({ trackCalories: false, calorieGoal: null, trackMoney: false });
+    expect(await getSettings(db, USER)).toMatchObject({
+      trackCalories: false,
+      calorieGoal: null,
+      trackMoney: false,
+      trackIncome: false,
+    });
 
     await saveSettings(
       db,
@@ -78,10 +113,12 @@ describe('trackeri (repo, korak 31b)', () => {
         moneyPeriod: 'week',
         moneyBalanceCents: -2_500,
         moneyBalanceOn: '2026-11-16',
+        trackIncome: true,
       },
       deps,
     );
     expect(await getSettings(db, USER)).toMatchObject({
+      trackIncome: true,
       trackCalories: true,
       calorieGoal: 2200,
       moneyPeriod: 'week',

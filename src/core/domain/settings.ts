@@ -83,6 +83,11 @@ export const settingsSchema = z.object({
   /** Stanje na dan `moneyBalanceOn`; potrošnja od tog dana (uključivo) se oduzima. */
   moneyBalanceCents: z.number().int().min(-MONEY_MAX_CENTS).max(MONEY_MAX_CENTS).nullable().default(null),
   moneyBalanceOn: localDateSchema.nullable().default(null),
+  /**
+   * Prihodi (korak 31f, odluka Borna uz pitanje 90): opcija trackera novca, zadano isključena.
+   * Prihod se dodaje stanju; limit potrošnje i dnevni rezultat ne mijenja.
+   */
+  trackIncome: z.boolean().default(false),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
@@ -96,6 +101,7 @@ export const DEFAULT_TRACKERS = {
   moneyPeriod: null,
   moneyBalanceCents: null,
   moneyBalanceOn: null,
+  trackIncome: false,
 } as const satisfies Partial<Settings>;
 
 /** Zadana područja rezultata: samo plan. */

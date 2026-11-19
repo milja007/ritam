@@ -25,6 +25,9 @@ describe('trackeri i18n (korak 31b)', () => {
       expect(dict.money.left).toContain('{{value}}');
       expect(dict.money.limit.week).toContain('{{spent}}');
       expect(dict.calories.over).toContain('{{diff}}');
+      expect(dict.income.totals).toEqual(expect.stringContaining('{{today}}'));
+      expect(dict.income.totals).toEqual(expect.stringContaining('{{month}}'));
+      expect(dict.settings.balanceSinceIncome).toContain('{{value}}');
     }
   });
 });
