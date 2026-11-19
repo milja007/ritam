@@ -72,7 +72,7 @@ export type PlanDayRequest = {
   /** Ciljevi, tjedni zadaci i zabrane za taj dan (korak 26); server ga smije i ne dobiti. */
   context: PlanContext;
   /**
-   * Odgovori na pitanja iz prethodnog prijedloga (korak 22, najviše 3) — plan se slaže zajedno
+   * Odgovori na pitanja iz prethodnog prijedloga (korak 22; svi krugovi iste večeri, najnoviji prvi, najviše 6) — plan se slaže zajedno
    * s korisnikom. Prvo slaganje → prazno.
    */
   answers: PlanAnswer[];

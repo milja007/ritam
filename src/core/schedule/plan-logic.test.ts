@@ -261,7 +261,7 @@ describe('odgovori na pitanja modela (korak 22)', () => {
     expect(planAnswerLines([], 'hr')).toEqual([]);
   });
 
-  it('nevaljani i prazni odgovori otpadaju, razmaci se sažimaju, najviše 3', () => {
+  it('nevaljani i prazni odgovori otpadaju, razmaci se sažimaju, najviše 6', () => {
     const long = 'x'.repeat(301);
     const answers = parsePlanAnswers([
       { question: ' Koliko  traje kemija? ', answer: ' Sat i  pol ' },
@@ -273,10 +273,13 @@ describe('odgovori na pitanja modela (korak 22)', () => {
       { question: 'C?', answer: 'c' },
       { question: 'D?', answer: 'd' },
     ]);
-    // Čita se samo prvih 3 iz zahtjeva (kao kontekst), pa od njih ostaje jedan valjan.
-    expect(answers).toEqual([{ question: 'Koliko traje kemija?', answer: 'Sat i pol' }]);
-    const many = Array.from({ length: 6 }, (_, i) => ({ question: `P${i}?`, answer: `O${i}` }));
-    expect(parsePlanAnswers(many)).toHaveLength(3);
+    // Čita se samo prvih 6 iz zahtjeva (kao kontekst), pa od njih ostaju dva valjana.
+    expect(answers).toEqual([
+      { question: 'Koliko traje kemija?', answer: 'Sat i pol' },
+      { question: 'B?', answer: 'b' },
+    ]);
+    const many = Array.from({ length: 9 }, (_, i) => ({ question: `P${i}?`, answer: `O${i}` }));
+    expect(parsePlanAnswers(many)).toHaveLength(6);
     // Neispravni odgovori ne ruše zahtjev.
     const body = { date: '2026-11-18', priorities: [], freeWindows: [], preferences: null, answers: [null, 'x'] };
     expect(parsePlanDayRequest(body)?.answers).toEqual([]);
