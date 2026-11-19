@@ -41,6 +41,16 @@
         {
           "enableRemoteNotifications": false
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Ritam uses the microphone only while you dictate a plan or a note.",
+          "speechRecognitionPermission": "Ritam turns what you say into text for your plans and notes.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
       ]
     ],
     "experiments": {

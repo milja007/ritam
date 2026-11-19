@@ -4,6 +4,18 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-19 · Sesija 03:43 — korak 31f: prihodi (opcija trackera novca)
+- Odluka Borna (pitanje 90, 2026-11-18): prihodi kao opcija, isključeni po defaultu, uključuju se u Profilu. Prioritet „Žar“ istekao 2026-11-17; 34c čeka pitanje 92.
+- Plan: (1) Podaci (HIGH_RISK): vrsta unosa `income`, postavka `trackIncome` (zadano isključeno), lokalna migracija 0016 i Supabase migracija (stupac + `kind` check + gornja granica iznosa), testovi sheme/RLS i pariteta; remote primjenjuje Borna (pitanje 84). (2) Logika i UI: `moneySummary` broji prihode (danas/tjedan/mjesec) i dodaje ih stanju; limit potrošnje i dnevni rezultat se ne mijenjaju (prihod nije ponašanje). Profil → Novac → prekidač „Prati i prihode“ (vidljiv samo uz uključen novac); kartica na Danu: prihodi s popisom i unosom, HR/EN, a11y.
+- Moje tumačenje: prihodi su dio trackera novca (bez novca nemaju smisla za stanje), ne ulaze u rezultat ni stat Novac.
+- Gotovo (PR #62): 1–2, 31f `[x]`. Remote migracija `20261119030000_income` dodana u pitanje 84. Prihodi još nisu u dijagnozi ni kontekstu `write-report` (može kasnije ako Borna želi).
+
+## 2026-11-19 · Sesija 00:43 (nastavak) — 32b nagrade po razini
+- Plan: (1) `unlocks.ts` — vrste `frame` i `doneEffect`, razine 7/11/14 i 9/13 (popunjavaju praznine, prve nagrade ostaju iste), `usable*`, testovi; tekst otključanog za sve četiri vrste (HR/EN). (2) Okviri na `OrbFlame` (dišu s aureolom), `DoneFlare` (Iskre, Val) na točki trake Dana; uz „smanji kretanje“ samo bljesak. (3) Birač na Profilu s pregledom; odabir na uređaju, usklađen s razinom kao tema.
+- 34c (questovi bez XP-a) namjerno nije rađen: oduzimanje XP-a može spustiti razinu (koncept: bez kazni) — treba Bornino „da“ za način (vidi pitanje 92).
+
+## Smjer „Žar“ (odluka Borna 2026-11-12): platno https://claude.ai/artifact/A5QDrLjhMNdLvGS1jQT8yu; Ž1–Ž10 i Ž12 gotovi, Ž11 (haptika) čeka paket. Detalji u `BUILD_PLAN.md`.
+
 ## 2026-11-19 · Sesija 00:43 — Ž11 haptika, zatim 33 orb-plamen na Skii
 - Paketi su stigli (PR #56: `expo-haptics`, Skia), pa se rade dva zadnja „Žar“ dijela koja su ih čekala.
 - Plan Ž11 (PR 1): (1) `src/core/haptics` — čista logika: događaj → vrsta (`done`, `skip`, `streak`, `achievement`, `levelUp`, `tick`), spajanje događaja u istom trenutku (jači pobjeđuje, isti se ne ponavlja), vremenska crta haptike level-upa (tik po broju razine, uspjeh na prasku); testovi. (2) `src/ui/haptics.ts` — `playHaptic` preko `expo-haptics` (greška nikad ne ruši ekran, bez weba), uključeno po defaultu, prekidač „Haptika“ na Profilu (postavka uređaja, bez migracije), HR/EN. (3) Spojiti: Gotovo / Preskoči na Danu, bljesak niza, smrzavanje, quest/cilj ostvaren, level-up.
