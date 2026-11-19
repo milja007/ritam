@@ -4,7 +4,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { ZodError } from 'zod';
 
-import { QUEST_DONE_XP, QUEST_MILESTONE_XP } from '@/core/gamification';
+import { xpEventSchema } from '@/core/domain';
 
 import {
   QuestLimitError,
@@ -16,6 +16,7 @@ import {
   setQuestStatus,
   updateQuest,
 } from './repos';
+import { xpEvents } from './schema';
 import { readQueue } from './sync';
 import { createTestDb, testDeps } from './testing/test-db';
 
@@ -30,6 +31,24 @@ const input = {
 async function setup() {
   const { db } = await createTestDb();
   return { db, deps: testDeps('2026-11-17T10:00:00.000Z') };
+}
+
+/** XP koji je quest dao prije koraka 34c (stari zapisi u bazi). */
+function legacyXp(db: Parameters<typeof listXpEvents>[0], id: string, sourceId: string, amount: number) {
+  db.insert(xpEvents)
+    .values(
+      xpEventSchema.parse({
+        id,
+        userId: USER,
+        createdAt: '2026-11-17T10:00:00.000Z',
+        updatedAt: '2026-11-17T10:00:00.000Z',
+        date: '2026-11-17',
+        source: 'quest',
+        sourceId,
+        amount,
+      }),
+    )
+    .run();
 }
 
 const questXp = async (db: Parameters<typeof listXpEvents>[0]) =>
@@ -64,41 +83,47 @@ describe('epski questovi (repo)', () => {
     expect(() => setQuestStatus(db, USER, a.id, 'active', '2026-11-17', deps)).toThrow(QuestLimitError);
   });
 
-  it('etapa: XP na dan ostvarenja, poništavanje ga briše, ponovna oznaka bez duplikata', async () => {
+  it('korak 34c: etape i ostvarenje ne daju XP; dan ostvarenja ostaje kao bedž', async () => {
     const { db, deps } = await setup();
     const quest = createQuest(db, USER, input, deps);
     const first = quest.milestones[0].id;
     setQuestMilestoneDone(db, USER, quest.id, first, true, '2026-11-17', deps);
     setQuestMilestoneDone(db, USER, quest.id, first, true, '2026-11-18', deps);
-    let xp = await questXp(db);
-    expect(xp).toEqual([expect.objectContaining({ sourceId: first, date: '2026-11-17', amount: QUEST_MILESTONE_XP })]);
-
-    setQuestMilestoneDone(db, USER, quest.id, first, false, '2026-11-18', deps);
-    expect(await questXp(db)).toEqual([]);
-
-    setQuestMilestoneDone(db, USER, quest.id, first, true, '2026-11-18', deps);
-    xp = await questXp(db);
-    expect(xp).toEqual([expect.objectContaining({ sourceId: first, date: '2026-11-18' })]);
-  });
-
-  it('ostvaren quest: +XP; arhiva ga čuva; povratak u tijek ga uklanja; etape ostaju', async () => {
-    const { db, deps } = await setup();
-    const quest = createQuest(db, USER, input, deps);
-    setQuestMilestoneDone(db, USER, quest.id, quest.milestones[0].id, true, '2026-11-17', deps);
     const done = setQuestStatus(db, USER, quest.id, 'done', '2026-11-20', deps);
     expect(done).toMatchObject({ status: 'done', doneOn: '2026-11-20' });
-    expect((await questXp(db)).map((event) => event.amount).sort()).toEqual([QUEST_DONE_XP, QUEST_MILESTONE_XP].sort());
+    expect(done?.milestones[0].doneOn).toBe('2026-11-17');
+    expect(await questXp(db)).toEqual([]);
 
     const archived = setQuestStatus(db, USER, quest.id, 'archived', '2026-11-21', deps);
     expect(archived).toMatchObject({ status: 'archived', doneOn: '2026-11-20' });
-    expect(await questXp(db)).toHaveLength(2);
-
     const reopened = setQuestStatus(db, USER, quest.id, 'active', '2026-11-21', deps);
     expect(reopened).toMatchObject({ status: 'active', doneOn: null });
-    expect(await questXp(db)).toEqual([expect.objectContaining({ amount: QUEST_MILESTONE_XP })]);
+    expect(await questXp(db)).toEqual([]);
   });
 
-  it('uređivanje čuva ostvarene etape; uklonjena ostvarena etapa gubi XP; nova dobiva id', async () => {
+  it('korak 34c: XP dodijeljen prije ostaje — poništenje, uređivanje, povratak u tijek i brisanje ga ne diraju', async () => {
+    const { db, deps } = await setup();
+    const quest = createQuest(db, USER, input, deps);
+    const [a, b] = quest.milestones;
+    setQuestMilestoneDone(db, USER, quest.id, a.id, true, '2026-11-17', deps);
+    setQuestMilestoneDone(db, USER, quest.id, b.id, true, '2026-11-17', deps);
+    setQuestStatus(db, USER, quest.id, 'done', '2026-11-17', deps);
+    legacyXp(db, 'xp-a', a.id, 15);
+    legacyXp(db, 'xp-b', b.id, 15);
+    legacyXp(db, 'xp-q', quest.id, 100);
+    const ids = async () => (await questXp(db)).map((event) => event.id).sort();
+    expect(await ids()).toEqual(['xp-a', 'xp-b', 'xp-q']);
+
+    setQuestStatus(db, USER, quest.id, 'active', '2026-11-18', deps);
+    setQuestMilestoneDone(db, USER, quest.id, a.id, false, '2026-11-18', deps);
+    updateQuest(db, USER, quest.id, { ...input, milestones: [{ id: a.id, title: '5 km' }] }, deps);
+    expect(await ids()).toEqual(['xp-a', 'xp-b', 'xp-q']);
+
+    expect(deleteQuest(db, USER, quest.id)).toBe(true);
+    expect(await ids()).toEqual(['xp-a', 'xp-b', 'xp-q']);
+  });
+
+  it('uređivanje čuva ostvarene etape; nova etapa dobiva id', async () => {
     const { db, deps } = await setup();
     const quest = createQuest(db, USER, input, deps);
     const [a, b] = quest.milestones;
@@ -118,17 +143,15 @@ describe('epski questovi (repo)', () => {
       { id: expect.any(String), title: 'Novo', doneOn: null },
     ]);
     expect(updated?.milestones[1].id).not.toBe(b.id);
-    expect((await questXp(db)).map((event) => event.sourceId)).toEqual([a.id]);
   });
 
-  it('nepostojeći quest → null; brisanje briše i XP', async () => {
+  it('nepostojeći quest → null; brisanje questa', async () => {
     const { db, deps } = await setup();
     expect(setQuestStatus(db, USER, 'nema', 'done', '2026-11-17', deps)).toBeNull();
     const quest = createQuest(db, USER, input, deps);
     setQuestMilestoneDone(db, USER, quest.id, quest.milestones[0].id, true, '2026-11-17', deps);
     expect(deleteQuest(db, USER, quest.id)).toBe(true);
     expect(listQuests(db, USER)).toEqual([]);
-    expect(await questXp(db)).toEqual([]);
     expect(deleteQuest(db, USER, quest.id)).toBe(false);
   });
 

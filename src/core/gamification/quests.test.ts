@@ -2,30 +2,16 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   MAX_ACTIVE_QUESTS,
-  QUEST_DONE_XP,
-  QUEST_MILESTONE_XP,
   canStartQuest,
   questDaysLeft,
   questDeadlineDate,
   questProgress,
-  questXpAwards,
   sortQuests,
 } from './quests';
 
 const m = (id: string, doneOn: string | null = null) => ({ id, title: id, doneOn });
 
 describe('epski questovi', () => {
-  it('XP: svaka ostvarena etapa + ostvaren quest', () => {
-    expect(questXpAwards({ id: 'q', milestones: [m('a', '2026-11-10'), m('b')], doneOn: null })).toEqual([
-      { sourceId: 'a', date: '2026-11-10', amount: QUEST_MILESTONE_XP },
-    ]);
-    expect(questXpAwards({ id: 'q', milestones: [m('a', '2026-11-10')], doneOn: '2026-11-12' })).toEqual([
-      { sourceId: 'a', date: '2026-11-10', amount: QUEST_MILESTONE_XP },
-      { sourceId: 'q', date: '2026-11-12', amount: QUEST_DONE_XP },
-    ]);
-    expect(questXpAwards({ id: 'q', milestones: [], doneOn: null })).toEqual([]);
-  });
-
   it('napredak', () => {
     expect(questProgress({ milestones: [m('a', '2026-11-10'), m('b'), m('c'), m('d')], status: 'active' })).toEqual({
       done: 1,

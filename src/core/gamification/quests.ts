@@ -1,28 +1,13 @@
 /**
- * Epski questovi (korak 34): XP i napredak. Čista logika, bez React importa.
- * XP je izveden iz stanja questa (etape i ostvarenje), pa se može uvijek uskladiti bez dupliranja.
+ * Epski questovi (korak 34): napredak, rok i redoslijed. Čista logika, bez React importa.
+ * Korak 34c (odluka Borna 92, 2026-11-19): questovi su „samo bedž“ — etape i ostvarenje više ne
+ * daju XP; XP dodijeljen prije toga ostaje (bez kazni, razina ne pada).
  */
 import type { Quest } from '../domain/quest';
 import { daysBetween } from '../time/local-date';
 
-/** XP za ostvarenu etapu. */
-export const QUEST_MILESTONE_XP = 15;
-/** XP za ostvaren quest. */
-export const QUEST_DONE_XP = 100;
 /** Najviše questova u tijeku odjednom — malo po malo, fokus na nekoliko velikih ciljeva. */
 export const MAX_ACTIVE_QUESTS = 3;
-
-/** Jedna dodjela XP-a questa: `sourceId` je id etape ili samog questa (ostvarenje). */
-export type QuestXpAward = { sourceId: string; date: string; amount: number };
-
-/** Sve dodjele XP-a koje quest u ovom stanju nosi (etape s danom + ostvarenje). */
-export function questXpAwards(quest: Pick<Quest, 'id' | 'milestones' | 'doneOn'>): QuestXpAward[] {
-  const awards: QuestXpAward[] = quest.milestones
-    .filter((milestone) => milestone.doneOn !== null)
-    .map((milestone) => ({ sourceId: milestone.id, date: milestone.doneOn as string, amount: QUEST_MILESTONE_XP }));
-  if (quest.doneOn !== null) awards.push({ sourceId: quest.id, date: quest.doneOn, amount: QUEST_DONE_XP });
-  return awards;
-}
 
 export type QuestProgress = {
   done: number;

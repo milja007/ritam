@@ -1,10 +1,10 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import { questSchema, xpEventSchema, type Quest, type QuestMilestone, type QuestStatus } from '@/core/domain';
-import { canStartQuest, questXpAwards, sortQuests } from '@/core/gamification';
+import { questSchema, type Quest, type QuestMilestone, type QuestStatus } from '@/core/domain';
+import { canStartQuest, sortQuests } from '@/core/gamification';
 
 import type { RitamDb } from '../db';
-import { quests, xpEvents } from '../schema';
+import { quests } from '../schema';
 import type { RitamTx } from './block-xp';
 import { defaultRepoDeps, type RepoDeps } from './deps';
 
@@ -57,69 +57,15 @@ function milestonesFrom(input: readonly QuestMilestoneInput[], previous: readonl
 }
 
 /**
- * Uskladi XP questa s njegovim stanjem (etape s danom ostvarenja + ostvaren quest). Briše XP
- * etapa kojih više nema ili nisu ostvarene, dodaje nedostajući; ispravan XP ostaje netaknut
- * (bez nepotrebnih upisa za sync). `source = 'quest'` + `sourceId` = etapa ili quest.
- * `previousIds` su id-jevi etapa prije promjene (uklonjena ostvarena etapa gubi svoj XP).
+ * Spremi promjenu questa. Korak 34c (odluka 92): questovi više ne daju XP, a XP koji su dali
+ * prije ostaje u `xp_events` netaknut — ni poništena etapa ni povratak u tijek ga ne brišu.
  */
-export function syncQuestXp(
-  tx: RitamTx,
-  quest: Pick<Quest, 'id' | 'userId' | 'milestones' | 'doneOn'>,
-  previousIds: readonly string[],
-  deps: RepoDeps,
-): void {
-  const ids = [...new Set([quest.id, ...previousIds, ...quest.milestones.map((milestone) => milestone.id)])];
-  const existing = tx
-    .select()
-    .from(xpEvents)
-    .where(and(eq(xpEvents.userId, quest.userId), eq(xpEvents.source, 'quest'), inArray(xpEvents.sourceId, ids)))
-    .all();
-  const wanted = questXpAwards(quest);
-  const keep = new Set<string>();
-  for (const award of wanted) {
-    const match = existing.find(
-      (event) =>
-        !keep.has(event.id) &&
-        event.sourceId === award.sourceId &&
-        event.date === award.date &&
-        event.amount === award.amount,
-    );
-    if (match) {
-      keep.add(match.id);
-      continue;
-    }
-    const now = deps.now().toISOString();
-    tx.insert(xpEvents)
-      .values(
-        xpEventSchema.parse({
-          id: deps.newId(),
-          userId: quest.userId,
-          createdAt: now,
-          updatedAt: now,
-          date: award.date,
-          source: 'quest',
-          sourceId: award.sourceId,
-          amount: award.amount,
-        }),
-      )
-      .run();
-  }
-  const stale = existing.filter((event) => !keep.has(event.id)).map((event) => event.id);
-  if (stale.length > 0) tx.delete(xpEvents).where(inArray(xpEvents.id, stale)).run();
-}
-
-function save(tx: RitamTx, previous: Quest, next: Quest, deps: RepoDeps): Quest {
+function save(tx: RitamTx, next: Quest): Quest {
   const { id: _id, userId: _owner, createdAt: _created, ...changes } = next;
   tx.update(quests)
     .set(changes)
     .where(and(eq(quests.userId, next.userId), eq(quests.id, next.id)))
     .run();
-  syncQuestXp(
-    tx,
-    next,
-    previous.milestones.map((milestone) => milestone.id),
-    deps,
-  );
   return next;
 }
 
@@ -164,7 +110,7 @@ function change(
     const previous = readQuest(tx, userId, id);
     if (previous === null) return null;
     const next = questSchema.parse({ ...apply(previous, tx), updatedAt: deps.now().toISOString() });
-    return save(tx, previous, next, deps);
+    return save(tx, next);
   });
 }
 
@@ -207,8 +153,8 @@ export function setQuestMilestoneDone(
 
 /**
  * Promijeni stanje questa: `done` (ostvaren danas), `active` (ponovo u tijeku) ili `archived`
- * (spremljen sa strane; ostvaren quest u arhivi čuva dan i XP). Povratak u tijek poštuje
- * `MAX_ACTIVE_QUESTS` (`QuestLimitError`) i uklanja XP ostvarenja; XP etapa ostaje.
+ * (spremljen sa strane; ostvaren quest u arhivi čuva dan i bedž). Povratak u tijek poštuje
+ * `MAX_ACTIVE_QUESTS` (`QuestLimitError`) i skida bedž (dan ostvarenja).
  */
 export function setQuestStatus(
   db: RitamDb,
@@ -227,15 +173,10 @@ export function setQuestStatus(
   });
 }
 
-/** Obriši quest i njegov XP. */
+/** Obriši quest. XP koji je quest dao prije koraka 34c ostaje (bez kazni). */
 export function deleteQuest(db: RitamDb, userId: string, id: string): boolean {
   return db.transaction((tx) => {
-    const quest = readQuest(tx, userId, id);
-    if (quest === null) return false;
-    const ids = [quest.id, ...quest.milestones.map((milestone) => milestone.id)];
-    tx.delete(xpEvents)
-      .where(and(eq(xpEvents.userId, userId), eq(xpEvents.source, 'quest'), inArray(xpEvents.sourceId, ids)))
-      .run();
+    if (readQuest(tx, userId, id) === null) return false;
     tx.delete(quests).where(and(eq(quests.userId, userId), eq(quests.id, id))).run();
     return true;
   });
