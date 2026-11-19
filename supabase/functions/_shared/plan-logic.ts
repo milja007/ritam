@@ -92,7 +92,8 @@ export const MAX_CONTEXT_TASKS = 10;
 export const MAX_CONTEXT_RULES = 15;
 const MAX_NOTE = 300;
 /** Pitanje i odgovor: kao pitanja u odgovoru modela (≤ 300 znakova), najviše 3. */
-export const MAX_ANSWERS = 3;
+/** Odgovori kroz više krugova iste večeri (najnoviji prvi); stari klijent šalje najviše 3. */
+export const MAX_ANSWERS = 6;
 export const MAX_ANSWER_LENGTH = 300;
 
 /** Edge Functions koje zovu model. */

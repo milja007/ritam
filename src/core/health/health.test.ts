@@ -56,8 +56,16 @@ describe('healthNight', () => {
     expect(healthNight([sleep('asleep', at(19, 15, 0), at(19, 16, 30))], '2026-11-19')).toBeNull();
   });
 
-  it('san koji završi prije ponoći nije noć tog jutra', () => {
+  it('san koji završi prije ponoći nije noć tog jutra; točno u ponoć jest (Codex P2, #69)', () => {
     expect(healthNight([sleep('asleep', at(18, 19, 0), at(18, 23, 0))], '2026-11-19')).toBeNull();
+    expect(healthNight([sleep('asleep', at(18, 20, 0), at(19, 0, 0))], '2026-11-19')).toEqual({
+      sleepStart: '20:00',
+      wakeTime: '00:00',
+      minutes: 240,
+      basis: 'asleep',
+    });
+    // Isti blok nije noć prethodnog jutra (prozor tog dana završava u 14:00).
+    expect(healthNight([sleep('asleep', at(18, 20, 0), at(19, 0, 0))], '2026-11-18')).toBeNull();
   });
 
   it('noć prethodnog dana ne ulazi u prozor; blok kraći od sat vremena nije noć', () => {

@@ -4,6 +4,7 @@ import type { PlanDayRequest } from './edge-types';
 import {
   EMPTY_PLAN_CONTEXT,
   freeWindows,
+  mergePlanAnswers,
   planAnswers,
   planDayRequest,
   planProposal,
@@ -217,5 +218,27 @@ describe('planAnswers (korak 22)', () => {
     const answers = planAnswers(['A?'], ['a']);
     expect(planDayRequest('2026-11-20', [], [], '07:00', '23:00', 'hr', EMPTY_PLAN_CONTEXT, answers).answers).toEqual(answers);
     expect(planDayRequest('2026-11-20', [], [], '07:00', '23:00', 'hr').answers).toEqual([]);
+  });
+});
+
+describe('mergePlanAnswers (Codex P2, #68)', () => {
+  const a = (question: string, answer: string) => ({ question, answer });
+
+  it('drugi krug zadržava odgovor iz prvog; novi odgovor na isto pitanje pobjeđuje', () => {
+    const first = [a('Koliko traje kemija?', '90 minuta')];
+    const second = mergePlanAnswers(first, [a('Kad je trening?', 'Navečer')]);
+    expect(second).toEqual([a('Kad je trening?', 'Navečer'), a('Koliko traje kemija?', '90 minuta')]);
+    expect(mergePlanAnswers(second, [a('koliko  traje kemija?', 'Sat')])).toEqual([
+      a('koliko  traje kemija?', 'Sat'),
+      a('Kad je trening?', 'Navečer'),
+    ]);
+  });
+
+  it('najviše 6, najnoviji ostaju', () => {
+    const earlier = Array.from({ length: 5 }, (_, i) => a(`S${i}?`, `s${i}`));
+    const merged = mergePlanAnswers(earlier, [a('N1?', 'n1'), a('N2?', 'n2')]);
+    expect(merged).toHaveLength(6);
+    expect(merged.slice(0, 2).map((x) => x.question)).toEqual(['N1?', 'N2?']);
+    expect(merged.map((x) => x.question)).not.toContain('S4?');
   });
 });

@@ -102,6 +102,27 @@ export function planDayRequest(
 /** Najdulji odgovor na pitanje modela (isto ograničenje kao pitanje i server). */
 export const PLAN_MAX_ANSWER_LENGTH = MAX_QUESTION_LENGTH;
 
+/** Najviše odgovora u jednom zahtjevu (isto kao `MAX_ANSWERS` na serveru). */
+export const PLAN_MAX_ANSWERS = 6;
+
+const questionKey = (question: string) => question.replace(/\s+/g, ' ').trim().toLowerCase();
+
+/**
+ * Odgovori kroz krugove iste večeri (Codex P2, #68): najnoviji prvi, pa raniji čije pitanje
+ * nije ponovo odgovoreno; najviše `PLAN_MAX_ANSWERS`. Stari server čita prva 3 — dobiva najnovije.
+ */
+export function mergePlanAnswers(earlier: readonly PlanAnswer[], latest: readonly PlanAnswer[]): PlanAnswer[] {
+  const seen = new Set<string>();
+  const merged: PlanAnswer[] = [];
+  for (const answer of [...latest, ...earlier]) {
+    const key = questionKey(answer.question);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(answer);
+  }
+  return merged.slice(0, PLAN_MAX_ANSWERS);
+}
+
 /**
  * Odgovori za ponovno slaganje (korak 22): svako pitanje s odgovorom koji nije prazan, razmaci
  * sažeti, najviše 3. Pitanje bez odgovora se ne šalje (model ga smije pitati ponovo).

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   isTomorrowPlanValid,
+  mergePlanAnswers,
   occupiedSlots,
   parsedItems,
   pickKey,
@@ -77,6 +78,8 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
   const plan = useTomorrowPlan(date);
   const [items, setItems] = useState<Item[]>([]);
   const nextKey = useRef(1);
+  /** Svi odgovori na pitanja modela ove večeri (najnoviji prvi). */
+  const answered = useRef<PlanAnswer[]>([]);
   const [typed, setTyped] = useState('');
   const [editing, setEditing] = useState<Item | null>(null);
   const [saving, setSaving] = useState(false);
@@ -153,9 +156,12 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
    * „Složi mi dan“: stavke + slobodni prozori → `plan-day` → prijedlog. Ništa se ne mijenja dok
    * korisnik ne prihvati prijedlog, a ništa se ne sprema dok ne potvrdi plan.
    */
-  async function arrange(answers: readonly PlanAnswer[] = []) {
+  async function arrange(latest: readonly PlanAnswer[] = []) {
     if (busy || items.length < PLAN_MIN_ITEMS) return;
     const snapshot = items;
+    // Odgovori iz ranijih krugova ove večeri idu uz nove, da model ne zaboravi ni ne pita ponovo.
+    const answers = mergePlanAnswers(answered.current, latest);
+    answered.current = answers;
     setPlanError(false);
     setPlanning(true);
     // Korak 26: model dobiva i ciljeve, tjedne zadatke kojima fale termini i zabrane tog dana.
@@ -170,7 +176,7 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
     }
     setProposal(planProposal(response, snapshot, tasks));
     setProposalRound((round) => round + 1);
-    if (answers.length > 0) AccessibilityInfo.announceForAccessibility(t('evening.plan.rearranged'));
+    if (latest.length > 0) AccessibilityInfo.announceForAccessibility(t('evening.plan.rearranged'));
   }
 
   function acceptProposal() {

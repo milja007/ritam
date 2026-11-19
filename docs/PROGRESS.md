@@ -9,6 +9,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - 92 (questovi): **stari XP ostaje** — novi questovi i etape bez XP-a, već dodijeljeni XP se ne briše (ni brisanjem questa).
 - Plan 34c (`wip/korak-34c-questovi`, HIGH_RISK zbog `src/db/repos/quests.ts`): (1) core/repo: `questXpAwards` i usklađivanje XP-a questa uklonjeni, `deleteQuest` ne dira XP; testovi da ostvarena etapa/quest ne dodaju XP, a postojeći XP ostaje i nakon poništenja i brisanja; (2) UI: tekstovi bez XP-a (HR/EN); ostvaren quest je bedž — u kartici „Bedževi“ osobni čip s naslovom questa (puni obrub, detalj „Ostvaren <datum>“), brojač bedževa ga uključuje.
 - Gotovo: (1)–(2) u PR-u #70 (`[x]`).
+- Codex P2 (#69 ponoć u `healthNight`, #68 odgovori kroz krugove „Složi mi dan“, `plan-day` MAX_ANSWERS 3 → 6) → `fix/codex-p2-ponoc-odgovori`. `plan-day` treba ponovni deploy (pitanje 77).
 - Zatim 39/41 s paketima (Health: san, koraci, kcal; widget: čeka Apple račun za iOS build).
 
 ## 2026-11-19 · Sesija 21:43 — korak 39 (dio): čista logika Health podataka
