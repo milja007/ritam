@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { appendDictation, dictationProblem, recognitionLocale, voiceLevel } from './dictation';
 
 describe('recognitionLocale', () => {

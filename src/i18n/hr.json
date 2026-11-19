@@ -1775,5 +1775,17 @@
       "incomeDetail": "Unos prihoda (plaća, honorar…). Prihodi se dodaju trenutnom stanju; limit potrošnje i rezultat dana ostaju isti.",
       "balanceSinceIncome": "Stanje {{value}} od {{date}} — potrošnja od tog dana se oduzima, prihodi dodaju."
     }
+  },
+  "dictation": {
+    "start": "Diktiraj",
+    "stop": "Zaustavi diktiranje",
+    "hint": "Izgovoreno se upiše u polje, a možeš ga ispraviti prije spremanja.",
+    "listening": "Slušam… dodirni mikrofon kad završiš.",
+    "problem": {
+      "permission": "Za diktiranje dopusti mikrofon i prepoznavanje govora u Postavkama.",
+      "unavailable": "Diktiranje na ovom jeziku nije dostupno na ovom uređaju.",
+      "noSpeech": "Nisam ništa čuo — pokušaj ponovo.",
+      "failed": "Diktiranje nije uspjelo. Možeš upisati tekst."
+    }
   }
 }

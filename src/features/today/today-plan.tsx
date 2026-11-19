@@ -174,6 +174,7 @@ export function TodayPlan({ date, nowMinutes, existing, onSaved, onClose }: Toda
                       <View style={styles.section}>
                         <TextField
                           label={t('todayPlan.typeLabel')}
+                          dictation
                           placeholder={t('todayPlan.typePlaceholder')}
                           value={typed}
                           onChangeText={setTyped}
