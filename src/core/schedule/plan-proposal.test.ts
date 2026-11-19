@@ -2,7 +2,9 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { PlanDayRequest } from './edge-types';
 import {
+  EMPTY_PLAN_CONTEXT,
   freeWindows,
+  planAnswers,
   planDayRequest,
   planProposal,
   priorityOf,
@@ -87,6 +89,7 @@ const request: PlanDayRequest = {
   ],
   preferences: null,
   context: { goals: [], tasks: [], rules: [] },
+  answers: [],
 };
 
 describe('readPlanDayResponse', () => {
@@ -194,5 +197,25 @@ describe('planProposal', () => {
       [linked],
     );
     expect(proposal.drafts[0]?.taskId).toBe('task-1');
+  });
+});
+
+describe('planAnswers (korak 22)', () => {
+  it('šalje samo pitanja s odgovorom, sažima razmake i reže na 300 znakova', () => {
+    const questions = ['Koliko traje kemija?', 'Kad je trening?', 'Ide li zubar prije posla?'];
+    expect(planAnswers(questions, [' Sat  i pol ', '', 'Da'])).toEqual([
+      { question: 'Koliko traje kemija?', answer: 'Sat i pol' },
+      { question: 'Ide li zubar prije posla?', answer: 'Da' },
+    ]);
+    expect(planAnswers(questions, [])).toEqual([]);
+    expect(planAnswers(['P?'], ['y'.repeat(400)])[0]?.answer).toHaveLength(300);
+  });
+
+  it('najviše 3 pitanja; zahtjev nosi odgovore, bez njih prazno', () => {
+    const questions = ['A?', 'B?', 'C?', 'D?'];
+    expect(planAnswers(questions, ['a', 'b', 'c', 'd'])).toHaveLength(3);
+    const answers = planAnswers(['A?'], ['a']);
+    expect(planDayRequest('2026-11-20', [], [], '07:00', '23:00', 'hr', EMPTY_PLAN_CONTEXT, answers).answers).toEqual(answers);
+    expect(planDayRequest('2026-11-20', [], [], '07:00', '23:00', 'hr').answers).toEqual([]);
   });
 });

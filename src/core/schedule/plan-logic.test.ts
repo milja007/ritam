@@ -7,8 +7,10 @@ import {
   LLM_MODELS,
   llmModelFor,
   parseParseInputBody,
+  parsePlanAnswers,
   parsePlanContext,
   parsePlanDayRequest,
+  planAnswerLines,
   planContextLines,
   type DayPriority,
   type PlanDayRequest,
@@ -33,6 +35,7 @@ const request = (priorities: DayPriority[], freeWindows: { start: string; end: s
   freeWindows,
   preferences: null,
   context: { goals: [], tasks: [], rules: [] },
+  answers: [],
 });
 
 describe('isClock', () => {
@@ -247,5 +250,45 @@ describe('kontekst plana (korak 26)', () => {
     expect(hr).toContain('- Bez ekrana poslije 23');
     const en = planContextLines(context, 'en').join('\n');
     expect(en).toContain('- Trening (60 min, 2× left, evening, high energy, due 2026-11-22, needs: tenisice)');
+  });
+});
+
+describe('odgovori na pitanja modela (korak 22)', () => {
+  it('stari klijent bez odgovora → prazno, prompt isti kao prije', () => {
+    const body = { date: '2026-11-18', priorities: [], freeWindows: [], preferences: null };
+    expect(parsePlanDayRequest(body)?.answers).toEqual([]);
+    expect(parsePlanAnswers('x')).toEqual([]);
+    expect(planAnswerLines([], 'hr')).toEqual([]);
+  });
+
+  it('nevaljani i prazni odgovori otpadaju, razmaci se sažimaju, najviše 3', () => {
+    const long = 'x'.repeat(301);
+    const answers = parsePlanAnswers([
+      { question: ' Koliko  traje kemija? ', answer: ' Sat i  pol ' },
+      { question: 'Kad je trening?', answer: '   ' },
+      { question: long, answer: 'Da' },
+      null,
+      { question: 'A', answer: 1 },
+      { question: 'B?', answer: 'b' },
+      { question: 'C?', answer: 'c' },
+      { question: 'D?', answer: 'd' },
+    ]);
+    // Čita se samo prvih 3 iz zahtjeva (kao kontekst), pa od njih ostaje jedan valjan.
+    expect(answers).toEqual([{ question: 'Koliko traje kemija?', answer: 'Sat i pol' }]);
+    const many = Array.from({ length: 6 }, (_, i) => ({ question: `P${i}?`, answer: `O${i}` }));
+    expect(parsePlanAnswers(many)).toHaveLength(3);
+    // Neispravni odgovori ne ruše zahtjev.
+    const body = { date: '2026-11-18', priorities: [], freeWindows: [], preferences: null, answers: [null, 'x'] };
+    expect(parsePlanDayRequest(body)?.answers).toEqual([]);
+  });
+
+  it('retci za model na jeziku zahtjeva', () => {
+    const answers = [{ question: 'Koliko traje kemija?', answer: 'Sat i pol, poslije ručka' }];
+    const hr = planAnswerLines(answers, 'hr').join('\n');
+    expect(hr).toContain('Odgovori korisnika');
+    expect(hr).toContain('- P: Koliko traje kemija?\n  O: Sat i pol, poslije ručka');
+    const en = planAnswerLines(answers, 'en').join('\n');
+    expect(en).toContain("The user's answers");
+    expect(en).toContain('- Q: Koliko traje kemija?\n  A: Sat i pol, poslije ručka');
   });
 });

@@ -30,6 +30,7 @@ import {
   acceptModelPlan,
   buildFallbackPlan,
   parsePlanDayRequest,
+  planAnswerLines,
   planContextLines,
   type PlanDayRequest,
   type PlanDayResponse,
@@ -117,6 +118,8 @@ Vrati SAMO JSON objekt (bez markdowna):
 
 Ako dobiješ ciljeve, tjedne zadatke ili zabrane: ciljevi su kontekst za sažetak i redoslijed; tjedni zadatak smjesti samo ako stane uz prioritete (prioriteti imaju prednost), u njegovo doba dana i prije roka; ništa u planu ne smije kršiti zabranu.
 
+Ako dobiješ odgovore korisnika na svoja ranija pitanja, složi raspored prema njima i ne postavljaj ista pitanja ponovo.
+
 Ako ne možeš smjestiti sve prioritete, napiši pitanje. Ako su slobodni prozori prazni, traži ih pitanjem.
 Sažetak i pitanja piši na ${req.locale === 'en' ? 'engleskom' : 'hrvatskom'} jeziku.
 `.trim();
@@ -146,6 +149,8 @@ function buildUserMessage(req: PlanDayRequest): string {
   }
 
   lines.push(...planContextLines(req.context, req.locale));
+  // Korak 22: plan se slaže zajedno s korisnikom — odgovori na pitanja iz prošlog prijedloga.
+  lines.push(...planAnswerLines(req.answers, req.locale));
 
   return lines.join('\n');
 }
