@@ -14,6 +14,18 @@ import {
   UNLOCKS,
   unlocksBetween,
   usableTheme,
+  AVATAR_FRAMES,
+  avatarFrameOr,
+  DEFAULT_AVATAR_FRAME,
+  DEFAULT_DONE_EFFECT,
+  DONE_EFFECTS,
+  doneEffectOr,
+  doneEffectUnlockLevel,
+  frameUnlockLevel,
+  isDoneEffectUnlocked,
+  isFrameUnlocked,
+  usableDoneEffect,
+  usableFrame,
 } from './unlocks';
 
 describe('tablica otključavanja', () => {
@@ -98,7 +110,8 @@ describe('naslovi', () => {
 describe('nextUnlocks', () => {
   it('prva sljedeća razina koja nešto otključava', () => {
     expect(nextUnlocks(1)).toEqual({ level: 2, unlocks: [{ level: 2, kind: 'title', title: 'earlyBird' }] });
-    expect(nextUnlocks(6)).toEqual({ level: 8, unlocks: [{ level: 8, kind: 'theme', theme: 'aurora' }] });
+    expect(nextUnlocks(7)).toEqual({ level: 8, unlocks: [{ level: 8, kind: 'theme', theme: 'aurora' }] });
+    expect(nextUnlocks(6)).toEqual({ level: 7, unlocks: [{ level: 7, kind: 'frame', frame: 'embers' }] });
   });
 
   it('kad je sve otključano nema sljedećeg', () => {
@@ -124,7 +137,8 @@ describe('levelUp', () => {
   });
 
   it('razina bez otključavanja se i dalje slavi, s praznim popisom', () => {
-    expect(levelUp(6, 7)).toEqual({ from: 6, to: 7, unlocks: [] });
+    // Razine 2–15 svaka nešto otključavaju; iznad toga raste samo plamen.
+    expect(levelUp(15, 16)).toEqual({ from: 15, to: 16, unlocks: [] });
   });
 
   it('skok za više razina (app je bio zatvoren) skuplja sve preskočeno', () => {
@@ -146,5 +160,49 @@ describe('parseSeenLevel', () => {
     expect(parseSeenLevel('7')).toBe(7);
     expect(parseSeenLevel('1')).toBe(1);
     for (const bad of [null, '', '0', '-2', '3.5', 'abc', '1e3', ' 4', '9999999']) expect(parseSeenLevel(bad)).toBeNull();
+  });
+});
+
+describe('okviri avatara i animacije „Gotovo“ (32b)', () => {
+  it('svaki okvir i svaka animacija imaju točno jedan redak, redom i na sve višoj razini', () => {
+    const frames = UNLOCKS.flatMap((unlock) => (unlock.kind === 'frame' ? [unlock.frame] : []));
+    const effects = UNLOCKS.flatMap((unlock) => (unlock.kind === 'doneEffect' ? [unlock.effect] : []));
+    expect(frames).toEqual([...AVATAR_FRAMES]);
+    expect(effects).toEqual([...DONE_EFFECTS]);
+    const frameLevels = AVATAR_FRAMES.map(frameUnlockLevel);
+    const effectLevels = DONE_EFFECTS.map(doneEffectUnlockLevel);
+    for (const levels of [frameLevels, effectLevels]) {
+      expect(levels[0]).toBe(1);
+      for (let i = 1; i < levels.length; i++) expect(levels[i]).toBeGreaterThan(levels[i - 1] ?? 0);
+    }
+  });
+
+  it('početni su dostupni odmah, ostali od svoje razine', () => {
+    expect(isFrameUnlocked(DEFAULT_AVATAR_FRAME, 1)).toBe(true);
+    expect(isDoneEffectUnlocked(DEFAULT_DONE_EFFECT, 1)).toBe(true);
+    expect(isFrameUnlocked('embers', 6)).toBe(false);
+    expect(isFrameUnlocked('embers', 7)).toBe(true);
+    expect(isDoneEffectUnlocked('sparks', 8)).toBe(false);
+    expect(isDoneEffectUnlocked('sparks', 9)).toBe(true);
+    expect(isFrameUnlocked('corona', Number.NaN)).toBe(false);
+  });
+
+  it('zaključan odabir pada na početni (npr. nakon brisanja podataka)', () => {
+    expect(usableFrame('halo', 10)).toBe(DEFAULT_AVATAR_FRAME);
+    expect(usableFrame('halo', 11)).toBe('halo');
+    expect(usableDoneEffect('wave', 12)).toBe(DEFAULT_DONE_EFFECT);
+    expect(usableDoneEffect('wave', 13)).toBe('wave');
+  });
+
+  it('spremljeni zapis: nepoznat je početni', () => {
+    expect(avatarFrameOr('corona')).toBe('corona');
+    expect(avatarFrameOr(null)).toBe(DEFAULT_AVATAR_FRAME);
+    expect(avatarFrameOr('zlatni')).toBe(DEFAULT_AVATAR_FRAME);
+    expect(doneEffectOr('sparks')).toBe('sparks');
+    expect(doneEffectOr('')).toBe(DEFAULT_DONE_EFFECT);
+  });
+
+  it('level-up donosi i okvire i animacije', () => {
+    expect(unlocksBetween(6, 9).map((unlock) => unlock.kind)).toEqual(['frame', 'theme', 'doneEffect']);
   });
 });

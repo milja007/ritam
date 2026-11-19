@@ -2,6 +2,10 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-19 · Sesija 00:43 (nastavak) — 32b nagrade po razini
+- Plan: (1) `unlocks.ts` — vrste `frame` i `doneEffect`, razine 7/11/14 i 9/13 (popunjavaju praznine, prve nagrade ostaju iste), `usable*`, testovi; tekst otključanog za sve četiri vrste (HR/EN). (2) Okviri na `OrbFlame` (dišu s aureolom), `DoneFlare` (Iskre, Val) na točki trake Dana; uz „smanji kretanje“ samo bljesak. (3) Birač na Profilu s pregledom; odabir na uređaju, usklađen s razinom kao tema.
+- 34c (questovi bez XP-a) namjerno nije rađen: oduzimanje XP-a može spustiti razinu (koncept: bez kazni) — treba Bornino „da“ za način (vidi pitanje 92).
+
 ## 2026-11-19 · Sesija 00:43 — Ž11 haptika, zatim 33 orb-plamen na Skii
 - Paketi su stigli (PR #56: `expo-haptics`, Skia), pa se rade dva zadnja „Žar“ dijela koja su ih čekala.
 - Plan Ž11 (PR 1): (1) `src/core/haptics` — čista logika: događaj → vrsta (`done`, `skip`, `streak`, `achievement`, `levelUp`, `tick`), spajanje događaja u istom trenutku (jači pobjeđuje, isti se ne ponavlja), vremenska crta haptike level-upa (tik po broju razine, uspjeh na prasku); testovi. (2) `src/ui/haptics.ts` — `playHaptic` preko `expo-haptics` (greška nikad ne ruši ekran, bez weba), uključeno po defaultu, prekidač „Haptika“ na Profilu (postavka uređaja, bez migracije), HR/EN. (3) Spojiti: Gotovo / Preskoči na Danu, bljesak niza, smrzavanje, quest/cilj ostvaren, level-up.
@@ -42,6 +46,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 3. **Sljedeće skupine (Bornine odluke 2026-11-18):** 34c questovi samo s bedžem (bez XP-a); 31f prihodi kao opcijski tracker (isključen po defaultu; lokalna migracija + Supabase migracija = HIGH_RISK, remote primjenjuje Borna); 32b okviri avatara i animacije „Gotovo“ kao nagrade po razini. Uz to P2 nalazi Codexa kad stignu.
 
 ## Pitanja za Bornu
+92. **34c questovi „samo badge“:** ako maknem XP za etape i quest, postojeći XP iz questova nestaje i razina može pasti (koncept: bez kazni). Prijedlog: novi questovi bez XP-a, već dodijeljeni XP ostaje. U redu? Dok nema odgovora, questovi ostaju kako jesu.
 84. **Remote migracije** (`color_theme`, `quests`, `goals`, `tasks`, `rule_periods`, `trackers`) — Claudeov alat ne smije primijeniti. Na Macu `npx supabase db push`. Dok nisu primijenjene, sync ne smije biti uključen.
 77. ~~Deploy Edge Functions~~ — **deployano 2026-11-18 (Codex)**. Nakon PR-a s modelom `plan-day` treba ponovo deployati (`npx supabase functions deploy plan-day`). Živi probni poziv čeka prijavljenog korisnika (migracije, pitanje 84).
 - Pitanja 75–91 odgovorena 2026-11-18 (gore, „Odluke Borne“); 87 i 88 bez odgovora → ostaje kako je. Starija pitanja (23–70) su u arhivi pod "Pitanja za Bornu". Dio je možda već riješen u kodu — sljedeća sesija s viškom kvote ih može sažeti u jedan paket za anketu.

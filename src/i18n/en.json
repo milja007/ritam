@@ -1326,9 +1326,7 @@
     "levelTitle": "Level {{level}} · {{title}}",
     "levelTitleA11y": "Level {{level}}, title {{title}}",
     "next": "Level {{level}} unlocks: {{what}}",
-    "allUnlocked": "All themes and titles are unlocked. The flame keeps growing.",
-    "theme": "the “{{name}}” theme",
-    "title": "the title “{{name}}”",
+    "allUnlocked": "All themes, titles, frames and animations are unlocked. The flame keeps growing.",
     "listJoin": ", ",
     "titles": {
       "spark": "Spark",
@@ -1357,13 +1355,42 @@
     "levelUp": {
       "overline": "New level",
       "unlocked": "Unlocked",
-      "themeRow": "“{{name}}” theme",
-      "titleRow": "Title “{{name}}”",
       "nothing": "The flame is stronger. The next unlock comes at level {{level}}.",
       "nothingAll": "The flame is stronger. Everything is already unlocked — now only it grows.",
       "tryTheme": "Try the “{{name}}” theme",
       "continue": "Continue",
-      "a11y": "New level: {{level}}."
+      "a11y": "New level: {{level}}.",
+      "rows": {
+        "theme": "“{{name}}” theme",
+        "title": "“{{name}}” title",
+        "frame": "“{{name}}” avatar frame",
+        "doneEffect": "“{{name}}” Done animation"
+      }
+    },
+    "inline": {
+      "theme": "the “{{name}}” theme",
+      "title": "the title “{{name}}”",
+      "frame": "the “{{name}}” frame",
+      "doneEffect": "the “{{name}}” Done animation"
+    },
+    "frames": {
+      "plain": "Ring",
+      "embers": "Embers",
+      "halo": "Halo",
+      "corona": "Corona"
+    },
+    "doneEffects": {
+      "flare": "Flare",
+      "sparks": "Sparks",
+      "wave": "Wave"
+    },
+    "rewards": {
+      "title": "Frame and animation",
+      "hint": "The frame circles your flame on Profile; the animation lights up when you mark an activity done. Levels unlock new ones.",
+      "frames": "Avatar frame",
+      "effects": "Done animation",
+      "lockedInfo": "“{{name}}” unlocks at level {{level}}. You’re level {{current}}.",
+      "preview": "Preview"
     }
   },
   "quests": {
