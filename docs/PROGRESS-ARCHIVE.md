@@ -4,6 +4,20 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-19 · Sesija 09:43 — korak 30: glasovni unos
+- #1: nema otvorenih zahtjeva (Codex odobrio #61 i #62); pitanje 92 bez odgovora → 34c čeka. Nema bug issueja ni otvorenih PR-ova. Preostali nezavršeni koraci: 24 (OAuth tajne — Borna), 30, 39/41 (faza 4). Radim 30.
+- Plan: (1) PR A (HIGH_RISK, mali): paket `expo-speech-recognition` 58.x (`npx expo install`, nije u Expo SDK-u, ali verzija prati SDK 58) + config plugin s opisima dopuštenja (mikrofon, prepoznavanje govora). Traži novi development build. (2) `src/core/voice`: jezik appa → locale prepoznavanja (hr-HR, en-US), spajanje diktiranog teksta s već napisanim, odluka smije li se snimati (samo na uređaju — koncept „on-device“). Testovi. (3) `src/ui/voice`: adapter koji ne ruši app kad native modul nije u buildu (stari dev build) — mikrofon se tad ne prikazuje; gumb mikrofona (a11y, haptika, „smanji kretanje“), HR/EN. (4) Spojiti na „Što imaš sutra?“ / plan za danas (tekst → postojeći `parse-input` ili lokalni unos), „Odustajem — što se dogodilo“ i komentare u večernjem upitu.
+- Gotovo: (1) PR #63; (2)–(4) PR #64; 30 `[x]`. Nalaz iz paketa: iOS `requiresOnDeviceRecognition` vrijedi samo ako jezik ima model na uređaju, inače iOS tiho koristi Appleov poslužitelj (isto kao mikrofon na tipkovnici) — zadržano, pitanje 93.
+
+## Odluke Borne (anketa u chatu, 2026-11-18 ~22:00)
+- 89/91 (dijagnoze riječima): **u redu** — model piše tekst, promjenu/smjer bira app, samo svjež period.
+- 90 (trackeri): u redu, **plus prihodi** — praćenje prihoda kao opcija, **isključeno po defaultu** (uključuje se u Profilu). → novi korak 31f.
+- 85 (žeravica), 76 (rang), 75 (drugi račun ostaje blokiran), 78 (bedževi): **u redu, ostaje**.
+- 86 (questovi): **„samo badge“** — tumačenje: ostvaren quest daje bedž, **bez XP-a** za etape i quest. → korak 34c.
+- 80 (otključavanja): **dodati okvire avatara i animacije „Gotovo“** kao nagrade po razini. → korak 32b.
+- Modeli (korak 40): **bez DeepSeeka**; „najjeftiniji, ali dobar za ovo“ → `parse-input` i `plan-day` Haiku 5.5, `write-report` Sonnet 5.5. `plan-day` treba ponovni deploy.
+- 88 (zabrane) i 87 (wind-down po koraku): bez odgovora → ostaje kako je; wind-down i dalje prati ciljani krevet.
+
 ## 2026-11-19 · Sesija 03:43 — korak 31f: prihodi (opcija trackera novca)
 - Odluka Borna (pitanje 90, 2026-11-18): prihodi kao opcija, isključeni po defaultu, uključuju se u Profilu. Prioritet „Žar“ istekao 2026-11-17; 34c čeka pitanje 92.
 - Plan: (1) Podaci (HIGH_RISK): vrsta unosa `income`, postavka `trackIncome` (zadano isključeno), lokalna migracija 0016 i Supabase migracija (stupac + `kind` check + gornja granica iznosa), testovi sheme/RLS i pariteta; remote primjenjuje Borna (pitanje 84). (2) Logika i UI: `moneySummary` broji prihode (danas/tjedan/mjesec) i dodaje ih stanju; limit potrošnje i dnevni rezultat se ne mijenjaju (prihod nije ponašanje). Profil → Novac → prekidač „Prati i prihode“ (vidljiv samo uz uključen novac); kartica na Danu: prihodi s popisom i unosom, HR/EN, a11y.
