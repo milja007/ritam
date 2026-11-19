@@ -5,6 +5,7 @@ import {
   canStartQuest,
   questDaysLeft,
   questDeadlineDate,
+  questBadges,
   questProgress,
   sortQuests,
 } from './quests';
@@ -64,5 +65,28 @@ describe('okvirni rok', () => {
     expect(questDeadlineDate('1m', '2027-01-31')).toBe('2027-02-28');
     expect(questDeadlineDate('1m', '2028-01-31')).toBe('2028-02-29');
     expect(questDeadlineDate('6m', '2026-08-31')).toBe('2027-02-28');
+  });
+
+  it('bedževi ostvarenih questova (34c): noviji prvi, arhiviran ostaje, u tijeku ne', () => {
+    const q = (id: string, status: 'active' | 'done' | 'archived', doneOn: string | null) => ({
+      id,
+      title: id.toUpperCase(),
+      status,
+      doneOn,
+    });
+    expect(
+      questBadges([
+        q('a', 'done', '2026-11-10'),
+        q('b', 'active', null),
+        q('c', 'archived', '2026-11-15'),
+        q('d', 'archived', null),
+        q('e', 'done', '2026-11-15'),
+      ]),
+    ).toEqual([
+      { id: 'c', title: 'C', doneOn: '2026-11-15' },
+      { id: 'e', title: 'E', doneOn: '2026-11-15' },
+      { id: 'a', title: 'A', doneOn: '2026-11-10' },
+    ]);
+    expect(questBadges([])).toEqual([]);
   });
 });

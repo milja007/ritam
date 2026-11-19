@@ -1316,6 +1316,9 @@
     }
   },
   "badges": {
+    "questEarned": "Ostvaren {{date}}",
+    "questRule": "Osobni bedž: epski quest koji si sam postavio i ostvario.",
+    "questA11y": "Bedž questa: {{title}}. Ostvaren {{date}}.",
     "title": "Bedževi",
     "count": "{{earned}} / {{total}}",
     "countA11y": "Osvojeno bedževa: {{earned}} od {{total}}",

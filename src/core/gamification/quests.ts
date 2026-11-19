@@ -73,3 +73,18 @@ export function questDeadlineDate(deadline: QuestDeadline, today: string): strin
   const pad = (value: number) => String(value).padStart(2, '0');
   return `${year}-${pad(month)}-${pad(Math.min(d, last))}`;
 }
+
+/** Osobni bedž za ostvaren quest (korak 34c, „samo bedž“). */
+export type QuestBadge = { id: string; title: string; doneOn: string };
+
+/**
+ * Bedževi ostvarenih questova, noviji prvi. Arhiviran ostvaren quest zadržava bedž; povratak u
+ * tijek ga skida (nema dana ostvarenja).
+ */
+export function questBadges(quests: readonly Pick<Quest, 'id' | 'title' | 'status' | 'doneOn'>[]): QuestBadge[] {
+  return quests
+    .flatMap((quest) =>
+      quest.status !== 'active' && quest.doneOn !== null ? [{ id: quest.id, title: quest.title, doneOn: quest.doneOn }] : [],
+    )
+    .sort((a, b) => (a.doneOn > b.doneOn ? -1 : a.doneOn < b.doneOn ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}

@@ -1293,6 +1293,9 @@
     }
   },
   "badges": {
+    "questEarned": "Completed {{date}}",
+    "questRule": "Personal badge: an epic quest you set yourself and completed.",
+    "questA11y": "Quest badge: {{title}}. Completed {{date}}.",
     "title": "Badges",
     "count": "{{earned}} / {{total}}",
     "countA11y": "Badges earned: {{earned}} of {{total}}",
