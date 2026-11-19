@@ -2,6 +2,10 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-19 · Sesija 21:43 — korak 39 (dio): čista logika Health podataka
+- #1: zadnja objava je #68 (Codex još nije pregledao). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Svi neblokirani koraci gotovi.
+- Plan (`wip/korak-39-health-logika`, kao 41: samo `src/core/health`, bez paketa i dopuštenja dok pitanje 94 nije odgovoreno): (1) `healthNight`: uzorci sna (u krevetu / spava / budan, s izvorom) → noć koja završava jutrom zadanog dana: segmenti spavanja spojeni uz prekid ≤ 60 min, najduži blok u prozoru 18:00 prethodnog dana – 14:00 tog dana; bez „spava“ uzoraka pada na „u krevetu“; rezultat `sleepStart`/`wakeTime` „HH:MM“ kao u jutarnjem upitu; (2) `dailyHealthTotal`: zbroj uzoraka količine (koraci, aktivne kcal) za lokalni dan, uzorak preko ponoći dijeli se razmjerno; (3) `healthSleepFill`: prijedlog za jutarnji upit samo kad korisnik sam nije upisao san (ručni unos uvijek pobjeđuje). Testovi uz svaki dio; ništa se još ne uvozi u app.
+
 ## 2026-11-19 · Sesija 18:43 — korak 22: odgovori na pitanja modela
 - #1: Codex odobrio #66 i #67 bez novih nalaza. Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Svi neblokirani koraci su gotovi osim dorade 22 („odgovori na pitanja modela se još ne šalju natrag“).
 - Plan (`wip/korak-22-odgovori`, HIGH_RISK zbog `supabase/functions`): (1) `PlanDayRequest.answers` (pitanje + odgovor, najviše 3, ≤ 300 znakova) u `edge-types` i `_shared/plan-logic` — stari klijent bez polja → `[]`, neispravan unos se tiho ispušta; (2) `plan-day` stavlja odgovore u poruku, a prompt kaže da ih poštuje i ne pita isto ponovo; (3) prijedlog: uz svako pitanje polje za odgovor (s diktiranjem), gumb „Odgovori i složi ponovo“ (aktivan uz barem jedan odgovor) šalje iste stavke + odgovore; (4) testovi (core, server parse/prompt linije, i18n). Treba ponovni deploy `plan-day` (Borna, uz pitanje 77).
