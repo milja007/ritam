@@ -137,6 +137,7 @@ export function UnexpectedFlow({
 
                 <TextField
                   label={t('unexpected.whatLabel')}
+                  dictation
                   placeholder={t('unexpected.whatPlaceholder')}
                   value={what}
                   onChangeText={setWhat}

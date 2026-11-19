@@ -115,3 +115,8 @@ export function countUpLevels(from: number, to: number, maxSteps = 6): number[] 
   const first = Math.max(start, end - steps);
   return Array.from({ length: end - first + 1 }, (_, i) => first + i);
 }
+
+/** Mikrofon dok sluša (korak 30): jedan udah aureole, koliko brzo prati glas i do koliko naraste. */
+export const DICTATION_BREATH_MS = 1600;
+export const DICTATION_LEVEL_MS = 120;
+export const DICTATION_GLOW_SCALE = 1.7;

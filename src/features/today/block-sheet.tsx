@@ -91,6 +91,7 @@ export function BlockSheet({ block, phase, onReport, onSaveNote, onToggleCancel,
             <View style={styles.section}>
               <TextField
                 label={t('today.note.label')}
+                dictation
                 placeholder={t('today.note.placeholder')}
                 value={note}
                 onChangeText={setNote}

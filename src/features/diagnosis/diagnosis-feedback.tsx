@@ -116,6 +116,7 @@ export function DiagnosisFeedback({ period, periodStart }: { period: ReportPerio
           </Text>
           <TextField
             label={t(answer === 'yes' ? 'diagnosis.feedback.commentYes' : 'diagnosis.feedback.commentNo')}
+            dictation
             placeholder={t('diagnosis.feedback.placeholder')}
             value={draft}
             onChangeText={(text) => {

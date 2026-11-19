@@ -44,6 +44,9 @@ import { loadPlanContext } from './plan-context';
 import { PlanProposalView } from './plan-proposal-view';
 import { useTomorrowPlan } from './use-tomorrow';
 
+/** Tipkani ili diktirani unos (korak 30: izgovoreni dan s više stavki je duži od jedne stavke). */
+const TYPED_MAX = 500;
+
 type TomorrowPlanProps = {
   /** Sutrašnji dan ("YYYY-MM-DD"). */
   date: string;
@@ -294,12 +297,13 @@ export function TomorrowPlan({ date, onSaved, onClose, variant = 'tomorrow' }: T
                       <View style={styles.section}>
                         <TextField
                           label={t('evening.tomorrow.typeLabel')}
+                          dictation
                           placeholder={t('evening.tomorrow.typePlaceholder')}
                           value={typed}
                           onChangeText={setTyped}
                           onSubmitEditing={() => void addTyped()}
                           editable={!busy}
-                          maxLength={200}
+                          maxLength={TYPED_MAX}
                           returnKeyType="done"
                           submitBehavior="submit"
                         />

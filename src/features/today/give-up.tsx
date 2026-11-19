@@ -64,6 +64,7 @@ export function GiveUp({ remaining, onConfirm, onClose }: GiveUpProps) {
 
               <TextField
                 label={t('giveUp.noteLabel')}
+                dictation
                 placeholder={t('giveUp.notePlaceholder')}
                 value={note}
                 onChangeText={setNote}

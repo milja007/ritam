@@ -106,6 +106,7 @@ export function ChecklistStep({
               <>
                 <TextField
                   label={t('evening.checklist.comment')}
+                  dictation
                   placeholder={t('evening.checklist.commentPlaceholder')}
                   value={item.comment}
                   onChangeText={(comment) => onChange(item.blockId, { comment })}
@@ -230,6 +231,7 @@ export function RatingStep({
       </View>
       <TextField
         label={t('evening.rating.note')}
+        dictation
         placeholder={t('evening.rating.notePlaceholder')}
         value={draft.note}
         onChangeText={(note) => onChange({ note })}

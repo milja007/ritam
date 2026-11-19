@@ -1747,5 +1747,17 @@
       "incomeDetail": "Log income (salary, fees…). Income is added to your current balance; your spending limit and daily score stay the same.",
       "balanceSinceIncome": "Balance {{value}} since {{date}} — spending from that day is subtracted, income added."
     }
+  },
+  "dictation": {
+    "start": "Dictate",
+    "stop": "Stop dictating",
+    "hint": "What you say is written into the field, and you can fix it before saving.",
+    "listening": "Listening… tap the microphone when you're done.",
+    "problem": {
+      "permission": "To dictate, allow the microphone and speech recognition in Settings.",
+      "unavailable": "Dictation in this language isn't available on this device.",
+      "noSpeech": "I didn't hear anything — try again.",
+      "failed": "Dictation didn't work. You can type instead."
+    }
   }
 }
