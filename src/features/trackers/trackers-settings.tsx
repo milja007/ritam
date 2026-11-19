@@ -26,7 +26,8 @@ const euroField = (cents: number | null, language: string) =>
 
 /**
  * Profil → Trackeri (korak 31b): kalorije i novac, isključeni po defaultu. Cilj kalorija s
- * upozorenjem za neuobičajeno nizak cilj; limit potrošnje za dan/tjedan/mjesec i po želji stanje.
+ * upozorenjem za neuobičajeno nizak cilj; limit potrošnje za dan/tjedan/mjesec, po želji stanje i
+ * prihodi (korak 31f, opcija novca, zadano isključena).
  */
 export function TrackersSettings({ settings, save, today }: TrackersSettingsProps) {
   const { t, i18n } = useTranslation();
@@ -81,6 +82,7 @@ export function TrackersSettings({ settings, save, today }: TrackersSettingsProp
   const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
   const caloriesLabel = t('trackers.settings.calories');
   const moneyLabel = t('trackers.settings.money');
+  const incomeLabel = t('trackers.settings.income');
 
   return (
     <View style={styles.list}>
@@ -182,7 +184,7 @@ export function TrackersSettings({ settings, save, today }: TrackersSettingsProp
             />
             {settings.moneyBalanceCents !== null && settings.moneyBalanceOn !== null && !balanceChanged ? (
               <Text variant="caption" tone="textMuted">
-                {t('trackers.settings.balanceSince', {
+                {t(settings.trackIncome ? 'trackers.settings.balanceSinceIncome' : 'trackers.settings.balanceSince', {
                   value: formatEuro(settings.moneyBalanceCents, language),
                   date: settings.moneyBalanceOn.split('-').reverse().join('. ') + '.',
                 })}
@@ -196,6 +198,22 @@ export function TrackersSettings({ settings, save, today }: TrackersSettingsProp
             {balanceChanged ? (
               <Button variant="secondary" label={t('trackers.settings.saveBalance')} onPress={saveBalance} />
             ) : null}
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={styles.row}>
+              <View style={styles.flex}>
+                <Text variant="bodyStrong">{incomeLabel}</Text>
+                <Text variant="caption" tone="textMuted">
+                  {t('trackers.settings.incomeDetail')}
+                </Text>
+              </View>
+              <Switch
+                accessibilityLabel={incomeLabel}
+                value={settings.trackIncome}
+                onValueChange={(value) => save({ trackIncome: value })}
+                trackColor={{ true: colors.accent, false: colors.border }}
+              />
+            </View>
           </>
         ) : null}
       </View>
@@ -213,4 +231,5 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 44 },
   flex: { flex: 1 },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xs },
 });

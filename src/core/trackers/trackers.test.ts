@@ -13,6 +13,7 @@ import {
 
 const money = (date: string, amount: number) => ({ date, kind: 'money' as const, amount });
 const kcal = (date: string, amount: number) => ({ date, kind: 'calories' as const, amount });
+const income = (date: string, amount: number) => ({ date, kind: 'income' as const, amount });
 
 describe('kalorije (korak 31b)', () => {
   it('zbroj po danu i vrsti', () => {
@@ -68,6 +69,7 @@ describe('novac (korak 31b)', () => {
       week: 3500,
       month: 5500,
       balance: 46500,
+      income: null,
     });
   });
 
@@ -81,6 +83,49 @@ describe('novac (korak 31b)', () => {
 
   it('stanje postavljeno za budući dan se ne umanjuje', () => {
     expect(moneySummary(entries, { ...settings, moneyBalanceOn: '2026-11-20' }, '2026-11-18').balance).toBe(50000);
+  });
+});
+
+describe('prihodi (korak 31f)', () => {
+  const settings: MoneySettings = {
+    moneyLimitCents: 10000,
+    moneyPeriod: 'week',
+    moneyBalanceCents: 50000,
+    moneyBalanceOn: '2026-11-16',
+    trackIncome: true,
+  };
+  const entries = [
+    money('2026-11-17', 2000),
+    income('2026-11-01', 100000),
+    income('2026-11-15', 30000),
+    income('2026-11-17', 150000),
+    income('2026-11-18', 5000),
+    income('2026-11-20', 9999),
+  ];
+
+  it('prihodi se dodaju stanju od dana stanja; limit potrošnje ostaje isti', () => {
+    const summary = moneySummary(entries, settings, '2026-11-18');
+    expect(summary.balance).toBe(50000 - 2000 + 150000 + 5000);
+    expect(summary.limit).toMatchObject({ spent: 2000, remaining: 8000 });
+    expect(summary.week).toBe(2000);
+  });
+
+  it('zbrojevi prihoda danas, tjedan i mjesec, bez budućih dana', () => {
+    expect(moneySummary(entries, settings, '2026-11-18').income).toEqual({ today: 5000, week: 155000, month: 285000 });
+  });
+
+  it('isključeni prihodi se ne broje ni u stanje', () => {
+    const off = moneySummary(entries, { ...settings, trackIncome: false }, '2026-11-18');
+    expect(off.income).toBeNull();
+    expect(off.balance).toBe(48000);
+    expect(moneySummary(entries, { ...settings, trackIncome: undefined }, '2026-11-18').income).toBeNull();
+  });
+
+  it('prihodi ne ulaze u rezultat dana', () => {
+    const tracked = { ...settings, trackCalories: false, calorieGoal: null, trackMoney: true };
+    expect(trackerDay(entries, tracked, '2026-11-17').money).toEqual({ spent: 2000, dailyBudget: 1429 });
+    // Dan samo s prihodom nema potrošnje → novac ne ulazi u rezultat.
+    expect(trackerDay(entries, tracked, '2026-11-18').money).toBeNull();
   });
 });
 

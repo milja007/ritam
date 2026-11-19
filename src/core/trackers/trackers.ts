@@ -4,7 +4,8 @@
  * Koncept: kalorije — dnevni cilj, unos po obroku ili zbroj → večernja provjera unutar / iznad /
  * ispod i koliko; upozorenje ako je cilj neuobičajeno nizak. Novac — limit potrošnje za dan,
  * tjedan ili mjesec, po želji trenutno stanje; unos potrošnje → koliko je ostalo, tjedni i
- * mjesečni zbroj. Što se ne bilježi, ne ulazi.
+ * mjesečni zbroj. Prihodi (korak 31f, opcija) se dodaju stanju, ne mijenjaju limit ni rezultat.
+ * Što se ne bilježi, ne ulazi.
  */
 import type { MoneyPeriod, TrackerEntry, TrackerKind } from '../domain';
 import { weekStart } from '../progress/compare';
@@ -67,6 +68,8 @@ export type MoneySettings = {
   moneyPeriod: MoneyPeriod | null;
   moneyBalanceCents: number | null;
   moneyBalanceOn: string | null;
+  /** Prihodi (korak 31f); bez ovoga ili isključeno → prihodi se ne broje. */
+  trackIncome?: boolean;
 };
 
 export type MoneySummary = {
@@ -76,8 +79,10 @@ export type MoneySummary = {
   today: number;
   week: number;
   month: number;
-  /** Trenutno stanje = zadano stanje − potrošnja od tog dana; `null` bez stanja. */
+  /** Trenutno stanje = zadano stanje − potrošnja (+ prihodi, kad se prate) od tog dana; `null` bez stanja. */
   balance: number | null;
+  /** Prihodi danas, ovaj tjedan i ovaj mjesec (do `date`); `null` kad se prihodi ne prate. */
+  income: { today: number; week: number; month: number } | null;
 };
 
 /** Pregled novca na dan `date` (koliko je ostalo, tjedni i mjesečni zbroj, stanje); broji se do `date`. */
@@ -85,8 +90,10 @@ export function moneySummary(entries: readonly Entry[], settings: MoneySettings,
   const week = moneyWindow('week', date);
   const month = moneyWindow('month', date);
   // Do dana `date` uključivo: unos za budući dan još nije potrošnja.
-  const spentIn = (window: { start: string; end: string } | null) =>
-    window === null ? 0 : trackerTotal(entries, 'money', window.start, window.end < date ? window.end : date);
+  const totalIn = (kind: TrackerKind, window: { start: string; end: string } | null) =>
+    window === null ? 0 : trackerTotal(entries, kind, window.start, window.end < date ? window.end : date);
+  const spentIn = (window: { start: string; end: string } | null) => totalIn('money', window);
+  const tracksIncome = settings.trackIncome === true;
   let limit: MoneySummary['limit'] = null;
   if (settings.moneyLimitCents !== null && settings.moneyPeriod !== null) {
     const window = moneyWindow(settings.moneyPeriod, date);
@@ -101,17 +108,24 @@ export function moneySummary(entries: readonly Entry[], settings: MoneySettings,
       };
     }
   }
+  const since = settings.moneyBalanceOn;
   const balance =
-    settings.moneyBalanceCents === null || settings.moneyBalanceOn === null
+    settings.moneyBalanceCents === null || since === null
       ? null
-      : settings.moneyBalanceCents -
-        (settings.moneyBalanceOn > date ? 0 : trackerTotal(entries, 'money', settings.moneyBalanceOn, date));
+      : since > date
+        ? settings.moneyBalanceCents
+        : settings.moneyBalanceCents -
+          trackerTotal(entries, 'money', since, date) +
+          (tracksIncome ? trackerTotal(entries, 'income', since, date) : 0);
   return {
     limit,
     today: trackerTotal(entries, 'money', date, date),
     week: spentIn(week),
     month: spentIn(month),
     balance,
+    income: tracksIncome
+      ? { today: trackerTotal(entries, 'income', date, date), week: totalIn('income', week), month: totalIn('income', month) }
+      : null,
   };
 }
 
