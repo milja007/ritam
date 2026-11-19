@@ -4,6 +4,22 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-19 · Sesija 00:43 — Ž11 haptika, zatim 33 orb-plamen na Skii
+- Paketi su stigli (PR #56: `expo-haptics`, Skia), pa se rade dva zadnja „Žar“ dijela koja su ih čekala.
+- Plan Ž11 (PR 1): (1) `src/core/haptics` — čista logika: događaj → vrsta (`done`, `skip`, `streak`, `achievement`, `levelUp`, `tick`), spajanje događaja u istom trenutku (jači pobjeđuje, isti se ne ponavlja), vremenska crta haptike level-upa (tik po broju razine, uspjeh na prasku); testovi. (2) `src/ui/haptics.ts` — `playHaptic` preko `expo-haptics` (greška nikad ne ruši ekran, bez weba), uključeno po defaultu, prekidač „Haptika“ na Profilu (postavka uređaja, bez migracije), HR/EN. (3) Spojiti: Gotovo / Preskoči na Danu, bljesak niza, smrzavanje, quest/cilj ostvaren, level-up.
+- Gotovo (PR #59): 1–3; Ž11 i 35 `[x]`. Akcija „Gotovo“ na obavijesti ostaje bez haptike (app u pozadini, iOS je ne svira).
+- Plan 33 (PR 2): pravi plamen na Skii u `OrbFlame` (jezici plamena iz šuma koji se dižu, žeravice po toplini; iskre niza ostaju na prstenu), iste boje i pravila iz `src/core/gamification/orb.ts`; uz „smanji kretanje“ miran; stari prikaz ostaje za web.
+- Gotovo (PR #60): 33 `[x]`. Shader provjeren renderom u CanvasKitu (sve topline, teme); na uređaju neprovjereno.
+
+## 2026-11-18 · Sesija 21:43 — korak 31e: godišnja dijagnoza riječima
+- Plan (isti obrazac kao 31c/31d; koncept: godišnja = dan + tjedan + mjesec + godina, smjer najviše 2 ideje):
+  (1) `write-report` godišnji način (`llm-year-v1`): statistika godine i prošle (s trackerima), prosjek po mjesecima (12), sažeci mjesečnih dijagnoza te godine (bez 365 dana — previše), lokalni smjer, tjedne promjene godine, do 2 ranije godišnje s Pomoglo/Nije. Granice brojeva skaliraju s duljinom razdoblja (godina ima > 5000 blokova). Model piše riječi + jednu rečenicu uz smjer; smjer ne mijenja.
+  (2) App: `sections.llm` uz godišnju (otpada kad se statistika ili smjer promijene), poziv samo za svježu godinu (31. 12. ili 1. 1.), bez oblaka lokalna; kartica Godine koristi `llm.summary`.
+- Pitanje 91 vrijedi i za godinu.
+- Gotovo (PR #54): 1–2. Korak 31e `[~]` do deploya (pitanje 77). Dijagnoze dan/tjedan/mjesec/godina sada sve imaju riječi modela (s oblakom).
+
+## 2026-11-18 · Sesija 18:43 — koraci 31c (PR #52) i 31d (PR #53): tjedna i mjesečna dijagnoza riječima; `[~]` do deploya.
+
 ## 2026-11-18 · Sesija 18:43 — korak 31c: tjedna dijagnoza s trackerima i riječima modela
 - Plan (koncept „Dijagnoze“: LLM dobiva sve iz razdoblja — checklist i komentari, zabrane, san, XP, **trackeri**, prethodne dijagnoze; isti red sekcija; „najviše 1 nova promjena tjedno“):
   (1) Trackeri u lokalnoj tjednoj/mjesečnoj/godišnjoj dijagnozi: statistika razdoblja broji dane s unosom kalorija (unutar/iznad/ispod) i potrošnju naspram zbroja dnevnih dijelova limita; Napredak „Kalorije: dani unutar cilja“, „Potrošnja“; pohvala/uočeno. i18n HR/EN.
