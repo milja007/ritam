@@ -12,10 +12,6 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - Plan (`wip/korak-22-odgovori`, HIGH_RISK zbog `supabase/functions`): (1) `PlanDayRequest.answers` (pitanje + odgovor, najviše 3, ≤ 300 znakova) u `edge-types` i `_shared/plan-logic` — stari klijent bez polja → `[]`, neispravan unos se tiho ispušta; (2) `plan-day` stavlja odgovore u poruku, a prompt kaže da ih poštuje i ne pita isto ponovo; (3) prijedlog: uz svako pitanje polje za odgovor (s diktiranjem), gumb „Odgovori i složi ponovo“ (aktivan uz barem jedan odgovor) šalje iste stavke + odgovore; (4) testovi (core, server parse/prompt linije, i18n). Treba ponovni deploy `plan-day` (Borna, uz pitanje 77).
 - Gotovo: (1)–(4) u PR-u #68. Nakon ovoga svi preostali koraci (24, 34c, 39, 41) čekaju Bornu.
 
-## 2026-11-19 · Sesija 15:43 — Codex P2 za vremensku crtu widgeta
-- #1: Codex odobrio #65 i #66; jedan P2 za `widget.ts:152` (komentar 7010186119). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Issue #1 se automatski zatvorio mergeom #65 ("Fixes #1" u PR-u) — ponovo otvoren.
-- Plan: (1) `fix/widget-timeline-p2`: kad promjena ima više nego što stane (46), zastarjeli zapis („otvori Ritam“) dolazi na prvoj izostavljenoj promjeni umjesto u ponoć; test s 60 blokova (zadnji zapis 11:40, zastarjelost 11:45). Ostalo (24, 34c, 39, 41) čeka Bornu.
-
 - Odluke Borne 2026-11-18 (pitanja 75–91) i sesije 09:43 i 12:43 su u arhivi.
 
 ## Stanje
