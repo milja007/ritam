@@ -100,5 +100,6 @@ Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/go
 
 ## Faza 4 — Nadogradnje
 - [ ] 39. Health sync · 41. Home-screen widget
+  - *39 — dio (2026-11-19, PR #69):* čista logika `src/core/health`: `healthNight` (faze sna → `sleepStart`/`wakeTime` jutra, prekid ≤ 60 min spaja, prozor 18:00–14:00, bez „spava“ uzoraka vrijeme u krevetu), `dailyHealthTotal` (koraci/kcal za lokalni dan, razmjerno preko ponoći), `healthSleepFill` (prijedlog za jutarnji upit, ručni unos pobjeđuje). Paket i dopuštenja čekaju pitanje 94.
   - *41 — dio (2026-11-19):* čista logika `src/core/widget` (sadržaj i iOS vremenska crta). Paket `expo-widgets` i widget čekaju pitanje 94 (App Group traži plaćeni Apple račun).
 - [x] 40. ~~DeepSeek provider~~ — *odluka Borna 2026-11-18: bez DeepSeeka; najjeftiniji model koji je dobar za posao:* `parse-input` i `plan-day` → Claude Haiku 5.5, `write-report` (dijagnoze na hrvatskom) → Claude Sonnet 5.5.
