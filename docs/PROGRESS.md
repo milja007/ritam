@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-20 · Sesija 00:43 — korak 39: Health paketi i čitanje (odluka 94b)
+- #1: zadnje Codexovo `CODEX_APPROVED` za #71; nema otvorenih P0/P1/P2, bug issueja ni otvorenih PR-ova. #70 čeka zaseban Codexov pregled.
+- Plan A (`wip/korak-39-health-paketi`, HIGH_RISK: `package.json`, `app.json`; mali PR): (1) paketi `@kingstinct/react-native-healthkit` + `react-native-nitro-modules` (iOS), `react-native-health-connect` (Android, Expo plugin u paketu), `expo-build-properties` (Android `minSdkVersion` 26 — Health Connect); samo čitanje: HealthKit bez pisanja i bez background-delivery, Android `READ_SLEEP`/`READ_STEPS`/`READ_ACTIVE_CALORIES_BURNED`; provjereno `expo prebuild` u privremenoj kopiji; (2) čisto mapiranje u `src/core/health/source.ts` (HealthKit/Health Connect faze sna → `SleepSample`, raspon upita noći i dana) s testovima; (3) `src/features/health/health-source.ts`: opcionalno učitavanje (stari dev build bez native dijela → „nije dostupno“, bez rušenja), `requestHealthRead`, `readHealthNight(wakeDate)`, `readHealthTotal('steps'|'activeKcal', date)`; testovi s lažnim modulima.
+- Plan B (sljedeći PR): uključivanje u Postavkama (isključeno dok korisnik ne uključi), prijedlog sna u jutarnjem upitu (`healthSleepFill`), koraci/kcal u trackeru.
+
 ## 2026-11-19 · Odluke Borne (anketa u chatu, ~22:00) i korak 34c
 - 94a (widget): **uzima Apple Developer Program** → iOS i Android widget (App Group). Prije builda s widgetom račun mora biti aktivan; tim i App Group ID na Macu.
 - 94b (Health): čitati **san, korake i aktivne kalorije** (samo čitanje).
