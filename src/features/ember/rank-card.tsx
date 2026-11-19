@@ -19,6 +19,7 @@ import { radius, spacing } from '@/core/theme';
 import { Ember } from '@/ui/ember';
 import { OrbFlame } from '@/ui/orb-flame';
 import { ProgressBar } from '@/ui/progress-bar';
+import { useAvatarFrame } from '@/ui/reward-prefs';
 import { Text } from '@/ui/text';
 import { useAppTheme } from '@/ui/theme';
 
@@ -39,6 +40,8 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
   const [explained, setExplained] = useState(false);
   // Profil ostaje montiran kad se ode na drugi tab; plamen tada stoji i ne troši sličice.
   const focused = useIsFocused();
+  // Odabir je uvijek otključan: razina ga usklađuje (`level-up-store`), birač nudi samo otključane.
+  const frame = useAvatarFrame();
   const cardStyle = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
 
   if (state.status === 'loading') {
@@ -75,7 +78,7 @@ export function RankCard({ checkinDay, state }: { checkinDay: string; state: Emb
         accessibilityState={{ expanded: explained }}
         accessibilityLabel={`${t('rank.a11y', { rank: progress.rank, message })} ${heat}. ${detail}`}
         accessibilityHint={t('orb.hint')}>
-        <OrbFlame flame={flame} size={ORB} active={focused} />
+        <OrbFlame flame={flame} size={ORB} active={focused} frame={frame} />
         <View style={styles.heroText}>
           <Text variant="overline" tone="accent">
             {t('rank.label', { rank: progress.rank })}

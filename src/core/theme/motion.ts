@@ -24,6 +24,16 @@ export const XP_POP_RISE = 14;
 /** Bljesak žara u piluli niza kad niz naraste (korak 35): aureola nabuja i nestane. */
 export const FLARE_DURATION_MS = 700;
 
+/** Animacije „Gotovo“ Iskre i Val (korak 32b): koliko dugo iskre lete ili se val širi. */
+export const DONE_BURST_MS = 650;
+
+/** Iskre: koliko ih poleti iz točke i koliko daleko (višekratnik veličine točke). */
+export const DONE_SPARKS = 6;
+export const DONE_SPARK_REACH = 2.4;
+
+/** Val: do koliko se prsten raširi (višekratnik veličine točke). */
+export const DONE_WAVE_SCALE = 3.2;
+
 /** Koliko brzo bljesak nabuja; ostatak `FLARE_DURATION_MS` je smirivanje. */
 export const FLARE_SWELL_MS = 200;
 
