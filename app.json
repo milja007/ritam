@@ -86,7 +86,8 @@
                 "supportedFamilies": [
                   "systemSmall",
                   "systemMedium"
-                ]
+                ],
+                "initialLayout": "./src/widgets/ritam-day.ios.tsx"
               },
               "android": {
                 "targetCellWidth": 3,

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { loadRitamDayWidget, resetWidgetLoaderForTests } from './widget-native';
 
 let mockOs = 'android';
-let mockModule: object | null = null;
+let mockModule: { widgetsDirectory?: string | null } | null = null;
 jest.mock('react-native', () => ({
   Platform: {
     get OS() {
@@ -29,7 +29,20 @@ describe('loadRitamDayWidget (opcionalno)', () => {
 
   it('does nothing on iOS until the App Group exists (decision 94a)', async () => {
     mockOs = 'ios';
-    mockModule = {};
+    mockModule = { widgetsDirectory: null };
+    await expect(loadRitamDayWidget(importWidget)).resolves.toBeNull();
+  });
+
+  it('loads on iOS once the build has the App Group', async () => {
+    mockOs = 'ios';
+    mockModule = { widgetsDirectory: 'file:///group/widgets' };
+    const widget = await loadRitamDayWidget(importWidget);
+    expect(widget?.updateSnapshot).toBe(mockUpdate);
+  });
+
+  it('does nothing on web', async () => {
+    mockOs = 'web';
+    mockModule = { widgetsDirectory: 'x' };
     await expect(loadRitamDayWidget(importWidget)).resolves.toBeNull();
   });
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
-import { nextWidgetChange, widgetProps } from '@/core/widget';
+import { nextWidgetChange, widgetProps, widgetTimeline } from '@/core/widget';
 import { useBlocksVersion } from '@/features/notifications';
 import { useProgressVersion } from '@/features/progress';
 import i18n from '@/i18n';
@@ -14,10 +14,10 @@ import { loadRitamDayWidget } from './widget-native';
 const MAX_WAIT_MS = 6 * 60 * 60 * 1000;
 
 /**
- * Korak 41: drži Android widget „Ritam — Dan“ svježim dok app radi. Snimka (`updateSnapshot`) pri
- * pokretanju, promjeni blokova ili rezultata, povratku u app, promjeni jezika ili teme, te na
- * svakoj sljedećoj promjeni „Sada“ / „Sljedeće“ (Android nema vremensku crtu). Bez widgeta u
- * buildu ne radi ništa.
+ * Korak 41: drži widget „Ritam — Dan“ svježim — pri pokretanju, promjeni blokova ili rezultata,
+ * povratku u app i promjeni jezika ili teme. iOS dobiva vremensku crtu dana (`updateTimeline`);
+ * Android je nema, pa dobiva snimku (`updateSnapshot`) i, dok app radi, novu na svakoj sljedećoj
+ * promjeni „Sada“ / „Sljedeće“. Bez widgeta u buildu ne radi ništa.
  */
 export function WidgetSync() {
   const blocksVersion = useBlocksVersion();
@@ -48,6 +48,11 @@ export function WidgetSync() {
       try {
         const input = await loadWidgetInput(now, i18n.getFixedT(language), theme);
         if (!alive) return;
+        if (Platform.OS === 'ios' && widget.updateTimeline) {
+          // iOS sam mijenja zapise u zadano vrijeme; u ponoć zapis traži otvaranje appa.
+          widget.updateTimeline(widgetTimeline(input, now));
+          return;
+        }
         const seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         widget.updateSnapshot(widgetProps(input, seconds));
         const wait = Math.min(MAX_WAIT_MS, Math.max(1000, nextWidgetChange(input.blocks, now).getTime() - now.getTime()));
