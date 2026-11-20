@@ -1809,5 +1809,14 @@
       "kcal": "{{source}} danas: aktivno {{kcal}} kcal",
       "steps": "{{source}} danas: koraci {{steps}}"
     }
+  },
+  "widget": {
+    "now": "Sada",
+    "next": "Sljedeće",
+    "free": "Slobodno",
+    "dayDone": "Dan je odrađen",
+    "noPlan": "Nema plana za danas",
+    "openApp": "Otvori Ritam",
+    "streakUnit": "dana niz"
   }
 }
