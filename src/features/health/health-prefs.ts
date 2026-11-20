@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform, type AppStateStatus } from 'react-native';
 
 import type { HealthNight } from '@/core/health';
 import { readDevicePref, writeDevicePref } from '@/ui/device-prefs';
@@ -93,10 +93,41 @@ export function useHealthNight(date: string): HealthNight | null {
   return on && night?.key === key ? night.value : null;
 }
 
+/**
+ * Codex P2 (#73): koraci i kcal rastu tijekom dana, pa se ponovo čitaju kad se app vrati u prvi
+ * plan. Brojač je zaseban od `version`: prikaz zadržava staru vrijednost dok nova ne stigne.
+ */
+let refresh = 0;
+const refreshListeners = new Set<() => void>();
+let appStateSub: { remove: () => void } | null = null;
+
+export function onHealthAppState(state: AppStateStatus): void {
+  if (state !== 'active') return;
+  refresh += 1;
+  for (const listener of refreshListeners) listener();
+}
+
+export function subscribeHealthRefresh(listener: () => void): () => void {
+  refreshListeners.add(listener);
+  appStateSub ??= AppState.addEventListener('change', onHealthAppState);
+  return () => {
+    refreshListeners.delete(listener);
+    if (refreshListeners.size === 0) {
+      appStateSub?.remove();
+      appStateSub = null;
+    }
+  };
+}
+
+export function getHealthRefresh(): number {
+  return refresh;
+}
+
 /** Koraci ili aktivne kcal za dan `date`; `null` dok je isključeno, čita ili podatka nema. */
 export function useHealthTotal(metric: HealthMetric, date: string): number | null {
   const on = useHealthEnabled();
   const changed = useHealthVersion();
+  const fresh = useSyncExternalStore(subscribeHealthRefresh, getHealthRefresh, getHealthRefresh);
   const [total, setTotal] = useState<{ key: string; value: number | null } | null>(null);
   const key = `${metric}:${date}:${changed}`;
 
@@ -109,7 +140,7 @@ export function useHealthTotal(metric: HealthMetric, date: string): number | nul
     return () => {
       alive = false;
     };
-  }, [on, metric, date, key]);
+  }, [on, metric, date, key, fresh]);
 
   return on && total?.key === key ? total.value : null;
 }
@@ -119,4 +150,8 @@ export function resetHealthPrefsForTests(): void {
   enabled = null;
   version = 0;
   listeners.clear();
+  refresh = 0;
+  refreshListeners.clear();
+  appStateSub?.remove();
+  appStateSub = null;
 }
