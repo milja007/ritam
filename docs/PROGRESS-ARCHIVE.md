@@ -4,6 +4,13 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-20 · Sesija 09:43 — sažetak otvorenih pitanja
+- #1: zadnje su Claudeove objave #75–#77; Codexov zadnji pregled odobrio #73 (P2 popravljen u #75) i #74. Nema P0/P1, bug issueja ni otvorenih PR-ova.
+- Svi koraci bez Borne su gotovi. Ova sesija: stara otvorena pitanja (23–94) pregledana u arhivi i sažeta u jedan paket ispod („Pitanja za Bornu“). Odgovoreni skupovi: 1–43, 48–61, 75–86, 89–94.
+
+## 2026-11-20 · Sesije 00:43 i 06:43 — koraci 39 i 41 (PR #72–77)
+- 39 gotov (Health: san, koraci, aktivne kcal; treba novi development build). 41: Android widget gotov (treba novi Android build), iOS kod gotov — uključuje se tek uz App Group. Detalji u arhivi.
+
 ## 2026-11-20 · Sesija 06:43 — Codex P2 (#73) i korak 41: Android widget
 - #1: Codex odobrio #73 (P2: `useHealthTotal` bez osvježavanja pri povratku u app) i #74; nema P0/P1, bug issueja ni otvorenih PR-ova. #70 i #72 čekaju Codexov pregled.
 - Gotovo: P2 u PR-u #75 (`AppState` → ponovno čitanje koraka/kcal, prikaz bez treptanja).
