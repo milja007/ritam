@@ -6,7 +6,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 - #1: Codex odobrio #73 (P2: `useHealthTotal` bez osvježavanja pri povratku u app) i #74; nema P0/P1, bug issueja ni otvorenih PR-ova. #70 i #72 čekaju Codexov pregled.
 - Gotovo: P2 u PR-u #75 (`AppState` → ponovno čitanje koraka/kcal, prikaz bez treptanja).
 - Plan (`wip/korak-41-android-widget`, HIGH_RISK: `package.json`, `app.json`, `plugins/`): (1) `expo-widgets` + lokalni plugin `plugins/with-ritam-widgets.js`: Android widget uvijek; iOS cilj i App Group **samo uz `RITAM_IOS_WIDGET=1`** (dok Apple račun nije aktivan, iOS build s osobnim timom mora proći kao dosad) — provjera `expo prebuild` u privremenoj kopiji za obje platforme; (2) widget „Ritam — Dan“ (Jetpack Compose, `src/widgets/ritam-day.tsx`): žar i rezultat dana, niz, odrađeno/ukupno, Sada / Sljedeće s vremenima, boje obje sheme iz `core/widget`; (3) `src/features/widget`: `WidgetSync` u korijenu — opcionalno učitavanje (stari build → ništa), snimka (`updateSnapshot`) pri promjeni blokova/rezultata, povratku u app i na svakoj sljedećoj promjeni Sada/Sljedeće dok app radi; čista logika `nextWidgetChange` u `core/widget` s testovima. Android nema vremensku crtu: widget pokazuje vremena („Sada · 14:00–15:30“, „Sljedeće 16:00 · …“) da zastarjela snimka ne vara, a datum dana je u widgetu (snimka od jučer se vidi).
-- Gotovo: (1)–(3) u PR-u #76. Treba **novi Android build**; iOS build bez zastavice ostaje isti. iOS widget (SwiftUI + vremenska crta iz `core/widget`) kad Apple račun bude aktivan: na Macu `RITAM_IOS_WIDGET=1 npx expo prebuild`.
+- Gotovo: (1)–(3) u PR-u #76. Treba **novi Android build**; iOS build bez zastavice ostaje isti. iOS widget (SwiftUI + vremenska crta) u PR-u #77, uključuje se tek uz App Group: kad Apple račun bude aktivan, na Macu `RITAM_IOS_WIDGET=1 npx expo run:ios --device`.
 
 ## 2026-11-20 · Sesija 00:43 — korak 39: Health (PR #72–74, odluka 94b)
 - Korak 39 gotov: paketi i dopuštenja samo za čitanje, Profil → „Zdravlje“, san u jutarnjem upitu, koraci/kcal uz tracker. Treba novi development build. Detalji u arhivi.
@@ -23,7 +23,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. Ž11, 33, 32b, 31f i 34c gotovi — provjeriti na iPhoneu.
 2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 24 (Google Calendar — OAuth tajne).
-3. Svi koraci faza 1–3 osim 24 su gotovi. Faza 4: 39 gotov, 41 Android gotov; iOS widget čeka aktivan Apple račun (App Group).
+3. Svi koraci faza 1–3 osim 24 su gotovi. Faza 4: 39 gotov, 41 Android gotov, iOS kod gotov — aktivacija čeka Apple račun (App Group). Sljedeće bez Borne: pozadinsko osvježavanje Android widgeta (opcionalno) ili sažetak starih pitanja.
 
 ## Pitanja za Bornu
 - 92–94 odgovorena 2026-11-19 (arhiva).
