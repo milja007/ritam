@@ -73,6 +73,31 @@
             "minSdkVersion": 26
           }
         }
+      ],
+      [
+        "./plugins/with-ritam-widgets",
+        {
+          "widgets": [
+            {
+              "name": "RitamDay",
+              "displayName": "Ritam",
+              "description": "Your day at a glance: now, next, today's ember and streak.",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ]
+              },
+              "android": {
+                "targetCellWidth": 3,
+                "targetCellHeight": 2,
+                "minWidth": 180,
+                "minHeight": 110,
+                "initialLayout": "./src/widgets/ritam-day.tsx"
+              }
+            }
+          ]
+        }
       ]
     ],
     "experiments": {

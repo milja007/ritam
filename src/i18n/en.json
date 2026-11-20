@@ -1781,5 +1781,14 @@
       "kcal": "{{source}} today: {{kcal}} active kcal",
       "steps": "{{source}} today: {{steps}} steps"
     }
+  },
+  "widget": {
+    "now": "Now",
+    "next": "Next",
+    "free": "Free",
+    "dayDone": "Day done",
+    "noPlan": "No plan for today",
+    "openApp": "Open Ritam",
+    "streakUnit": "day streak"
   }
 }

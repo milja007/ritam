@@ -125,6 +125,19 @@ export function widgetProps(input: WidgetDayInput, nowSeconds: number, stale = f
   };
 }
 
+/** Minute dana (iza `nowMinutes`) na kojima se mijenja „Sada“ / „Sljedeće“, rastuće. */
+function changeMinutes(blocks: readonly WidgetBlock[], nowMinutes: number): number[] {
+  const changes = new Set<number>();
+  for (const block of blocks) {
+    if (!countable(block)) continue;
+    const range = blockRange(block);
+    if (!range) continue;
+    if (range.start > nowMinutes) changes.add(range.start);
+    if (range.end > nowMinutes && range.end < 24 * 60) changes.add(range.end);
+  }
+  return [...changes].sort((a, b) => a - b);
+}
+
 function atMinute(day: Date, minutes: number): Date {
   const date = new Date(day);
   date.setHours(0, 0, 0, 0);
@@ -142,15 +155,7 @@ export function widgetTimeline(input: WidgetDayInput, now: Date): WidgetEntry[] 
   const nowSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   const nowMinutes = Math.floor(nowSeconds / 60);
 
-  const changes = new Set<number>();
-  for (const block of input.blocks) {
-    if (!countable(block)) continue;
-    const range = blockRange(block);
-    if (!range) continue;
-    if (range.start > nowMinutes) changes.add(range.start);
-    if (range.end > nowMinutes && range.end < 24 * 60) changes.add(range.end);
-  }
-  const sorted = [...changes].sort((a, b) => a - b);
+  const sorted = changeMinutes(input.blocks, nowMinutes);
   const minutes = sorted.slice(0, MAX_WIDGET_ENTRIES - 2);
   // Ako crta ne stane, zastarjelost počinje na prvoj izostavljenoj promjeni, ne u ponoć:
   // inače bi zadnji zapis do kraja dana pokazivao krivo „Sada“ / „Sljedeće“.
@@ -162,4 +167,34 @@ export function widgetTimeline(input: WidgetDayInput, now: Date): WidgetEntry[] 
   }
   entries.push({ date: atMinute(now, staleAt), props: widgetProps(input, 0, true) });
   return entries;
+}
+
+/**
+ * Android nema vremensku crtu (samo snimku), pa app sam osvježi widget dok radi: trenutak
+ * sljedeće promjene „Sada“ / „Sljedeće“ iza `now`, ili sljedeća ponoć (novi dan). `now` je na
+ * dan `blocks`.
+ */
+export function nextWidgetChange(blocks: readonly WidgetBlock[], now: Date): Date {
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const next = changeMinutes(blocks, nowMinutes)[0];
+  if (next !== undefined) return atMinute(now, next);
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight;
+}
+
+/** Tekstovi dok app još nije poslao ništa (widget dodan prije prvog otvaranja). */
+const PLACEHOLDER_LABELS: WidgetLabels = {
+  now: 'Sada · Now',
+  next: 'Sljedeće · Next',
+  free: '',
+  dayDone: '',
+  noPlan: '',
+  openApp: 'Otvori Ritam · Open Ritam',
+  streakUnit: '',
+};
+
+/** Početni sadržaj widgeta prije prve snimke iz appa: „otvori Ritam“, ugašen žar. */
+export function widgetPlaceholder(): WidgetProps {
+  return widgetProps({ date: '', blocks: [], score: null, streak: 0, labels: PLACEHOLDER_LABELS }, 0, true);
 }

@@ -9,6 +9,7 @@ import { AuthLinkHandler } from '@/features/auth';
 import { NotificationsSync } from '@/features/notifications';
 import { OnboardingGate } from '@/features/onboarding';
 import { CloudSync } from '@/features/sync';
+import { WidgetSync } from '@/features/widget';
 import { getLanguagePreference, setLanguagePreference } from '@/i18n';
 import { DatabaseGate } from '@/ui/database-gate';
 import { AppThemeProvider, navigationThemeFor, useAppTheme } from '@/ui/theme';
@@ -30,6 +31,7 @@ export default function RootLayout() {
           <NotificationsSync />
           <AuthLinkHandler />
           <CloudSync />
+          <WidgetSync />
           <AppTabs />
         </OnboardingGate>
       </DatabaseGate>

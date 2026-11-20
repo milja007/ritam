@@ -1,7 +1,16 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { flamePalettes } from '../theme';
-import { MAX_WIDGET_ENTRIES, widgetProps, widgetTimeline, type WidgetBlock, type WidgetDayInput } from './widget';
+import { emberLevel } from '../ember';
+import {
+  MAX_WIDGET_ENTRIES,
+  nextWidgetChange,
+  widgetPlaceholder,
+  widgetProps,
+  widgetTimeline,
+  type WidgetBlock,
+  type WidgetDayInput,
+} from './widget';
 
 const labels = {
   now: 'Sada',
@@ -132,5 +141,36 @@ describe('widgetTimeline', () => {
     const entries = widgetTimeline(input([]), at(12, 0));
     expect(entries).toHaveLength(2);
     expect(entries[0]?.props).toMatchObject({ total: 0, current: null, next: null });
+  });
+});
+
+describe('nextWidgetChange (Android snimka)', () => {
+  const at = (h: number, m: number) => new Date(2026, 10, 20, h, m, 30);
+  const blocks: WidgetBlock[] = [
+    { id: 'a', title: 'Kemija', start: '09:00', end: '10:30', kind: 'task', status: 'planned' },
+    { id: 'b', title: 'Trening', start: '18:00', end: '19:00', kind: 'task', status: 'planned' },
+    { id: 's', title: 'San', start: '23:00', end: '07:00', kind: 'sleep', status: 'planned' },
+  ];
+
+  it('is the next start or end after now', () => {
+    expect(nextWidgetChange(blocks, at(8, 0))).toEqual(new Date(2026, 10, 20, 9, 0, 0, 0));
+    expect(nextWidgetChange(blocks, at(9, 0))).toEqual(new Date(2026, 10, 20, 10, 30, 0, 0));
+    expect(nextWidgetChange(blocks, at(12, 0))).toEqual(new Date(2026, 10, 20, 18, 0, 0, 0));
+  });
+
+  it('is midnight after the last change (sleep ignored)', () => {
+    expect(nextWidgetChange(blocks, at(19, 0))).toEqual(new Date(2026, 10, 21, 0, 0, 0, 0));
+    expect(nextWidgetChange([], at(10, 0))).toEqual(new Date(2026, 10, 21, 0, 0, 0, 0));
+  });
+});
+
+describe('widgetPlaceholder', () => {
+  it('asks to open the app with an unlit ember', () => {
+    const props = widgetPlaceholder();
+    expect(props.stale).toBe(true);
+    expect(props.score).toBeNull();
+    expect(props.ember).toBe(emberLevel(null));
+    expect(props.labels.openApp).toContain('Ritam');
+    expect(props.current).toBeNull();
   });
 });
