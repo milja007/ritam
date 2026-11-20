@@ -1801,7 +1801,7 @@
     "title": "Zdravlje",
     "label": "Čitaj iz: {{source}}",
     "detail": "San, koraci i aktivne kalorije — samo čitanje, Ritam ništa ne upisuje.",
-    "unavailable": "{{source}} nije dostupan na ovom uređaju. Treba nova verzija Ritma (a na Androidu i aplikacija Health Connect).",
+    "unavailable": "Čitanje iz: {{source}} nije dostupno na ovom uređaju. Treba nova verzija Ritma (a na Androidu i aplikacija Health Connect).",
     "permissionHint": "Ako Ritam ne vidi podatke, dopusti čitanje u postavkama: {{source}}.",
     "sleepFilled": "Popunjeno iz: {{source}} — provjeri pa spremi.",
     "today": {
