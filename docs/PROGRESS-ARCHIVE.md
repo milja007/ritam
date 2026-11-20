@@ -4,6 +4,16 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-19 · Odluke Borne (anketa u chatu, ~22:00) i korak 34c
+- 94a (widget): **uzima Apple Developer Program** → iOS i Android widget (App Group). Prije builda s widgetom račun mora biti aktivan; tim i App Group ID na Macu.
+- 94b (Health): čitati **san, korake i aktivne kalorije** (samo čitanje).
+- 93 (diktiranje): **dopusti Apple** — ostaje kako je (na uređaju kad može, inače Apple kao tipkovnica).
+- 92 (questovi): **stari XP ostaje** — novi questovi i etape bez XP-a, već dodijeljeni XP se ne briše (ni brisanjem questa).
+- Plan 34c (`wip/korak-34c-questovi`, HIGH_RISK zbog `src/db/repos/quests.ts`): (1) core/repo: `questXpAwards` i usklađivanje XP-a questa uklonjeni, `deleteQuest` ne dira XP; testovi da ostvarena etapa/quest ne dodaju XP, a postojeći XP ostaje i nakon poništenja i brisanja; (2) UI: tekstovi bez XP-a (HR/EN); ostvaren quest je bedž — u kartici „Bedževi“ osobni čip s naslovom questa (puni obrub, detalj „Ostvaren <datum>“), brojač bedževa ga uključuje.
+- Gotovo: (1)–(2) u PR-u #70 (`[x]`).
+- Codex P2 (#69 ponoć u `healthNight`, #68 odgovori kroz krugove „Složi mi dan“, `plan-day` MAX_ANSWERS 3 → 6) → `fix/codex-p2-ponoc-odgovori`. `plan-day` treba ponovni deploy (pitanje 77).
+- Zatim 39/41 s paketima (Health: san, koraci, kcal; widget: čeka Apple račun za iOS build).
+
 ## 2026-11-19 · Sesija 21:43 — korak 39 (dio): čista logika Health podataka
 - #1: zadnja objava je #68 (Codex još nije pregledao). Nema P0/P1, bug issueja ni otvorenih PR-ova; pitanja 84, 92–94 bez odgovora. Svi neblokirani koraci gotovi.
 - Plan (`wip/korak-39-health-logika`, kao 41: samo `src/core/health`, bez paketa i dopuštenja dok pitanje 94 nije odgovoreno): (1) `healthNight`: uzorci sna (u krevetu / spava / budan, s izvorom) → noć koja završava jutrom zadanog dana: segmenti spavanja spojeni uz prekid ≤ 60 min, najduži blok u prozoru 18:00 prethodnog dana – 14:00 tog dana; bez „spava“ uzoraka pada na „u krevetu“; rezultat `sleepStart`/`wakeTime` „HH:MM“ kao u jutarnjem upitu; (2) `dailyHealthTotal`: zbroj uzoraka količine (koraci, aktivne kcal) za lokalni dan, uzorak preko ponoći dijeli se razmjerno; (3) `healthSleepFill`: prijedlog za jutarnji upit samo kad korisnik sam nije upisao san (ručni unos uvijek pobjeđuje). Testovi uz svaki dio; ništa se još ne uvozi u app.
