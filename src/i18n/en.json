@@ -1766,5 +1766,20 @@
       "noSpeech": "I didn't hear anything — try again.",
       "failed": "Dictation didn't work. You can type instead."
     }
+  },
+  "health": {
+    "sourceIos": "Apple Health",
+    "sourceAndroid": "Health Connect",
+    "title": "Health",
+    "label": "Read from {{source}}",
+    "detail": "Sleep, steps and active calories — read only, Ritam never writes anything.",
+    "unavailable": "{{source}} isn't available on this device. It needs a newer Ritam build (and the Health Connect app on Android).",
+    "permissionHint": "If Ritam doesn't see your data, allow reading in {{source}} settings.",
+    "sleepFilled": "Filled in from {{source}} — check it, then save.",
+    "today": {
+      "both": "{{source}} today: {{kcal}} active kcal · {{steps}} steps",
+      "kcal": "{{source}} today: {{kcal}} active kcal",
+      "steps": "{{source}} today: {{steps}} steps"
+    }
   }
 }

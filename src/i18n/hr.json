@@ -1794,5 +1794,20 @@
       "noSpeech": "Nisam ništa čuo — pokušaj ponovo.",
       "failed": "Diktiranje nije uspjelo. Možeš upisati tekst."
     }
+  },
+  "health": {
+    "sourceIos": "Zdravlje",
+    "sourceAndroid": "Health Connect",
+    "title": "Zdravlje",
+    "label": "Čitaj iz: {{source}}",
+    "detail": "San, koraci i aktivne kalorije — samo čitanje, Ritam ništa ne upisuje.",
+    "unavailable": "{{source}} nije dostupan na ovom uređaju. Treba nova verzija Ritma (a na Androidu i aplikacija Health Connect).",
+    "permissionHint": "Ako Ritam ne vidi podatke, dopusti čitanje u postavkama: {{source}}.",
+    "sleepFilled": "Popunjeno iz: {{source}} — provjeri pa spremi.",
+    "today": {
+      "both": "{{source}} danas: aktivno {{kcal}} kcal · koraci {{steps}}",
+      "kcal": "{{source}} danas: aktivno {{kcal}} kcal",
+      "steps": "{{source}} danas: koraci {{steps}}"
+    }
   }
 }

@@ -19,6 +19,7 @@ import {
 import { radius, spacing } from '@/core/theme';
 import { AccountCard, useSession } from '@/features/auth';
 import { DiagnosisArchive } from '@/features/diagnosis';
+import { HEALTH_SUPPORTED, HealthToggle } from '@/features/health';
 import { dayLong, monthName, ProfileEmberCards } from '@/features/ember';
 import { SyncStatusRow } from '@/features/sync';
 import { PermissionCard } from '@/features/notifications';
@@ -156,6 +157,12 @@ export function ProfileScreen() {
               {HAPTICS_SUPPORTED ? (
                 <Section title={t('profile.haptics.title')}>
                   <HapticsToggle />
+                </Section>
+              ) : null}
+
+              {HEALTH_SUPPORTED ? (
+                <Section title={t('health.title')}>
+                  <HealthToggle />
                 </Section>
               ) : null}
 
