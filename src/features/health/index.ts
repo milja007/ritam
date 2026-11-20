@@ -16,3 +16,4 @@ export {
   type HealthReader,
 } from './health-source';
 export { HealthToggle, useHealthSourceName } from './health-toggle';
+export { HealthTodayLine } from './health-today';

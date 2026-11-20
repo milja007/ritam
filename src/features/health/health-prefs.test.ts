@@ -61,12 +61,20 @@ describe('Health prekidač (korak 39)', () => {
 
 describe('Health i18n', () => {
   it('HR i EN imaju iste ključeve, s mjestom za izvor gdje treba', () => {
-    expect(Object.keys(hr.health).sort()).toEqual(Object.keys(en.health).sort());
+    const leaves = (node: object): string[] =>
+      Object.entries(node).flatMap(([key, value]) =>
+        typeof value === 'string' ? [key] : leaves(value as object).map((leaf) => `${key}.${leaf}`),
+      );
+    expect(leaves(hr.health).sort()).toEqual(leaves(en.health).sort());
     for (const dict of [hr.health, en.health]) {
-      for (const value of Object.values(dict)) expect(value.length).toBeGreaterThan(0);
       for (const key of ['label', 'unavailable', 'permissionHint', 'sleepFilled'] as const) {
         expect(dict[key]).toContain('{{source}}');
       }
+      for (const value of Object.values(dict.today)) {
+        expect(value).toContain('{{source}}');
+      }
+      expect(dict.today.both).toContain('{{kcal}}');
+      expect(dict.today.both).toContain('{{steps}}');
     }
   });
 });

@@ -6,6 +6,7 @@ import type { Settings, TrackerEntry, TrackerKind } from '@/core/domain';
 import { weekStart } from '@/core/progress';
 import { radius, spacing } from '@/core/theme';
 import { calorieCheck, moneySummary, trackerTotal } from '@/core/trackers';
+import { HealthTodayLine } from '@/features/health';
 import { useSettings } from '@/features/settings';
 import { Button } from '@/ui/button';
 import { ProgressBar } from '@/ui/progress-bar';
@@ -114,6 +115,7 @@ function CaloriesSection({ date, evening, goal, entries, add, remove }: SectionP
       <Text variant="caption" tone={check?.status === 'within' ? 'success' : 'textMuted'} accessibilityLiveRegion="polite">
         {status}
       </Text>
+      <HealthTodayLine date={date} />
       <EntryList kind="calories" date={date} entries={entries} remove={remove} />
       <QuickAdd kind="calories" date={date} add={add} />
     </View>
