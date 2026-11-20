@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-20 · Sesija 12:43 — Android widget u pozadini (korak 41)
+- #1: od zadnje objave (#78) nema novih komentara; nema P0/P1, bug issueja ni otvorenih PR-ova.
+- Plan: (1) `expo-background-task` (`npx expo install`); (2) čisto `core/widget/background` (samo Android, 15 min); (3) `pushWidgetUpdate` izdvojen iz `WidgetSync` (isti kod za app i pozadinu); (4) `widget-task.ts` definira zadatak u `index.ts`, registrira ga `WidgetSync` tek kad widget postoji (stari build/iOS/web ništa); (5) pozadina čita jezik iz spremljenih postavki, temu s uređaja; (6) testovi, prebuild provjera (iOS dobiva samo `processing` + BGTask identifikator u Info.plistu, bez entitlementa).
+- Gotovo: PR „Android widget u pozadini“. Treba novi Android build.
+
 ## 2026-11-20 · Sesija 09:43 — sažetak otvorenih pitanja
 - #1: zadnje su Claudeove objave #75–#77; Codexov zadnji pregled odobrio #73 (P2 popravljen u #75) i #74. Nema P0/P1, bug issueja ni otvorenih PR-ova.
 - Svi koraci bez Borne su gotovi. Ova sesija: stara otvorena pitanja (23–94) pregledana u arhivi i sažeta u jedan paket ispod („Pitanja za Bornu“). Odgovoreni skupovi: 1–43, 48–61, 75–86, 89–94.
@@ -21,7 +26,7 @@ Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu
 0. **Ne uključivati `EXPO_PUBLIC_FEATURE_AUTH`** dok remote migracije nisu primijenjene (pitanje 84).
 1. Ž11, 33, 32b, 31f i 34c gotovi — provjeriti na iPhoneu.
 2. 20–22, 26 i 31 su u appu (čekaju deploy `parse-input`, `plan-day`, `write-report`, pitanje 77); 31b gotov. Faza 2 što ostaje traži Bornu: 24 (Google Calendar — OAuth tajne).
-3. Svi koraci faza 1–3 osim 24 su gotovi. Faza 4: 39 gotov, 41 Android gotov, iOS kod gotov — aktivacija čeka Apple račun (App Group). Sljedeće bez Borne: pozadinsko osvježavanje Android widgeta (opcionalno, novi paket); stara pitanja sažeta 2026-11-20.
+3. Svi koraci faza 1–3 osim 24 su gotovi. Faza 4: 39 gotov, 41 Android gotov, iOS kod gotov — aktivacija čeka Apple račun (App Group). Android widget se osvježava i u pozadini (~15 min, 2026-11-20). Bez Borne više nema koraka; stara pitanja sažeta 2026-11-20.
 
 ## Pitanja za Bornu
 Blokiraju rad:
