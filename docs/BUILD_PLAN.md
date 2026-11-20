@@ -100,8 +100,9 @@ Namjerno izvan smjera „Žar“ (čeka svoje korake): ciljevi tjedna/mjeseca/go
 - [x] 38. Teme boja — *gotovo (2026-11-14):* pet tema plamena iste svjetline (Žar, Zora, Modri plamen, Polarna svjetlost, Sumrak; `src/core/theme/flame.ts`); mijenjaju akcent, žarove, traku dana i orb, ne pozadine ni statusne boje. Birač na Profilu, zaključane teme pokazuju razinu. Odabir se pamti **na uređaju** (`expo-sqlite/kv-store`), ne u `settings` — bez migracije; sinkronizacija teme među uređajima je pitanje 81.
 
 ## Faza 4 — Nadogradnje
-- [ ] 39. Health sync · 41. Home-screen widget
+- [ ] 39. Health sync · 41. Home-screen widget — *39 gotov 2026-11-20 (PR #72–73); 41 ostaje.*
   - *39 — dio (2026-11-19, PR #69):* čista logika `src/core/health`: `healthNight` (faze sna → `sleepStart`/`wakeTime` jutra, prekid ≤ 60 min spaja, prozor 18:00–14:00, bez „spava“ uzoraka vrijeme u krevetu), `dailyHealthTotal` (koraci/kcal za lokalni dan, razmjerno preko ponoći), `healthSleepFill` (prijedlog za jutarnji upit, ručni unos pobjeđuje). Paket i dopuštenja čekaju pitanje 94.
   - *39 — dio (2026-11-20, PR #72):* paketi (HealthKit, Health Connect, minSdk 26), samo čitanje sna, koraka i aktivnih kcal; `core/health/source` (mapiranje faza, rasponi upita); opcionalni čitač `features/health` (stari build → nije dostupno). Ostaje: uključivanje u Postavkama, prijedlog sna u jutarnjem upitu, koraci/kcal u trackeru.
+  - *39 — gotovo (2026-11-20, PR #73):* Profil → „Zdravlje“ (prekidač samo na uređaju, isključen po defaultu, traži dopuštenje); jutarnji upit predlaže noć iz Healtha dok korisnik ništa nije dirao (ručni unos pobjeđuje); uz tracker kalorija „aktivno … kcal · koraci …“ danas (samo prikaz).
   - *41 — dio (2026-11-19):* čista logika `src/core/widget` (sadržaj i iOS vremenska crta). Paket `expo-widgets` i widget čekaju pitanje 94 (App Group traži plaćeni Apple račun).
 - [x] 40. ~~DeepSeek provider~~ — *odluka Borna 2026-11-18: bez DeepSeeka; najjeftiniji model koji je dobar za posao:* `parse-input` i `plan-day` → Claude Haiku 5.5, `write-report` (dijagnoze na hrvatskom) → Claude Sonnet 5.5.
