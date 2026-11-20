@@ -10,7 +10,9 @@ import {
   type MorningSleepSettings,
 } from '@/core/checkin';
 import type { Checkin } from '@/core/domain';
+import { healthSleepFill } from '@/core/health';
 import { radius, spacing } from '@/core/theme';
+import { useHealthNight, useHealthSourceName } from '@/features/health';
 import { Button } from '@/ui/button';
 import { ClockStepper } from '@/ui/clock-stepper';
 import { Text } from '@/ui/text';
@@ -28,6 +30,8 @@ function useDurationLabel() {
 /**
  * Prijava sna u briefu: unaprijed popunjeno iz ciljeva (krevet / buđenje), pa je dovoljno pomaknuti
  * vrijeme i Spremi ("dva taba"). Spremljena prijava se prikazuje sažeto s gumbom Uredi.
+ * Uz uključen Health (korak 39) noć iz Healtha zamijeni ciljeve dok korisnik ništa nije dirao i
+ * dok nema upisanog sna — ručni unos uvijek pobjeđuje; spremanje je i dalje korisnikovo.
  */
 export function SleepCheckin({
   date,
@@ -44,8 +48,13 @@ export function SleepCheckin({
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const durationLabel = useDurationLabel();
-  const [draft, setDraft] = useState<MorningDraft>(() => createMorningDraft(settings, date, saved));
+  const [baseDraft, setDraft] = useState<MorningDraft>(() => createMorningDraft(settings, date, saved));
+  const [touched, setTouched] = useState(false);
+  const healthNight = useHealthNight(date);
+  const healthSource = useHealthSourceName();
   const [editing, setEditing] = useState(saved === null);
+  const fill = touched || !editing ? null : healthSleepFill(saved, healthNight);
+  const draft: MorningDraft = fill ? { ...baseDraft, ...fill } : baseDraft;
   const [error, setError] = useState(false);
   const [earned, setEarned] = useState<number | null>(null);
 
@@ -56,6 +65,8 @@ export function SleepCheckin({
     setError(false);
     try {
       setEarned(onSave(draft));
+      setDraft(draft);
+      setTouched(true);
       setEditing(false);
     } catch (cause: unknown) {
       console.error('Saving morning check-in failed', cause);
@@ -70,16 +81,24 @@ export function SleepCheckin({
       </Text>
       {editing ? (
         <>
-          <Text tone="textMuted">{t('morning.sleep.subtitle')}</Text>
+          <Text tone="textMuted">
+            {fill ? t('health.sleepFilled', { source: healthSource }) : t('morning.sleep.subtitle')}
+          </Text>
           <ClockStepper
             label={t('morning.sleep.fellAsleep')}
             value={draft.sleepStart}
-            onChange={(sleepStart) => setDraft((d) => ({ ...d, sleepStart }))}
+            onChange={(sleepStart) => {
+              setTouched(true);
+              setDraft({ ...draft, sleepStart });
+            }}
           />
           <ClockStepper
             label={t('morning.sleep.wokeUp')}
             value={draft.wakeTime}
-            onChange={(wakeTime) => setDraft((d) => ({ ...d, wakeTime }))}
+            onChange={(wakeTime) => {
+              setTouched(true);
+              setDraft({ ...draft, wakeTime });
+            }}
           />
           <Text variant="bodyStrong" accessibilityLiveRegion="polite">
             {valid ? t('morning.sleep.total', { duration: durationLabel(duration) }) : t('morning.sleep.invalid')}
