@@ -4,6 +4,13 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-20 · Sesija 00:43 — korak 39: Health paketi i čitanje (odluka 94b)
+- #1: zadnje Codexovo `CODEX_APPROVED` za #71; nema otvorenih P0/P1/P2, bug issueja ni otvorenih PR-ova. #70 čeka zaseban Codexov pregled.
+- Plan A (`wip/korak-39-health-paketi`, HIGH_RISK: `package.json`, `app.json`; mali PR): (1) paketi `@kingstinct/react-native-healthkit` + `react-native-nitro-modules` (iOS), `react-native-health-connect` (Android, Expo plugin u paketu), `expo-build-properties` (Android `minSdkVersion` 26 — Health Connect); samo čitanje: HealthKit bez pisanja i bez background-delivery, Android `READ_SLEEP`/`READ_STEPS`/`READ_ACTIVE_CALORIES_BURNED`; provjereno `expo prebuild` u privremenoj kopiji; (2) čisto mapiranje u `src/core/health/source.ts` (HealthKit/Health Connect faze sna → `SleepSample`, raspon upita noći i dana) s testovima; (3) `src/features/health/health-source.ts`: opcionalno učitavanje (stari dev build bez native dijela → „nije dostupno“, bez rušenja), `requestHealthRead`, `readHealthNight(wakeDate)`, `readHealthTotal('steps'|'activeKcal', date)`; testovi s lažnim modulima.
+- Gotovo: (1)–(3) u PR-u #72. Treba **novi development build** (`npx expo run:ios --device`); HealthKit s osobnim timom provjeriti na Macu.
+- Plan B (`wip/korak-39-health-ui`, HIGH_RISK: ne): (1) Profil → „Zdravlje“: prekidač samo na uređaju (`device-prefs`, bez migracije), isključen dok ga korisnik ne uključi; uključivanje traži dopuštenje, nedostupan Health → ostaje isključen uz objašnjenje; (2) jutarnji upit: dok korisnik nije dirao vremena i nema upisanog sna, noć iz Healtha zamijeni ciljeve uz „Popunjeno iz: Zdravlje — provjeri pa spremi“; spremanje ostaje korisnikovo; (3) tracker kalorija: „Potrošeno (aktivno)“ i koraci danas iz Healtha, samo prikaz (ne mijenja rezultat ni dijagnozu).
+- Gotovo: (1)–(3) u PR-u #73. Korak 39 `[x]` (provjera na iPhoneu s novim buildom). Sljedeće: 41 widget kad Apple račun bude aktivan (App Group) — Android widget ne čeka.
+
 ## 2026-11-19 · Odluke Borne (anketa u chatu, ~22:00) i korak 34c
 - 94a (widget): **uzima Apple Developer Program** → iOS i Android widget (App Group). Prije builda s widgetom račun mora biti aktivan; tim i App Group ID na Macu.
 - 94b (Health): čitati **san, korake i aktivne kalorije** (samo čitanje).
