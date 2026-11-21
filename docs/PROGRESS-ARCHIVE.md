@@ -4,6 +4,11 @@ Puni stari dnevnik, premješten iz `docs/PROGRESS.md` radi uštede konteksta. Au
 
 Najnovije na vrhu. Svaka sesija: datum · korak · što je napravljeno · što je sljedeće · problemi/odluke.
 
+## 2026-11-20 · Sesija 12:43 — Android widget u pozadini (korak 41)
+- #1: od zadnje objave (#78) nema novih komentara; nema P0/P1, bug issueja ni otvorenih PR-ova.
+- Plan: (1) `expo-background-task` (`npx expo install`); (2) čisto `core/widget/background` (samo Android, 15 min); (3) `pushWidgetUpdate` izdvojen iz `WidgetSync` (isti kod za app i pozadinu); (4) `widget-task.ts` definira zadatak u `index.ts`, registrira ga `WidgetSync` tek kad widget postoji (stari build/iOS/web ništa); (5) pozadina čita jezik iz spremljenih postavki, temu s uređaja; (6) testovi, prebuild provjera (iOS dobiva samo `processing` + BGTask identifikator u Info.plistu, bez entitlementa).
+- Gotovo: PR „Android widget u pozadini“. Treba novi Android build.
+
 ## 2026-11-20 · Sesija 09:43 — sažetak otvorenih pitanja
 - #1: zadnje su Claudeove objave #75–#77; Codexov zadnji pregled odobrio #73 (P2 popravljen u #75) i #74. Nema P0/P1, bug issueja ni otvorenih PR-ova.
 - Svi koraci bez Borne su gotovi. Ova sesija: stara otvorena pitanja (23–94) pregledana u arhivi i sažeta u jedan paket ispod („Pitanja za Bornu“). Odgovoreni skupovi: 1–43, 48–61, 75–86, 89–94.
