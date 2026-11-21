@@ -16,6 +16,10 @@ npm run test:supabase   # privremeni Postgres + stub `auth`, sve migracije, test
 S Dockerom: `npx supabase start && npx supabase db reset` (pravi lokalni Supabase).
 Na remote tek kad lokalna provjera prođe (MCP `apply_migration` ili `npx supabase db push`).
 
+Supabase CLI: koristi **v3 (≥ 3.2)** — v2.90 ne razumije trenutni `config.toml`. U v3 naredbe nad
+remote projektom traže eksplicitni `--remote` (vidi https://supabase.com/changelog/supabase-cli-v3).
+Prije `db push` uvijek `--dry-run`.
+
 ## Prijava e-mailom (korak 18)
 
 Prijava je iza feature flaga i zadano isključena — bez nje app radi čisto lokalno.
