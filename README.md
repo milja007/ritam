@@ -4,6 +4,10 @@ Osobni productivity app (React Native / **Expo SDK 58**, Expo Router, TypeScript
 
 - Koncept: [`docs/CONCEPT.md`](docs/CONCEPT.md) · plan: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) · stanje: [`docs/PROGRESS.md`](docs/PROGRESS.md) · pravila za AI sesije: [`CLAUDE.md`](CLAUDE.md), [`AGENTS.md`](AGENTS.md)
 
+## Vizualni uvod u aplikaciju
+
+[Prezentacija Ritma za investicijski razgovor (PDF, 14 slajdova)](docs/presentations/Ritam-uvod-za-investitore.pdf) — Žar, dnevni ciklus, planiranje, osobni napredak i sljedeći koraci. Hrvatski, stanje 22. 11. 2026. Snimke razvojne aplikacije i konceptualne ilustracije jasno su označene; poslovne hipoteze nisu potvrđeni rezultati.
+
 ## Pokretanje
 
 ```bash
