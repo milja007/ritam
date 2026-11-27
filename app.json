@@ -103,7 +103,8 @@
       "expo-background-task",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

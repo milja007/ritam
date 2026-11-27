@@ -2,6 +2,11 @@
 
 Kratko, samo aktualno stanje (cilj ≤ 5 KB). Najnovije na vrhu. Stari unosi idu u `docs/PROGRESS-ARCHIVE.md` (sesije ga ne čitaju, osim `grep` za konkretan detalj).
 
+## 2026-11-28 · Sesija 21:43 — Expo 58.1.0
+- #1: od 2026-11-21 nema novih komentara, nema P0/P1 ni bug issueja; jedini otvoreni PR #83 je Bornin (investitori, docs) — ne diram ga.
+- Plan: (1) `expo@~58.1.0` (izašao 2026-11-26) + `expo install --fix` prema njegovom `bundledNativeModules.json`; (2) provjeriti nove pluginove u `app.json`; (3) tsc, lint, Jest, export iOS/Android. Gotovo: 11 paketa podignuto, `expo-image` plugin dodan (bez opcija samo zadani Podfile `disable-libdav1d=false`).
+- `expo-widgets` 58.0.30 nema promjena u Android kodu — pitanje 95 ostaje.
+
 ## 2026-11-21 · Borna: migracije i deploy gotovi (chat)
 - Odgovor na 84 i 77 (Borna, chat 2026-11-21): na Macu primijenjeno svih 7 remote migracija (`db push`, dry-run prije i poslije), deployani `plan-day`, `parse-input`, `write-report`; `ANTHROPIC_API_KEY` postoji. Claude provjerio preko Supabase MCP-a (samo čitanje): remote ima 14 migracija do `20261119030000_income`, sve 3 funkcije `ACTIVE`, verzija 2.
 - Supabase CLI 2.90 ne razumije trenutni `config.toml` — korišten CLI 3.2 uz eksplicitni `--remote` (README dopunjen).
